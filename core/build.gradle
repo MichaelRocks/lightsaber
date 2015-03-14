@@ -1,0 +1,18 @@
+apply plugin: 'java'
+
+sourceCompatibility = '1.6'
+version = '1.0'
+
+dependencies {
+    compile "javax.inject:javax.inject:$javaxInjectVersion"
+
+    testCompile "junit:junit:$junitVersion"
+}
+
+jar {
+    destinationDir = file('build/jar')
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}

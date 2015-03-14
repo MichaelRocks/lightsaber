@@ -1,0 +1,27 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.1'
+}
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
+version = '1.0'
+
+mainClassName = 'com.michaelrocks.lightsaber.processor.LightsaberProcessor'
+
+dependencies {
+    compile "com.beust:jcommander:$jcommanderVersion"
+    compile "org.ow2.asm:asm:$asmVersion"
+
+    testCompile "junit:junit:$junitVersion"
+}
+
+jar {
+    destinationDir = file('build/jar')
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
