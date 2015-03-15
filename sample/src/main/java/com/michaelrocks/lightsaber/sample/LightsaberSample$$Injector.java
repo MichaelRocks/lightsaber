@@ -16,8 +16,10 @@
 
 package com.michaelrocks.lightsaber.sample;
 
+import com.michaelrocks.lightsaber.Injector;
+
 class LightsaberSample$$Injector {
-    static void injectMembers(final LightsaberSample lightsaberSample) {
-        lightsaberSample.name = "AFTER";
+    static void injectMembers(final Injector injector, final LightsaberSample lightsaberSample) {
+        lightsaberSample.wookiee = injector.getInstance(Wookiee.class);
     }
 }

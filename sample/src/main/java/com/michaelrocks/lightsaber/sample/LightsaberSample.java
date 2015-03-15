@@ -16,21 +16,28 @@
 
 package com.michaelrocks.lightsaber.sample;
 
+import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.Lightsaber;
 
 import javax.inject.Inject;
+import java.io.File;
+import java.net.URISyntaxException;
 
 public class LightsaberSample {
     @Inject
-    String name = "BEFORE";
+    Wookiee wookiee;
 
-    public static void main(final String[] args) {
+    public static void main(final String[] args) throws URISyntaxException {
+        System.out.println(
+                new File(LightsaberSample.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
         new LightsaberSample().run();
     }
 
     private void run() {
-        System.out.println("Before injection: " + name);
-        Lightsaber.injectMembers(this);
-        System.out.println("After injection: " + name);
+        System.out.println("Before injection: " + wookiee);
+        final Injector injector = Lightsaber.createInjector(new LightsaberModule());
+        injector.injectMembers(this);
+        System.out.println("After injection: " + wookiee);
+        wookiee.roar();
     }
 }
