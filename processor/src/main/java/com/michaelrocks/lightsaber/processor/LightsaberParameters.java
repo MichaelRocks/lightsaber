@@ -18,13 +18,13 @@ package com.michaelrocks.lightsaber.processor;
 
 import com.beust.jcommander.Parameter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class LightsaberParameters {
-    @Parameter(required = true, description = "Jar files to process")
-    public List<String> jars = new ArrayList<>();
+    @Parameter(names = "--jar", description = "Jar file to process")
+    public String jar;
 
-    @Parameter(names = { "--stacktrace" }, description = "Print stack traces")
+    @Parameter(names = "--classes", description = "Classes directory to process")
+    public String classes;
+
+    @Parameter(names = "--stacktrace", description = "Print stack traces")
     public boolean printStacktrace = false;
 }

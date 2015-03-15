@@ -28,6 +28,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
@@ -61,10 +62,14 @@ public class LightsaberProcessor {
 
     public boolean process() {
         try {
-            for (final String jar : parameters.jars) {
-                final File jarFile = new File(jar);
+            if (parameters.jar != null) {
+                final File jarFile = new File(parameters.jar);
                 processJarFileWithCopy(jarFile);
+            } else if (parameters.classes != null) {
+                final File classesDirectory = new File(parameters.classes);
+                processClasses(classesDirectory);
             }
+            System.out.println("DONE");
             return true;
         } catch (final ProcessingException exception) {
             if (parameters.printStacktrace) {
@@ -119,7 +124,8 @@ public class LightsaberProcessor {
             jarOutputStream.putNextEntry(new JarEntry(entry.getName()));
             try (final InputStream entryStream = jarFile.getInputStream(entry)) {
                 if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
-                    processClass(entryStream, jarOutputStream);
+                    final byte[] classBytes = IOUtils.toByteArray(entryStream);
+                    processClass(classBytes, jarOutputStream);
                 } else {
                     IOUtils.copy(entryStream, jarOutputStream);
                 }
@@ -128,8 +134,29 @@ public class LightsaberProcessor {
         }
     }
 
-    private void processClass(final InputStream stream, final OutputStream outputStream) throws IOException {
-        final ClassReader classReader = new ClassReader(stream);
+    private void processClasses(final File classesDirectory) throws ProcessingException {
+        System.out.println("Processing: " + classesDirectory.getAbsolutePath());
+
+        if (!classesDirectory.exists() || !classesDirectory.isDirectory()) {
+            throw new ProcessingException(classesDirectory, "Invalid classes directory");
+        }
+
+        final Iterator<File> classFiles = FileUtils.iterateFiles(classesDirectory, new String[] { "class" }, true);
+        while (classFiles.hasNext()) {
+            final File classFile = classFiles.next();
+            try {
+                final byte[] classData = Files.readAllBytes(classFile.toPath());
+                try (final OutputStream outputStream = new FileOutputStream(classFile)) {
+                    processClass(classData, outputStream);
+                }
+            } catch (final IOException exception) {
+                throw new ProcessingException(classFile, exception);
+            }
+        }
+    }
+
+    private void processClass(final byte[] classBytes, final OutputStream outputStream) throws IOException {
+        final ClassReader classReader = new ClassReader(classBytes);
         final ClassWriter classWriter =
                 new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         classReader.accept(new InjectionVisitor(classWriter), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
