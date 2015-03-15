@@ -17,8 +17,9 @@
 package com.michaelrocks.lightsaber.processor;
 
 import java.io.File;
+import java.io.IOException;
 
-public class ProcessingException extends Exception {
+public class ProcessingException extends IOException {
     private final File jarFile;
 
     public ProcessingException(final String message) {
