@@ -16,9 +16,23 @@
 
 package com.michaelrocks.lightsaber;
 
+import com.michaelrocks.lightsaber.internal.InternalModule;
+import com.michaelrocks.lightsaber.internal.LightsaberInjector;
+
 public class Lightsaber {
-    public static void injectMembers(Object target) {
-        throw new IllegalStateException(
-                "This method must not be called. It must be substituted with a valid injector instead.");
+    public static Injector createInjector(final Module... modules) {
+        final LightsaberInjector injector = new LightsaberInjector();
+        for (final Module module : modules) {
+            if (module == null) {
+                throw new NullPointerException("Trying to create injector with a null module");
+            }
+
+            if (!(module instanceof InternalModule)) {
+                throw new ConfigurationException("Module " + module + " hasn't been processed");
+            }
+
+            ((InternalModule) module).configureInjector(injector);
+        }
+        return injector;
     }
 }
