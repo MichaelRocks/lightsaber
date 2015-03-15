@@ -14,6 +14,7 @@ mainClassName = 'com.michaelrocks.lightsaber.processor.LightsaberProcessor'
 dependencies {
     compile "com.beust:jcommander:$jcommanderVersion"
     compile "org.ow2.asm:asm:$asmVersion"
+    compile "commons-io:commons-io:$commonsIoVersion"
 
     testCompile "junit:junit:$junitVersion"
 }

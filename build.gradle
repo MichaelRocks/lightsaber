@@ -20,6 +20,7 @@ ext {
     javaxInjectVersion = '1'
     jcommanderVersion = '1.47'
     asmVersion = '5.0.3'
+    commonsIoVersion = '2.4'
 
     junitVersion = '4.12'
 }
