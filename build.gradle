@@ -21,6 +21,7 @@ ext {
     jcommanderVersion = '1.47'
     asmVersion = '5.0.3'
     commonsIoVersion = '2.4'
+    commonsCollectionsVersion = '4.0'
 
     junitVersion = '4.12'
 }
