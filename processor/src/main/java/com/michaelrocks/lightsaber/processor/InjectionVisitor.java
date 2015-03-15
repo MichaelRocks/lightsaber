@@ -33,21 +33,21 @@ class InjectionVisitor extends ClassVisitor {
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
         className = name;
-        System.out.println("CLASS: " + name);
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
     @Override
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
             final String[] exceptions) {
-        System.out.println("METHOD: " + name);
+        final String methodName = name;
+        final String methodDesc = desc;
         final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         return new MethodVisitor(ASM5, methodVisitor) {
             @Override
             public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc,
                     final boolean itf) {
-                System.out.println("INVOCATION: " + name);
                 if ("com/michaelrocks/lightsaber/Lightsaber".equals(owner)  && "injectMembers".equals(name)) {
+                    System.out.println("Injecting at: " + className + "." + methodName + methodDesc);
                     super.visitMethodInsn(INVOKESTATIC, className + "$$Injector", name,
                             "(L" + className + ";)V", false);
                 } else {
