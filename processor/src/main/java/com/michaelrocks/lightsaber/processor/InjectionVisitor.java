@@ -46,10 +46,10 @@ class InjectionVisitor extends ClassVisitor {
             @Override
             public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc,
                     final boolean itf) {
-                if ("com/michaelrocks/lightsaber/Lightsaber".equals(owner)  && "injectMembers".equals(name)) {
+                if ("com/michaelrocks/lightsaber/Injector".equals(owner)  && "injectMembers".equals(name)) {
                     System.out.println("Injecting at: " + className + "." + methodName + methodDesc);
                     super.visitMethodInsn(INVOKESTATIC, className + "$$Injector", name,
-                            "(L" + className + ";)V", false);
+                            "(Lcom/michaelrocks/lightsaber/Injector;L" + className + ";)V", false);
                 } else {
                     super.visitMethodInsn(opcode, owner, name, desc, itf);
                 }
