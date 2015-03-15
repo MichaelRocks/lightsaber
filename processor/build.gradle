@@ -12,6 +12,8 @@ version = '1.0'
 mainClassName = 'com.michaelrocks.lightsaber.processor.LightsaberProcessor'
 
 dependencies {
+    compile project(':core')
+
     compile "com.beust:jcommander:$jcommanderVersion"
     compile "org.ow2.asm:asm:$asmVersion"
     compile "commons-io:commons-io:$commonsIoVersion"
