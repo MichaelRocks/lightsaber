@@ -159,7 +159,7 @@ public class LightsaberProcessor {
         final ClassReader classReader = new ClassReader(classBytes);
         final ClassWriter classWriter =
                 new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-        classReader.accept(new InjectionVisitor(classWriter), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+        classReader.accept(new RootVisitor(classWriter), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         outputStream.write(classWriter.toByteArray());
     }
 }
