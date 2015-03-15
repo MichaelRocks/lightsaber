@@ -23,3 +23,12 @@ jar {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
+
+task lightsaberProcess(type: JavaExec) {
+    classpath rootProject.project(':processor').shadowJar.archivePath
+    main "com.michaelrocks.lightsaber.processor.LightsaberProcessor"
+    args = ["--classes", compileJava.destinationDir.getAbsolutePath(), "--stacktrace"]
+}
+
+lightsaberProcess.dependsOn compileJava
+shadowJar.dependsOn lightsaberProcess
