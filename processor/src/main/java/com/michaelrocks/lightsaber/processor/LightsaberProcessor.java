@@ -18,6 +18,9 @@ package com.michaelrocks.lightsaber.processor;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -87,11 +90,8 @@ public class LightsaberProcessor {
     private File composeFileCopy(final File file, final String copyName) {
         final File parentFile = file.getParentFile();
         final String fileNameWithExtension = file.getName();
-        final int extensionIndex = fileNameWithExtension.lastIndexOf('.');
-        final String fileName =
-                extensionIndex < 0 ? fileNameWithExtension : fileNameWithExtension.substring(0, extensionIndex);
-        final String extension =
-                extensionIndex < 0 ? "" : fileNameWithExtension.substring(extensionIndex);
+        final String fileName = FilenameUtils.getBaseName(fileNameWithExtension);
+        final String extension = FilenameUtils.getExtension(fileNameWithExtension);
         return new File(parentFile, fileName + '.' + copyName + extension);
     }
 
@@ -107,8 +107,8 @@ public class LightsaberProcessor {
         } catch (final IOException exception) {
             throw new ProcessingException(sourceFile, exception);
         } finally {
-            close(outputStream);
-            close(jarFile);
+            IOUtils.closeQuietly(outputStream);
+            IOUtils.closeQuietly(jarFile);
         }
     }
 
@@ -121,14 +121,7 @@ public class LightsaberProcessor {
                 if (!entry.isDirectory() && entry.getName().endsWith(".class")) {
                     processClass(entryStream, jarOutputStream);
                 } else {
-                    final byte[] buffer = new byte[1024];
-                    while (true) {
-                        final int length = entryStream.read(buffer);
-                        if (length <= 0) {
-                            break;
-                        }
-                        jarOutputStream.write(buffer, 0, length);
-                    }
+                    IOUtils.copy(entryStream, jarOutputStream);
                 }
             }
             jarOutputStream.closeEntry();
@@ -141,14 +134,5 @@ public class LightsaberProcessor {
                 new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         classReader.accept(new InjectionVisitor(classWriter), ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
         outputStream.write(classWriter.toByteArray());
-    }
-
-    private void close(final Closeable resource) {
-        if (resource != null) {
-            try {
-                resource.close();
-            } catch (final IOException ignored) {
-            }
-        }
     }
 }
