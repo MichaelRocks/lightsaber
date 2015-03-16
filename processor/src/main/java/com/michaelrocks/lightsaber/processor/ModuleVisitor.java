@@ -67,8 +67,11 @@ public class ModuleVisitor extends ClassVisitor {
 
     private void generateConfigureInjectorMethod() {
         System.out.println("Generating configureInjector");
-        final MethodVisitor methodVisitor = cv.visitMethod(ACC_PUBLIC | ACC_SYNTHETIC, "configureInjector",
-                "(Lcom/michaelrocks/lightsaber/internal/LightsaberInjector;)V", null, null);
+        final MethodVisitor methodVisitor = cv.visitMethod(ACC_PUBLIC | ACC_SYNTHETIC,
+                InternalNames.METHOD_CONFIGURE_INJECTOR,
+                Descriptors.METHOD_CONFIGURE_INJECTOR,
+                null,
+                null);
         methodVisitor.visitCode();
         methodVisitor.visitVarInsn(ALOAD, 1);
         methodVisitor.visitLdcInsn(Type.getType("Lcom/michaelrocks/lightsaber/sample/Wookiee;"));
@@ -81,9 +84,9 @@ public class ModuleVisitor extends ClassVisitor {
                 "(Lcom/michaelrocks/lightsaber/sample/LightsaberModule;)V",
                 false);
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
-                "com/michaelrocks/lightsaber/internal/LightsaberInjector",
-                "registerProvider",
-                "(Ljava/lang/Class;Ljavax/inject/Provider;)V",
+                InternalNames.CLASS_LIGHTSABER_INJECTOR,
+                InternalNames.METHOD_REGISTER_PROVIDER,
+                Descriptors.METHOD_REGISTER_PROVIDER,
                 false);
         methodVisitor.visitInsn(RETURN);
         methodVisitor.visitMaxs(0, 0);

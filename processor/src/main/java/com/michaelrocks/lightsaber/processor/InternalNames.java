@@ -18,11 +18,16 @@ package com.michaelrocks.lightsaber.processor;
 
 import com.michaelrocks.lightsaber.Module;
 import com.michaelrocks.lightsaber.internal.InternalModule;
+import com.michaelrocks.lightsaber.internal.LightsaberInjector;
 import org.objectweb.asm.Type;
 
 final class InternalNames {
     public static final String CLASS_MODULE = Type.getInternalName(Module.class);
     public static final String CLASS_INTERNAL_MODULE = Type.getInternalName(InternalModule.class);
+    public static final String CLASS_LIGHTSABER_INJECTOR = Type.getInternalName(LightsaberInjector.class);
+
+    public static final String METHOD_CONFIGURE_INJECTOR = "configureInjector";
+    public static final String METHOD_REGISTER_PROVIDER = "registerProvider";
 
     private InternalNames() {
     }

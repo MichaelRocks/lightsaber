@@ -17,10 +17,18 @@
 package com.michaelrocks.lightsaber.processor;
 
 import com.michaelrocks.lightsaber.Provides;
+import com.michaelrocks.lightsaber.internal.LightsaberInjector;
 import org.objectweb.asm.Type;
+
+import javax.inject.Provider;
 
 public final class Descriptors {
     public static final String CLASS_PROVIDES = Type.getDescriptor(Provides.class);
+
+    public static final String METHOD_CONFIGURE_INJECTOR =
+            Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(LightsaberInjector.class));
+    public static final String METHOD_REGISTER_PROVIDER =
+            Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class), Type.getType(Provider.class));
 
     private Descriptors() {
     }
