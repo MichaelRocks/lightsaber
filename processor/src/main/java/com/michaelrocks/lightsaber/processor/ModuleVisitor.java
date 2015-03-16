@@ -27,7 +27,8 @@ import java.util.List;
 import static org.objectweb.asm.Opcodes.*;
 
 public class ModuleVisitor extends ClassVisitor {
-    private final List<String> providerMethods = new ArrayList<>();
+    private String className;
+    private final List<ProviderMethodDescriptor> providerMethods = new ArrayList<>();
 
     public ModuleVisitor(final ClassVisitor classVisitor) {
         super(ASM5, classVisitor);
@@ -36,6 +37,7 @@ public class ModuleVisitor extends ClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
+        className = name;
         final String[] newInterfaces = new String[interfaces.length + 1];
         System.arraycopy(interfaces, 0, newInterfaces, 0, interfaces.length);
         newInterfaces[interfaces.length] = InternalNames.CLASS_INTERNAL_MODULE;
@@ -46,12 +48,15 @@ public class ModuleVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
             final String[] exceptions) {
         final String methodName = name;
+        final String methodDesc = desc;
         final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         return new MethodVisitor(ASM5, methodVisitor) {
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 if (Descriptors.CLASS_PROVIDES.equals(desc)) {
-                    providerMethods.add(methodName);
+                    final Type methodType = Type.getMethodType(methodDesc);
+                    final ProviderMethodDescriptor descriptor = new ProviderMethodDescriptor(methodName, methodType);
+                    providerMethods.add(descriptor);
                 }
 
                 return super.visitAnnotation(desc, visible);
@@ -73,23 +78,43 @@ public class ModuleVisitor extends ClassVisitor {
                 null,
                 null);
         methodVisitor.visitCode();
+        for (int i = 0; i < providerMethods.size(); ++i) {
+            final ProviderMethodDescriptor descriptor = providerMethods.get(i);
+            generateRegisterProviderInvocation(methodVisitor, descriptor, i);
+        }
+        methodVisitor.visitInsn(RETURN);
+        methodVisitor.visitMaxs(0, 0);
+        methodVisitor.visitEnd();
+    }
+
+    private void generateRegisterProviderInvocation(final MethodVisitor methodVisitor,
+            final ProviderMethodDescriptor descriptor, final int invocationIndex) {
+        System.out.println("Generating invocation for method " + descriptor.name);
+        final String providerClass = className + "$$Provider$$" + (invocationIndex + 1);
         methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitLdcInsn(Type.getType("Lcom/michaelrocks/lightsaber/sample/Wookiee;"));
-        methodVisitor.visitTypeInsn(NEW, "com/michaelrocks/lightsaber/sample/LightsaberModule$1");
+        methodVisitor.visitLdcInsn(descriptor.type.getReturnType());
+        methodVisitor.visitTypeInsn(NEW, providerClass);
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitMethodInsn(INVOKESPECIAL,
-                "com/michaelrocks/lightsaber/sample/LightsaberModule$1",
+                providerClass,
                 "<init>",
-                "(Lcom/michaelrocks/lightsaber/sample/LightsaberModule;)V",
+                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getObjectType(className)),
                 false);
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
                 InternalNames.CLASS_LIGHTSABER_INJECTOR,
                 InternalNames.METHOD_REGISTER_PROVIDER,
                 Descriptors.METHOD_REGISTER_PROVIDER,
                 false);
-        methodVisitor.visitInsn(RETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+    }
+
+    private class ProviderMethodDescriptor {
+        public final String name;
+        public final Type type;
+
+        public ProviderMethodDescriptor(final String name, final Type type) {
+            this.name = name;
+            this.type = type;
+        }
     }
 }
