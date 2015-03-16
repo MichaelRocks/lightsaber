@@ -16,7 +16,9 @@
 
 package com.michaelrocks.lightsaber.processor;
 
+import com.michaelrocks.lightsaber.Module;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Type;
 
 import java.util.Arrays;
 
@@ -30,7 +32,7 @@ public class RootVisitor extends ClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        if (interfaces != null && Arrays.asList(interfaces).indexOf(InternalNames.CLASS_MODULE) >= 0) {
+        if (interfaces != null && Arrays.asList(interfaces).indexOf(Type.getInternalName(Module.class)) >= 0) {
             cv = new ModuleVisitor(cv);
         } else {
             cv = new InjectionVisitor(cv);

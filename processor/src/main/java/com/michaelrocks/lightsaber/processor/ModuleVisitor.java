@@ -16,11 +16,15 @@
 
 package com.michaelrocks.lightsaber.processor;
 
+import com.michaelrocks.lightsaber.Provides;
+import com.michaelrocks.lightsaber.internal.InternalModule;
+import com.michaelrocks.lightsaber.internal.LightsaberInjector;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import javax.inject.Provider;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +44,7 @@ public class ModuleVisitor extends ClassVisitor {
         className = name;
         final String[] newInterfaces = new String[interfaces.length + 1];
         System.arraycopy(interfaces, 0, newInterfaces, 0, interfaces.length);
-        newInterfaces[interfaces.length] = InternalNames.CLASS_INTERNAL_MODULE;
+        newInterfaces[interfaces.length] = Type.getInternalName(InternalModule.class);
         super.visit(version, access, name, signature, superName, newInterfaces);
     }
 
@@ -53,7 +57,7 @@ public class ModuleVisitor extends ClassVisitor {
         return new MethodVisitor(ASM5, methodVisitor) {
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-                if (Descriptors.CLASS_PROVIDES.equals(desc)) {
+                if (Type.getDescriptor(Provides.class).equals(desc)) {
                     final Type methodType = Type.getMethodType(methodDesc);
                     final ProviderMethodDescriptor descriptor = new ProviderMethodDescriptor(methodName, methodType);
                     providerMethods.add(descriptor);
@@ -73,8 +77,8 @@ public class ModuleVisitor extends ClassVisitor {
     private void generateConfigureInjectorMethod() {
         System.out.println("Generating configureInjector");
         final MethodVisitor methodVisitor = cv.visitMethod(ACC_PUBLIC | ACC_SYNTHETIC,
-                InternalNames.METHOD_CONFIGURE_INJECTOR,
-                Descriptors.METHOD_CONFIGURE_INJECTOR,
+                "configureInjector",
+                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(LightsaberInjector.class)),
                 null,
                 null);
         methodVisitor.visitCode();
@@ -102,9 +106,9 @@ public class ModuleVisitor extends ClassVisitor {
                 Type.getMethodDescriptor(Type.VOID_TYPE, Type.getObjectType(className)),
                 false);
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
-                InternalNames.CLASS_LIGHTSABER_INJECTOR,
-                InternalNames.METHOD_REGISTER_PROVIDER,
-                Descriptors.METHOD_REGISTER_PROVIDER,
+                Type.getInternalName(LightsaberInjector.class),
+                "registerProvider",
+                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class), Type.getType(Provider.class)),
                 false);
     }
 
