@@ -21,8 +21,8 @@ import com.michaelrocks.lightsaber.internal.InternalModule;
 import org.objectweb.asm.Type;
 
 final class InternalNames {
-    public static final String MODULE = Type.getInternalName(Module.class);
-    public static final String INTERNAL_MODULE = Type.getInternalName(InternalModule.class);
+    public static final String CLASS_MODULE = Type.getInternalName(Module.class);
+    public static final String CLASS_INTERNAL_MODULE = Type.getInternalName(InternalModule.class);
 
     private InternalNames() {
     }

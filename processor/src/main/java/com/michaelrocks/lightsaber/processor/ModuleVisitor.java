@@ -38,7 +38,7 @@ public class ModuleVisitor extends ClassVisitor {
             final String superName, final String[] interfaces) {
         final String[] newInterfaces = new String[interfaces.length + 1];
         System.arraycopy(interfaces, 0, newInterfaces, 0, interfaces.length);
-        newInterfaces[interfaces.length] = InternalNames.INTERNAL_MODULE;
+        newInterfaces[interfaces.length] = InternalNames.CLASS_INTERNAL_MODULE;
         super.visit(version, access, name, signature, superName, newInterfaces);
     }
 
@@ -50,7 +50,7 @@ public class ModuleVisitor extends ClassVisitor {
         return new MethodVisitor(ASM5, methodVisitor) {
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-                if (Descriptors.PROVIDES.equals(desc)) {
+                if (Descriptors.CLASS_PROVIDES.equals(desc)) {
                     providerMethods.add(methodName);
                 }
 

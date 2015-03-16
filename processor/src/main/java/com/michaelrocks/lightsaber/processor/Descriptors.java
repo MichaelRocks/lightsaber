@@ -20,7 +20,7 @@ import com.michaelrocks.lightsaber.Provides;
 import org.objectweb.asm.Type;
 
 public final class Descriptors {
-    public static final String PROVIDES = Type.getDescriptor(Provides.class);
+    public static final String CLASS_PROVIDES = Type.getDescriptor(Provides.class);
 
     private Descriptors() {
     }

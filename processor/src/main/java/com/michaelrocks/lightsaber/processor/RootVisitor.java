@@ -30,7 +30,7 @@ public class RootVisitor extends ClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        if (interfaces != null && Arrays.asList(interfaces).indexOf(InternalNames.MODULE) >= 0) {
+        if (interfaces != null && Arrays.asList(interfaces).indexOf(InternalNames.CLASS_MODULE) >= 0) {
             cv = new ModuleVisitor(cv);
         } else {
             cv = new InjectionVisitor(cv);
