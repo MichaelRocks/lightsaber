@@ -18,12 +18,15 @@ package com.michaelrocks.lightsaber.sample;
 
 import javax.inject.Provider;
 
-class LightsaberModule$1 implements Provider<Wookiee> {
-    LightsaberModule$1(final LightsaberModule module) {
+class LightsaberModule$$Provider$$2 implements Provider<Droid> {
+    private final LightsaberModule module;
+
+    LightsaberModule$$Provider$$2(final LightsaberModule module) {
+        this.module = module;
     }
 
     @Override
-    public Wookiee get() {
-        return new Chewbacca();
+    public Droid get() {
+        return module.provideDroid();
     }
 }

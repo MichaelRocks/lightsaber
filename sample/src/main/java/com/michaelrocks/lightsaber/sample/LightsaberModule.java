@@ -24,4 +24,9 @@ public class LightsaberModule implements Module {
     public Wookiee provideWookie() {
         return new Chewbacca();
     }
+
+    @Provides
+    public Droid provideDroid() {
+        return new R2D2();
+    }
 }

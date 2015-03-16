@@ -16,11 +16,17 @@
 
 package com.michaelrocks.lightsaber.sample;
 
-import com.michaelrocks.lightsaber.Injector;
+import javax.inject.Provider;
 
-class LightsaberSample$$Injector {
-    static void injectMembers(final Injector injector, final LightsaberSample lightsaberSample) {
-        lightsaberSample.wookiee = injector.getInstance(Wookiee.class);
-        lightsaberSample.droid = injector.getInstance(Droid.class);
+class LightsaberModule$$Provider$$1 implements Provider<Wookiee> {
+    private final LightsaberModule module;
+
+    LightsaberModule$$Provider$$1(final LightsaberModule module) {
+        this.module = module;
+    }
+
+    @Override
+    public Wookiee get() {
+        return module.provideWookie();
     }
 }

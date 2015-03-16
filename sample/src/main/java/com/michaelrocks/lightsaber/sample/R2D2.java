@@ -16,11 +16,9 @@
 
 package com.michaelrocks.lightsaber.sample;
 
-import com.michaelrocks.lightsaber.Injector;
-
-class LightsaberSample$$Injector {
-    static void injectMembers(final Injector injector, final LightsaberSample lightsaberSample) {
-        lightsaberSample.wookiee = injector.getInstance(Wookiee.class);
-        lightsaberSample.droid = injector.getInstance(Droid.class);
+public class R2D2 implements Droid {
+    @Override
+    public void repair() {
+        System.out.println("BEEP BEEP BEEEEEP");
     }
 }
