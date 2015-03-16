@@ -16,8 +16,10 @@
 
 package com.michaelrocks.lightsaber.processor;
 
+import com.michaelrocks.lightsaber.Injector;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 import static org.objectweb.asm.Opcodes.ASM5;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
@@ -46,10 +48,12 @@ class InjectionVisitor extends ClassVisitor {
             @Override
             public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc,
                     final boolean itf) {
-                if ("com/michaelrocks/lightsaber/Injector".equals(owner)  && "injectMembers".equals(name)) {
+                if (Type.getInternalName(Injector.class).equals(owner)  && "injectMembers".equals(name)) {
                     System.out.println("Injecting at: " + className + "." + methodName + methodDesc);
-                    super.visitMethodInsn(INVOKESTATIC, className + "$$Injector", name,
-                            "(Lcom/michaelrocks/lightsaber/Injector;L" + className + ";)V", false);
+                    final String newMethodDesc =
+                            Type.getMethodDescriptor(
+                                    Type.VOID_TYPE, Type.getType(Injector.class), Type.getObjectType(className));
+                    super.visitMethodInsn(INVOKESTATIC, className + "$$Injector", name, newMethodDesc, false);
                 } else {
                     super.visitMethodInsn(opcode, owner, name, desc, itf);
                 }
