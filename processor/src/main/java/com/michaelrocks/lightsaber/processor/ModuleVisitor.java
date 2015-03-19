@@ -30,12 +30,12 @@ import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ModuleVisitor extends ClassVisitor {
+public class ModuleVisitor extends ProducingClassVisitor {
     private String className;
     private final List<ProviderMethodDescriptor> providerMethods = new ArrayList<>();
 
-    public ModuleVisitor(final ClassVisitor classVisitor) {
-        super(ASM5, classVisitor);
+    public ModuleVisitor(final ClassVisitor classVisitor, final ClassProducer classProducer) {
+        super(classVisitor, classProducer);
     }
 
     @Override

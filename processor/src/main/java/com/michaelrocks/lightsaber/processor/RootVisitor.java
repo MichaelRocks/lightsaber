@@ -22,20 +22,18 @@ import org.objectweb.asm.Type;
 
 import java.util.Arrays;
 
-import static org.objectweb.asm.Opcodes.ASM5;
-
-public class RootVisitor extends ClassVisitor {
-    public RootVisitor(final ClassVisitor classVisitor) {
-        super(ASM5, classVisitor);
+public class RootVisitor extends ProducingClassVisitor {
+    public RootVisitor(final ClassVisitor classVisitor, final ClassProducer classProducer) {
+        super(classVisitor, classProducer);
     }
 
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
         if (interfaces != null && Arrays.asList(interfaces).indexOf(Type.getInternalName(Module.class)) >= 0) {
-            cv = new ModuleVisitor(cv);
+            cv = new ModuleVisitor(cv, getClassProducer());
         } else {
-            cv = new InjectionVisitor(cv);
+            cv = new InjectionVisitor(cv, getClassProducer());
         }
 
         super.visit(version, access, name, signature, superName, interfaces);

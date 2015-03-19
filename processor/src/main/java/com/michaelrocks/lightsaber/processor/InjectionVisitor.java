@@ -24,11 +24,11 @@ import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.ASM5;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
-class InjectionVisitor extends ClassVisitor {
+class InjectionVisitor extends ProducingClassVisitor {
     private String className;
 
-    public InjectionVisitor(final ClassVisitor classVisitor) {
-        super(ASM5, classVisitor);
+    public InjectionVisitor(final ClassVisitor classVisitor, final ClassProducer classProducer) {
+        super(classVisitor, classProducer);
     }
 
     @Override
