@@ -62,12 +62,12 @@ public class InjectionClassFileVisitor extends ClassFileVisitor {
         private final List<ProcessingException> errors = new ArrayList<>();
 
         @Override
-        public void produceClass(final String path, final byte[] classData) {
+        public void produceClass(final String internalName, final byte[] classData) {
             try {
-                visitClassFile(path, classData);
+                visitClassFile(internalName + ".class", classData);
             } catch (final IOException exception) {
                 final String message = String.format("Failed to produce class with %d bytes", classData.length);
-                errors.add(new ProcessingException(new File(path), message, exception));
+                errors.add(new ProcessingException(new File(internalName), message, exception));
             }
         }
 

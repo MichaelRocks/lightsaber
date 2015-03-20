@@ -17,5 +17,5 @@
 package com.michaelrocks.lightsaber.processor;
 
 public interface ClassProducer {
-    void produceClass(String path, byte[] classData);
+    void produceClass(String internalName, byte[] classData);
 }

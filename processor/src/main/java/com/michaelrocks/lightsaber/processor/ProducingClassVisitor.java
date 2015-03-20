@@ -36,7 +36,7 @@ public class ProducingClassVisitor extends ClassVisitor {
         return classProducer;
     }
 
-    public void produceClass(final String path, final byte[] classData) {
-        classProducer.produceClass(path, classData);
+    public void produceClass(final String internalName, final byte[] classData) {
+        classProducer.produceClass(internalName, classData);
     }
 }
