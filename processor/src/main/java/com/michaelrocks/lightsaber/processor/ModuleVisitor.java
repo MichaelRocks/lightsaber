@@ -94,14 +94,16 @@ public class ModuleVisitor extends ProducingClassVisitor {
     private void generateRegisterProviderInvocation(final MethodVisitor methodVisitor,
             final ProviderMethodDescriptor descriptor, final int invocationIndex) {
         System.out.println("Generating invocation for method " + descriptor.name);
-        final String providerClass = className + "$$Provider$$" + (invocationIndex + 1);
+        final Type providerType = Type.getObjectType(className + "$$Provider$$" + (invocationIndex + 1));
+        generateProviderClass(providerType, descriptor);
+
         methodVisitor.visitVarInsn(ALOAD, 1);
         methodVisitor.visitLdcInsn(descriptor.type.getReturnType());
-        methodVisitor.visitTypeInsn(NEW, providerClass);
+        methodVisitor.visitTypeInsn(NEW, providerType.getInternalName());
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitMethodInsn(INVOKESPECIAL,
-                providerClass,
+                providerType.getInternalName(),
                 "<init>",
                 Type.getMethodDescriptor(Type.VOID_TYPE, Type.getObjectType(className)),
                 false);
@@ -110,6 +112,15 @@ public class ModuleVisitor extends ProducingClassVisitor {
                 "registerProvider",
                 Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class), Type.getType(Provider.class)),
                 false);
+    }
+
+    private void generateProviderClass(final Type providerType,
+            final ProviderMethodDescriptor providerMethodDescriptor) {
+        System.out.println("Generating provider " + providerType.getInternalName());
+        final ProviderClassGenerator generator = new ProviderClassGenerator(providerType, Type.getObjectType(className),
+                providerMethodDescriptor.name, providerMethodDescriptor.type);
+        final byte[] providerClassData = generator.generate();
+        produceClass(providerType.getInternalName(), providerClassData);
     }
 
     private class ProviderMethodDescriptor {
