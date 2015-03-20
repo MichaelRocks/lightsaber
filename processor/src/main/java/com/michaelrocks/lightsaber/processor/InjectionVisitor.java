@@ -17,15 +17,23 @@
 package com.michaelrocks.lightsaber.processor;
 
 import com.michaelrocks.lightsaber.Injector;
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.objectweb.asm.Opcodes.ASM5;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
 class InjectionVisitor extends ProducingClassVisitor {
     private String className;
+    private final List<FieldDescriptor> injectableFields = new ArrayList<>();
+    private boolean shouldGenerateInjector;
 
     public InjectionVisitor(final ClassVisitor classVisitor, final ClassProducer classProducer) {
         super(classVisitor, classProducer);
@@ -36,6 +44,23 @@ class InjectionVisitor extends ProducingClassVisitor {
             final String superName, final String[] interfaces) {
         className = name;
         super.visit(version, access, name, signature, superName, interfaces);
+    }
+
+    @Override
+    public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
+            final Object value) {
+        final String fieldName = name;
+        final String fieldDesc = desc;
+        final FieldVisitor fieldVisitor = super.visitField(access, name, desc, signature, value);
+        return new FieldVisitor(ASM5, fieldVisitor) {
+            @Override
+            public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+                if (Type.getDescriptor(Inject.class).equals(desc)) {
+                    injectableFields.add(new FieldDescriptor(fieldName, fieldDesc));
+                }
+                return super.visitAnnotation(desc, visible);
+            }
+        };
     }
 
     @Override
@@ -53,11 +78,30 @@ class InjectionVisitor extends ProducingClassVisitor {
                     final String newMethodDesc =
                             Type.getMethodDescriptor(
                                     Type.VOID_TYPE, Type.getType(Injector.class), Type.getObjectType(className));
-                    super.visitMethodInsn(INVOKESTATIC, className + "$$Injector", name, newMethodDesc, false);
+                    super.visitMethodInsn(
+                            INVOKESTATIC, getInjectorType().getInternalName(), name, newMethodDesc, false);
+                    shouldGenerateInjector = true;
                 } else {
                     super.visitMethodInsn(opcode, owner, name, desc, itf);
                 }
             }
         };
+    }
+
+    @Override
+    public void visitEnd() {
+        super.visitEnd();
+
+        if (shouldGenerateInjector) {
+            final Type injectorType = getInjectorType();
+            final InjectorClassGenerator generator =
+                    new InjectorClassGenerator(injectorType, Type.getObjectType(className), injectableFields);
+            final byte[] injectorClassData = generator.generate();
+            produceClass(injectorType.getInternalName(), injectorClassData);
+        }
+    }
+
+    private Type getInjectorType() {
+        return Type.getObjectType(className + "$$Injector");
     }
 }
