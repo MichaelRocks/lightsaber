@@ -16,22 +16,14 @@
 
 package com.michaelrocks.lightsaber.sample;
 
-import com.michaelrocks.lightsaber.Module;
-import com.michaelrocks.lightsaber.Provides;
-
-public class LightsaberModule implements Module {
-    @Provides
-    public Wookiee provideWookie(final Planet planet) {
-        return new Chewbacca(planet);
+public class Kashyyyk implements Planet {
+    @Override
+    public String getName() {
+        return "Kashyyyk";
     }
 
-    @Provides
-    public Droid provideDroid() {
-        return new R2D2();
-    }
-
-    @Provides
-    public Planet providePlanet() {
-        return new Kashyyyk();
+    @Override
+    public String getSector() {
+        return "Mytaranor";
     }
 }

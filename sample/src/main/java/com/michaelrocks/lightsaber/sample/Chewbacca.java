@@ -17,8 +17,19 @@
 package com.michaelrocks.lightsaber.sample;
 
 class Chewbacca implements Wookiee {
+    private final Planet planet;
+
+    public Chewbacca(final Planet planet) {
+        this.planet = planet;
+    }
+
     @Override
     public void roar() {
         System.out.println("AULRGHHHGR");
+    }
+
+    @Override
+    public Planet getPlanet() {
+        return planet;
     }
 }

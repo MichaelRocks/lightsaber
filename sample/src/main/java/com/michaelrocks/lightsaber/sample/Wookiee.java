@@ -18,4 +18,5 @@ package com.michaelrocks.lightsaber.sample;
 
 public interface Wookiee {
     void roar();
+    Planet getPlanet();
 }

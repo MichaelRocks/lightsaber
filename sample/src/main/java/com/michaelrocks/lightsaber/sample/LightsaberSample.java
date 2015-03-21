@@ -43,7 +43,7 @@ public class LightsaberSample {
         final Injector injector = Lightsaber.createInjector(new LightsaberModule());
         injector.injectMembers(this);
         System.out.println("After injection");
-        System.out.println("Wookie: " + wookiee);
+        System.out.println("Wookie: " + wookiee + " from " + wookiee.getPlanet());
         System.out.println("Droid: " + droid);
         wookiee.roar();
         droid.repair();

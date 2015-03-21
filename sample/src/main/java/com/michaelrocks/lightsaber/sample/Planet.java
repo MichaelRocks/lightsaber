@@ -16,22 +16,7 @@
 
 package com.michaelrocks.lightsaber.sample;
 
-import com.michaelrocks.lightsaber.Module;
-import com.michaelrocks.lightsaber.Provides;
-
-public class LightsaberModule implements Module {
-    @Provides
-    public Wookiee provideWookie(final Planet planet) {
-        return new Chewbacca(planet);
-    }
-
-    @Provides
-    public Droid provideDroid() {
-        return new R2D2();
-    }
-
-    @Provides
-    public Planet providePlanet() {
-        return new Kashyyyk();
-    }
+interface Planet {
+    String getName();
+    String getSector();
 }
