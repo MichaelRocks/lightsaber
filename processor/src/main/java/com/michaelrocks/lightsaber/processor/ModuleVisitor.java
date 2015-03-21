@@ -16,6 +16,7 @@
 
 package com.michaelrocks.lightsaber.processor;
 
+import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.Provides;
 import com.michaelrocks.lightsaber.internal.InternalModule;
 import com.michaelrocks.lightsaber.internal.LightsaberInjector;
@@ -76,7 +77,7 @@ public class ModuleVisitor extends ProducingClassVisitor {
 
     private void generateConfigureInjectorMethod() {
         System.out.println("Generating configureInjector");
-        final MethodVisitor methodVisitor = cv.visitMethod(ACC_PUBLIC | ACC_SYNTHETIC,
+        final MethodVisitor methodVisitor = cv.visitMethod(ACC_PUBLIC,
                 "configureInjector",
                 Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(LightsaberInjector.class)),
                 null,
@@ -102,10 +103,11 @@ public class ModuleVisitor extends ProducingClassVisitor {
         methodVisitor.visitTypeInsn(NEW, providerType.getInternalName());
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitVarInsn(ALOAD, 1);
         methodVisitor.visitMethodInsn(INVOKESPECIAL,
                 providerType.getInternalName(),
                 "<init>",
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getObjectType(className)),
+                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getObjectType(className), Type.getType(Injector.class)),
                 false);
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
                 Type.getInternalName(LightsaberInjector.class),
