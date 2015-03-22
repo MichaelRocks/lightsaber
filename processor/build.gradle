@@ -16,6 +16,7 @@ dependencies {
 
     compile "com.beust:jcommander:$jcommanderVersion"
     compile "org.ow2.asm:asm:$asmVersion"
+    compile "org.apache.commons:commons-lang3:$commonsLangVersion"
     compile "commons-io:commons-io:$commonsIoVersion"
     compile "org.apache.commons:commons-collections4:$commonsCollectionsVersion"
 
