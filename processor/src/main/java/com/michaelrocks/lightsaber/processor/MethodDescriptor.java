@@ -18,7 +18,7 @@ package com.michaelrocks.lightsaber.processor;
 
 import org.objectweb.asm.Type;
 
-class MethodDescriptor {
+public class MethodDescriptor {
     private static final String CONSTRUCTOR_NAME = "<init>";
 
     private final String name;

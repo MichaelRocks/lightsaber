@@ -18,7 +18,7 @@ package com.michaelrocks.lightsaber.processor;
 
 import org.objectweb.asm.Type;
 
-class FieldDescriptor {
+public class FieldDescriptor {
     private final String name;
     private final Type type;
 
