@@ -119,8 +119,8 @@ public class ModuleVisitor extends ProducingClassVisitor {
     private void generateProviderClass(final Type providerType,
             final MethodDescriptor providerMethodDescriptor) {
         System.out.println("Generating provider " + providerType.getInternalName());
-        final ProviderClassGenerator generator = new ProviderClassGenerator(providerType, Type.getObjectType(className),
-                providerMethodDescriptor.getName(), providerMethodDescriptor.getType());
+        final ProviderClassGenerator generator =
+                new ProviderClassGenerator(providerType, Type.getObjectType(className), providerMethodDescriptor);
         final byte[] providerClassData = generator.generate();
         produceClass(providerType.getInternalName(), providerClassData);
     }

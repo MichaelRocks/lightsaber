@@ -35,15 +35,13 @@ public class ProviderClassGenerator {
 
     private final Type providerType;
     private final Type moduleType;
-    private final String providerMethodName;
-    private final Type providerMethodType;
+    private final MethodDescriptor providerMethodDescriptor;
 
-    public ProviderClassGenerator(final Type providerType, final Type moduleType, final String providerMethodName,
-            final Type providerMethodType) {
+    public ProviderClassGenerator(final Type providerType, final Type moduleType,
+            final MethodDescriptor providerMethodDescriptor) {
         this.providerType = providerType;
         this.moduleType = moduleType;
-        this.providerMethodName = providerMethodName;
-        this.providerMethodType = providerMethodType;
+        this.providerMethodDescriptor = providerMethodDescriptor;
     }
 
     public byte[] generate() {
@@ -134,8 +132,8 @@ public class ProviderClassGenerator {
         methodVisitor.visitMethodInsn(
                 INVOKEVIRTUAL,
                 moduleType.getInternalName(),
-                providerMethodName,
-                providerMethodType.getDescriptor(),
+                providerMethodDescriptor.getName(),
+                providerMethodDescriptor.getType().getDescriptor(),
                 false);
         methodVisitor.visitInsn(ARETURN);
         methodVisitor.visitMaxs(0, 0);
@@ -143,7 +141,7 @@ public class ProviderClassGenerator {
     }
 
     private void generateProvideMethodArguments(final MethodVisitor methodVisitor) {
-        for (final Type argumentType : providerMethodType.getArgumentTypes()) {
+        for (final Type argumentType : providerMethodDescriptor.getType().getArgumentTypes()) {
             generateProviderMethodArgument(methodVisitor, argumentType);
         }
     }
