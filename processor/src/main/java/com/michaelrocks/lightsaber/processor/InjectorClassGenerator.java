@@ -26,7 +26,6 @@ import java.util.List;
 import static org.objectweb.asm.Opcodes.*;
 
 public class InjectorClassGenerator {
-    private static final String CONSTRUCTOR_NAME = "<init>";
     private static final String INJECT_MEMBERS_METHOD_NAME = "injectMembers";
     private static final String GET_INSTANCE_METHOD_NAME = "getInstance";
 
@@ -59,10 +58,11 @@ public class InjectorClassGenerator {
     }
 
     private void generateConstructor(final ClassWriter classWriter) {
+        final MethodDescriptor defaultConstructor = MethodDescriptor.forConstructor();
         final MethodVisitor methodVisitor = classWriter.visitMethod(
                 0,
-                CONSTRUCTOR_NAME,
-                Type.getMethodDescriptor(Type.VOID_TYPE),
+                defaultConstructor.getName(),
+                defaultConstructor.getType().getDescriptor(),
                 null,
                 null);
         methodVisitor.visitCode();
@@ -70,8 +70,8 @@ public class InjectorClassGenerator {
         methodVisitor.visitMethodInsn(
                 INVOKESPECIAL,
                 Type.getInternalName(Object.class),
-                CONSTRUCTOR_NAME,
-                Type.getMethodDescriptor(Type.VOID_TYPE),
+                defaultConstructor.getName(),
+                defaultConstructor.getType().getDescriptor(),
                 false);
         methodVisitor.visitInsn(RETURN);
         methodVisitor.visitMaxs(0, 0);

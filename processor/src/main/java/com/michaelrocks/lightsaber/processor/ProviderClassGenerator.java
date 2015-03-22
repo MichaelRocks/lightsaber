@@ -29,7 +29,6 @@ import static org.objectweb.asm.Opcodes.*;
 public class ProviderClassGenerator {
     private static final String MODULE_FIELD_NAME = "module";
     private static final String INJECTOR_FIELD_NAME = "injector";
-    private static final String CONSTRUCTOR_NAME = "<init>";
     private static final String GET_METHOD_NAME = "get";
     private static final String GET_PROVIDER_METHOD_NAME = "getProvider";
 
@@ -81,19 +80,22 @@ public class ProviderClassGenerator {
     }
 
     private void generateConstructor(final ClassWriter classWriter) {
+        final MethodDescriptor providerConstructor =
+                MethodDescriptor.forConstructor(moduleType, Type.getType(Injector.class));
         final MethodVisitor methodVisitor = classWriter.visitMethod(
                 0,
-                CONSTRUCTOR_NAME,
-                Type.getMethodDescriptor(Type.VOID_TYPE, moduleType, Type.getType(Injector.class)),
+                providerConstructor.getName(),
+                providerConstructor.getType().getDescriptor(),
                 null,
                 null);
         methodVisitor.visitCode();
         methodVisitor.visitVarInsn(ALOAD, 0);
+        final MethodDescriptor objectConstructor = MethodDescriptor.forConstructor();
         methodVisitor.visitMethodInsn(
                 INVOKESPECIAL,
                 Type.getInternalName(Object.class),
-                CONSTRUCTOR_NAME,
-                Type.getMethodDescriptor(Type.VOID_TYPE),
+                objectConstructor.getName(),
+                objectConstructor.getType().getDescriptor(),
                 false);
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitVarInsn(ALOAD, 1);
