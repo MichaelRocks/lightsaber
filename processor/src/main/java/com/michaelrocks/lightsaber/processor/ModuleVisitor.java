@@ -33,7 +33,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class ModuleVisitor extends ProducingClassVisitor {
     private String className;
-    private final List<ProviderMethodDescriptor> providerMethods = new ArrayList<>();
+    private final List<MethodDescriptor> providerMethods = new ArrayList<>();
 
     public ModuleVisitor(final ClassVisitor classVisitor, final ClassProducer classProducer) {
         super(classVisitor, classProducer);
@@ -60,7 +60,7 @@ public class ModuleVisitor extends ProducingClassVisitor {
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 if (Type.getDescriptor(Provides.class).equals(desc)) {
                     final Type methodType = Type.getMethodType(methodDesc);
-                    final ProviderMethodDescriptor descriptor = new ProviderMethodDescriptor(methodName, methodType);
+                    final MethodDescriptor descriptor = new MethodDescriptor(methodName, methodType);
                     providerMethods.add(descriptor);
                 }
 
@@ -84,7 +84,7 @@ public class ModuleVisitor extends ProducingClassVisitor {
                 null);
         methodVisitor.visitCode();
         for (int i = 0; i < providerMethods.size(); ++i) {
-            final ProviderMethodDescriptor descriptor = providerMethods.get(i);
+            final MethodDescriptor descriptor = providerMethods.get(i);
             generateRegisterProviderInvocation(methodVisitor, descriptor, i);
         }
         methodVisitor.visitInsn(RETURN);
@@ -93,13 +93,13 @@ public class ModuleVisitor extends ProducingClassVisitor {
     }
 
     private void generateRegisterProviderInvocation(final MethodVisitor methodVisitor,
-            final ProviderMethodDescriptor descriptor, final int invocationIndex) {
-        System.out.println("Generating invocation for method " + descriptor.name);
+            final MethodDescriptor descriptor, final int invocationIndex) {
+        System.out.println("Generating invocation for method " + descriptor.getName());
         final Type providerType = Type.getObjectType(className + "$$Provider$$" + (invocationIndex + 1));
         generateProviderClass(providerType, descriptor);
 
         methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitLdcInsn(descriptor.type.getReturnType());
+        methodVisitor.visitLdcInsn(descriptor.getType().getReturnType());
         methodVisitor.visitTypeInsn(NEW, providerType.getInternalName());
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ALOAD, 0);
@@ -117,21 +117,11 @@ public class ModuleVisitor extends ProducingClassVisitor {
     }
 
     private void generateProviderClass(final Type providerType,
-            final ProviderMethodDescriptor providerMethodDescriptor) {
+            final MethodDescriptor providerMethodDescriptor) {
         System.out.println("Generating provider " + providerType.getInternalName());
         final ProviderClassGenerator generator = new ProviderClassGenerator(providerType, Type.getObjectType(className),
-                providerMethodDescriptor.name, providerMethodDescriptor.type);
+                providerMethodDescriptor.getName(), providerMethodDescriptor.getType());
         final byte[] providerClassData = generator.generate();
         produceClass(providerType.getInternalName(), providerClassData);
-    }
-
-    private class ProviderMethodDescriptor {
-        public final String name;
-        public final Type type;
-
-        public ProviderMethodDescriptor(final String name, final Type type) {
-            this.name = name;
-            this.type = type;
-        }
     }
 }
