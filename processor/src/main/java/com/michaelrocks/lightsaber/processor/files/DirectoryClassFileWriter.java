@@ -47,6 +47,6 @@ public class DirectoryClassFileWriter extends ClassFileWriter {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
     }
 }

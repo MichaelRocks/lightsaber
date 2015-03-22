@@ -59,6 +59,6 @@ public class DirectoryClassFileReader extends ClassFileReader<File> {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
     }
 }

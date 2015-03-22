@@ -63,7 +63,7 @@ public class JarClassFileReader extends ClassFileReader<JarEntry> {
     }
 
     @Override
-    public void close() throws Exception {
-        jarFile.close();
+    public void close() {
+        IOUtils.closeQuietly(jarFile);
     }
 }

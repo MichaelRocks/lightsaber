@@ -16,6 +16,8 @@
 
 package com.michaelrocks.lightsaber.processor.files;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,7 +48,7 @@ public class JarClassFileWriter extends ClassFileWriter {
     }
 
     @Override
-    public void close() throws Exception {
-        stream.close();
+    public void close() {
+        IOUtils.closeQuietly(stream);
     }
 }
