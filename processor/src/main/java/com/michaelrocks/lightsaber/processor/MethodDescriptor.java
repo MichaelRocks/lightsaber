@@ -37,6 +37,14 @@ public class MethodDescriptor {
         return new MethodDescriptor(CONSTRUCTOR_NAME, Type.getMethodType(Type.VOID_TYPE, argumentTypes));
     }
 
+    public static boolean isConstructor(final String methodName) {
+        return CONSTRUCTOR_NAME.equals(methodName);
+    }
+
+    public static boolean isDefaultConstructor(final String methodName, final String methodDesc) {
+        return isConstructor(methodName) && Type.getMethodDescriptor(Type.VOID_TYPE).equals(methodDesc);
+    }
+
     public String getName() {
         return name;
     }
