@@ -25,6 +25,9 @@ public class LightsaberParameters {
     @Parameter(names = "--classes", description = "Classes directory to process")
     public String classes;
 
+    @Parameter(names = { "-v", "--verbose" }, description = "Use verbose output")
+    public boolean verbose = false;
+
     @Parameter(names = "--stacktrace", description = "Print stack traces")
     public boolean printStacktrace = false;
 }
