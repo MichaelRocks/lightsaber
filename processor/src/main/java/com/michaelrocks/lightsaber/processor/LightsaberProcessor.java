@@ -18,11 +18,17 @@ package com.michaelrocks.lightsaber.processor;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.michaelrocks.lightsaber.processor.files.*;
+import com.michaelrocks.lightsaber.processor.files.ClassFileReader;
+import com.michaelrocks.lightsaber.processor.files.ClassFileWriter;
+import com.michaelrocks.lightsaber.processor.files.DirectoryClassFileReader;
+import com.michaelrocks.lightsaber.processor.files.DirectoryClassFileWriter;
+import com.michaelrocks.lightsaber.processor.files.JarClassFileReader;
+import com.michaelrocks.lightsaber.processor.files.JarClassFileWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
@@ -75,11 +81,11 @@ public class LightsaberProcessor {
     private void processJarFileWithCopy(final File file) throws ProcessingException {
         final File lightsaberCopy = composeCopyName(file, "lightsabered");
         final File originalCopy = composeCopyName(file, "original");
-        try {
-            final ClassFileReader<?> classFileReader = new JarClassFileReader(file);
-            final ClassFileWriter classFileWriter = new JarClassFileWriter(lightsaberCopy);
-            final InjectionClassFileVisitor classFileVisitor = new InjectionClassFileVisitor(classFileWriter);
-            classFileReader.accept(classFileVisitor);
+        try (
+                final ClassFileReader<?> classFileReader = new JarClassFileReader(file);
+                final ClassFileWriter classFileWriter = new JarClassFileWriter(lightsaberCopy)
+        ) {
+            processClassFiles(classFileReader, classFileWriter);
             Files.move(file.toPath(), originalCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
             Files.move(lightsaberCopy.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
         } catch (final Exception exception) {
@@ -96,10 +102,17 @@ public class LightsaberProcessor {
             FileUtils.deleteDirectory(lightsaberCopy);
             // noinspection ResultOfMethodCallIgnored
             lightsaberCopy.mkdirs();
+        } catch (final Exception exception) {
+            // noinspection ResultOfMethodCallIgnored
+            FileUtils.deleteQuietly(lightsaberCopy);
+            throw new ProcessingException(exception);
+        }
+
+        try (
             final ClassFileReader<?> classFileReader = new DirectoryClassFileReader(directory);
-            final ClassFileWriter classFileWriter = new DirectoryClassFileWriter(lightsaberCopy);
-            final InjectionClassFileVisitor classFileVisitor = new InjectionClassFileVisitor(classFileWriter);
-            classFileReader.accept(classFileVisitor);
+            final ClassFileWriter classFileWriter = new DirectoryClassFileWriter(lightsaberCopy)
+        ) {
+            processClassFiles(classFileReader, classFileWriter);
             FileUtils.deleteQuietly(originalCopy);
             Files.move(directory.toPath(), originalCopy.toPath());
             Files.move(lightsaberCopy.toPath(), directory.toPath());
@@ -116,5 +129,11 @@ public class LightsaberProcessor {
         final String fileName = FilenameUtils.getBaseName(fileNameWithExtension);
         final String extension = FilenameUtils.getExtension(fileNameWithExtension);
         return new File(parentFile, fileName + '-' + copyName + extension);
+    }
+
+    private void processClassFiles(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter)
+            throws IOException {
+        final InjectionClassFileVisitor classFileVisitor = new InjectionClassFileVisitor(classFileWriter);
+        classFileReader.accept(classFileVisitor);
     }
 }
