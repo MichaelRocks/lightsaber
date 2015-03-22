@@ -16,7 +16,7 @@
 
 package com.michaelrocks.lightsaber.processor;
 
-import com.michaelrocks.lightsaber.processor.files.ClassFileVisitor;
+import com.michaelrocks.lightsaber.processor.io.ClassFileVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 

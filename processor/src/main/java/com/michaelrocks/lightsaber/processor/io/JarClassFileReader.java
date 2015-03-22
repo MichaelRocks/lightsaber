@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.michaelrocks.lightsaber.processor.files;
+package com.michaelrocks.lightsaber.processor.io;
 
 import com.michaelrocks.lightsaber.processor.ProcessingException;
 import org.apache.commons.collections4.iterators.EnumerationIterator;

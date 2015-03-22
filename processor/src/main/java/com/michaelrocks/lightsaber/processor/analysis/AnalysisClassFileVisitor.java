@@ -17,7 +17,7 @@
 package com.michaelrocks.lightsaber.processor.analysis;
 
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.files.ClassFileVisitor;
+import com.michaelrocks.lightsaber.processor.io.ClassFileVisitor;
 import org.objectweb.asm.ClassReader;
 
 import java.io.IOException;

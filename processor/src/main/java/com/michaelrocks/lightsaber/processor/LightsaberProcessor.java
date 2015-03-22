@@ -21,12 +21,12 @@ import com.beust.jcommander.ParameterException;
 import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.analysis.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.analysis.ModuleDescriptor;
-import com.michaelrocks.lightsaber.processor.files.ClassFileReader;
-import com.michaelrocks.lightsaber.processor.files.ClassFileWriter;
-import com.michaelrocks.lightsaber.processor.files.DirectoryClassFileReader;
-import com.michaelrocks.lightsaber.processor.files.DirectoryClassFileWriter;
-import com.michaelrocks.lightsaber.processor.files.JarClassFileReader;
-import com.michaelrocks.lightsaber.processor.files.JarClassFileWriter;
+import com.michaelrocks.lightsaber.processor.io.ClassFileReader;
+import com.michaelrocks.lightsaber.processor.io.ClassFileWriter;
+import com.michaelrocks.lightsaber.processor.io.DirectoryClassFileReader;
+import com.michaelrocks.lightsaber.processor.io.DirectoryClassFileWriter;
+import com.michaelrocks.lightsaber.processor.io.JarClassFileReader;
+import com.michaelrocks.lightsaber.processor.io.JarClassFileWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 

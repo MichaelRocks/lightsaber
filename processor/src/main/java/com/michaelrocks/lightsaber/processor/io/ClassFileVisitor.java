@@ -14,31 +14,38 @@
  * limitations under the License.
  */
 
-package com.michaelrocks.lightsaber.processor.files;
+package com.michaelrocks.lightsaber.processor.io;
 
 import java.io.IOException;
 
-public abstract class ClassFileWriter extends ClassFileVisitor implements AutoCloseable {
-    public ClassFileWriter() {
-        super(null);
+public class ClassFileVisitor {
+    protected ClassFileVisitor classFileVisitor;
+
+    public ClassFileVisitor(final ClassFileVisitor classFileVisitor) {
+        this.classFileVisitor = classFileVisitor;
     }
 
-    @Override
-    public void visitClassFile(final String path, final byte[] classData) throws IOException {
-        writeFile(path, classData);
+    public void visitClassFile(final String path, final byte[] classData)  throws IOException {
+        if (classFileVisitor != null) {
+            classFileVisitor.visitClassFile(path, classData);
+        }
     }
 
-    @Override
     public void visitOtherFile(final String path, final byte[] fileData) throws IOException {
-        writeFile(path, fileData);
+        if (classFileVisitor != null) {
+            classFileVisitor.visitOtherFile(path, fileData);
+        }
     }
 
-    @Override
     public void visitDirectory(final String path) throws IOException {
-        createDirectory(path);
+        if (classFileVisitor != null) {
+            classFileVisitor.visitDirectory(path);
+        }
     }
 
-    protected abstract void writeFile(String path, byte[] fileData) throws IOException;
-
-    protected abstract void createDirectory(String path) throws IOException;
+    public void visitEnd() throws IOException {
+        if (classFileVisitor != null) {
+            classFileVisitor.visitEnd();
+        }
+    }
 }
