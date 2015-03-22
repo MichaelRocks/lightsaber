@@ -44,4 +44,9 @@ public class MethodDescriptor {
     public Type getType() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        return name + type;
+    }
 }
