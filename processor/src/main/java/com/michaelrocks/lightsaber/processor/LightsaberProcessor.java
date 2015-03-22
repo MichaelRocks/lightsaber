@@ -18,6 +18,9 @@ package com.michaelrocks.lightsaber.processor;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
+import com.michaelrocks.lightsaber.processor.analysis.InjectionTargetDescriptor;
+import com.michaelrocks.lightsaber.processor.analysis.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.files.ClassFileReader;
 import com.michaelrocks.lightsaber.processor.files.ClassFileWriter;
 import com.michaelrocks.lightsaber.processor.files.DirectoryClassFileReader;
@@ -31,6 +34,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.Map;
 
 public class LightsaberProcessor {
     private final LightsaberParameters parameters;
@@ -128,7 +133,58 @@ public class LightsaberProcessor {
 
     private void processClassFiles(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter)
             throws IOException {
-        final InjectionClassFileVisitor classFileVisitor = new InjectionClassFileVisitor(classFileWriter);
-        classFileReader.accept(classFileVisitor);
+        final ProcessorContext processorContext = new ProcessorContext();
+        final AnalysisClassFileVisitor analysisVisitor = new AnalysisClassFileVisitor(processorContext);
+        classFileReader.accept(analysisVisitor);
+
+        if (parameters.verbose) {
+            dumpProcessorContext(processorContext);
+        }
+
+        if (processorContext.hasErrors()) {
+            throw new ProcessingException(composeErrorMessage(processorContext));
+        }
+
+        final InjectionClassFileVisitor injectionVisitor = new InjectionClassFileVisitor(classFileWriter);
+        classFileReader.accept(injectionVisitor);
+    }
+
+    private void dumpProcessorContext(final ProcessorContext processorContext) {
+        for (final ModuleDescriptor module : processorContext.getModules()) {
+            System.out.println("Module: " + module.getModuleType());
+            for (final MethodDescriptor providerMethod : module.getProviderMethods()) {
+                System.out.println("\tProvides: " + providerMethod);
+            }
+        }
+        for (final InjectionTargetDescriptor injectableTarget : processorContext.getInjectableTargets()) {
+            System.out.println("Injectable: " + injectableTarget.getTargetType());
+            for (final FieldDescriptor injectableField : injectableTarget.getInjectableFields()) {
+                System.out.println("\tField: " + injectableField);
+            }
+            for (final MethodDescriptor injectableMethod : injectableTarget.getInjectableMethods()) {
+                System.out.println("\tMethod: " + injectableMethod);
+            }
+        }
+        for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
+            System.out.println("Providable: " + providableTarget.getTargetType());
+            for (final MethodDescriptor injectableConstructor : providableTarget.getInjectableConstructors()) {
+                System.out.println("\tConstructor: " + injectableConstructor);
+            }
+        }
+    }
+
+    private String composeErrorMessage(final ProcessorContext processorContext) {
+        final StringBuilder builder = new StringBuilder();
+        for (final Map.Entry<String, List<Exception>> entry : processorContext.getErrors().entrySet()) {
+            final String path = entry.getKey();
+            for (final Exception error : entry.getValue()) {
+                builder
+                        .append(System.lineSeparator())
+                        .append(path)
+                        .append(": ")
+                        .append(error.getMessage());
+            }
+        }
+        return builder.toString();
     }
 }
