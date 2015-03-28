@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.michaelrocks.lightsaber.processor;
+package com.michaelrocks.lightsaber.processor.injection;
 
 import com.michaelrocks.lightsaber.Injector;
+import com.michaelrocks.lightsaber.processor.MethodDescriptor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;

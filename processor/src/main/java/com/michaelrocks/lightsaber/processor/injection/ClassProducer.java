@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.michaelrocks.lightsaber.processor;
+package com.michaelrocks.lightsaber.processor.injection;
 
 public interface ClassProducer {
     void produceClass(String internalName, byte[] classData);

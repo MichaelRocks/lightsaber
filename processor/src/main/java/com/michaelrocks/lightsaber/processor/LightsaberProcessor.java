@@ -21,6 +21,7 @@ import com.beust.jcommander.ParameterException;
 import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.analysis.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.analysis.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import com.michaelrocks.lightsaber.processor.io.ClassFileWriter;
 import com.michaelrocks.lightsaber.processor.io.DirectoryClassFileReader;
