@@ -80,4 +80,28 @@ public class ProcessorContext {
     public void addProvidableTarget(final InjectionTargetDescriptor providableTarget) {
         providableTargets.add(providableTarget);
     }
+
+    public void dump() {
+        for (final ModuleDescriptor module : getModules()) {
+            System.out.println("Module: " + module.getModuleType());
+            for (final MethodDescriptor providerMethod : module.getProviderMethods()) {
+                System.out.println("\tProvides: " + providerMethod);
+            }
+        }
+        for (final InjectionTargetDescriptor injectableTarget : getInjectableTargets()) {
+            System.out.println("Injectable: " + injectableTarget.getTargetType());
+            for (final FieldDescriptor injectableField : injectableTarget.getInjectableFields()) {
+                System.out.println("\tField: " + injectableField);
+            }
+            for (final MethodDescriptor injectableMethod : injectableTarget.getInjectableMethods()) {
+                System.out.println("\tMethod: " + injectableMethod);
+            }
+        }
+        for (final InjectionTargetDescriptor providableTarget : getProvidableTargets()) {
+            System.out.println("Providable: " + providableTarget.getTargetType());
+            for (final MethodDescriptor injectableConstructor : providableTarget.getInjectableConstructors()) {
+                System.out.println("\tConstructor: " + injectableConstructor);
+            }
+        }
+    }
 }
