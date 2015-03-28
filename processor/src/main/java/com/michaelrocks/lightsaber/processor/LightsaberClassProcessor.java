@@ -49,10 +49,7 @@ public class LightsaberClassProcessor {
     private void performAnalysis() throws IOException {
         final AnalysisClassFileVisitor analysisVisitor = new AnalysisClassFileVisitor(processorContext);
         classFileReader.accept(analysisVisitor);
-
-        if (processorContext.hasErrors()) {
-            throw new ProcessingException(composeErrorMessage());
-        }
+        checkErrors();
     }
 
     private void checkDependenciesAreResolved() {
@@ -76,6 +73,12 @@ public class LightsaberClassProcessor {
 
         final InjectionClassFileVisitor injectionVisitor = new InjectionClassFileVisitor(classFileWriter);
         classFileReader.accept(injectionVisitor);
+    }
+
+    private void checkErrors() throws ProcessingException {
+        if (processorContext.hasErrors()) {
+            throw new ProcessingException(composeErrorMessage());
+        }
     }
 
     private String composeErrorMessage() {
