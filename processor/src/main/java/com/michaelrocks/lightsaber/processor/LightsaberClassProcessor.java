@@ -20,8 +20,10 @@ import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import com.michaelrocks.lightsaber.processor.io.ClassFileWriter;
+import org.objectweb.asm.Type;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -52,8 +54,14 @@ public class LightsaberClassProcessor {
         checkErrors();
     }
 
-    private void checkDependenciesAreResolved() {
-        // TODO: Implement.
+    private void checkDependenciesAreResolved() throws ProcessingException {
+        final DependencyGraph dependencyGraph = new DependencyGraph(processorContext);
+        final Collection<Type> unresolvedDependencies = dependencyGraph.getUnresolvedDependencies();
+        for (final Type unresolvedDependency : unresolvedDependencies) {
+            processorContext.reportError(
+                    new ProcessingException("Unresolved dependency: " + unresolvedDependency));
+        }
+        checkErrors();
     }
 
     private void generateProviders() {
