@@ -53,6 +53,14 @@ public class MethodDescriptor {
         return type;
     }
 
+    public boolean isConstructior() {
+        return isConstructor(name);
+    }
+
+    public boolean isDefaultConstructor() {
+        return isDefaultConstructor(name, type.getDescriptor());
+    }
+
     @Override
     public String toString() {
         return name + type;
