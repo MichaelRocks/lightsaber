@@ -86,7 +86,7 @@ public class InjectionTargetDescriptor {
 
         public InjectionTargetDescriptor build() {
             if (injectableConstructors.isEmpty() && hasDefaultConstructor) {
-                injectableConstructors.add(MethodDescriptor.forConstructor(Type.VOID_TYPE));
+                injectableConstructors.add(MethodDescriptor.forConstructor());
             }
 
             return new InjectionTargetDescriptor(
