@@ -57,6 +57,8 @@ public class MethodDescriptor {
         return type;
     }
 
+    public String getDescriptor() { return type.getDescriptor(); }
+
     public Type getReturnType() {
         return type.getReturnType();
     }
