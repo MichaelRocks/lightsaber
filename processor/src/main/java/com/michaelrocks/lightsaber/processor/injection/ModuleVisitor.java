@@ -22,7 +22,6 @@ import com.michaelrocks.lightsaber.internal.InternalModule;
 import com.michaelrocks.lightsaber.internal.LightsaberInjector;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
-import com.michaelrocks.lightsaber.processor.generation.ProviderClassGenerator;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -99,7 +98,6 @@ public class ModuleVisitor extends ProducingClassVisitor {
             final MethodDescriptor descriptor, final int invocationIndex) {
         System.out.println("Generating invocation for method " + descriptor.getName());
         final Type providerType = Type.getObjectType(className + "$$Provider$$" + (invocationIndex + 1));
-        generateProviderClass(providerType, descriptor);
 
         methodVisitor.visitVarInsn(ALOAD, 1);
         methodVisitor.visitLdcInsn(descriptor.getType().getReturnType());
@@ -117,14 +115,5 @@ public class ModuleVisitor extends ProducingClassVisitor {
                 "registerProvider",
                 Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class), Type.getType(Provider.class)),
                 false);
-    }
-
-    private void generateProviderClass(final Type providerType,
-            final MethodDescriptor providerMethodDescriptor) {
-        System.out.println("Generating provider " + providerType.getInternalName());
-        final ProviderClassGenerator generator =
-                new ProviderClassGenerator(providerType, Type.getObjectType(className), providerMethodDescriptor);
-        final byte[] providerClassData = generator.generate();
-        produceClass(providerType.getInternalName(), providerClassData);
     }
 }

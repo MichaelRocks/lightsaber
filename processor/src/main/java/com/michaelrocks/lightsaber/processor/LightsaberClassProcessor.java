@@ -21,6 +21,7 @@ import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import com.michaelrocks.lightsaber.processor.generation.GlobalModuleGenerator;
 import com.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
+import com.michaelrocks.lightsaber.processor.generation.ProviderGenerator;
 import com.michaelrocks.lightsaber.processor.graph.CycleSearcher;
 import com.michaelrocks.lightsaber.processor.graph.DependencyGraph;
 import com.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher;
@@ -91,8 +92,11 @@ public class LightsaberClassProcessor {
         checkErrors();
     }
 
-    private void generateProviders() {
-        // TODO: Implement.
+    private void generateProviders() throws ProcessingException {
+        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
+        final ProviderGenerator providerGenerator = new ProviderGenerator(classProducer, processorContext);
+        providerGenerator.generateProviders();
+        checkErrors();
     }
 
     private void patchInjectorCreation() {
