@@ -40,6 +40,14 @@ public class DependencyGraph {
         typeGraph = new DependencyGraphBuilder(processorContext).build();
     }
 
+    public Collection<Type> getTypes() {
+        return typeGraph.keySet();
+    }
+
+    public Collection<Type> getTypeDependencies(final Type type) {
+        return typeGraph.get(type);
+    }
+
     public Collection<Type> getUnresolvedDependencies() {
         final UnresolvedDependenciesSearcher searcher = new UnresolvedDependenciesSearcher(typeGraph);
         return searcher.findUnresolvedDependencies();
