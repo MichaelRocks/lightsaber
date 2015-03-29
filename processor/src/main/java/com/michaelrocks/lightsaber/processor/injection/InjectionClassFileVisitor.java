@@ -65,7 +65,7 @@ public class InjectionClassFileVisitor extends ClassFileVisitor {
         @Override
         public void produceClass(final String internalName, final byte[] classData) {
             try {
-                visitClassFile(internalName + ".class", classData);
+                InjectionClassFileVisitor.super.visitClassFile(internalName + ".class", classData);
             } catch (final IOException exception) {
                 final String message = String.format("Failed to produce class with %d bytes", classData.length);
                 errors.add(new ProcessingException(new File(internalName), message, exception));
