@@ -17,6 +17,10 @@
 package com.michaelrocks.lightsaber.processor;
 
 import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
+import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
+import com.michaelrocks.lightsaber.processor.generation.GlobalModuleGenerator;
+import com.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
 import com.michaelrocks.lightsaber.processor.graph.CycleSearcher;
 import com.michaelrocks.lightsaber.processor.graph.DependencyGraph;
 import com.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher;
@@ -45,8 +49,8 @@ public class LightsaberClassProcessor {
         performAnalysis();
         processorContext.dump();
         validateDependencyGraph();
-        generateProviders();
         generateGlobalModule();
+        generateProviders();
         patchInjectorCreation();
         patchInjection();
     }
@@ -78,11 +82,16 @@ public class LightsaberClassProcessor {
         checkErrors();
     }
 
-    private void generateProviders() {
-        // TODO: Implement.
+    private void generateGlobalModule() throws ProcessingException {
+        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
+        final GlobalModuleGenerator globalModuleGenerator = new GlobalModuleGenerator(classProducer, processorContext);
+        globalModuleGenerator.generateGlobalModule();
+        final ModuleDescriptor globalModule = globalModuleGenerator.getGlobalModuleDescriptor();
+        processorContext.addModule(globalModule);
+        checkErrors();
     }
 
-    private void generateGlobalModule() {
+    private void generateProviders() {
         // TODO: Implement.
     }
 
