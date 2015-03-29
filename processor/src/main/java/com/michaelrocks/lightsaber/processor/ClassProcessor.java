@@ -35,13 +35,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class LightsaberClassProcessor {
+public class ClassProcessor {
     private final ClassFileReader classFileReader;
     private final ClassFileWriter classFileWriter;
 
     private final ProcessorContext processorContext = new ProcessorContext();
 
-    public LightsaberClassProcessor(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter) {
+    public ClassProcessor(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter) {
         this.classFileWriter = classFileWriter;
         this.classFileReader = classFileReader;
     }
