@@ -17,6 +17,7 @@
 package com.michaelrocks.lightsaber.processor;
 
 import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
+import com.michaelrocks.lightsaber.processor.graph.DependencyGraph;
 import com.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import com.michaelrocks.lightsaber.processor.io.ClassFileWriter;

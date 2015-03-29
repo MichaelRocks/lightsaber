@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package com.michaelrocks.lightsaber.processor;
+package com.michaelrocks.lightsaber.processor.graph;
 
+import com.michaelrocks.lightsaber.processor.MethodDescriptor;
+import com.michaelrocks.lightsaber.processor.ProcessingException;
+import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.analysis.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.analysis.ModuleDescriptor;
 import org.objectweb.asm.Type;
