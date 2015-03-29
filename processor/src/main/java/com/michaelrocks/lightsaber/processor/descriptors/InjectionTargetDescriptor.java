@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 
-package com.michaelrocks.lightsaber.processor.analysis;
+package com.michaelrocks.lightsaber.processor.descriptors;
 
-import com.michaelrocks.lightsaber.processor.FieldDescriptor;
-import com.michaelrocks.lightsaber.processor.MethodDescriptor;
 import org.objectweb.asm.Type;
 
 import java.util.ArrayList;

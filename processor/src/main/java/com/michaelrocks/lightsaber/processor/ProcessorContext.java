@@ -16,8 +16,10 @@
 
 package com.michaelrocks.lightsaber.processor;
 
-import com.michaelrocks.lightsaber.processor.analysis.InjectionTargetDescriptor;
-import com.michaelrocks.lightsaber.processor.analysis.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collections;

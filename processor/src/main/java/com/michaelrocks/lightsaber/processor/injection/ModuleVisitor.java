@@ -20,7 +20,7 @@ import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.Provides;
 import com.michaelrocks.lightsaber.internal.InternalModule;
 import com.michaelrocks.lightsaber.internal.LightsaberInjector;
-import com.michaelrocks.lightsaber.processor.MethodDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import com.michaelrocks.lightsaber.processor.generation.ProviderClassGenerator;
 import org.objectweb.asm.AnnotationVisitor;

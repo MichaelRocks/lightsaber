@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.michaelrocks.lightsaber.processor;
+package com.michaelrocks.lightsaber.processor.descriptors;
 
 import org.objectweb.asm.Type;
 

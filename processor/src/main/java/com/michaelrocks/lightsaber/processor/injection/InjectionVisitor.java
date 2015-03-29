@@ -17,7 +17,7 @@
 package com.michaelrocks.lightsaber.processor.injection;
 
 import com.michaelrocks.lightsaber.Injector;
-import com.michaelrocks.lightsaber.processor.FieldDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import com.michaelrocks.lightsaber.processor.generation.InjectorClassGenerator;
 import org.objectweb.asm.AnnotationVisitor;

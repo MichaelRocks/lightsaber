@@ -17,9 +17,10 @@
 package com.michaelrocks.lightsaber.processor.analysis;
 
 import com.michaelrocks.lightsaber.Provides;
-import com.michaelrocks.lightsaber.processor.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
+import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;

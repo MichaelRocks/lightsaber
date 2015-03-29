@@ -17,8 +17,8 @@
 package com.michaelrocks.lightsaber.processor.generation;
 
 import com.michaelrocks.lightsaber.Injector;
-import com.michaelrocks.lightsaber.processor.FieldDescriptor;
-import com.michaelrocks.lightsaber.processor.MethodDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;

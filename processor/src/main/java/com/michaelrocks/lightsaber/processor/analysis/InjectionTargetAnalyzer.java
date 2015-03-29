@@ -16,10 +16,11 @@
 
 package com.michaelrocks.lightsaber.processor.analysis;
 
-import com.michaelrocks.lightsaber.processor.FieldDescriptor;
-import com.michaelrocks.lightsaber.processor.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
+import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;

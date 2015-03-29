@@ -16,11 +16,11 @@
 
 package com.michaelrocks.lightsaber.processor.graph;
 
-import com.michaelrocks.lightsaber.processor.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.ProcessingException;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.analysis.InjectionTargetDescriptor;
-import com.michaelrocks.lightsaber.processor.analysis.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import org.objectweb.asm.Type;
 
 import java.util.Arrays;
