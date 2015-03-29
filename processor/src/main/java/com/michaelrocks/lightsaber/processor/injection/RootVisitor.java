@@ -17,6 +17,7 @@
 package com.michaelrocks.lightsaber.processor.injection;
 
 import com.michaelrocks.lightsaber.Module;
+import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Type;
 
