@@ -41,7 +41,7 @@ public class LightsaberClassProcessor {
     public void processClasses() throws IOException {
         performAnalysis();
         processorContext.dump();
-        checkDependenciesAreResolved();
+        validateDependencyGraph();
         generateProviders();
         generateGlobalModule();
         patchInjectorCreation();
@@ -54,13 +54,21 @@ public class LightsaberClassProcessor {
         checkErrors();
     }
 
-    private void checkDependenciesAreResolved() throws ProcessingException {
+    private void validateDependencyGraph() throws ProcessingException {
         final DependencyGraph dependencyGraph = new DependencyGraph(processorContext);
+
         final Collection<Type> unresolvedDependencies = dependencyGraph.getUnresolvedDependencies();
         for (final Type unresolvedDependency : unresolvedDependencies) {
             processorContext.reportError(
                     new ProcessingException("Unresolved dependency: " + unresolvedDependency));
         }
+
+        final Collection<Type> cycles = dependencyGraph.getCycles();
+        for (final Type cycle : cycles) {
+            processorContext.reportError(
+                    new ProcessingException("Cycled dependency: " + cycle));
+        }
+
         checkErrors();
     }
 
