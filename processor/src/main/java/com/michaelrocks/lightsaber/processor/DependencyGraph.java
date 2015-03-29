@@ -38,11 +38,11 @@ public class DependencyGraph {
     }
 
     public Collection<Type> getUnresolvedDependencies() {
-        final UnresolvedDependenciesSearcher searcher = new UnresolvedDependenciesSearcher();
+        final UnresolvedDependenciesSearcher searcher = new UnresolvedDependenciesSearcher(typeGraph);
         return searcher.findUnresolvedDependencies();
     }
 
-    private final class DependencyGraphBuilder {
+    private static final class DependencyGraphBuilder {
         private final ProcessorContext processorContext;
         private final Map<Type, List<Type>> typeGraph = new HashMap<>();
 
@@ -81,12 +81,17 @@ public class DependencyGraph {
         }
     }
 
-    private final class UnresolvedDependenciesSearcher {
+    private static final class UnresolvedDependenciesSearcher {
+        private final Map<Type, List<Type>> graph;
         private final Set<Type> visitedTypes = new HashSet<>();
         private final List<Type> unresolvedTypes = new ArrayList<>();
 
+        private UnresolvedDependenciesSearcher(final Map<Type, List<Type>> graph) {
+            this.graph = graph;
+        }
+
         List<Type> findUnresolvedDependencies() {
-            for (final Type type : typeGraph.keySet()) {
+            for (final Type type : graph.keySet()) {
                 traverse(type);
             }
             return Collections.unmodifiableList(unresolvedTypes);
@@ -94,7 +99,7 @@ public class DependencyGraph {
 
         private void traverse(final Type type) {
             if (visitedTypes.add(type)) {
-                final List<Type> dependencies = typeGraph.get(type);
+                final List<Type> dependencies = graph.get(type);
                 if (dependencies == null) {
                     unresolvedTypes.add(type);
                 } else {
