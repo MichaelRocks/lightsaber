@@ -42,6 +42,11 @@ public class DependencyGraph {
         return searcher.findUnresolvedDependencies();
     }
 
+    public Collection<Type> getCycles() {
+        final CycleSearcher searcher = new CycleSearcher(typeGraph);
+        return searcher.findCycles();
+    }
+
     private static final class DependencyGraphBuilder {
         private final ProcessorContext processorContext;
         private final Map<Type, List<Type>> typeGraph = new HashMap<>();
@@ -90,7 +95,7 @@ public class DependencyGraph {
             this.graph = graph;
         }
 
-        List<Type> findUnresolvedDependencies() {
+        Collection<Type> findUnresolvedDependencies() {
             for (final Type type : graph.keySet()) {
                 traverse(type);
             }
@@ -108,6 +113,49 @@ public class DependencyGraph {
                     }
                 }
             }
+        }
+    }
+
+
+    private static final class CycleSearcher {
+        private final Map<Type, List<Type>> graph;
+        private final Map<Type, VertexColor> colors = new HashMap<>();
+        private final Set<Type> cycles = new HashSet<>();
+
+        private CycleSearcher(final Map<Type, List<Type>> graph) {
+            this.graph = graph;
+        }
+
+        Collection<Type> findCycles() {
+            for (final Type type : graph.keySet()) {
+                traverse(type);
+            }
+            return Collections.unmodifiableSet(cycles);
+        }
+
+        private void traverse(final Type type) {
+            final VertexColor color = colors.get(type);
+            if (color == VertexColor.BLACK) {
+                return;
+            }
+
+            if (color == VertexColor.GRAY) {
+                cycles.add(type);
+                return;
+            }
+
+            colors.put(type, VertexColor.GRAY);
+            final List<Type> dependencies = graph.get(type);
+            if (dependencies != null) {
+                for (final Type dependency : dependencies) {
+                    traverse(dependency);
+                }
+            }
+            colors.put(type, VertexColor.BLACK);
+        }
+
+        private enum VertexColor {
+            GRAY, BLACK
         }
     }
 }
