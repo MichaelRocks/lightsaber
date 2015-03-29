@@ -18,6 +18,10 @@ package com.michaelrocks.lightsaber.processor.descriptors;
 
 import org.objectweb.asm.Type;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 public class MethodDescriptor {
     private static final String CONSTRUCTOR_NAME = "<init>";
 
@@ -51,6 +55,14 @@ public class MethodDescriptor {
 
     public Type getType() {
         return type;
+    }
+
+    public Type getReturnType() {
+        return type.getReturnType();
+    }
+
+    public List<Type> getArgumentTypes() {
+        return Collections.unmodifiableList(Arrays.asList(type.getArgumentTypes()));
     }
 
     public boolean isConstructior() {
