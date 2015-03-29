@@ -17,6 +17,8 @@
 package com.michaelrocks.lightsaber.processor;
 
 import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
+import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import com.michaelrocks.lightsaber.processor.generation.GlobalModuleGenerator;
@@ -36,6 +38,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ClassProcessor {
+    private static final Type GLOBAL_MODULE_TYPE = Type.getObjectType("Lightsaber$$GlobalModule");
+
     private final ClassFileReader classFileReader;
     private final ClassFileWriter classFileWriter;
 
@@ -48,6 +52,7 @@ public class ClassProcessor {
 
     public void processClasses() throws IOException {
         performAnalysis();
+        composeGlobalModule();
         processorContext.dump();
         validateDependencyGraph();
         generateGlobalModule();
@@ -60,6 +65,22 @@ public class ClassProcessor {
         final AnalysisClassFileVisitor analysisVisitor = new AnalysisClassFileVisitor(processorContext);
         classFileReader.accept(analysisVisitor);
         checkErrors();
+    }
+
+    private void composeGlobalModule() {
+        final ModuleDescriptor.Builder globalModuleBuilder = new ModuleDescriptor.Builder(GLOBAL_MODULE_TYPE);
+        for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
+            final Type providableTargetType = providableTarget.getTargetType();
+            final MethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructors().get(0);
+
+            final String providerMethodName = "provide" + providableTargetType.getInternalName().replace('/', '$');
+            final Type[] providerMethodArgumentTypes = providableTargetConstructor.getType().getArgumentTypes();
+            final MethodDescriptor providerMethod =
+                    MethodDescriptor.forMethod(providerMethodName, providableTargetType, providerMethodArgumentTypes);
+
+            globalModuleBuilder.addProviderMethod(providerMethod);
+        }
+        processorContext.setGlobalModule(globalModuleBuilder.build());
     }
 
     private void validateDependencyGraph() throws ProcessingException {
@@ -87,8 +108,6 @@ public class ClassProcessor {
         final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
         final GlobalModuleGenerator globalModuleGenerator = new GlobalModuleGenerator(classProducer, processorContext);
         globalModuleGenerator.generateGlobalModule();
-        final ModuleDescriptor globalModule = globalModuleGenerator.getGlobalModuleDescriptor();
-        processorContext.addModule(globalModule);
         checkErrors();
     }
 

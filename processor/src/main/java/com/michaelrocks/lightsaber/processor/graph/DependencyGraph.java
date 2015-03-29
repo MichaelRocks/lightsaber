@@ -18,7 +18,6 @@ package com.michaelrocks.lightsaber.processor.graph;
 
 import com.michaelrocks.lightsaber.processor.ProcessingException;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import org.objectweb.asm.Type;
@@ -60,12 +59,6 @@ public class DependencyGraph {
                     addProviderMethodToGraph(returnType, providerMethod);
                 }
             }
-
-            for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
-                final MethodDescriptor constructor = providableTarget.getInjectableConstructors().get(0);
-                addProviderMethodToGraph(providableTarget.getTargetType(), constructor);
-            }
-
             return typeGraph;
         }
 

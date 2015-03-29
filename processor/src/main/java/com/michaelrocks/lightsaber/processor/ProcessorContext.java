@@ -20,6 +20,7 @@ import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import org.apache.commons.lang3.Validate;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,6 +32,7 @@ public class ProcessorContext {
     private String classFilePath;
     private final Map<String, List<Exception>> errorsByPath = new LinkedHashMap<>();
     private final List<ModuleDescriptor> modules = new ArrayList<>();
+    private ModuleDescriptor globalModule;
     private final List<InjectionTargetDescriptor> injectableTargets = new ArrayList<>();
     private final List<InjectionTargetDescriptor> providableTargets = new ArrayList<>();
 
@@ -65,6 +67,17 @@ public class ProcessorContext {
 
     public void addModule(final ModuleDescriptor module) {
         modules.add(module);
+    }
+
+    public ModuleDescriptor getGlobalModule() {
+        return globalModule;
+    }
+
+    public void setGlobalModule(final ModuleDescriptor globalModule) {
+        Validate.isTrue(this.globalModule == null, "Global module cannot be set multiple times");
+        Validate.notNull(globalModule, "Global module cannot be set to null");
+        this.globalModule = globalModule;
+        modules.add(globalModule);
     }
 
     public List<InjectionTargetDescriptor> getInjectableTargets() {
