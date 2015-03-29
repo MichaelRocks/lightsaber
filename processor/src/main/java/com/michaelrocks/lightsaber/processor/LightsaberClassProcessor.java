@@ -17,7 +17,9 @@
 package com.michaelrocks.lightsaber.processor;
 
 import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
+import com.michaelrocks.lightsaber.processor.graph.CycleSearcher;
 import com.michaelrocks.lightsaber.processor.graph.DependencyGraph;
+import com.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher;
 import com.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import com.michaelrocks.lightsaber.processor.io.ClassFileWriter;
@@ -58,13 +60,16 @@ public class LightsaberClassProcessor {
     private void validateDependencyGraph() throws ProcessingException {
         final DependencyGraph dependencyGraph = new DependencyGraph(processorContext);
 
-        final Collection<Type> unresolvedDependencies = dependencyGraph.getUnresolvedDependencies();
+        final UnresolvedDependenciesSearcher unresolvedDependenciesSearcher =
+                new UnresolvedDependenciesSearcher(dependencyGraph);
+        final Collection<Type> unresolvedDependencies = unresolvedDependenciesSearcher.findUnresolvedDependencies();
         for (final Type unresolvedDependency : unresolvedDependencies) {
             processorContext.reportError(
                     new ProcessingException("Unresolved dependency: " + unresolvedDependency));
         }
 
-        final Collection<Type> cycles = dependencyGraph.getCycles();
+        final CycleSearcher cycleSearcher = new CycleSearcher(dependencyGraph);
+        final Collection<Type> cycles = cycleSearcher.findCycles();
         for (final Type cycle : cycles) {
             processorContext.reportError(
                     new ProcessingException("Cycled dependency: " + cycle));

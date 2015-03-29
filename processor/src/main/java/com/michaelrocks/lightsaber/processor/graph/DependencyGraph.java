@@ -23,15 +23,12 @@ import com.michaelrocks.lightsaber.processor.analysis.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.analysis.ModuleDescriptor;
 import org.objectweb.asm.Type;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class DependencyGraph {
     private final Map<Type, List<Type>> typeGraph;
@@ -46,16 +43,6 @@ public class DependencyGraph {
 
     public Collection<Type> getTypeDependencies(final Type type) {
         return typeGraph.get(type);
-    }
-
-    public Collection<Type> getUnresolvedDependencies() {
-        final UnresolvedDependenciesSearcher searcher = new UnresolvedDependenciesSearcher(typeGraph);
-        return searcher.findUnresolvedDependencies();
-    }
-
-    public Collection<Type> getCycles() {
-        final CycleSearcher searcher = new CycleSearcher(typeGraph);
-        return searcher.findCycles();
     }
 
     private static final class DependencyGraphBuilder {
@@ -97,76 +84,4 @@ public class DependencyGraph {
         }
     }
 
-    private static final class UnresolvedDependenciesSearcher {
-        private final Map<Type, List<Type>> graph;
-        private final Set<Type> visitedTypes = new HashSet<>();
-        private final List<Type> unresolvedTypes = new ArrayList<>();
-
-        private UnresolvedDependenciesSearcher(final Map<Type, List<Type>> graph) {
-            this.graph = graph;
-        }
-
-        Collection<Type> findUnresolvedDependencies() {
-            for (final Type type : graph.keySet()) {
-                traverse(type);
-            }
-            return Collections.unmodifiableList(unresolvedTypes);
-        }
-
-        private void traverse(final Type type) {
-            if (visitedTypes.add(type)) {
-                final List<Type> dependencies = graph.get(type);
-                if (dependencies == null) {
-                    unresolvedTypes.add(type);
-                } else {
-                    for (final Type dependency : dependencies) {
-                        traverse(dependency);
-                    }
-                }
-            }
-        }
-    }
-
-
-    private static final class CycleSearcher {
-        private final Map<Type, List<Type>> graph;
-        private final Map<Type, VertexColor> colors = new HashMap<>();
-        private final Set<Type> cycles = new HashSet<>();
-
-        private CycleSearcher(final Map<Type, List<Type>> graph) {
-            this.graph = graph;
-        }
-
-        Collection<Type> findCycles() {
-            for (final Type type : graph.keySet()) {
-                traverse(type);
-            }
-            return Collections.unmodifiableSet(cycles);
-        }
-
-        private void traverse(final Type type) {
-            final VertexColor color = colors.get(type);
-            if (color == VertexColor.BLACK) {
-                return;
-            }
-
-            if (color == VertexColor.GRAY) {
-                cycles.add(type);
-                return;
-            }
-
-            colors.put(type, VertexColor.GRAY);
-            final List<Type> dependencies = graph.get(type);
-            if (dependencies != null) {
-                for (final Type dependency : dependencies) {
-                    traverse(dependency);
-                }
-            }
-            colors.put(type, VertexColor.BLACK);
-        }
-
-        private enum VertexColor {
-            GRAY, BLACK
-        }
-    }
 }
