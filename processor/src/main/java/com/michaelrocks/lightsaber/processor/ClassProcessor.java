@@ -73,7 +73,7 @@ public class ClassProcessor {
             final Type providableTargetType = providableTarget.getTargetType();
             final MethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructors().get(0);
 
-            final String providerMethodName = "provide" + providableTargetType.getInternalName().replace('/', '$');
+            final String providerMethodName = "provide$" + providableTargetType.getInternalName().replace('/', '$');
             final Type[] providerMethodArgumentTypes = providableTargetConstructor.getType().getArgumentTypes();
             final MethodDescriptor providerMethod =
                     MethodDescriptor.forMethod(providerMethodName, providableTargetType, providerMethodArgumentTypes);
