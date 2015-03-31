@@ -20,6 +20,8 @@ import com.michaelrocks.lightsaber.Module;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.injection.ModuleVisitor;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -40,7 +42,8 @@ public class GlobalModuleGenerator {
         final Type globalModuleType = globalModule.getModuleType();
 
         final ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        classWriter.visit(
+        final ModuleVisitor classVisitor = new ModuleVisitor(classWriter);
+        classVisitor.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,
                 globalModuleType.getInternalName(),
@@ -48,19 +51,19 @@ public class GlobalModuleGenerator {
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(Module.class) });
 
-        generateConstructor(classWriter);
+        generateConstructor(classVisitor);
         for (final MethodDescriptor providerMethod : globalModule.getProviderMethods()) {
-            generateProviderMethod(classWriter, providerMethod);
+            generateProviderMethod(classVisitor, providerMethod);
         }
 
-        classWriter.visitEnd();
+        classVisitor.visitEnd();
         final byte[] classData = classWriter.toByteArray();
         classProducer.produceClass(globalModuleType.getInternalName(), classData);
     }
 
-    private void generateConstructor(final ClassWriter classWriter) {
+    private void generateConstructor(final ClassVisitor classVisitor) {
         final MethodDescriptor defaultConstructor = MethodDescriptor.forConstructor();
-        final MethodVisitor methodVisitor = classWriter.visitMethod(
+        final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 0,
                 defaultConstructor.getName(),
                 defaultConstructor.getType().getDescriptor(),
@@ -79,12 +82,12 @@ public class GlobalModuleGenerator {
         methodVisitor.visitEnd();
     }
 
-    private void generateProviderMethod(final ClassWriter classWriter, final MethodDescriptor providerMethod) {
+    private void generateProviderMethod(final ClassVisitor classVisitor, final MethodDescriptor providerMethod) {
         final Type providableTargetType = providerMethod.getReturnType();
         final MethodDescriptor providableTargetConstructor =
                 MethodDescriptor.forConstructor(providerMethod.getType().getArgumentTypes());
 
-        final MethodVisitor methodVisitor = classWriter.visitMethod(
+        final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 ACC_PUBLIC,
                 providerMethod.getName(),
                 providerMethod.getDescriptor(),
