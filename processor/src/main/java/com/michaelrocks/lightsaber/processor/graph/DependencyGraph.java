@@ -26,8 +26,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DependencyGraph {
     private final Map<Type, List<Type>> typeGraph;
@@ -54,20 +56,22 @@ public class DependencyGraph {
 
         Map<Type, List<Type>> build() {
             for (final ModuleDescriptor module : processorContext.getModules()) {
+                final Set<Type> providableModuleTypes = new HashSet<>();
                 for (final MethodDescriptor providerMethod : module.getProviderMethods()) {
                     final Type returnType = providerMethod.getType().getReturnType();
-                    addProviderMethodToGraph(returnType, providerMethod);
+                    if (providableModuleTypes.add(returnType)) {
+                        addProviderMethodToGraph(returnType, providerMethod);
+                    } else {
+                        final String message = String.format("Module %s provides %s multiple times",
+                                module.getModuleType().getInternalName(), returnType.getInternalName());
+                        processorContext.reportError(new ProcessingException(message));
+                    }
                 }
             }
             return typeGraph;
         }
 
         private void addProviderMethodToGraph(final Type type, final MethodDescriptor providerMethod) {
-            if (typeGraph.containsKey(type)) {
-                processorContext.reportError(
-                        new ProcessingException("Type has multiple providers: " + type));
-            }
-
             if (providerMethod.isDefaultConstructor()) {
                 typeGraph.put(type, Collections.<Type>emptyList());
             } else {
