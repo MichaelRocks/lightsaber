@@ -83,9 +83,10 @@ public class InjectionTargetDescriptor {
         }
 
         public InjectionTargetDescriptor build() {
-            if (injectableConstructors.isEmpty() && hasDefaultConstructor) {
-                injectableConstructors.add(MethodDescriptor.forConstructor());
-            }
+            // TODO: Allow to inject objects with default constructors when we can ensure they will be used.
+            // if (injectableConstructors.isEmpty() && hasDefaultConstructor) {
+            //     injectableConstructors.add(MethodDescriptor.forConstructor());
+            // }
 
             return new InjectionTargetDescriptor(
                     targetType, injectableFields, injectableConstructors, injectableMethods);
