@@ -21,6 +21,7 @@ import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescript
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import org.apache.commons.lang3.Validate;
+import org.objectweb.asm.Type;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ProcessorContext {
+    private static final Type INJECTOR_FACTORY_TYPE = Type.getObjectType("Lightsaber$$InjectorFactory");
+
     private String classFilePath;
     private final Map<String, List<Exception>> errorsByPath = new LinkedHashMap<>();
     private final List<ModuleDescriptor> modules = new ArrayList<>();
@@ -94,6 +97,10 @@ public class ProcessorContext {
 
     public void addProvidableTarget(final InjectionTargetDescriptor providableTarget) {
         providableTargets.add(providableTarget);
+    }
+
+    public Type getInjectorFactoryType() {
+        return INJECTOR_FACTORY_TYPE;
     }
 
     public void dump() {
