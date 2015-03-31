@@ -38,10 +38,15 @@ public class RootVisitor extends ProducingClassVisitor {
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
         if (interfaces != null && Arrays.asList(interfaces).indexOf(Type.getInternalName(Module.class)) >= 0) {
-            cv = new ModuleVisitor(cv);
-        // FIXME: This code must be removed when the injection package gets refactored.
-        } else if (!processorContext.getInjectorFactoryType().getInternalName().equals(name)) {
-            cv = new InjectionVisitor(cv, getClassProducer());
+            // FIXME: This code must be removed when the injection package gets refactored.
+            if (!processorContext.getGlobalModule().getModuleType().getInternalName().equals(name)) {
+                cv = new ModuleVisitor(cv);
+            }
+        } else {
+            // FIXME: This code must be removed when the injection package gets refactored.
+            if (!processorContext.getInjectorFactoryType().getInternalName().equals(name)) {
+                cv = new InjectionVisitor(cv, getClassProducer());
+            }
         }
 
         super.visit(version, access, name, signature, superName, interfaces);
