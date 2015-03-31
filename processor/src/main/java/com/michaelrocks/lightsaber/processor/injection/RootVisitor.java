@@ -32,7 +32,7 @@ public class RootVisitor extends ProducingClassVisitor {
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
         if (interfaces != null && Arrays.asList(interfaces).indexOf(Type.getInternalName(Module.class)) >= 0) {
-            cv = new ModuleVisitor(cv, getClassProducer());
+            cv = new ModuleVisitor(cv);
         } else {
             cv = new InjectionVisitor(cv, getClassProducer());
         }

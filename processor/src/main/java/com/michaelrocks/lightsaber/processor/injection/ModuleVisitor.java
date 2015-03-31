@@ -21,7 +21,6 @@ import com.michaelrocks.lightsaber.Provides;
 import com.michaelrocks.lightsaber.internal.InternalModule;
 import com.michaelrocks.lightsaber.internal.LightsaberInjector;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
-import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -33,12 +32,12 @@ import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ModuleVisitor extends ProducingClassVisitor {
+public class ModuleVisitor extends ClassVisitor {
     private String className;
     private final List<MethodDescriptor> providerMethods = new ArrayList<>();
 
-    public ModuleVisitor(final ClassVisitor classVisitor, final ClassProducer classProducer) {
-        super(classVisitor, classProducer);
+    public ModuleVisitor(final ClassVisitor classVisitor) {
+        super(ASM5, classVisitor);
     }
 
     @Override
