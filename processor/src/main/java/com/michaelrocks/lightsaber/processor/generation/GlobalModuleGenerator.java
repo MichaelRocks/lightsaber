@@ -17,6 +17,7 @@
 package com.michaelrocks.lightsaber.processor.generation;
 
 import com.michaelrocks.lightsaber.Module;
+import com.michaelrocks.lightsaber.Provides;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -93,6 +94,8 @@ public class GlobalModuleGenerator {
                 providerMethod.getDescriptor(),
                 null,
                 null);
+        // TODO: Remove this annotation when the injection package is refactored.
+        methodVisitor.visitAnnotation(Type.getDescriptor(Provides.class), true);
         methodVisitor.visitCode();
         methodVisitor.visitTypeInsn(NEW, providableTargetType.getInternalName());
         methodVisitor.visitInsn(DUP);
