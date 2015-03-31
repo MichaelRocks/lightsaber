@@ -17,6 +17,7 @@
 package com.michaelrocks.lightsaber.processor.injection;
 
 import com.michaelrocks.lightsaber.Injector;
+import com.michaelrocks.lightsaber.Lightsaber;
 import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import com.michaelrocks.lightsaber.processor.generation.InjectorClassGenerator;
@@ -76,7 +77,7 @@ class InjectionVisitor extends ProducingClassVisitor {
             @Override
             public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc,
                     final boolean itf) {
-                if (Type.getInternalName(Injector.class).equals(owner)  && "injectMembers".equals(name)) {
+                if (Type.getInternalName(Injector.class).equals(owner) && "injectMembers".equals(name)) {
                     System.out.println("Injecting at: " + className + "." + methodName + methodDesc);
                     final String newMethodDesc =
                             Type.getMethodDescriptor(
@@ -84,6 +85,9 @@ class InjectionVisitor extends ProducingClassVisitor {
                     super.visitMethodInsn(
                             INVOKESTATIC, getInjectorType().getInternalName(), name, newMethodDesc, false);
                     shouldGenerateInjector = true;
+                } else if (Type.getInternalName(Lightsaber.class).equals(owner) && "createInjector".equals(name)) {
+                    super.visitMethodInsn(
+                            INVOKESTATIC, "Lightsaber$$InjectorFactory", name, desc, false);
                 } else {
                     super.visitMethodInsn(opcode, owner, name, desc, itf);
                 }
