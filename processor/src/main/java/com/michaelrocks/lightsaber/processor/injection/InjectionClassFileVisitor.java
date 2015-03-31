@@ -16,23 +16,23 @@
 
 package com.michaelrocks.lightsaber.processor.injection;
 
-import com.michaelrocks.lightsaber.processor.ProcessingException;
+import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import com.michaelrocks.lightsaber.processor.io.ClassFileVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class InjectionClassFileVisitor extends ClassFileVisitor {
-    private final InjectionClassProducer classProducer = new InjectionClassProducer();
+    private final ClassProducer classProducer;
+    private final ProcessorContext processorContext;
 
-    public InjectionClassFileVisitor(final ClassFileVisitor classFileVisitor) {
+    public InjectionClassFileVisitor(final ClassFileVisitor classFileVisitor, final ClassProducer classProducer,
+            final ProcessorContext processorContext) {
         super(classFileVisitor);
+        this.classProducer = classProducer;
+        this.processorContext = processorContext;
     }
 
     @Override
@@ -40,41 +40,7 @@ public class InjectionClassFileVisitor extends ClassFileVisitor {
         final ClassReader classReader = new ClassReader(classData);
         final ClassWriter classWriter =
                 new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-        classReader.accept(new RootVisitor(classWriter, classProducer), ClassReader.SKIP_FRAMES);
+        classReader.accept(new RootVisitor(classWriter, classProducer, processorContext), ClassReader.SKIP_FRAMES);
         super.visitClassFile(path, classWriter.toByteArray());
-    }
-
-    @Override
-    public void visitEnd() throws IOException {
-        super.visitEnd();
-
-        // TODO: Support multiple errors in ProcessingException
-        final List<ProcessingException> errors = classProducer.getErrors();
-        if (!errors.isEmpty()) {
-            final StringBuilder builder = new StringBuilder();
-            for (final ProcessingException error : errors) {
-                builder.append(error.getMessage());
-                builder.append(System.lineSeparator());
-            }
-            throw new ProcessingException(builder.toString());
-        }
-    }
-
-    private class InjectionClassProducer implements ClassProducer {
-        private final List<ProcessingException> errors = new ArrayList<>();
-
-        @Override
-        public void produceClass(final String internalName, final byte[] classData) {
-            try {
-                InjectionClassFileVisitor.super.visitClassFile(internalName + ".class", classData);
-            } catch (final IOException exception) {
-                final String message = String.format("Failed to produce class with %d bytes", classData.length);
-                errors.add(new ProcessingException(new File(internalName), message, exception));
-            }
-        }
-
-        public List<ProcessingException> getErrors() {
-            return Collections.unmodifiableList(errors);
-        }
     }
 }
