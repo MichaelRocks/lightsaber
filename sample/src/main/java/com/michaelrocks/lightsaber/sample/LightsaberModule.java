@@ -26,8 +26,8 @@ public class LightsaberModule implements Module {
     }
 
     @Provides
-    public Droid provideDroid() {
-        return new R2D2();
+    public Droid provideDroid(final R2D2 r2d2) {
+        return r2d2;
     }
 
     @Provides
