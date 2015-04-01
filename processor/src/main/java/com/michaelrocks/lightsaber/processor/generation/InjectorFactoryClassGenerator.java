@@ -79,7 +79,6 @@ public class InjectorFactoryClassGenerator {
                 @Override
                 public void visitTypeInsn(final int opcode, final String type) {
                     if (patternType.equals(type)) {
-                        System.out.println("New " + replacementType);
                         super.visitTypeInsn(opcode, replacementType);
                     } else {
                         super.visitTypeInsn(opcode, type);
@@ -90,7 +89,6 @@ public class InjectorFactoryClassGenerator {
                 public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc,
                         final boolean itf) {
                     if (patternType.equals(owner)) {
-                        System.out.println("Call " + replacementType);
                         super.visitMethodInsn(opcode, replacementType, name, desc, itf);
                     } else {
                         super.visitMethodInsn(opcode, owner, name, desc, itf);
