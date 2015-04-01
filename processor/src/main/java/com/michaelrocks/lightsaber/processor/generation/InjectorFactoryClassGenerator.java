@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static org.objectweb.asm.Opcodes.ASM5;
+import static org.objectweb.asm.Opcodes.V1_6;
 
 public class InjectorFactoryClassGenerator {
     private final ClassProducer classProducer;
@@ -63,7 +64,7 @@ public class InjectorFactoryClassGenerator {
         public void visit(final int version, final int access, final String name, final String signature,
                 final String superName, final String[] interfaces) {
             final String newName = processorContext.getInjectorFactoryType().getInternalName();
-            super.visit(version, access, newName, signature, superName, interfaces);
+            super.visit(V1_6, access, newName, signature, superName, interfaces);
         }
 
         @Override
