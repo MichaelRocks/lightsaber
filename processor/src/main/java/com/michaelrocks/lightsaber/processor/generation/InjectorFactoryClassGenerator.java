@@ -17,8 +17,8 @@
 package com.michaelrocks.lightsaber.processor.generation;
 
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.patterns.Lightsaber$$GlobalModule;
-import com.michaelrocks.lightsaber.processor.patterns.Lightsaber$$InjectorFactory;
+import com.michaelrocks.lightsaber.processor.templates.Lightsaber$$GlobalModule;
+import com.michaelrocks.lightsaber.processor.templates.Lightsaber$$InjectorFactory;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.michaelrocks.lightsaber.processor.patterns;
+package com.michaelrocks.lightsaber.processor.templates;
 
 import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.Lightsaber;
