@@ -18,12 +18,11 @@ package com.michaelrocks.lightsaber.processor.generation;
 
 import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
-
-import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -31,15 +30,10 @@ public class InjectorClassGenerator {
     private static final String INJECT_MEMBERS_METHOD_NAME = "injectMembers";
     private static final String GET_INSTANCE_METHOD_NAME = "getInstance";
 
-    private final Type injectorType;
-    private final Type targetType;
-    private final List<FieldDescriptor> targetFields;
+    private final InjectorDescriptor injector;
 
-    public InjectorClassGenerator(final Type injectorType, final Type targetType,
-            final List<FieldDescriptor> targetFields) {
-        this.injectorType = injectorType;
-        this.targetType = targetType;
-        this.targetFields = targetFields;
+    public InjectorClassGenerator(final InjectorDescriptor injector) {
+        this.injector = injector;
     }
 
     public byte[] generate() {
@@ -47,7 +41,7 @@ public class InjectorClassGenerator {
         classWriter.visit(
                 V1_6,
                 ACC_SUPER,
-                injectorType.getInternalName(),
+                injector.getInjectorType().getInternalName(),
                 null,
                 Type.getInternalName(Object.class),
                 null);
@@ -84,12 +78,13 @@ public class InjectorClassGenerator {
         final MethodVisitor methodVisitor = classWriter.visitMethod(
                 ACC_STATIC,
                 INJECT_MEMBERS_METHOD_NAME,
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Injector.class), targetType),
+                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Injector.class),
+                        injector.getInjectableTarget().getTargetType()),
                 null,
                 null);
         methodVisitor.visitCode();
 
-        for (final FieldDescriptor fieldDescriptor : targetFields) {
+        for (final FieldDescriptor fieldDescriptor : injector.getInjectableTarget().getInjectableFields()) {
             generateFieldInitializer(methodVisitor, fieldDescriptor);
         }
 
@@ -111,7 +106,7 @@ public class InjectorClassGenerator {
         methodVisitor.visitTypeInsn(CHECKCAST, fieldDescriptor.getType().getInternalName());
         methodVisitor.visitFieldInsn(
                 PUTFIELD,
-                targetType.getInternalName(),
+                injector.getInjectableTarget().getTargetType().getInternalName(),
                 fieldDescriptor.getName(),
                 fieldDescriptor.getType().getDescriptor());
     }

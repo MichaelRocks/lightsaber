@@ -23,6 +23,7 @@ import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import com.michaelrocks.lightsaber.processor.generation.GlobalModuleGenerator;
 import com.michaelrocks.lightsaber.processor.generation.InjectorFactoryClassGenerator;
+import com.michaelrocks.lightsaber.processor.generation.InjectorsGenerator;
 import com.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
 import com.michaelrocks.lightsaber.processor.generation.ProvidersGenerator;
 import com.michaelrocks.lightsaber.processor.graph.CycleSearcher;
@@ -59,6 +60,7 @@ public class ClassProcessor {
         generateGlobalModule();
         generateProviders();
         generateInjectorFactory();
+        generateInjectors();
         patchInjectorCreation();
         patchInjection();
     }
@@ -125,6 +127,13 @@ public class ClassProcessor {
         final InjectorFactoryClassGenerator injectorFactoryClassGenerator =
                 new InjectorFactoryClassGenerator(classProducer, processorContext);
         injectorFactoryClassGenerator.generateInjectorFactory();
+        checkErrors();
+    }
+
+    private void generateInjectors() throws ProcessingException {
+        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
+        final InjectorsGenerator injectorsGenerator = new InjectorsGenerator(classProducer, processorContext);
+        injectorsGenerator.generateInjectors();
         checkErrors();
     }
 
