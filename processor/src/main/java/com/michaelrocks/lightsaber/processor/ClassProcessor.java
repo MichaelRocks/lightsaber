@@ -24,7 +24,7 @@ import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import com.michaelrocks.lightsaber.processor.generation.GlobalModuleGenerator;
 import com.michaelrocks.lightsaber.processor.generation.InjectorFactoryClassGenerator;
 import com.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
-import com.michaelrocks.lightsaber.processor.generation.ProviderGenerator;
+import com.michaelrocks.lightsaber.processor.generation.ProvidersGenerator;
 import com.michaelrocks.lightsaber.processor.graph.CycleSearcher;
 import com.michaelrocks.lightsaber.processor.graph.DependencyGraph;
 import com.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher;
@@ -115,8 +115,8 @@ public class ClassProcessor {
 
     private void generateProviders() throws ProcessingException {
         final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
-        final ProviderGenerator providerGenerator = new ProviderGenerator(classProducer, processorContext);
-        providerGenerator.generateProviders();
+        final ProvidersGenerator providersGenerator = new ProvidersGenerator(classProducer, processorContext);
+        providersGenerator.generateProviders();
         checkErrors();
     }
 

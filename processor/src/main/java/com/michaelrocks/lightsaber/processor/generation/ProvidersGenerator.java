@@ -27,13 +27,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ProviderGenerator {
+public class ProvidersGenerator {
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
 
     private final Map<Type, ProviderDescriptor> generatedProviders = new HashMap<>();
 
-    public ProviderGenerator(final ClassProducer classProducer, final ProcessorContext processorContext) {
+    public ProvidersGenerator(final ClassProducer classProducer, final ProcessorContext processorContext) {
         this.classProducer = classProducer;
         this.processorContext = processorContext;
     }
