@@ -25,9 +25,18 @@ jar {
 }
 
 task lightsaberProcess(type: JavaExec) {
+    def originalClasses = compileJava.destinationDir.getAbsolutePath()
+    def lightsaberClasses = originalClasses + "-lightsaber"
     classpath rootProject.project(':processor').shadowJar.archivePath
     main "com.michaelrocks.lightsaber.processor.LightsaberProcessor"
-    args = ["--classes", compileJava.destinationDir.getAbsolutePath(), "--stacktrace"]
+    args = [
+            "--classes", originalClasses,
+            "--output", lightsaberClasses,
+            "--stacktrace"]
+
+    doLast {
+        sourceSets.main.output.classesDir = lightsaberClasses
+    }
 }
 
 lightsaberProcess.dependsOn compileJava
