@@ -43,8 +43,9 @@ public class LightsaberProcessor {
 
         try {
             parser.parse(args);
+            validateParameters(parameters);
         } catch (final ParameterException exception) {
-            System.err.println("Cannot parse arguments");
+            System.err.println(exception.getMessage());
             final StringBuilder builder = new StringBuilder();
             parser.usage(builder);
             System.err.println(builder.toString());
@@ -54,6 +55,15 @@ public class LightsaberProcessor {
         final LightsaberProcessor processor = new LightsaberProcessor(parameters);
         if (!processor.process()) {
             System.exit(2);
+        }
+    }
+
+    private static void validateParameters(final LightsaberParameters parameters) {
+        if (parameters.jar == null && parameters.classes == null) {
+            throw new ParameterException("Either --jar or --classes must be specified");
+        }
+        if (parameters.jar != null && parameters.classes != null) {
+            throw new ParameterException("Either --jar or --classes can be specified but not both");
         }
     }
 
