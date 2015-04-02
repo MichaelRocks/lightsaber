@@ -25,6 +25,9 @@ public class LightsaberParameters {
     @Parameter(names = "--classes", description = "Classes directory to process")
     public String classes;
 
+    @Parameter(names = "--output", description = "Output jar file or classes directory")
+    public String output;
+
     @Parameter(names = { "-v", "--verbose" }, description = "Use verbose output")
     public boolean verbose = false;
 
