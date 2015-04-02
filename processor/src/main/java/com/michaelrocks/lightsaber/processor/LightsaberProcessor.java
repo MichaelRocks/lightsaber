@@ -29,8 +29,6 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 
 public class LightsaberProcessor {
     private final LightsaberParameters parameters;
@@ -63,10 +61,10 @@ public class LightsaberProcessor {
         try {
             if (parameters.jar != null) {
                 final File jarFile = new File(parameters.jar);
-                processJarFileWithCopy(jarFile);
+                processJarFile(jarFile);
             } else if (parameters.classes != null) {
                 final File classesDirectory = new File(parameters.classes);
-                processClassesWithCopy(classesDirectory);
+                processClasses(classesDirectory);
             }
             System.out.println("DONE");
             return true;
@@ -79,42 +77,28 @@ public class LightsaberProcessor {
         return false;
     }
 
-    private void processJarFileWithCopy(final File file) throws Exception {
-        final File lightsaberCopy = composeCopyName(file, "lightsabered");
-        final File originalCopy = composeCopyName(file, "original");
+    private void processJarFile(final File file) throws Exception {
+        final File processedFile = composeCopyName(file, "lightsaber");
         try (
             final ClassFileReader<?> classFileReader = new JarClassFileReader(file);
-            final ClassFileWriter classFileWriter = new JarClassFileWriter(lightsaberCopy)
+            final ClassFileWriter classFileWriter = new JarClassFileWriter(processedFile)
         ) {
             processClassFiles(classFileReader, classFileWriter);
-            Files.move(file.toPath(), originalCopy.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            Files.move(lightsaberCopy.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } finally {
-            // noinspection ResultOfMethodCallIgnored
-            lightsaberCopy.delete();
         }
     }
 
-    private void processClassesWithCopy(final File directory) throws Exception {
-        final File lightsaberCopy = composeCopyName(directory, "lightsabered");
-        final File originalCopy = composeCopyName(directory, "original");
-
-        FileUtils.deleteQuietly(lightsaberCopy);
-        if (!lightsaberCopy.mkdirs()) {
-            throw new ProcessingException("Failed to create output directory " + lightsaberCopy);
+    private void processClasses(final File directory) throws Exception {
+        final File processedDirectory = composeCopyName(directory, "lightsaber");
+        FileUtils.deleteQuietly(processedDirectory);
+        if (!processedDirectory.mkdirs()) {
+            throw new ProcessingException("Failed to create output directory " + processedDirectory);
         }
 
         try (
             final ClassFileReader<?> classFileReader = new DirectoryClassFileReader(directory);
-            final ClassFileWriter classFileWriter = new DirectoryClassFileWriter(lightsaberCopy)
+            final ClassFileWriter classFileWriter = new DirectoryClassFileWriter(processedDirectory)
         ) {
             processClassFiles(classFileReader, classFileWriter);
-            FileUtils.deleteQuietly(originalCopy);
-            Files.move(directory.toPath(), originalCopy.toPath());
-            Files.move(lightsaberCopy.toPath(), directory.toPath());
-        } finally {
-            // noinspection ResultOfMethodCallIgnored
-            FileUtils.deleteQuietly(lightsaberCopy);
         }
     }
 
