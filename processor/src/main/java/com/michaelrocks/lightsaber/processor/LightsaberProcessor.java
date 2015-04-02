@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.IOException;
 
 public class LightsaberProcessor {
+    private static final String DEFAULT_SUFFIX = "-lightsaber";
+
     private final LightsaberParameters parameters;
 
     private LightsaberProcessor(final LightsaberParameters parameters) {
@@ -65,6 +67,17 @@ public class LightsaberProcessor {
         if (parameters.jar != null && parameters.classes != null) {
             throw new ParameterException("Either --jar or --classes can be specified but not both");
         }
+
+        if (parameters.output == null) {
+            if (parameters.jar != null) {
+                parameters.output =
+                        FilenameUtils.removeExtension(parameters.jar)
+                                + DEFAULT_SUFFIX
+                                + FilenameUtils.getExtension(parameters.jar);
+            } else {
+                parameters.output = parameters.classes + DEFAULT_SUFFIX;
+            }
+        }
     }
 
     public boolean process() {
@@ -88,7 +101,7 @@ public class LightsaberProcessor {
     }
 
     private void processJarFile(final File file) throws Exception {
-        final File processedFile = composeCopyName(file, "lightsaber");
+        final File processedFile = new File(parameters.output);
         try (
             final ClassFileReader<?> classFileReader = new JarClassFileReader(file);
             final ClassFileWriter classFileWriter = new JarClassFileWriter(processedFile)
@@ -98,7 +111,7 @@ public class LightsaberProcessor {
     }
 
     private void processClasses(final File directory) throws Exception {
-        final File processedDirectory = composeCopyName(directory, "lightsaber");
+        final File processedDirectory = new File(parameters.output);
         FileUtils.deleteQuietly(processedDirectory);
         if (!processedDirectory.mkdirs()) {
             throw new ProcessingException("Failed to create output directory " + processedDirectory);
@@ -110,14 +123,6 @@ public class LightsaberProcessor {
         ) {
             processClassFiles(classFileReader, classFileWriter);
         }
-    }
-
-    private File composeCopyName(final File file, final String copyName) {
-        final File parentFile = file.getParentFile();
-        final String fileNameWithExtension = file.getName();
-        final String fileName = FilenameUtils.getBaseName(fileNameWithExtension);
-        final String extension = FilenameUtils.getExtension(fileNameWithExtension);
-        return new File(parentFile, fileName + '-' + copyName + extension);
     }
 
     private void processClassFiles(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter)
