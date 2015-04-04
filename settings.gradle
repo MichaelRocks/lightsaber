@@ -3,5 +3,4 @@ rootProject.name = 'Lightsaber'
 include 'core'
 include 'processor'
 
-include 'sample'
-
+include 'samples:sample-java'
