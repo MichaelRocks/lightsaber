@@ -24,6 +24,10 @@ import java.util.List;
 
 public class MethodDescriptor {
     private static final String CONSTRUCTOR_NAME = "<init>";
+    private static final String STATIC_INITIALIZER_NAME = "<clinit>";
+
+    private static final MethodDescriptor DEFAULT_CONSTRUCTOR_DESCRIPTOR = forConstructor();
+    private static final MethodDescriptor STATIC_INITIALIZER_DESCRIPTOR = forMethod("<clinit>", Type.VOID_TYPE);
 
     private final String name;
     private final Type type;
@@ -41,12 +45,24 @@ public class MethodDescriptor {
         return new MethodDescriptor(CONSTRUCTOR_NAME, Type.getMethodType(Type.VOID_TYPE, argumentTypes));
     }
 
+    public static MethodDescriptor forDefaultConstructor() {
+        return DEFAULT_CONSTRUCTOR_DESCRIPTOR;
+    }
+
+    public static MethodDescriptor forStaticInitializer() {
+        return STATIC_INITIALIZER_DESCRIPTOR;
+    }
+
     public static boolean isConstructor(final String methodName) {
         return CONSTRUCTOR_NAME.equals(methodName);
     }
 
     public static boolean isDefaultConstructor(final String methodName, final String methodDesc) {
         return isConstructor(methodName) && Type.getMethodDescriptor(Type.VOID_TYPE).equals(methodDesc);
+    }
+
+    public static boolean isStaticInitializer(final String methodName) {
+        return STATIC_INITIALIZER_NAME.equals(methodName);
     }
 
     public String getName() {
@@ -74,6 +90,8 @@ public class MethodDescriptor {
     public boolean isDefaultConstructor() {
         return isDefaultConstructor(name, type.getDescriptor());
     }
+
+    public boolean isStaticInitializer() { return STATIC_INITIALIZER_DESCRIPTOR.equals(this); }
 
     @Override
     public String toString() {
