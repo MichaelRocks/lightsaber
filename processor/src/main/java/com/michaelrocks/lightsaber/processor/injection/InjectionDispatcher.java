@@ -24,8 +24,8 @@ import org.objectweb.asm.Type;
 
 import java.util.Arrays;
 
-public class RootVisitor extends ProcessorClassVisitor {
-    public RootVisitor(final ClassVisitor classVisitor, final ProcessorContext processorContext) {
+public class InjectionDispatcher extends ProcessorClassVisitor {
+    public InjectionDispatcher(final ClassVisitor classVisitor, final ProcessorContext processorContext) {
         super(processorContext, classVisitor);
     }
 

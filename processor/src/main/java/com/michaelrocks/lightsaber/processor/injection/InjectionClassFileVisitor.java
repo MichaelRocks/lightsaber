@@ -36,7 +36,7 @@ public class InjectionClassFileVisitor extends ClassFileVisitor {
         final ClassReader classReader = new ClassReader(classData);
         final ClassWriter classWriter =
                 new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-        classReader.accept(new RootVisitor(classWriter, processorContext), ClassReader.SKIP_FRAMES);
+        classReader.accept(new InjectionDispatcher(classWriter, processorContext), ClassReader.SKIP_FRAMES);
         super.visitClassFile(path, classWriter.toByteArray());
     }
 }
