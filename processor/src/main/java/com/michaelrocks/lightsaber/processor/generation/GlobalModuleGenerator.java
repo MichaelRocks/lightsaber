@@ -44,7 +44,7 @@ public class GlobalModuleGenerator {
         final Type globalModuleType = globalModule.getModuleType();
 
         final ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        final ModulePatcher classVisitor = new ModulePatcher(processorContext, classWriter);
+        final ModulePatcher classVisitor = new ModulePatcher(processorContext, classWriter, globalModule);
         classVisitor.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,

@@ -36,7 +36,7 @@ public class InjectionDispatcher extends ProcessorClassVisitor {
 
         final ModuleDescriptor module = getProcessorContext().findModuleByType(type);
         if (module != null) {
-            cv = new ModulePatcher(getProcessorContext(), cv);
+            cv = new ModulePatcher(getProcessorContext(), cv, module);
         }
 
         final InjectionTargetDescriptor injectableTarget = getProcessorContext().findInjectableTargetByType(type);

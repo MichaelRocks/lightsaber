@@ -17,59 +17,36 @@
 package com.michaelrocks.lightsaber.processor.injection;
 
 import com.michaelrocks.lightsaber.Injector;
-import com.michaelrocks.lightsaber.Provides;
 import com.michaelrocks.lightsaber.internal.InternalModule;
 import com.michaelrocks.lightsaber.internal.LightsaberInjector;
 import com.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
-import org.objectweb.asm.AnnotationVisitor;
+import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 import javax.inject.Provider;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class ModulePatcher extends ProcessorClassVisitor {
-    private String className;
-    private final List<MethodDescriptor> providerMethods = new ArrayList<>();
+    private final ModuleDescriptor module;
 
-    public ModulePatcher(final ProcessorContext processorContext, final ClassVisitor classVisitor) {
+    public ModulePatcher(final ProcessorContext processorContext, final ClassVisitor classVisitor,
+            final ModuleDescriptor module) {
         super(processorContext, classVisitor);
+        this.module = module;
     }
 
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        className = name;
         final String[] newInterfaces = new String[interfaces.length + 1];
         System.arraycopy(interfaces, 0, newInterfaces, 0, interfaces.length);
         newInterfaces[interfaces.length] = Type.getInternalName(InternalModule.class);
         super.visit(version, access, name, signature, superName, newInterfaces);
-    }
-
-    @Override
-    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
-            final String[] exceptions) {
-        final String methodName = name;
-        final String methodDesc = desc;
-        final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-        return new MethodVisitor(ASM5, methodVisitor) {
-            @Override
-            public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-                if (Type.getDescriptor(Provides.class).equals(desc)) {
-                    final Type methodType = Type.getMethodType(methodDesc);
-                    final MethodDescriptor descriptor = new MethodDescriptor(methodName, methodType);
-                    providerMethods.add(descriptor);
-                }
-
-                return super.visitAnnotation(desc, visible);
-            }
-        };
     }
 
     @Override
@@ -86,9 +63,8 @@ public class ModulePatcher extends ProcessorClassVisitor {
                 null,
                 null);
         methodVisitor.visitCode();
-        for (int i = 0; i < providerMethods.size(); ++i) {
-            final MethodDescriptor descriptor = providerMethods.get(i);
-            generateRegisterProviderInvocation(methodVisitor, descriptor, i);
+        for (final ProviderDescriptor provider : module.getProviders()) {
+            generateRegisterProviderInvocation(methodVisitor, provider);
         }
         methodVisitor.visitInsn(RETURN);
         methodVisitor.visitMaxs(0, 0);
@@ -96,20 +72,19 @@ public class ModulePatcher extends ProcessorClassVisitor {
     }
 
     private void generateRegisterProviderInvocation(final MethodVisitor methodVisitor,
-            final MethodDescriptor descriptor, final int invocationIndex) {
-        System.out.println("Generating invocation for method " + descriptor.getName());
-        final Type providerType = Type.getObjectType(className + "$$Provider$$" + (invocationIndex + 1));
+            final ProviderDescriptor provider) {
+        System.out.println("Generating invocation for method " + provider.getProviderMethod().getName());
 
         methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitLdcInsn(descriptor.getType().getReturnType());
-        methodVisitor.visitTypeInsn(NEW, providerType.getInternalName());
+        methodVisitor.visitLdcInsn(provider.getProvidableType());
+        methodVisitor.visitTypeInsn(NEW, provider.getProviderType().getInternalName());
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitVarInsn(ALOAD, 1);
         methodVisitor.visitMethodInsn(INVOKESPECIAL,
-                providerType.getInternalName(),
+                provider.getProviderType().getInternalName(),
                 "<init>",
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getObjectType(className), Type.getType(Injector.class)),
+                Type.getMethodDescriptor(Type.VOID_TYPE, provider.getModuleType(), Type.getType(Injector.class)),
                 false);
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
                 Type.getInternalName(LightsaberInjector.class),
