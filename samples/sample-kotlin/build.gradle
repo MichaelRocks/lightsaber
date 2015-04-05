@@ -1,0 +1,57 @@
+buildscript {
+    ext.kotlinVersion = '0.11.91.1'
+
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    }
+}
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '1.2.1'
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'application'
+
+sourceCompatibility = 1.6
+version = '1.0'
+
+mainClassName = 'com.michaelrocks.lightsaber.sample.LightsaberSample'
+
+dependencies {
+    compile project(':core')
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+
+    testCompile "junit:junit:$junitVersion"
+}
+
+jar {
+    destinationDir = file('build/jar')
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+task lightsaberProcess(type: JavaExec) {
+    def originalClasses = compileJava.destinationDir.getAbsolutePath()
+    def lightsaberClasses = originalClasses + "-lightsaber"
+    classpath rootProject.project(':processor').shadowJar.archivePath
+    main "com.michaelrocks.lightsaber.processor.LightsaberProcessor"
+    args = [
+            "--classes", originalClasses,
+            "--output", lightsaberClasses,
+            "--stacktrace"]
+
+    doLast {
+        sourceSets.main.output.classesDir = lightsaberClasses
+    }
+}
+
+lightsaberProcess.dependsOn compileJava
+shadowJar.dependsOn lightsaberProcess
