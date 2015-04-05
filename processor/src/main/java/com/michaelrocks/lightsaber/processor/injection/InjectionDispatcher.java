@@ -16,13 +16,11 @@
 
 package com.michaelrocks.lightsaber.processor.injection;
 
-import com.michaelrocks.lightsaber.Module;
 import com.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
+import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Type;
-
-import java.util.Arrays;
 
 public class InjectionDispatcher extends ProcessorClassVisitor {
     public InjectionDispatcher(final ClassVisitor classVisitor, final ProcessorContext processorContext) {
@@ -32,16 +30,11 @@ public class InjectionDispatcher extends ProcessorClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        if (interfaces != null && Arrays.asList(interfaces).indexOf(Type.getInternalName(Module.class)) >= 0) {
-            // FIXME: This code must be removed when the injection package gets refactored.
-            if (!getProcessorContext().getGlobalModule().getModuleType().getInternalName().equals(name)) {
-                cv = new ModulePatcher(getProcessorContext(), cv);
-            }
+        final ModuleDescriptor module = getProcessorContext().findModuleByType(Type.getObjectType(name));
+        if (module != null) {
+            cv = new ModulePatcher(getProcessorContext(), cv);
         } else {
-            // FIXME: This code must be removed when the injection package gets refactored.
-            if (!getProcessorContext().getInjectorFactoryType().getInternalName().equals(name)) {
-                cv = new InjectionPatcher(getProcessorContext(), cv);
-            }
+            cv = new InjectionPatcher(getProcessorContext(), cv);
         }
 
         super.visit(version, access, name, signature, superName, interfaces);
