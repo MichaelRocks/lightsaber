@@ -32,6 +32,11 @@ public class MethodDescriptor {
     private final String name;
     private final Type type;
 
+    public MethodDescriptor(final String name, final String desc) {
+        this.name = name;
+        this.type = Type.getType(desc);
+    }
+
     public MethodDescriptor(final String name, final Type type) {
         this.name = name;
         this.type = type;
