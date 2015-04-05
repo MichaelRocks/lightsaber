@@ -17,20 +17,16 @@
 package com.michaelrocks.lightsaber.processor.injection;
 
 import com.michaelrocks.lightsaber.Module;
+import com.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Type;
 
 import java.util.Arrays;
 
-import static org.objectweb.asm.Opcodes.ASM5;
-
-public class RootVisitor extends ClassVisitor {
-    private final ProcessorContext processorContext;
-
+public class RootVisitor extends ProcessorClassVisitor {
     public RootVisitor(final ClassVisitor classVisitor, final ProcessorContext processorContext) {
-        super(ASM5, classVisitor);
-        this.processorContext = processorContext;
+        super(processorContext, classVisitor);
     }
 
     @Override
@@ -38,12 +34,12 @@ public class RootVisitor extends ClassVisitor {
             final String superName, final String[] interfaces) {
         if (interfaces != null && Arrays.asList(interfaces).indexOf(Type.getInternalName(Module.class)) >= 0) {
             // FIXME: This code must be removed when the injection package gets refactored.
-            if (!processorContext.getGlobalModule().getModuleType().getInternalName().equals(name)) {
+            if (!getProcessorContext().getGlobalModule().getModuleType().getInternalName().equals(name)) {
                 cv = new ModuleVisitor(cv);
             }
         } else {
             // FIXME: This code must be removed when the injection package gets refactored.
-            if (!processorContext.getInjectorFactoryType().getInternalName().equals(name)) {
+            if (!getProcessorContext().getInjectorFactoryType().getInternalName().equals(name)) {
                 cv = new InjectionVisitor(cv);
             }
         }
