@@ -66,6 +66,10 @@ public class ProcessorContext {
         errors.add(error);
     }
 
+    public ModuleDescriptor findModuleByType(final Type moduleType) {
+        return modules.get(moduleType);
+    }
+
     public Collection<ModuleDescriptor> getModules() {
         return Collections.unmodifiableCollection(modules.values());
     }
@@ -85,12 +89,20 @@ public class ProcessorContext {
         addModule(globalModule);
     }
 
+    public InjectionTargetDescriptor findInjectableTargetByType(final Type injectableTargetType) {
+        return injectableTargets.get(injectableTargetType);
+    }
+
     public Collection<InjectionTargetDescriptor> getInjectableTargets() {
         return Collections.unmodifiableCollection(injectableTargets.values());
     }
 
     public void addInjectableTarget(final InjectionTargetDescriptor injectableTarget) {
         injectableTargets.put(injectableTarget.getTargetType(), injectableTarget);
+    }
+
+    public InjectionTargetDescriptor findProvidableTargetByType(final Type providableTargetType) {
+        return providableTargets.get(providableTargetType);
     }
 
     public Collection<InjectionTargetDescriptor> getProvidableTargets() {
