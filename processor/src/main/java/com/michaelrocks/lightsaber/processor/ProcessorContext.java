@@ -16,6 +16,8 @@
 
 package com.michaelrocks.lightsaber.processor;
 
+import com.michaelrocks.lightsaber.internal.Lightsaber$$GlobalModule;
+import com.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
@@ -34,7 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 public class ProcessorContext {
-    private static final Type INJECTOR_FACTORY_TYPE = Type.getObjectType("Lightsaber$$InjectorFactory");
+    private static final Type GLOBAL_MODULE_TYPE = Type.getType(Lightsaber$$GlobalModule.class);
+    private static final Type INJECTOR_FACTORY_TYPE = Type.getType(Lightsaber$$InjectorFactory.class);
 
     private String classFilePath;
     private final Map<String, List<Exception>> errorsByPath = new LinkedHashMap<>();
@@ -126,6 +129,10 @@ public class ProcessorContext {
 
     public void addInjector(final InjectorDescriptor injector) {
         injectors.put(injector.getInjectableTarget().getTargetType(), injector);
+    }
+
+    public Type getGlobalModuleType() {
+        return GLOBAL_MODULE_TYPE;
     }
 
     public Type getInjectorFactoryType() {

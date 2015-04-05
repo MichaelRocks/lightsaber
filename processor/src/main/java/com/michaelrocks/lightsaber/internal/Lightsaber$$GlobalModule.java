@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.michaelrocks.lightsaber.processor.templates;
+package com.michaelrocks.lightsaber.internal;
 
 import com.michaelrocks.lightsaber.Module;
 

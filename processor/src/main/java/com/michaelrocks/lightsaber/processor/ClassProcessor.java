@@ -41,8 +41,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ClassProcessor {
-    private static final Type GLOBAL_MODULE_TYPE = Type.getObjectType("Lightsaber$$GlobalModule");
-
     private final ClassFileReader classFileReader;
     private final ClassFileWriter classFileWriter;
 
@@ -73,7 +71,8 @@ public class ClassProcessor {
     }
 
     private void composeGlobalModule() {
-        final ModuleDescriptor.Builder globalModuleBuilder = new ModuleDescriptor.Builder(GLOBAL_MODULE_TYPE);
+        final ModuleDescriptor.Builder globalModuleBuilder =
+                new ModuleDescriptor.Builder(processorContext.getGlobalModuleType());
         for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
             final Type providableTargetType = providableTarget.getTargetType();
             final MethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructors().get(0);

@@ -16,14 +16,11 @@
 
 package com.michaelrocks.lightsaber.processor.generation;
 
+import com.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.templates.Lightsaber$$GlobalModule;
-import com.michaelrocks.lightsaber.processor.templates.Lightsaber$$InjectorFactory;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -65,36 +62,6 @@ public class InjectorFactoryClassGenerator {
                 final String superName, final String[] interfaces) {
             final String newName = processorContext.getInjectorFactoryType().getInternalName();
             super.visit(V1_6, access, newName, signature, superName, interfaces);
-        }
-
-        @Override
-        public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
-                final String[] exceptions) {
-            final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-            return new MethodVisitor(ASM5, methodVisitor) {
-                private final String patternType = Type.getType(Lightsaber$$GlobalModule.class).getInternalName();
-                private final String replacementType =
-                        processorContext.getGlobalModule().getModuleType().getInternalName();
-
-                @Override
-                public void visitTypeInsn(final int opcode, final String type) {
-                    if (patternType.equals(type)) {
-                        super.visitTypeInsn(opcode, replacementType);
-                    } else {
-                        super.visitTypeInsn(opcode, type);
-                    }
-                }
-
-                @Override
-                public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc,
-                        final boolean itf) {
-                    if (patternType.equals(owner)) {
-                        super.visitMethodInsn(opcode, replacementType, name, desc, itf);
-                    } else {
-                        super.visitMethodInsn(opcode, owner, name, desc, itf);
-                    }
-                }
-            };
         }
     }
 }
