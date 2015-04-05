@@ -19,9 +19,8 @@ package com.michaelrocks.lightsaber.processor.analysis;
 import com.michaelrocks.lightsaber.Module;
 import com.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
+import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.Type;
-
-import java.util.Arrays;
 
 public class AnalysisClassVisitor extends ProcessorClassVisitor {
     public AnalysisClassVisitor(final ProcessorContext processorContext) {
@@ -31,7 +30,7 @@ public class AnalysisClassVisitor extends ProcessorClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        if (interfaces != null && Arrays.asList(interfaces).indexOf(Type.getInternalName(Module.class)) >= 0) {
+        if (interfaces != null && ArrayUtils.indexOf(interfaces, Type.getInternalName(Module.class)) >= 0) {
             cv = new ModuleClassAnalyzer(getProcessorContext());
         } else {
             cv = new InjectionTargetAnalyzer(getProcessorContext());
