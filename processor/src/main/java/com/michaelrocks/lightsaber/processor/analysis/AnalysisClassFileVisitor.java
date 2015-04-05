@@ -27,7 +27,6 @@ public class AnalysisClassFileVisitor extends ClassFileVisitor {
 
     public AnalysisClassFileVisitor(final ProcessorContext processorContext) {
         super(null);
-
         this.processorContext = processorContext;
     }
 
