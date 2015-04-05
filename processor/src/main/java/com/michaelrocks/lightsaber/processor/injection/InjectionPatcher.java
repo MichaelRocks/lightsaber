@@ -53,14 +53,14 @@ class InjectionPatcher extends ProcessorClassVisitor {
                     final boolean itf) {
                 if (Type.getInternalName(Injector.class).equals(owner) && "injectMembers".equals(name)) {
                     System.out.println("Injecting at: " + className + "." + methodName + methodDesc);
+                    final String newOwner = getInjectorType().getInternalName();
                     final String newMethodDesc =
                             Type.getMethodDescriptor(
                                     Type.VOID_TYPE, Type.getType(Injector.class), Type.getObjectType(className));
-                    super.visitMethodInsn(
-                            INVOKESTATIC, getInjectorType().getInternalName(), name, newMethodDesc, false);
+                    super.visitMethodInsn(INVOKESTATIC, newOwner, name, newMethodDesc, false);
                 } else if (Type.getInternalName(Lightsaber.class).equals(owner) && "createInjector".equals(name)) {
-                    super.visitMethodInsn(
-                            INVOKESTATIC, "Lightsaber$$InjectorFactory", name, desc, false);
+                    final String newOwner = getProcessorContext().getInjectorFactoryType().getInternalName();
+                    super.visitMethodInsn(INVOKESTATIC, newOwner, name, desc, false);
                 } else {
                     super.visitMethodInsn(opcode, owner, name, desc, itf);
                 }
