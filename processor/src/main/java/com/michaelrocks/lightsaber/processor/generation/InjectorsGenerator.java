@@ -18,18 +18,11 @@ package com.michaelrocks.lightsaber.processor.generation;
 
 
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
-import org.objectweb.asm.Type;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class InjectorsGenerator {
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
-
-    private final Map<Type, InjectorDescriptor> generatedInjectors = new HashMap<>();
 
     public InjectorsGenerator(final ClassProducer classProducer, final ProcessorContext processorContext) {
         this.classProducer = classProducer;
@@ -37,26 +30,14 @@ public class InjectorsGenerator {
     }
 
     public void generateInjectors() {
-        for (final InjectionTargetDescriptor injectableTarget : processorContext.getInjectableTargets()) {
-            final Type injectorType =
-                    Type.getObjectType(injectableTarget.getTargetType().getInternalName() + "$$Injector");
-            final InjectorDescriptor injector = new InjectorDescriptor(injectorType, injectableTarget);
+        for (final InjectorDescriptor injector : processorContext.getInjectors()) {
             generateInjector(injector);
         }
-    }
-
-    public InjectorDescriptor getInjectorForType(final Type type) {
-        return generatedInjectors.get(type);
     }
 
     private void generateInjector(final InjectorDescriptor injectorDescriptor) {
         final InjectorClassGenerator generator = new InjectorClassGenerator(injectorDescriptor);
         final byte[] injectorClassData = generator.generate();
         classProducer.produceClass(injectorDescriptor.getInjectorType().getInternalName(), injectorClassData);
-        registerInjector(injectorDescriptor);
-    }
-
-    private void registerInjector(final InjectorDescriptor injector) {
-        generatedInjectors.put(injector.getInjectableTarget().getTargetType(), injector);
     }
 }

@@ -18,6 +18,7 @@ package com.michaelrocks.lightsaber.processor;
 
 import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
@@ -41,6 +42,7 @@ public class ProcessorContext {
     private ModuleDescriptor globalModule;
     private final Map<Type, InjectionTargetDescriptor> injectableTargets = new HashMap<>();
     private final Map<Type, InjectionTargetDescriptor> providableTargets = new HashMap<>();
+    private final Map<Type, InjectorDescriptor> injectors = new HashMap<>();
 
     public String getClassFilePath() {
         return classFilePath;
@@ -112,6 +114,18 @@ public class ProcessorContext {
 
     public void addProvidableTarget(final InjectionTargetDescriptor providableTarget) {
         providableTargets.put(providableTarget.getTargetType(), providableTarget);
+    }
+
+    public InjectorDescriptor findInjectorByTargetType(final Type targetType) {
+        return injectors.get(targetType);
+    }
+
+    public Collection<InjectorDescriptor> getInjectors() {
+        return Collections.unmodifiableCollection(injectors.values());
+    }
+
+    public void addInjector(final InjectorDescriptor injector) {
+        injectors.put(injector.getInjectableTarget().getTargetType(), injector);
     }
 
     public Type getInjectorFactoryType() {

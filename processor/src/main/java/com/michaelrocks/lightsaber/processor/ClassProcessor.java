@@ -18,6 +18,7 @@ package com.michaelrocks.lightsaber.processor;
 
 import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
@@ -55,6 +56,7 @@ public class ClassProcessor {
     public void processClasses() throws IOException {
         performAnalysis();
         composeGlobalModule();
+        composeInjectors();
         processorContext.dump();
         validateDependencyGraph();
         generateGlobalModule();
@@ -85,6 +87,15 @@ public class ClassProcessor {
             globalModuleBuilder.addProviderMethod(providerMethod);
         }
         processorContext.setGlobalModule(globalModuleBuilder.build());
+    }
+
+    private void composeInjectors() {
+        for (final InjectionTargetDescriptor injectableTarget : processorContext.getInjectableTargets()) {
+            final Type injectorType =
+                    Type.getObjectType(injectableTarget.getTargetType().getInternalName() + "$$Injector");
+            final InjectorDescriptor injector = new InjectorDescriptor(injectorType, injectableTarget);
+            processorContext.addInjector(injector);
+        }
     }
 
     private void validateDependencyGraph() throws ProcessingException {
