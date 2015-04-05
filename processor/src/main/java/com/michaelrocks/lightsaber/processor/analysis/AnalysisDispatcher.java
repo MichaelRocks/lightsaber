@@ -22,8 +22,8 @@ import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.Type;
 
-public class AnalysisClassVisitor extends ProcessorClassVisitor {
-    public AnalysisClassVisitor(final ProcessorContext processorContext) {
+public class AnalysisDispatcher extends ProcessorClassVisitor {
+    public AnalysisDispatcher(final ProcessorContext processorContext) {
         super(processorContext);
     }
 
