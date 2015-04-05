@@ -63,8 +63,7 @@ public class ClassProcessor {
         generateProviders();
         generateInjectorFactory();
         generateInjectors();
-        patchInjectorCreation();
-        patchInjection();
+        copyAndPatchClasses();
     }
 
     private void performAnalysis() throws IOException {
@@ -148,13 +147,7 @@ public class ClassProcessor {
         checkErrors();
     }
 
-    private void patchInjectorCreation() {
-        // TODO: Implement.
-    }
-
-    private void patchInjection() throws IOException {
-        // TODO: Implement.
-
+    private void copyAndPatchClasses() throws IOException {
         final InjectionClassFileVisitor injectionVisitor =
                 new InjectionClassFileVisitor(classFileWriter, processorContext);
         classFileReader.accept(injectionVisitor);
