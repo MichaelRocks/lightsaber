@@ -24,7 +24,9 @@ import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +36,10 @@ public class ProcessorContext {
 
     private String classFilePath;
     private final Map<String, List<Exception>> errorsByPath = new LinkedHashMap<>();
-    private final List<ModuleDescriptor> modules = new ArrayList<>();
+    private final Map<Type, ModuleDescriptor> modules = new HashMap<>();
     private ModuleDescriptor globalModule;
-    private final List<InjectionTargetDescriptor> injectableTargets = new ArrayList<>();
-    private final List<InjectionTargetDescriptor> providableTargets = new ArrayList<>();
+    private final Map<Type, InjectionTargetDescriptor> injectableTargets = new HashMap<>();
+    private final Map<Type, InjectionTargetDescriptor> providableTargets = new HashMap<>();
 
     public String getClassFilePath() {
         return classFilePath;
@@ -64,12 +66,12 @@ public class ProcessorContext {
         errors.add(error);
     }
 
-    public List<ModuleDescriptor> getModules() {
-        return Collections.unmodifiableList(modules);
+    public Collection<ModuleDescriptor> getModules() {
+        return Collections.unmodifiableCollection(modules.values());
     }
 
     public void addModule(final ModuleDescriptor module) {
-        modules.add(module);
+        modules.put(module.getModuleType(), module);
     }
 
     public ModuleDescriptor getGlobalModule() {
@@ -80,23 +82,23 @@ public class ProcessorContext {
         Validate.isTrue(this.globalModule == null, "Global module cannot be set multiple times");
         Validate.notNull(globalModule, "Global module cannot be set to null");
         this.globalModule = globalModule;
-        modules.add(globalModule);
+        addModule(globalModule);
     }
 
-    public List<InjectionTargetDescriptor> getInjectableTargets() {
-        return Collections.unmodifiableList(injectableTargets);
+    public Collection<InjectionTargetDescriptor> getInjectableTargets() {
+        return Collections.unmodifiableCollection(injectableTargets.values());
     }
 
     public void addInjectableTarget(final InjectionTargetDescriptor injectableTarget) {
-        injectableTargets.add(injectableTarget);
+        injectableTargets.put(injectableTarget.getTargetType(), injectableTarget);
     }
 
-    public List<InjectionTargetDescriptor> getProvidableTargets() {
-        return Collections.unmodifiableList(providableTargets);
+    public Collection<InjectionTargetDescriptor> getProvidableTargets() {
+        return Collections.unmodifiableCollection(providableTargets.values());
     }
 
     public void addProvidableTarget(final InjectionTargetDescriptor providableTarget) {
-        providableTargets.add(providableTarget);
+        providableTargets.put(providableTarget.getTargetType(), providableTarget);
     }
 
     public Type getInjectorFactoryType() {
