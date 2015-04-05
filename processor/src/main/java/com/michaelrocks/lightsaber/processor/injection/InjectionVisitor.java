@@ -18,7 +18,6 @@ package com.michaelrocks.lightsaber.processor.injection;
 
 import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.Lightsaber;
-import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -26,11 +25,11 @@ import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.ASM5;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
-class InjectionVisitor extends ProducingClassVisitor {
+class InjectionVisitor extends ClassVisitor {
     private String className;
 
-    public InjectionVisitor(final ClassVisitor classVisitor, final ClassProducer classProducer) {
-        super(classVisitor, classProducer);
+    public InjectionVisitor(final ClassVisitor classVisitor) {
+        super(ASM5, classVisitor);
     }
 
     @Override

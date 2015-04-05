@@ -144,9 +144,8 @@ public class ClassProcessor {
     private void patchInjection() throws IOException {
         // TODO: Implement.
 
-        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
         final InjectionClassFileVisitor injectionVisitor =
-                new InjectionClassFileVisitor(classFileWriter, classProducer, processorContext);
+                new InjectionClassFileVisitor(classFileWriter, processorContext);
         classFileReader.accept(injectionVisitor);
     }
 

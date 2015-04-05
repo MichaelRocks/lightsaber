@@ -18,19 +18,18 @@ package com.michaelrocks.lightsaber.processor.injection;
 
 import com.michaelrocks.lightsaber.Module;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Type;
 
 import java.util.Arrays;
 
-public class RootVisitor extends ProducingClassVisitor {
+import static org.objectweb.asm.Opcodes.ASM5;
+
+public class RootVisitor extends ClassVisitor {
     private final ProcessorContext processorContext;
 
-    public RootVisitor(final ClassVisitor classVisitor, final ClassProducer classProducer,
-            final ProcessorContext processorContext) {
-        super(classVisitor, classProducer);
-
+    public RootVisitor(final ClassVisitor classVisitor, final ProcessorContext processorContext) {
+        super(ASM5, classVisitor);
         this.processorContext = processorContext;
     }
 
@@ -45,7 +44,7 @@ public class RootVisitor extends ProducingClassVisitor {
         } else {
             // FIXME: This code must be removed when the injection package gets refactored.
             if (!processorContext.getInjectorFactoryType().getInternalName().equals(name)) {
-                cv = new InjectionVisitor(cv, getClassProducer());
+                cv = new InjectionVisitor(cv);
             }
         }
 
