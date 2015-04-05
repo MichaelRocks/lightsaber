@@ -75,7 +75,7 @@ public class ClassProcessor {
                 new ModuleDescriptor.Builder(processorContext.getGlobalModuleType());
         for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
             final Type providableTargetType = providableTarget.getTargetType();
-            final MethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructors().get(0);
+            final MethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructor();
 
             final String providerMethodName = "provide$" + providableTargetType.getInternalName().replace('/', '$');
             final Type[] providerMethodArgumentTypes = providableTargetConstructor.getType().getArgumentTypes();

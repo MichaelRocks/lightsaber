@@ -18,46 +18,54 @@ package com.michaelrocks.lightsaber.processor.descriptors;
 
 import org.objectweb.asm.Type;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class InjectionTargetDescriptor {
     private final Type targetType;
-    private final List<FieldDescriptor> injectableFields;
-    private final List<MethodDescriptor> injectableConstructors;
-    private final List<MethodDescriptor> injectableMethods;
+    private final Set<FieldDescriptor> injectableFields;
+    private final MethodDescriptor injectableConstructor;
+    private final Set<MethodDescriptor> injectableConstructors;
+    private final Set<MethodDescriptor> injectableMethods;
 
-    private InjectionTargetDescriptor(final Type targetType, final List<FieldDescriptor> injectableFields,
-            final List<MethodDescriptor> injectableConstructors, final List<MethodDescriptor> injectableMethods) {
+    private InjectionTargetDescriptor(final Type targetType, final Set<FieldDescriptor> injectableFields,
+            final Set<MethodDescriptor> injectableConstructors, final Set<MethodDescriptor> injectableMethods) {
         this.targetType = targetType;
-        this.injectableFields = Collections.unmodifiableList(injectableFields);
-        this.injectableConstructors = Collections.unmodifiableList(injectableConstructors);
-        this.injectableMethods = Collections.unmodifiableList(injectableMethods);
+        this.injectableFields = Collections.unmodifiableSet(injectableFields);
+        final Iterator<MethodDescriptor> constructorIterator = injectableConstructors.iterator();
+        this.injectableConstructor = constructorIterator.hasNext() ? constructorIterator.next() : null;
+        this.injectableConstructors = Collections.unmodifiableSet(injectableConstructors);
+        this.injectableMethods = Collections.unmodifiableSet(injectableMethods);
     }
 
     public Type getTargetType() {
         return targetType;
     }
 
-    public List<FieldDescriptor> getInjectableFields() {
+    public Set<FieldDescriptor> getInjectableFields() {
         return injectableFields;
     }
 
-    public List<MethodDescriptor> getInjectableConstructors() {
+    public MethodDescriptor getInjectableConstructor() {
+        return injectableConstructor;
+    }
+
+    public Set<MethodDescriptor> getInjectableConstructors() {
         return injectableConstructors;
     }
 
-    public List<MethodDescriptor> getInjectableMethods() {
+    public Set<MethodDescriptor> getInjectableMethods() {
         return injectableMethods;
     }
 
     public static class Builder {
         private final Type targetType;
         private boolean hasDefaultConstructor;
-        private final List<FieldDescriptor> injectableFields = new ArrayList<>();
-        private final List<MethodDescriptor> injectableConstructors = new ArrayList<>();
-        private final List<MethodDescriptor> injectableMethods = new ArrayList<>();
+        private final Set<FieldDescriptor> injectableFields = new LinkedHashSet<>();
+        private final Set<MethodDescriptor> injectableConstructors = new LinkedHashSet<>();
+        private final Set<MethodDescriptor> injectableMethods = new LinkedHashSet<>();
 
         public Builder(final Type targetType) {
             this.targetType = targetType;
