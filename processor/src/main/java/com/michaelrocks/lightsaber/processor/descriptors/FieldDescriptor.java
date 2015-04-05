@@ -43,4 +43,24 @@ public class FieldDescriptor {
     public String toString() {
         return type + " " + name;
     }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) {
+            return true;
+        }
+
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+
+        final FieldDescriptor field = (FieldDescriptor) object;
+        return name.equals(field.name) && type.equals(field.type);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode() * 31 + type.hashCode();
+    }
 }
