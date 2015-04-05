@@ -20,6 +20,8 @@ import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.Provides;
 import com.michaelrocks.lightsaber.internal.InternalModule;
 import com.michaelrocks.lightsaber.internal.LightsaberInjector;
+import com.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
+import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassVisitor;
@@ -32,12 +34,12 @@ import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ModulePatcher extends ClassVisitor {
+public class ModulePatcher extends ProcessorClassVisitor {
     private String className;
     private final List<MethodDescriptor> providerMethods = new ArrayList<>();
 
-    public ModulePatcher(final ClassVisitor classVisitor) {
-        super(ASM5, classVisitor);
+    public ModulePatcher(final ProcessorContext processorContext, final ClassVisitor classVisitor) {
+        super(processorContext, classVisitor);
     }
 
     @Override
