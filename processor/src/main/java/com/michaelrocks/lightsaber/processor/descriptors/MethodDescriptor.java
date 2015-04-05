@@ -97,4 +97,24 @@ public class MethodDescriptor {
     public String toString() {
         return name + type;
     }
+
+    @Override
+    public boolean equals(final Object object) {
+        if (this == object) {
+            return true;
+        }
+
+        if (object == null || getClass() != object.getClass()) {
+            return false;
+        }
+
+        final MethodDescriptor descriptor = (MethodDescriptor) object;
+        return name.equals(descriptor.name) && type.equals(descriptor.type);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode() * 31 + type.hashCode();
+    }
 }
