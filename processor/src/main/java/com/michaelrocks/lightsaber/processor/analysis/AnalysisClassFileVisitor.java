@@ -34,7 +34,8 @@ public class AnalysisClassFileVisitor extends ClassFileVisitor {
     public void visitClassFile(final String path, final byte[] classData) throws IOException {
         processorContext.setClassFilePath(path);
         final ClassReader classReader = new ClassReader(classData);
-        classReader.accept(new AnalysisClassVisitor(processorContext), ClassReader.SKIP_FRAMES);
+        classReader.accept(new AnalysisClassVisitor(processorContext),
+                ClassReader.SKIP_FRAMES | ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG);
         super.visitClassFile(path, classData);
     }
 }
