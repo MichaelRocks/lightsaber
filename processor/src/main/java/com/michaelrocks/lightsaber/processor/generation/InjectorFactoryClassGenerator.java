@@ -18,15 +18,19 @@ package com.michaelrocks.lightsaber.processor.generation;
 
 import com.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
+import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
-import static org.objectweb.asm.Opcodes.ASM5;
-import static org.objectweb.asm.Opcodes.V1_6;
+import static org.objectweb.asm.Opcodes.*;
 
 public class InjectorFactoryClassGenerator {
     private final ClassProducer classProducer;
@@ -62,6 +66,53 @@ public class InjectorFactoryClassGenerator {
                 final String superName, final String[] interfaces) {
             final String newName = processorContext.getInjectorFactoryType().getInternalName();
             super.visit(V1_6, access, newName, signature, superName, interfaces);
+        }
+
+        @Override
+        public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
+                final String[] exceptions) {
+            final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
+            if ("populateTypeInjectors".equals(name)) {
+                patchPopulateTypeInjectorsMethod(methodVisitor);
+                return null;
+            } else {
+                return methodVisitor;
+            }
+        }
+
+        private void patchPopulateTypeInjectorsMethod(final MethodVisitor methodVisitor) {
+            methodVisitor.visitCode();
+            methodVisitor.visitFieldInsn(
+                    GETSTATIC,
+                    Type.getInternalName(Lightsaber$$InjectorFactory.class),
+                    "typeInjectors",
+                    Type.getDescriptor(Map.class));
+
+            final Type objectType = Type.getType(Object.class);
+            final MethodDescriptor putMethodDescriptor =
+                    MethodDescriptor.forMethod("put", objectType, objectType, objectType);
+            for (final InjectorDescriptor injector : processorContext.getInjectors()) {
+                methodVisitor.visitLdcInsn(injector.getInjectableTarget().getTargetType());
+                methodVisitor.visitTypeInsn(NEW, injector.getInjectorType().getInternalName());
+                methodVisitor.visitInsn(DUP);
+                methodVisitor.visitMethodInsn(
+                        INVOKESPECIAL,
+                        injector.getInjectorType().getInternalName(),
+                        MethodDescriptor.forDefaultConstructor().getName(),
+                        MethodDescriptor.forDefaultConstructor().getDescriptor(),
+                        false);
+                methodVisitor.visitMethodInsn(
+                        INVOKEINTERFACE,
+                        Type.getInternalName(Map.class),
+                        putMethodDescriptor.getName(),
+                        putMethodDescriptor.getDescriptor(),
+                        true);
+                methodVisitor.visitInsn(POP);
+            }
+
+            methodVisitor.visitInsn(RETURN);
+            methodVisitor.visitMaxs(0, 0);
+            methodVisitor.visitEnd();
         }
     }
 }
