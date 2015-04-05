@@ -21,7 +21,7 @@ import com.michaelrocks.lightsaber.Provides;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
-import com.michaelrocks.lightsaber.processor.injection.ModuleVisitor;
+import com.michaelrocks.lightsaber.processor.injection.ModulePatcher;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -43,7 +43,7 @@ public class GlobalModuleGenerator {
         final Type globalModuleType = globalModule.getModuleType();
 
         final ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        final ModuleVisitor classVisitor = new ModuleVisitor(classWriter);
+        final ModulePatcher classVisitor = new ModulePatcher(classWriter);
         classVisitor.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,

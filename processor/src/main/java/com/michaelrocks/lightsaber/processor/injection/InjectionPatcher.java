@@ -25,10 +25,10 @@ import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.ASM5;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
-class InjectionVisitor extends ClassVisitor {
+class InjectionPatcher extends ClassVisitor {
     private String className;
 
-    public InjectionVisitor(final ClassVisitor classVisitor) {
+    public InjectionPatcher(final ClassVisitor classVisitor) {
         super(ASM5, classVisitor);
     }
 

@@ -35,12 +35,12 @@ public class InjectionDispatcher extends ProcessorClassVisitor {
         if (interfaces != null && Arrays.asList(interfaces).indexOf(Type.getInternalName(Module.class)) >= 0) {
             // FIXME: This code must be removed when the injection package gets refactored.
             if (!getProcessorContext().getGlobalModule().getModuleType().getInternalName().equals(name)) {
-                cv = new ModuleVisitor(cv);
+                cv = new ModulePatcher(cv);
             }
         } else {
             // FIXME: This code must be removed when the injection package gets refactored.
             if (!getProcessorContext().getInjectorFactoryType().getInternalName().equals(name)) {
-                cv = new InjectionVisitor(cv);
+                cv = new InjectionPatcher(cv);
             }
         }
 

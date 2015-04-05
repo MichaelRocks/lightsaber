@@ -32,11 +32,11 @@ import java.util.List;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ModuleVisitor extends ClassVisitor {
+public class ModulePatcher extends ClassVisitor {
     private String className;
     private final List<MethodDescriptor> providerMethods = new ArrayList<>();
 
-    public ModuleVisitor(final ClassVisitor classVisitor) {
+    public ModulePatcher(final ClassVisitor classVisitor) {
         super(ASM5, classVisitor);
     }
 
