@@ -18,6 +18,7 @@ package com.michaelrocks.lightsaber.processor.injection;
 
 import com.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
+import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Type;
@@ -30,11 +31,17 @@ public class InjectionDispatcher extends ProcessorClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        final ModuleDescriptor module = getProcessorContext().findModuleByType(Type.getObjectType(name));
+        cv = new InjectionPatcher(getProcessorContext(), cv);
+        final Type type = Type.getObjectType(name);
+
+        final ModuleDescriptor module = getProcessorContext().findModuleByType(type);
         if (module != null) {
             cv = new ModulePatcher(getProcessorContext(), cv);
-        } else {
-            cv = new InjectionPatcher(getProcessorContext(), cv);
+        }
+
+        final InjectionTargetDescriptor injectableTarget = getProcessorContext().findInjectableTargetByType(type);
+        if (injectableTarget != null) {
+            cv = new InjectableTargetPatcher(getProcessorContext(), cv, injectableTarget);
         }
 
         super.visit(version, access, name, signature, superName, interfaces);
