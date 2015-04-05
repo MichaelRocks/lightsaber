@@ -24,36 +24,41 @@ import java.util.List;
 
 public class ModuleDescriptor {
     private final Type moduleType;
-    private final List<MethodDescriptor> providerMethods;
+    private final List<ProviderDescriptor> providers;
 
-    public ModuleDescriptor(final Type moduleType, final List<MethodDescriptor> providerMethods) {
+    public ModuleDescriptor(final Type moduleType, final List<ProviderDescriptor> providers) {
         this.moduleType = moduleType;
-        this.providerMethods = Collections.unmodifiableList(providerMethods);
+        this.providers = Collections.unmodifiableList(providers);
     }
 
     public Type getModuleType() {
         return moduleType;
     }
 
-    public List<MethodDescriptor> getProviderMethods() {
-        return providerMethods;
+    public List<ProviderDescriptor> getProviders() {
+        return providers;
     }
 
     public static class Builder {
         private final Type moduleType;
-        private final List<MethodDescriptor> providerMethods = new ArrayList<>();
+        private final List<ProviderDescriptor> providers = new ArrayList<>();
 
         public Builder(final Type moduleType) {
             this.moduleType = moduleType;
         }
 
         public Builder addProviderMethod(final MethodDescriptor providerMethod) {
-            providerMethods.add(providerMethod);
+            final int providerIndex = providers.size() + 1;
+            final Type providerType =
+                    Type.getObjectType(moduleType.getInternalName() + "$$Provider$$" + providerIndex);
+            final ProviderDescriptor provider =
+                    new ProviderDescriptor(providerType, providerMethod.getReturnType(), providerMethod, moduleType);
+            providers.add(provider);
             return this;
         }
 
         public ModuleDescriptor build() {
-            return new ModuleDescriptor(moduleType, providerMethods);
+            return new ModuleDescriptor(moduleType, providers);
         }
     }
 }

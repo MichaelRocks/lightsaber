@@ -17,21 +17,12 @@
 package com.michaelrocks.lightsaber.processor.generation;
 
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
-import org.objectweb.asm.Type;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class ProvidersGenerator {
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
-
-    private final Map<Type, ProviderDescriptor> generatedProviders = new HashMap<>();
 
     public ProvidersGenerator(final ClassProducer classProducer, final ProcessorContext processorContext) {
         this.classProducer = classProducer;
@@ -44,32 +35,10 @@ public class ProvidersGenerator {
         }
     }
 
-    public ProviderDescriptor getProviderForType(final Type type) {
-        return generatedProviders.get(type);
-    }
-
     private void generateModuleProviders(final ModuleDescriptor module) {
-        final List<ProviderDescriptor> providers = createProviderDescriptorsForModule(module);
-        for (final ProviderDescriptor provider : providers) {
+        for (final ProviderDescriptor provider : module.getProviders()) {
             generateProvider(provider);
         }
-    }
-
-    private static List<ProviderDescriptor> createProviderDescriptorsForModule(final ModuleDescriptor module) {
-        final List<ProviderDescriptor> providers = new ArrayList<>();
-
-        final Type moduleType = module.getModuleType();
-        final String moduleName = moduleType.getInternalName();
-        final List<MethodDescriptor> providerMethods = module.getProviderMethods();
-        for (int i = 0; i < providerMethods.size(); ++i) {
-            final Type providerType = Type.getObjectType(moduleName + "$$Provider$$" + (i + 1));
-            final MethodDescriptor providerMethod = providerMethods.get(i);
-            final ProviderDescriptor provider =
-                    new ProviderDescriptor(providerType, providerMethod.getReturnType(), providerMethod, moduleType);
-            providers.add(provider);
-        }
-
-        return providers;
     }
 
     private void generateProvider(final ProviderDescriptor provider) {
@@ -78,10 +47,5 @@ public class ProvidersGenerator {
                 provider.getProviderType(), provider.getModuleType(), provider.getProviderMethod());
         final byte[] providerClassData = generator.generate();
         classProducer.produceClass(provider.getProviderType().getInternalName(), providerClassData);
-        registerProvider(provider);
-    }
-
-    private void registerProvider(final ProviderDescriptor provider) {
-        generatedProviders.put(provider.getProvidableType(), provider);
     }
 }

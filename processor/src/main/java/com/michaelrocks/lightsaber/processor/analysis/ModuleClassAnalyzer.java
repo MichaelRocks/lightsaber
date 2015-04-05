@@ -50,9 +50,9 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 if (Type.getDescriptor(Provides.class).equals(desc)) {
-                    final Type methodType = Type.getMethodType(methodDesc);
-                    final MethodDescriptor descriptor = new MethodDescriptor(methodName, methodType);
-                    moduleDescriptorBuilder.addProviderMethod(descriptor);
+                    final MethodDescriptor providerMethod =
+                            new MethodDescriptor(methodName, Type.getMethodType(methodDesc));
+                    moduleDescriptorBuilder.addProviderMethod(providerMethod);
                 }
 
                 return super.visitAnnotation(desc, visible);

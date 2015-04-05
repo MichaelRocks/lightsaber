@@ -18,13 +18,11 @@ package com.michaelrocks.lightsaber.processor.graph;
 
 import com.michaelrocks.lightsaber.processor.ProcessingException;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import org.objectweb.asm.Type;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,10 +55,10 @@ public class DependencyGraph {
         Map<Type, List<Type>> build() {
             for (final ModuleDescriptor module : processorContext.getModules()) {
                 final Set<Type> providableModuleTypes = new HashSet<>();
-                for (final MethodDescriptor providerMethod : module.getProviderMethods()) {
-                    final Type returnType = providerMethod.getType().getReturnType();
+                for (final ProviderDescriptor provider : module.getProviders()) {
+                    final Type returnType = provider.getProvidableType();
                     if (providableModuleTypes.add(returnType)) {
-                        addProviderMethodToGraph(returnType, providerMethod);
+                        typeGraph.put(returnType, provider.getDependencies());
                     } else {
                         final String message = String.format("Module %s provides %s multiple times",
                                 module.getModuleType().getInternalName(), returnType.getInternalName());
@@ -70,15 +68,5 @@ public class DependencyGraph {
             }
             return typeGraph;
         }
-
-        private void addProviderMethodToGraph(final Type type, final MethodDescriptor providerMethod) {
-            if (providerMethod.isDefaultConstructor()) {
-                typeGraph.put(type, Collections.<Type>emptyList());
-            } else {
-                final List<Type> argumentTypes = Arrays.asList(providerMethod.getType().getArgumentTypes());
-                typeGraph.put(type, argumentTypes);
-            }
-        }
     }
-
 }

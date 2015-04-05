@@ -20,6 +20,7 @@ import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 
@@ -120,8 +121,8 @@ public class ProcessorContext {
     public void dump() {
         for (final ModuleDescriptor module : getModules()) {
             System.out.println("Module: " + module.getModuleType());
-            for (final MethodDescriptor providerMethod : module.getProviderMethods()) {
-                System.out.println("\tProvides: " + providerMethod);
+            for (final ProviderDescriptor provider : module.getProviders()) {
+                System.out.println("\tProvides: " + provider.getProviderMethod());
             }
         }
         for (final InjectionTargetDescriptor injectableTarget : getInjectableTargets()) {

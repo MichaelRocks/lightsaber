@@ -21,6 +21,7 @@ import com.michaelrocks.lightsaber.Provides;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import com.michaelrocks.lightsaber.processor.injection.ModulePatcher;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -53,8 +54,8 @@ public class GlobalModuleGenerator {
                 new String[] { Type.getInternalName(Module.class) });
 
         generateConstructor(classVisitor);
-        for (final MethodDescriptor providerMethod : globalModule.getProviderMethods()) {
-            generateProviderMethod(classVisitor, providerMethod);
+        for (final ProviderDescriptor provider : globalModule.getProviders()) {
+            generateProviderMethod(classVisitor, provider.getProviderMethod());
         }
 
         classVisitor.visitEnd();
