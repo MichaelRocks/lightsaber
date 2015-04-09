@@ -21,6 +21,7 @@ import com.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -47,15 +48,28 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
         final String methodDesc = desc;
         final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         return new MethodVisitor(ASM5, methodVisitor) {
+            private ScopeDescriptor scope;
+            private boolean isProviderMethod;
+
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 if (Type.getDescriptor(Provides.class).equals(desc)) {
-                    final MethodDescriptor providerMethod =
-                            new MethodDescriptor(methodName, Type.getMethodType(methodDesc));
-                    moduleDescriptorBuilder.addProviderMethod(providerMethod);
+                    isProviderMethod = true;
+                } else if (scope != null) {
+                    scope = getProcessorContext().findScopeByAnnotationType(Type.getType(desc));
                 }
 
                 return super.visitAnnotation(desc, visible);
+            }
+
+            @Override
+            public void visitEnd() {
+                if (isProviderMethod) {
+                    final MethodDescriptor providerMethod =
+                            new MethodDescriptor(methodName, Type.getMethodType(methodDesc));
+                    moduleDescriptorBuilder.addProviderMethod(providerMethod, scope);
+                }
+                super.visitEnd();
             }
         };
     }

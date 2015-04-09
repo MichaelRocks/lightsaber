@@ -21,6 +21,7 @@ import com.michaelrocks.lightsaber.internal.InternalModule;
 import com.michaelrocks.lightsaber.internal.LightsaberInjector;
 import com.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
+import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import org.objectweb.asm.ClassVisitor;
@@ -77,19 +78,44 @@ public class ModulePatcher extends ProcessorClassVisitor {
 
         methodVisitor.visitVarInsn(ALOAD, 1);
         methodVisitor.visitLdcInsn(provider.getProvidableType());
-        methodVisitor.visitTypeInsn(NEW, provider.getProviderType().getInternalName());
-        methodVisitor.visitInsn(DUP);
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitMethodInsn(INVOKESPECIAL,
-                provider.getProviderType().getInternalName(),
-                "<init>",
-                Type.getMethodDescriptor(Type.VOID_TYPE, provider.getModuleType(), Type.getType(Injector.class)),
-                false);
+
+        if (provider.getDelegatorType() != null) {
+            generateDelegatorConstruction(methodVisitor, provider);
+        } else {
+            generateProviderConstruction(methodVisitor, provider);
+        }
+
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
                 Type.getInternalName(LightsaberInjector.class),
                 "registerProvider",
                 Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class), Type.getType(Provider.class)),
+                false);
+    }
+
+    private void generateDelegatorConstruction(final MethodVisitor methodVisitor, final ProviderDescriptor provider) {
+        final Type delegatorType = provider.getDelegatorType();
+        methodVisitor.visitTypeInsn(NEW, delegatorType.getInternalName());
+        methodVisitor.visitInsn(DUP);
+        generateProviderConstruction(methodVisitor, provider);
+        final MethodDescriptor constructorDescriptor = MethodDescriptor.forConstructor(Type.getType(Provider.class));
+        methodVisitor.visitMethodInsn(INVOKESPECIAL,
+                delegatorType.getInternalName(),
+                constructorDescriptor.getName(),
+                constructorDescriptor.getDescriptor(),
+                false);
+    }
+
+    private void generateProviderConstruction(final MethodVisitor methodVisitor, final ProviderDescriptor provider) {
+        methodVisitor.visitTypeInsn(NEW, provider.getProviderType().getInternalName());
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitVarInsn(ALOAD, 1);
+        final MethodDescriptor constructorDescriptor =
+                MethodDescriptor.forConstructor(provider.getModuleType(), Type.getType(Injector.class));
+        methodVisitor.visitMethodInsn(INVOKESPECIAL,
+                provider.getProviderType().getInternalName(),
+                constructorDescriptor.getName(),
+                constructorDescriptor.getDescriptor(),
                 false);
     }
 }

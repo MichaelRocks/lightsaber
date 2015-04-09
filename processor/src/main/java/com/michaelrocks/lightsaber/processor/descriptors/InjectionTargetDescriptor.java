@@ -29,15 +29,18 @@ public class InjectionTargetDescriptor {
     private final MethodDescriptor injectableConstructor;
     private final Set<MethodDescriptor> injectableConstructors;
     private final Set<MethodDescriptor> injectableMethods;
+    private final ScopeDescriptor scopeDescriptor;
 
     private InjectionTargetDescriptor(final Type targetType, final Set<FieldDescriptor> injectableFields,
-            final Set<MethodDescriptor> injectableConstructors, final Set<MethodDescriptor> injectableMethods) {
+            final Set<MethodDescriptor> injectableConstructors, final Set<MethodDescriptor> injectableMethods,
+            final ScopeDescriptor scopeDescriptor) {
         this.targetType = targetType;
         this.injectableFields = Collections.unmodifiableSet(injectableFields);
         final Iterator<MethodDescriptor> constructorIterator = injectableConstructors.iterator();
         this.injectableConstructor = constructorIterator.hasNext() ? constructorIterator.next() : null;
         this.injectableConstructors = Collections.unmodifiableSet(injectableConstructors);
         this.injectableMethods = Collections.unmodifiableSet(injectableMethods);
+        this.scopeDescriptor = scopeDescriptor;
     }
 
     public Type getTargetType() {
@@ -60,12 +63,17 @@ public class InjectionTargetDescriptor {
         return injectableMethods;
     }
 
+    public ScopeDescriptor getScope() {
+        return scopeDescriptor;
+    }
+
     public static class Builder {
         private final Type targetType;
         private boolean hasDefaultConstructor;
         private final Set<FieldDescriptor> injectableFields = new LinkedHashSet<>();
         private final Set<MethodDescriptor> injectableConstructors = new LinkedHashSet<>();
         private final Set<MethodDescriptor> injectableMethods = new LinkedHashSet<>();
+        private ScopeDescriptor scopeDescriptor;
 
         public Builder(final Type targetType) {
             this.targetType = targetType;
@@ -90,6 +98,11 @@ public class InjectionTargetDescriptor {
             return this;
         }
 
+        public Builder setScope(final ScopeDescriptor scopeDescriptor) {
+            this.scopeDescriptor = scopeDescriptor;
+            return this;
+        }
+
         public InjectionTargetDescriptor build() {
             // TODO: Allow to inject objects with default constructors when we can ensure they will be used.
             // if (injectableConstructors.isEmpty() && hasDefaultConstructor) {
@@ -97,7 +110,7 @@ public class InjectionTargetDescriptor {
             // }
 
             return new InjectionTargetDescriptor(
-                    targetType, injectableFields, injectableConstructors, injectableMethods);
+                    targetType, injectableFields, injectableConstructors, injectableMethods, scopeDescriptor);
         }
     }
 }

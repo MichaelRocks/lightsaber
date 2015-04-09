@@ -82,7 +82,7 @@ public class ClassProcessor {
             final MethodDescriptor providerMethod =
                     MethodDescriptor.forMethod(providerMethodName, providableTargetType, providerMethodArgumentTypes);
 
-            globalModuleBuilder.addProviderMethod(providerMethod);
+            globalModuleBuilder.addProviderMethod(providerMethod, providableTarget.getScope());
         }
         processorContext.setGlobalModule(globalModuleBuilder.build());
     }

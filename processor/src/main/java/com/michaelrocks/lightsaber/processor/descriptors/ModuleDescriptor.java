@@ -47,12 +47,14 @@ public class ModuleDescriptor {
             this.moduleType = moduleType;
         }
 
-        public Builder addProviderMethod(final MethodDescriptor providerMethod) {
+        public Builder addProviderMethod(final MethodDescriptor providerMethod, final ScopeDescriptor scope) {
             final int providerIndex = providers.size() + 1;
             final Type providerType =
                     Type.getObjectType(moduleType.getInternalName() + "$$Provider$$" + providerIndex);
+            final Type delegatorType = scope != null ? scope.getProviderType() : null;
             final ProviderDescriptor provider =
-                    new ProviderDescriptor(providerType, providerMethod.getReturnType(), providerMethod, moduleType);
+                    new ProviderDescriptor(providerType, providerMethod.getReturnType(), providerMethod, moduleType,
+                            delegatorType);
             providers.add(provider);
             return this;
         }

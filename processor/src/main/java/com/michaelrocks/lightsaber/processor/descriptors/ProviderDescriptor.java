@@ -27,13 +27,15 @@ public class ProviderDescriptor {
     private final Type providableType;
     private final MethodDescriptor providerMethod;
     private final Type moduleType;
+    private final Type delegatorType;
 
     public ProviderDescriptor(final Type providerType, final Type providableType,
-            final MethodDescriptor providerMethod, final Type moduleType) {
+            final MethodDescriptor providerMethod, final Type moduleType, final Type delegatorType) {
         this.providerType = providerType;
         this.providableType = providableType;
         this.providerMethod = providerMethod;
         this.moduleType = moduleType;
+        this.delegatorType = delegatorType;
     }
 
     public Type getProviderType() {
@@ -50,6 +52,10 @@ public class ProviderDescriptor {
 
     public Type getModuleType() {
         return moduleType;
+    }
+
+    public Type getDelegatorType() {
+        return delegatorType;
     }
 
     public List<Type> getDependencies() {

@@ -21,6 +21,7 @@ import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;
@@ -43,6 +44,15 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
             final String superName, final String[] interfaces) {
         injectionTargetDescriptorBuilder = new InjectionTargetDescriptor.Builder(Type.getObjectType(name));
         super.visit(version, access, name, signature, superName, interfaces);
+    }
+
+    @Override
+    public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+        final ScopeDescriptor scope = getProcessorContext().findScopeByAnnotationType(Type.getType(desc));
+        if (scope != null) {
+            injectionTargetDescriptorBuilder.setScope(scope);
+        }
+        return super.visitAnnotation(desc, visible);
     }
 
     @Override
