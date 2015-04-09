@@ -44,6 +44,11 @@ public class InjectionDispatcher extends ProcessorClassVisitor {
             cv = new InjectableTargetPatcher(getProcessorContext(), cv, injectableTarget);
         }
 
+        final InjectionTargetDescriptor providableTarget = getProcessorContext().findProvidableTargetByType(type);
+        if (providableTarget != null) {
+            cv = new ProvidableTargetPatcher(getProcessorContext(), cv, providableTarget);
+        }
+
         super.visit(version, access, name, signature, superName, interfaces);
     }
 }
