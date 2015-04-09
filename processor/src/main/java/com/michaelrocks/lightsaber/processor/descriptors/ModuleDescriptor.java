@@ -55,6 +55,10 @@ public class ModuleDescriptor {
             final ProviderDescriptor provider =
                     new ProviderDescriptor(providerType, providerMethod.getReturnType(), providerMethod, moduleType,
                             delegatorType);
+            return addProvider(provider);
+        }
+
+        public Builder addProvider(final ProviderDescriptor provider) {
             providers.add(provider);
             return this;
         }
