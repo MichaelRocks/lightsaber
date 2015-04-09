@@ -48,7 +48,7 @@ public class ProviderClassGenerator {
         final ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         classWriter.visit(
                 V1_6,
-                ACC_SUPER,
+                ACC_PUBLIC | ACC_SUPER,
                 providerType.getInternalName(),
                 null,
                 Type.getInternalName(Object.class),
@@ -84,7 +84,7 @@ public class ProviderClassGenerator {
         final MethodDescriptor providerConstructor =
                 MethodDescriptor.forConstructor(moduleType, Type.getType(Injector.class));
         final MethodVisitor methodVisitor = classWriter.visitMethod(
-                0,
+                ACC_PUBLIC,
                 providerConstructor.getName(),
                 providerConstructor.getType().getDescriptor(),
                 null,
