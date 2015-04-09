@@ -43,7 +43,7 @@ public class ProvidersGenerator {
 
     private void generateProvider(final ProviderDescriptor provider) {
         System.out.println("Generating provider " + provider.getProviderType().getInternalName());
-        final ProviderClassGenerator generator = new ProviderClassGenerator(provider);
+        final ProviderClassGenerator generator = new ProviderClassGenerator(processorContext, provider);
         final byte[] providerClassData = generator.generate();
         classProducer.produceClass(provider.getProviderType().getInternalName(), providerClassData);
     }

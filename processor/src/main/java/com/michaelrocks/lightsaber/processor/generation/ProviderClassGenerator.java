@@ -17,6 +17,7 @@
 package com.michaelrocks.lightsaber.processor.generation;
 
 import com.michaelrocks.lightsaber.Injector;
+import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import org.objectweb.asm.ClassWriter;
@@ -33,10 +34,13 @@ public class ProviderClassGenerator {
     private static final String INJECTOR_FIELD_NAME = "injector";
     private static final String GET_METHOD_NAME = "get";
     private static final String GET_PROVIDER_METHOD_NAME = "getProvider";
+    private static final String INJECT_MEMBERS_METHOD_NAME = "injectMembers";
 
+    private final ProcessorContext processorContext;
     private final ProviderDescriptor provider;
 
-    public ProviderClassGenerator(final ProviderDescriptor provider) {
+    public ProviderClassGenerator(final ProcessorContext processorContext, final ProviderDescriptor provider) {
+        this.processorContext = processorContext;
         this.provider = provider;
     }
 
@@ -131,6 +135,8 @@ public class ProviderClassGenerator {
             generateProviderMethodInvocation(methodVisitor);
         }
 
+        generateInjectMembersInvocation(methodVisitor);
+
         methodVisitor.visitInsn(ARETURN);
         methodVisitor.visitMaxs(0, 0);
         methodVisitor.visitEnd();
@@ -191,5 +197,24 @@ public class ProviderClassGenerator {
                 Type.getMethodDescriptor(Type.getType(Object.class)),
                 true);
         methodVisitor.visitTypeInsn(CHECKCAST, argumentType.getInternalName());
+    }
+
+    private void generateInjectMembersInvocation(final MethodVisitor methodVisitor) {
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitVarInsn(ASTORE, 1);
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitFieldInsn(
+                GETFIELD,
+                provider.getProviderType().getInternalName(),
+                INJECTOR_FIELD_NAME,
+                Type.getDescriptor(Injector.class));
+        methodVisitor.visitVarInsn(ALOAD, 1);
+        methodVisitor.visitMethodInsn(
+                INVOKESTATIC,
+                processorContext.getInjectorFactoryType().getInternalName(),
+                INJECT_MEMBERS_METHOD_NAME,
+                Type.getMethodDescriptor(
+                        Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
+                false);
     }
 }
