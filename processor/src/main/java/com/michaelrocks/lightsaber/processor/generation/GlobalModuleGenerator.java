@@ -16,17 +16,20 @@
 
 package com.michaelrocks.lightsaber.processor.generation;
 
-import com.michaelrocks.lightsaber.Module;
+import com.michaelrocks.lightsaber.internal.Lightsaber$$GlobalModule;
+import com.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
-import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.injection.ModulePatcher;
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Type;
 
-import static org.objectweb.asm.Opcodes.*;
+import java.io.IOException;
+import java.io.InputStream;
+
+import static org.objectweb.asm.Opcodes.ASM5;
+import static org.objectweb.asm.Opcodes.V1_6;
 
 public class GlobalModuleGenerator {
     private final ClassProducer classProducer;
@@ -38,44 +41,32 @@ public class GlobalModuleGenerator {
     }
 
     public void generateGlobalModule() {
-        final ModuleDescriptor globalModule = processorContext.getGlobalModule();
-        final Type globalModuleType = globalModule.getModuleType();
+        final String path = Lightsaber$$GlobalModule.class.getSimpleName() + ".class";
+        try (final InputStream stream = Lightsaber$$InjectorFactory.class.getResourceAsStream(path)) {
+            final ClassReader classReader = new ClassReader(stream);
+            final ClassWriter classWriter =
+                    new ClassWriter(classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
 
-        final ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-        final ModulePatcher classVisitor = new ModulePatcher(processorContext, classWriter, globalModule);
-        classVisitor.visit(
-                V1_6,
-                ACC_PUBLIC | ACC_SUPER,
-                globalModuleType.getInternalName(),
-                null,
-                Type.getInternalName(Object.class),
-                new String[] { Type.getInternalName(Module.class) });
-
-        generateConstructor(classVisitor);
-
-        classVisitor.visitEnd();
-        final byte[] classData = classWriter.toByteArray();
-        classProducer.produceClass(globalModuleType.getInternalName(), classData);
+            final ModuleDescriptor globalModule = processorContext.getGlobalModule();
+            final ModulePatcher modulePatcher = new ModulePatcher(processorContext, classWriter, globalModule);
+            classReader.accept(
+                    new GlobalModuleClassVisitor(modulePatcher), ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG);
+            final byte[] classData = classWriter.toByteArray();
+            classProducer.produceClass(globalModule.getModuleType().getInternalName(), classData);
+        } catch (final IOException exception) {
+            processorContext.reportError(exception);
+        }
     }
 
-    private void generateConstructor(final ClassVisitor classVisitor) {
-        final MethodDescriptor defaultConstructor = MethodDescriptor.forConstructor();
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                0,
-                defaultConstructor.getName(),
-                defaultConstructor.getType().getDescriptor(),
-                null,
-                null);
-        methodVisitor.visitCode();
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitMethodInsn(
-                INVOKESPECIAL,
-                Type.getInternalName(Object.class),
-                defaultConstructor.getName(),
-                defaultConstructor.getType().getDescriptor(),
-                false);
-        methodVisitor.visitInsn(RETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+    private static class GlobalModuleClassVisitor extends ClassVisitor {
+        public GlobalModuleClassVisitor(final ClassVisitor classVisitor) {
+            super(ASM5, classVisitor);
+        }
+
+        @Override
+        public void visit(final int version, final int access, final String name, final String signature,
+                final String superName, final String[] interfaces) {
+            super.visit(V1_6, access, name, signature, superName, interfaces);
+        }
     }
 }
