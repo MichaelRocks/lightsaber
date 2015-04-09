@@ -16,6 +16,7 @@
 
 package com.michaelrocks.lightsaber.processor;
 
+import com.michaelrocks.lightsaber.SingletonProvider;
 import com.michaelrocks.lightsaber.internal.Lightsaber$$GlobalModule;
 import com.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
@@ -24,9 +25,11 @@ import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 
+import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,6 +41,8 @@ import java.util.Map;
 public class ProcessorContext {
     private static final Type GLOBAL_MODULE_TYPE = Type.getType(Lightsaber$$GlobalModule.class);
     private static final Type INJECTOR_FACTORY_TYPE = Type.getType(Lightsaber$$InjectorFactory.class);
+    private static final ScopeDescriptor SINGLETON_SCOPE_DESCRIPTOR =
+            new ScopeDescriptor(Type.getType(Singleton.class), Type.getType(SingletonProvider.class));
 
     private String classFilePath;
     private final Map<String, List<Exception>> errorsByPath = new LinkedHashMap<>();
@@ -129,6 +134,17 @@ public class ProcessorContext {
 
     public void addInjector(final InjectorDescriptor injector) {
         injectors.put(injector.getInjectableTarget().getTargetType(), injector);
+    }
+
+    public ScopeDescriptor findScopeByAnnotationType(final Type annotationType) {
+        if (SINGLETON_SCOPE_DESCRIPTOR.getScopeAnnotationType().equals(annotationType)) {
+            return SINGLETON_SCOPE_DESCRIPTOR;
+        }
+        return null;
+    }
+
+    public Collection<ScopeDescriptor> getScopes() {
+        return Collections.singleton(SINGLETON_SCOPE_DESCRIPTOR);
     }
 
     public Type getGlobalModuleType() {
