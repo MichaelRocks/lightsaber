@@ -31,11 +31,11 @@ import java.io.InputStream;
 import static org.objectweb.asm.Opcodes.ASM5;
 import static org.objectweb.asm.Opcodes.V1_6;
 
-public class GlobalModuleGenerator {
+public class GlobalModuleClassGenerator {
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
 
-    public GlobalModuleGenerator(final ClassProducer classProducer, final ProcessorContext processorContext) {
+    public GlobalModuleClassGenerator(final ClassProducer classProducer, final ProcessorContext processorContext) {
         this.classProducer = classProducer;
         this.processorContext = processorContext;
     }

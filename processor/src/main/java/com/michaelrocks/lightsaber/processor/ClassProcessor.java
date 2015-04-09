@@ -24,7 +24,7 @@ import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
-import com.michaelrocks.lightsaber.processor.generation.GlobalModuleGenerator;
+import com.michaelrocks.lightsaber.processor.generation.GlobalModuleClassGenerator;
 import com.michaelrocks.lightsaber.processor.generation.InjectorFactoryClassGenerator;
 import com.michaelrocks.lightsaber.processor.generation.InjectorsGenerator;
 import com.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
@@ -123,8 +123,8 @@ public class ClassProcessor {
 
     private void generateGlobalModule() throws ProcessingException {
         final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
-        final GlobalModuleGenerator globalModuleGenerator = new GlobalModuleGenerator(classProducer, processorContext);
-        globalModuleGenerator.generateGlobalModule();
+        final GlobalModuleClassGenerator globalModuleClassGenerator = new GlobalModuleClassGenerator(classProducer, processorContext);
+        globalModuleClassGenerator.generateGlobalModule();
         checkErrors();
     }
 
