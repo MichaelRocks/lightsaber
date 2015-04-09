@@ -21,6 +21,8 @@ import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescript
 import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import com.michaelrocks.lightsaber.processor.generation.GlobalModuleGenerator;
 import com.michaelrocks.lightsaber.processor.generation.InjectorFactoryClassGenerator;
@@ -82,7 +84,14 @@ public class ClassProcessor {
             final MethodDescriptor providerMethod =
                     MethodDescriptor.forMethod(providerMethodName, providableTargetType, providerMethodArgumentTypes);
 
-            globalModuleBuilder.addProviderMethod(providerMethod, providableTarget.getScope());
+            final Type providerType = Type.getObjectType(providableTargetType.getInternalName() + "$$Provider");
+            final ScopeDescriptor scope = providableTarget.getScope();
+            final Type delegatorType = scope != null ? scope.getProviderType() : null;
+            final ProviderDescriptor provider =
+                    new ProviderDescriptor(providerType, providerMethod.getReturnType(), providerMethod,
+                            processorContext.getGlobalModuleType(), delegatorType);
+
+            globalModuleBuilder.addProvider(provider);
         }
         processorContext.setGlobalModule(globalModuleBuilder.build());
     }
