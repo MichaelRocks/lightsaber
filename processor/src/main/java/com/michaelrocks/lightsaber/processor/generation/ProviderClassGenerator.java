@@ -124,6 +124,31 @@ public class ProviderClassGenerator {
                 null,
                 null);
         methodVisitor.visitCode();
+
+        if (provider.getProviderMethod().isConstructior()) {
+            generateConstructorInvocation(methodVisitor);
+        } else {
+            generateProviderMethodInvocation(methodVisitor);
+        }
+
+        methodVisitor.visitInsn(ARETURN);
+        methodVisitor.visitMaxs(0, 0);
+        methodVisitor.visitEnd();
+    }
+
+    private void generateConstructorInvocation(final MethodVisitor methodVisitor) {
+        methodVisitor.visitTypeInsn(NEW, provider.getProvidableType().getInternalName());
+        methodVisitor.visitInsn(DUP);
+        generateProvideMethodArguments(methodVisitor);
+        methodVisitor.visitMethodInsn(
+                INVOKESPECIAL,
+                provider.getProvidableType().getInternalName(),
+                provider.getProviderMethod().getName(),
+                provider.getProviderMethod().getDescriptor(),
+                false);
+    }
+
+    private void generateProviderMethodInvocation(final MethodVisitor methodVisitor) {
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitFieldInsn(
                 GETFIELD,
@@ -137,9 +162,6 @@ public class ProviderClassGenerator {
                 provider.getProviderMethod().getName(),
                 provider.getProviderMethod().getDescriptor(),
                 false);
-        methodVisitor.visitInsn(ARETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
     }
 
     private void generateProvideMethodArguments(final MethodVisitor methodVisitor) {

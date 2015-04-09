@@ -79,16 +79,11 @@ public class ClassProcessor {
             final Type providableTargetType = providableTarget.getTargetType();
             final MethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructor();
 
-            final String providerMethodName = "provide$" + providableTargetType.getInternalName().replace('/', '$');
-            final Type[] providerMethodArgumentTypes = providableTargetConstructor.getType().getArgumentTypes();
-            final MethodDescriptor providerMethod =
-                    MethodDescriptor.forMethod(providerMethodName, providableTargetType, providerMethodArgumentTypes);
-
             final Type providerType = Type.getObjectType(providableTargetType.getInternalName() + "$$Provider");
             final ScopeDescriptor scope = providableTarget.getScope();
             final Type delegatorType = scope != null ? scope.getProviderType() : null;
             final ProviderDescriptor provider =
-                    new ProviderDescriptor(providerType, providerMethod.getReturnType(), providerMethod,
+                    new ProviderDescriptor(providerType, providableTarget.getTargetType(), providableTargetConstructor,
                             processorContext.getGlobalModuleType(), delegatorType);
 
             globalModuleBuilder.addProvider(provider);

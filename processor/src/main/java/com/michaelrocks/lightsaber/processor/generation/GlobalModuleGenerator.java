@@ -17,11 +17,9 @@
 package com.michaelrocks.lightsaber.processor.generation;
 
 import com.michaelrocks.lightsaber.Module;
-import com.michaelrocks.lightsaber.Provides;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
-import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import com.michaelrocks.lightsaber.processor.injection.ModulePatcher;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -54,9 +52,6 @@ public class GlobalModuleGenerator {
                 new String[] { Type.getInternalName(Module.class) });
 
         generateConstructor(classVisitor);
-        for (final ProviderDescriptor provider : globalModule.getProviders()) {
-            generateProviderMethod(classVisitor, provider.getProviderMethod());
-        }
 
         classVisitor.visitEnd();
         final byte[] classData = classWriter.toByteArray();
@@ -80,39 +75,6 @@ public class GlobalModuleGenerator {
                 defaultConstructor.getType().getDescriptor(),
                 false);
         methodVisitor.visitInsn(RETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
-    }
-
-    private void generateProviderMethod(final ClassVisitor classVisitor, final MethodDescriptor providerMethod) {
-        final Type providableTargetType = providerMethod.getReturnType();
-        final MethodDescriptor providableTargetConstructor =
-                MethodDescriptor.forConstructor(providerMethod.getType().getArgumentTypes());
-
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                providerMethod.getName(),
-                providerMethod.getDescriptor(),
-                null,
-                null);
-        // TODO: Remove this annotation when the injection package is refactored.
-        methodVisitor.visitAnnotation(Type.getDescriptor(Provides.class), true);
-        methodVisitor.visitCode();
-        methodVisitor.visitTypeInsn(NEW, providableTargetType.getInternalName());
-        methodVisitor.visitInsn(DUP);
-
-        final int providerMethodArgumentCount = providerMethod.getType().getArgumentTypes().length;
-        for (int i = 1; i <= providerMethodArgumentCount; ++i) {
-            methodVisitor.visitVarInsn(ALOAD, i);
-        }
-
-        methodVisitor.visitMethodInsn(
-                INVOKESPECIAL,
-                providableTargetType.getInternalName(),
-                providableTargetConstructor.getName(),
-                providableTargetConstructor.getDescriptor(),
-                false);
-        methodVisitor.visitInsn(ARETURN);
         methodVisitor.visitMaxs(0, 0);
         methodVisitor.visitEnd();
     }
