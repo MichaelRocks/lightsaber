@@ -18,6 +18,7 @@ package com.michaelrocks.lightsaber.processor.generation;
 
 import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -33,15 +34,10 @@ public class ProviderClassGenerator {
     private static final String GET_METHOD_NAME = "get";
     private static final String GET_PROVIDER_METHOD_NAME = "getProvider";
 
-    private final Type providerType;
-    private final Type moduleType;
-    private final MethodDescriptor providerMethodDescriptor;
+    private final ProviderDescriptor provider;
 
-    public ProviderClassGenerator(final Type providerType, final Type moduleType,
-            final MethodDescriptor providerMethodDescriptor) {
-        this.providerType = providerType;
-        this.moduleType = moduleType;
-        this.providerMethodDescriptor = providerMethodDescriptor;
+    public ProviderClassGenerator(final ProviderDescriptor provider) {
+        this.provider = provider;
     }
 
     public byte[] generate() {
@@ -49,7 +45,7 @@ public class ProviderClassGenerator {
         classWriter.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,
-                providerType.getInternalName(),
+                provider.getProviderType().getInternalName(),
                 null,
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(Provider.class) });
@@ -64,29 +60,32 @@ public class ProviderClassGenerator {
     }
 
     private void generateModuleField(final ClassWriter classWriter) {
-        final FieldVisitor fieldVisitor =
-                classWriter.visitField(ACC_PRIVATE | ACC_FINAL, MODULE_FIELD_NAME, moduleType.getDescriptor(), null,
-                        null);
+        final FieldVisitor fieldVisitor = classWriter.visitField(
+                ACC_PRIVATE | ACC_FINAL,
+                MODULE_FIELD_NAME,
+                provider.getModuleType().getDescriptor(),
+                null,
+                null);
         fieldVisitor.visitEnd();
     }
 
     private void generateInjectorField(final ClassWriter classWriter) {
         final FieldVisitor fieldVisitor = classWriter.visitField(
-                    ACC_PRIVATE | ACC_FINAL,
-                    INJECTOR_FIELD_NAME,
-                    Type.getDescriptor(Injector.class),
-                    null,
-                    null);
+                ACC_PRIVATE | ACC_FINAL,
+                INJECTOR_FIELD_NAME,
+                Type.getDescriptor(Injector.class),
+                null,
+                null);
         fieldVisitor.visitEnd();
     }
 
     private void generateConstructor(final ClassWriter classWriter) {
         final MethodDescriptor providerConstructor =
-                MethodDescriptor.forConstructor(moduleType, Type.getType(Injector.class));
+                MethodDescriptor.forConstructor(provider.getModuleType(), Type.getType(Injector.class));
         final MethodVisitor methodVisitor = classWriter.visitMethod(
                 ACC_PUBLIC,
                 providerConstructor.getName(),
-                providerConstructor.getType().getDescriptor(),
+                providerConstructor.getDescriptor(),
                 null,
                 null);
         methodVisitor.visitCode();
@@ -96,20 +95,20 @@ public class ProviderClassGenerator {
                 INVOKESPECIAL,
                 Type.getInternalName(Object.class),
                 objectConstructor.getName(),
-                objectConstructor.getType().getDescriptor(),
+                objectConstructor.getDescriptor(),
                 false);
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitVarInsn(ALOAD, 1);
         methodVisitor.visitFieldInsn(
                 PUTFIELD,
-                providerType.getInternalName(),
+                provider.getProviderType().getInternalName(),
                 MODULE_FIELD_NAME,
-                moduleType.getDescriptor());
+                provider.getModuleType().getDescriptor());
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitVarInsn(ALOAD, 2);
         methodVisitor.visitFieldInsn(
                 PUTFIELD,
-                providerType.getInternalName(),
+                provider.getProviderType().getInternalName(),
                 INJECTOR_FIELD_NAME,
                 Type.getDescriptor(Injector.class));
         methodVisitor.visitInsn(RETURN);
@@ -128,15 +127,15 @@ public class ProviderClassGenerator {
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitFieldInsn(
                 GETFIELD,
-                providerType.getInternalName(),
+                provider.getProviderType().getInternalName(),
                 MODULE_FIELD_NAME,
-                moduleType.getDescriptor());
+                provider.getModuleType().getDescriptor());
         generateProvideMethodArguments(methodVisitor);
         methodVisitor.visitMethodInsn(
                 INVOKEVIRTUAL,
-                moduleType.getInternalName(),
-                providerMethodDescriptor.getName(),
-                providerMethodDescriptor.getType().getDescriptor(),
+                provider.getModuleType().getInternalName(),
+                provider.getProviderMethod().getName(),
+                provider.getProviderMethod().getDescriptor(),
                 false);
         methodVisitor.visitInsn(ARETURN);
         methodVisitor.visitMaxs(0, 0);
@@ -144,7 +143,7 @@ public class ProviderClassGenerator {
     }
 
     private void generateProvideMethodArguments(final MethodVisitor methodVisitor) {
-        for (final Type argumentType : providerMethodDescriptor.getType().getArgumentTypes()) {
+        for (final Type argumentType : provider.getProviderMethod().getArgumentTypes()) {
             generateProviderMethodArgument(methodVisitor, argumentType);
         }
     }
@@ -153,7 +152,7 @@ public class ProviderClassGenerator {
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitFieldInsn(
                 GETFIELD,
-                providerType.getInternalName(),
+                provider.getProviderType().getInternalName(),
                 INJECTOR_FIELD_NAME,
                 Type.getDescriptor(Injector.class));
         methodVisitor.visitLdcInsn(argumentType);
