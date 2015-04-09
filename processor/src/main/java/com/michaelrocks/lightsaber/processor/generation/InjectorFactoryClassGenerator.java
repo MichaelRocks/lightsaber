@@ -82,16 +82,15 @@ public class InjectorFactoryClassGenerator {
 
         private void patchPopulateTypeInjectorsMethod(final MethodVisitor methodVisitor) {
             methodVisitor.visitCode();
-            methodVisitor.visitFieldInsn(
-                    GETSTATIC,
-                    Type.getInternalName(Lightsaber$$InjectorFactory.class),
-                    "typeInjectors",
-                    Type.getDescriptor(Map.class));
-
             final Type objectType = Type.getType(Object.class);
             final MethodDescriptor putMethodDescriptor =
                     MethodDescriptor.forMethod("put", objectType, objectType, objectType);
             for (final InjectorDescriptor injector : processorContext.getInjectors()) {
+                methodVisitor.visitFieldInsn(
+                        GETSTATIC,
+                        Type.getInternalName(Lightsaber$$InjectorFactory.class),
+                        "typeInjectors",
+                        Type.getDescriptor(Map.class));
                 methodVisitor.visitLdcInsn(injector.getInjectableTarget().getTargetType());
                 methodVisitor.visitTypeInsn(NEW, injector.getInjectorType().getInternalName());
                 methodVisitor.visitInsn(DUP);
