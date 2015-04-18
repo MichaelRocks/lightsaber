@@ -18,6 +18,7 @@ package com.michaelrocks.lightsaber.internal;
 
 import com.michaelrocks.lightsaber.ConfigurationException;
 import com.michaelrocks.lightsaber.Injector;
+import com.michaelrocks.lightsaber.InstanceProvider;
 
 import javax.inject.Provider;
 import java.util.IdentityHashMap;
@@ -33,6 +34,7 @@ public class LightsaberInjector implements Injector {
 
     public LightsaberInjector(final Injector parentInjector) {
         this.parentInjector = parentInjector;
+        registerProvider(Injector.class, new InstanceProvider<Injector>(this));
     }
 
     @Override
