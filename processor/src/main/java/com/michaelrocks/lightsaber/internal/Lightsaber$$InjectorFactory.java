@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Lightsaber$$InjectorFactory {
+    private static final Injector rootInjector = createRootInjector();
     private static final Map<Class, TypeInjector> typeInjectors = new HashMap<>();
 
     static {
@@ -31,24 +32,24 @@ public class Lightsaber$$InjectorFactory {
     }
 
     private static void populateTypeInjectors() {
+        // This method will be generated.
+    }
+
+    private static Injector createRootInjector() {
+        // This method will be generated.
+        final Module[] modules = {
+                new Lightsaber$$GlobalModule()
+        };
+        return Lightsaber.createInjector(modules);
     }
 
     public static Injector createInjector(final Module... modules) {
-        final Module[] newModules;
-        if (modules == null || modules.length == 0) {
-            newModules = new Module[1];
-        } else {
-            newModules = new Module[modules.length + 1];
-            System.arraycopy(modules, 0, newModules, 1, modules.length);
-        }
-        newModules[0] = new Lightsaber$$GlobalModule();
-        return Lightsaber.createInjector(newModules);
+        return Lightsaber.createChildInjector(rootInjector, modules);
     }
 
     public static void injectMembers(final Injector injector, final Object object) {
         injectFieldsIntoObject(injector, object, object.getClass());
     }
-
 
     private static void injectFieldsIntoObject(final Injector injector, final Object object, final Class type) {
         if (type == Object.class) {
