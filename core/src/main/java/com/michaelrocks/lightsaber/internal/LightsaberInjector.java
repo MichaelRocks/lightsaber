@@ -24,9 +24,15 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 public class LightsaberInjector implements Injector {
+    private final Injector parentInjector;
     private final Map<Class<?>, Provider<?>> providers = new IdentityHashMap<Class<?>, Provider<?>>();
 
     public LightsaberInjector() {
+        this(null);
+    }
+
+    public LightsaberInjector(final Injector parentInjector) {
+        this.parentInjector = parentInjector;
     }
 
     @Override
@@ -45,7 +51,11 @@ public class LightsaberInjector implements Injector {
         // noinspection unchecked
         final Provider<T> provider = (Provider<T>) providers.get(type);
         if (provider == null) {
-            throw new ConfigurationException("Provider for " + type + " not found");
+            if (parentInjector == null) {
+                throw new ConfigurationException("Provider for " + type + " not found");
+            } else {
+                return parentInjector.getProvider(type);
+            }
         }
         return provider;
     }
