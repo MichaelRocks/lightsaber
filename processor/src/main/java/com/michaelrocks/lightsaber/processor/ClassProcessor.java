@@ -61,6 +61,7 @@ public class ClassProcessor {
         composePackageModules();
         composeInjectors();
         processorContext.dump();
+        validateRootDependencyGraph();
         validateDependencyGraph();
         generateGlobalModule();
         generateProviders();
@@ -115,8 +116,23 @@ public class ClassProcessor {
         }
     }
 
+    private void validateRootDependencyGraph() throws ProcessingException {
+        final DependencyGraph dependencyGraph =
+                new DependencyGraph(processorContext, processorContext.getPackageModules());
+
+        final UnresolvedDependenciesSearcher unresolvedDependenciesSearcher =
+                new UnresolvedDependenciesSearcher(dependencyGraph);
+        final Collection<Type> unresolvedDependencies = unresolvedDependenciesSearcher.findUnresolvedDependencies();
+        for (final Type unresolvedDependency : unresolvedDependencies) {
+            processorContext.reportError(
+                    new ProcessingException("Unresolved root dependency: " + unresolvedDependency));
+        }
+
+        checkErrors();
+    }
+
     private void validateDependencyGraph() throws ProcessingException {
-        final DependencyGraph dependencyGraph = new DependencyGraph(processorContext);
+        final DependencyGraph dependencyGraph = new DependencyGraph(processorContext, processorContext.getModules());
 
         final UnresolvedDependenciesSearcher unresolvedDependenciesSearcher =
                 new UnresolvedDependenciesSearcher(dependencyGraph);

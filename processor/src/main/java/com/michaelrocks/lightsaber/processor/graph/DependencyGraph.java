@@ -30,10 +30,22 @@ import java.util.Map;
 import java.util.Set;
 
 public class DependencyGraph {
-    private final Map<Type, List<Type>> typeGraph;
+    private final Map<Type, List<Type>> typeGraph = new HashMap<>();
 
-    public DependencyGraph(final ProcessorContext processorContext) {
-        typeGraph = new DependencyGraphBuilder(processorContext).build();
+    public DependencyGraph(final ProcessorContext processorContext, final Collection<ModuleDescriptor> modules) {
+        for (final ModuleDescriptor module : modules) {
+            final Set<Type> providableModuleTypes = new HashSet<>();
+            for (final ProviderDescriptor provider : module.getProviders()) {
+                final Type returnType = provider.getProvidableType();
+                if (providableModuleTypes.add(returnType)) {
+                    typeGraph.put(returnType, provider.getDependencies());
+                } else {
+                    final String message = String.format("Module %s provides %s multiple times",
+                            module.getModuleType().getInternalName(), returnType.getInternalName());
+                    processorContext.reportError(new ProcessingException(message));
+                }
+            }
+        }
     }
 
     public Collection<Type> getTypes() {
@@ -42,31 +54,5 @@ public class DependencyGraph {
 
     public Collection<Type> getTypeDependencies(final Type type) {
         return typeGraph.get(type);
-    }
-
-    private static final class DependencyGraphBuilder {
-        private final ProcessorContext processorContext;
-        private final Map<Type, List<Type>> typeGraph = new HashMap<>();
-
-        private DependencyGraphBuilder(final ProcessorContext processorContext) {
-            this.processorContext = processorContext;
-        }
-
-        Map<Type, List<Type>> build() {
-            for (final ModuleDescriptor module : processorContext.getModules()) {
-                final Set<Type> providableModuleTypes = new HashSet<>();
-                for (final ProviderDescriptor provider : module.getProviders()) {
-                    final Type returnType = provider.getProvidableType();
-                    if (providableModuleTypes.add(returnType)) {
-                        typeGraph.put(returnType, provider.getDependencies());
-                    } else {
-                        final String message = String.format("Module %s provides %s multiple times",
-                                module.getModuleType().getInternalName(), returnType.getInternalName());
-                        processorContext.reportError(new ProcessingException(message));
-                    }
-                }
-            }
-            return typeGraph;
-        }
     }
 }
