@@ -16,6 +16,6 @@
 
 package com.michaelrocks.lightsaber.sample
 
-public trait Droid {
-    public fun repair()
+trait Droid {
+    fun repair()
 }

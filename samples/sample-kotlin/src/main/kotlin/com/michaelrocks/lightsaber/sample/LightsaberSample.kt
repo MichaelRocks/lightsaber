@@ -29,19 +29,27 @@ public class LightsaberSample {
 
     Inject
     private var wookiee: Wookiee? = null
+    Inject
+    private var anotherWookiee: Wookiee? = null
 
     Inject
     private var droid: Droid? = null
+    Inject
+    private var anotherDroid: Droid? = null
 
     private fun run() {
         System.out.println("Before injection")
-        System.out.println("Wookie: " + wookiee)
-        System.out.println("Droid: " + droid)
+        System.out.println("Wookie: $wookiee")
+        System.out.println("Another wookie: $anotherWookiee")
+        System.out.println("Droid: $droid")
+        System.out.println("Another droid: $anotherDroid")
         val injector = Lightsaber.createInjector(LightsaberModule())
         injector.injectMembers(this)
         System.out.println("After injection")
-        System.out.println("Wookie: " + wookiee + " from " + wookiee!!.getPlanet())
-        System.out.println("Droid: " + droid)
+        System.out.println("Wookie: $wookiee from ${wookiee!!.planet}")
+        System.out.println("Another wookie: $anotherWookiee from ${anotherWookiee!!.planet}")
+        System.out.println("Droid: $droid")
+        System.out.println("Another droid: $anotherDroid")
         wookiee!!.roar()
         droid!!.repair()
     }

@@ -19,19 +19,14 @@ package com.michaelrocks.lightsaber.sample;
 import com.michaelrocks.lightsaber.Module;
 import com.michaelrocks.lightsaber.Provides;
 
-public class LightsaberModule implements Module {
+class LightsaberModule implements Module {
     @Provides
-    public Wookiee provideWookie(final Planet planet) {
-        return new Chewbacca(planet);
+    public Wookiee provideWookie(final Chewbacca chewbacca) {
+        return chewbacca;
     }
 
     @Provides
     public Droid provideDroid(final R2D2 r2d2) {
         return r2d2;
-    }
-
-    @Provides
-    public Planet providePlanet() {
-        return new Kashyyyk();
     }
 }

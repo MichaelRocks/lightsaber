@@ -16,11 +16,16 @@
 
 package com.michaelrocks.lightsaber.sample;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 class Chewbacca implements Wookiee {
     private final Planet planet;
 
-    public Chewbacca(final Planet planet) {
-        this.planet = planet;
+    @Inject
+    private Chewbacca(final Kashyyyk kashyyyk) {
+        this.planet = kashyyyk;
     }
 
     @Override

@@ -18,9 +18,7 @@ package com.michaelrocks.lightsaber.sample
 
 import javax.inject.Inject
 
-public class R2D2 [Inject]
-() : Droid {
-
+private class R2D2 [Inject] private () : Droid {
     override fun repair() {
         System.out.println("BEEP BEEP BEEEEEP")
     }

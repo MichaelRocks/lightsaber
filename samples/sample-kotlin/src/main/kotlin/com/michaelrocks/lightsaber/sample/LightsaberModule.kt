@@ -19,19 +19,10 @@ package com.michaelrocks.lightsaber.sample
 import com.michaelrocks.lightsaber.Module
 import com.michaelrocks.lightsaber.Provides
 
-public class LightsaberModule : Module {
+private class LightsaberModule : Module {
     Provides
-    public fun provideWookie(planet: Planet): Wookiee {
-        return Chewbacca(planet)
-    }
+    fun provideWookie(chewbacca: Chewbacca): Wookiee = chewbacca
 
     Provides
-    public fun provideDroid(r2d2: R2D2): Droid {
-        return r2d2
-    }
-
-    Provides
-    public fun providePlanet(): Planet {
-        return Kashyyyk()
-    }
+    fun provideDroid(r2d2: R2D2): Droid = r2d2
 }

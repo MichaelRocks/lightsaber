@@ -17,6 +17,6 @@
 package com.michaelrocks.lightsaber.sample
 
 public trait Wookiee {
+    val planet: Planet
     public fun roar()
-    public fun getPlanet(): Planet
 }

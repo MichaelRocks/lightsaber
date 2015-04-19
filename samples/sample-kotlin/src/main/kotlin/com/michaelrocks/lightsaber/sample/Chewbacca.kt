@@ -16,12 +16,14 @@
 
 package com.michaelrocks.lightsaber.sample
 
-class Chewbacca(private val planet: Planet) : Wookiee {
+import javax.inject.Inject
+import javax.inject.Singleton
+
+Singleton
+private class Chewbacca [Inject] private (kashyyyk: Kashyyyk) : Wookiee {
+    override val planet = kashyyyk
+
     override fun roar() {
         System.out.println("AULRGHHHGR")
-    }
-
-    override fun getPlanet(): Planet {
-        return planet
     }
 }

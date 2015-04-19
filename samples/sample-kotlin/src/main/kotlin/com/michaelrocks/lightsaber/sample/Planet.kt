@@ -17,6 +17,6 @@
 package com.michaelrocks.lightsaber.sample
 
 trait Planet {
-    public fun getName(): String
-    public fun getSector(): String
+    val name: String
+    val sector: String
 }

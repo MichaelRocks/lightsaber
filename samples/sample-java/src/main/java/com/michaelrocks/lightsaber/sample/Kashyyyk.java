@@ -16,7 +16,15 @@
 
 package com.michaelrocks.lightsaber.sample;
 
-public class Kashyyyk implements Planet {
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
+class Kashyyyk implements Planet {
+    @Inject
+    private Kashyyyk() {
+    }
+
     @Override
     public String getName() {
         return "Kashyyyk";

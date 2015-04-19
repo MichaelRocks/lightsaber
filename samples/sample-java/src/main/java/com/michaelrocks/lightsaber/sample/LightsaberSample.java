@@ -25,10 +25,14 @@ import java.net.URISyntaxException;
 
 public class LightsaberSample {
     @Inject
-    Wookiee wookiee;
+    private final Wookiee wookiee = null;
+    @Inject
+    private final Wookiee anotherWookie = null;
 
     @Inject
-    Droid droid;
+    private final Droid droid = null;
+    @Inject
+    private final Droid anotherDroid = null;
 
     public static void main(final String[] args) throws URISyntaxException {
         System.out.println(
@@ -39,12 +43,16 @@ public class LightsaberSample {
     private void run() {
         System.out.println("Before injection");
         System.out.println("Wookie: " + wookiee);
+        System.out.println("Another wookie: " + anotherWookie);
         System.out.println("Droid: " + droid);
+        System.out.println("Another droid: " + anotherDroid);
         final Injector injector = Lightsaber.createInjector(new LightsaberModule());
         injector.injectMembers(this);
         System.out.println("After injection");
         System.out.println("Wookie: " + wookiee + " from " + wookiee.getPlanet());
+        System.out.println("Another wookie: " + anotherWookie + " from " + anotherWookie.getPlanet());
         System.out.println("Droid: " + droid);
+        System.out.println("Another droid: " + anotherDroid);
         wookiee.roar();
         droid.repair();
     }

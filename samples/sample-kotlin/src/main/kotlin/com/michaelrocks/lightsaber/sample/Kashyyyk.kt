@@ -16,12 +16,11 @@
 
 package com.michaelrocks.lightsaber.sample
 
-public class Kashyyyk : Planet {
-    override fun getName(): String {
-        return "Kashyyyk"
-    }
+import javax.inject.Inject
+import javax.inject.Singleton
 
-    override fun getSector(): String {
-        return "Mytaranor"
-    }
+Singleton
+private class Kashyyyk [Inject] private () : Planet {
+    override val name = "Kashyyyk"
+    override val sector = "Mytaranor"
 }
