@@ -16,6 +16,7 @@
 
 package com.michaelrocks.lightsaber.processor;
 
+import com.michaelrocks.lightsaber.internal.Lightsaber$$PackageModule;
 import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
@@ -24,9 +25,9 @@ import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import com.michaelrocks.lightsaber.processor.generation.ClassProducer;
-import com.michaelrocks.lightsaber.processor.generation.GlobalModuleClassGenerator;
 import com.michaelrocks.lightsaber.processor.generation.InjectorFactoryClassGenerator;
 import com.michaelrocks.lightsaber.processor.generation.InjectorsGenerator;
+import com.michaelrocks.lightsaber.processor.generation.PackageModuleClassGenerator;
 import com.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
 import com.michaelrocks.lightsaber.processor.generation.ProvidersGenerator;
 import com.michaelrocks.lightsaber.processor.graph.CycleSearcher;
@@ -35,10 +36,12 @@ import com.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearche
 import com.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import com.michaelrocks.lightsaber.processor.io.ClassFileWriter;
+import org.apache.commons.io.FilenameUtils;
 import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +58,7 @@ public class ClassProcessor {
 
     public void processClasses() throws IOException {
         performAnalysis();
-        composeGlobalModule();
+        composePackageModules();
         composeInjectors();
         processorContext.dump();
         validateDependencyGraph();
@@ -72,23 +75,35 @@ public class ClassProcessor {
         checkErrors();
     }
 
-    private void composeGlobalModule() {
-        final ModuleDescriptor.Builder globalModuleBuilder =
-                new ModuleDescriptor.Builder(processorContext.getGlobalModuleType());
+    private void composePackageModules() {
+        final Map<String, ModuleDescriptor.Builder> moduleBuilders = new HashMap<>();
         for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
             final Type providableTargetType = providableTarget.getTargetType();
             final MethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructor();
 
-            final Type providerType = Type.getObjectType(providableTargetType.getInternalName() + "$$Provider");
+            final String packageName = FilenameUtils.getPath(providableTargetType.getInternalName());
+            ModuleDescriptor.Builder moduleBuilder = moduleBuilders.get(packageName);
+            if (moduleBuilder == null) {
+                final Type moduleType =
+                        Type.getObjectType(packageName + Lightsaber$$PackageModule.class.getSimpleName());
+                moduleBuilder = new ModuleDescriptor.Builder(moduleType);
+                moduleBuilders.put(packageName, moduleBuilder);
+            }
+
+            final Type providerType = Type.getObjectType(
+                    providableTargetType.getInternalName() + "$$Provider");
             final ScopeDescriptor scope = providableTarget.getScope();
             final Type delegatorType = scope != null ? scope.getProviderType() : null;
             final ProviderDescriptor provider =
                     new ProviderDescriptor(providerType, providableTarget.getTargetType(), providableTargetConstructor,
-                            processorContext.getGlobalModuleType(), delegatorType);
+                            moduleBuilder.getModuleType(), delegatorType);
 
-            globalModuleBuilder.addProvider(provider);
+            moduleBuilder.addProvider(provider);
         }
-        processorContext.setGlobalModule(globalModuleBuilder.build());
+
+        for (final ModuleDescriptor.Builder moduleBuilder : moduleBuilders.values()) {
+            processorContext.addPackageModule(moduleBuilder.build());
+        }
     }
 
     private void composeInjectors() {
@@ -123,8 +138,11 @@ public class ClassProcessor {
 
     private void generateGlobalModule() throws ProcessingException {
         final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
-        final GlobalModuleClassGenerator globalModuleClassGenerator = new GlobalModuleClassGenerator(classProducer, processorContext);
-        globalModuleClassGenerator.generateGlobalModule();
+        final PackageModuleClassGenerator packageModuleClassGenerator =
+                new PackageModuleClassGenerator(classProducer, processorContext);
+        for (final ModuleDescriptor packageModule : processorContext.getPackageModules()) {
+            packageModuleClassGenerator.generatePackageModule(packageModule);
+        }
         checkErrors();
     }
 

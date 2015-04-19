@@ -17,7 +17,6 @@
 package com.michaelrocks.lightsaber.processor;
 
 import com.michaelrocks.lightsaber.SingletonProvider;
-import com.michaelrocks.lightsaber.internal.Lightsaber$$GlobalModule;
 import com.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
@@ -26,7 +25,6 @@ import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
-import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 
 import javax.inject.Singleton;
@@ -39,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ProcessorContext {
-    private static final Type GLOBAL_MODULE_TYPE = Type.getType(Lightsaber$$GlobalModule.class);
     private static final Type INJECTOR_FACTORY_TYPE = Type.getType(Lightsaber$$InjectorFactory.class);
     private static final ScopeDescriptor SINGLETON_SCOPE_DESCRIPTOR =
             new ScopeDescriptor(Type.getType(Singleton.class), Type.getType(SingletonProvider.class));
@@ -47,7 +44,7 @@ public class ProcessorContext {
     private String classFilePath;
     private final Map<String, List<Exception>> errorsByPath = new LinkedHashMap<>();
     private final Map<Type, ModuleDescriptor> modules = new HashMap<>();
-    private ModuleDescriptor globalModule;
+    private final Map<Type, ModuleDescriptor> packageModules = new HashMap<>();
     private final Map<Type, InjectionTargetDescriptor> injectableTargets = new HashMap<>();
     private final Map<Type, InjectionTargetDescriptor> providableTargets = new HashMap<>();
     private final Map<Type, InjectorDescriptor> injectors = new HashMap<>();
@@ -89,15 +86,13 @@ public class ProcessorContext {
         modules.put(module.getModuleType(), module);
     }
 
-    public ModuleDescriptor getGlobalModule() {
-        return globalModule;
+    public Collection<ModuleDescriptor> getPackageModules() {
+        return Collections.unmodifiableCollection(packageModules.values());
     }
 
-    public void setGlobalModule(final ModuleDescriptor globalModule) {
-        Validate.isTrue(this.globalModule == null, "Global module cannot be set multiple times");
-        Validate.notNull(globalModule, "Global module cannot be set to null");
-        this.globalModule = globalModule;
-        addModule(globalModule);
+    public void addPackageModule(final ModuleDescriptor packageModule) {
+        packageModules.put(packageModule.getModuleType(), packageModule);
+        addModule(packageModule);
     }
 
     public InjectionTargetDescriptor findInjectableTargetByType(final Type injectableTargetType) {
@@ -145,10 +140,6 @@ public class ProcessorContext {
 
     public Collection<ScopeDescriptor> getScopes() {
         return Collections.singleton(SINGLETON_SCOPE_DESCRIPTOR);
-    }
-
-    public Type getGlobalModuleType() {
-        return GLOBAL_MODULE_TYPE;
     }
 
     public Type getInjectorFactoryType() {

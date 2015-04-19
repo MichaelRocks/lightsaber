@@ -18,5 +18,5 @@ package com.michaelrocks.lightsaber.internal;
 
 import com.michaelrocks.lightsaber.Module;
 
-public class Lightsaber$$GlobalModule implements Module {
+public class Lightsaber$$PackageModule implements Module {
 }

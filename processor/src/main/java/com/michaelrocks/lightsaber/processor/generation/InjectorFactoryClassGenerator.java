@@ -16,10 +16,12 @@
 
 package com.michaelrocks.lightsaber.processor.generation;
 
+import com.michaelrocks.lightsaber.Module;
 import com.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -28,6 +30,7 @@ import org.objectweb.asm.Type;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -75,6 +78,9 @@ public class InjectorFactoryClassGenerator {
             if ("populateTypeInjectors".equals(name)) {
                 patchPopulateTypeInjectorsMethod(methodVisitor);
                 return null;
+            } else if ("getPackageModules".equals(name)) {
+                patchGetPackageModulesMethod(methodVisitor);
+                return null;
             } else {
                 return methodVisitor;
             }
@@ -110,6 +116,34 @@ public class InjectorFactoryClassGenerator {
             }
 
             methodVisitor.visitInsn(RETURN);
+            methodVisitor.visitMaxs(0, 0);
+            methodVisitor.visitEnd();
+        }
+
+        private void patchGetPackageModulesMethod(final MethodVisitor methodVisitor) {
+            methodVisitor.visitCode();
+            final Collection<ModuleDescriptor> packageModules = processorContext.getPackageModules();
+            methodVisitor.visitIntInsn(BIPUSH, packageModules.size());
+            methodVisitor.visitTypeInsn(ANEWARRAY, Type.getInternalName(Module.class));
+
+
+            int index = 0;
+            for (final ModuleDescriptor packageModule : packageModules) {
+                methodVisitor.visitInsn(DUP);
+                methodVisitor.visitIntInsn(BIPUSH, index);
+                methodVisitor.visitTypeInsn(NEW, packageModule.getModuleType().getInternalName());
+                methodVisitor.visitInsn(DUP);
+                methodVisitor.visitMethodInsn(
+                        INVOKESPECIAL,
+                        packageModule.getModuleType().getInternalName(),
+                        MethodDescriptor.forDefaultConstructor().getName(),
+                        MethodDescriptor.forDefaultConstructor().getDescriptor(),
+                        false);
+                methodVisitor.visitInsn(AASTORE);
+                index += 1;
+            }
+
+            methodVisitor.visitInsn(ARETURN);
             methodVisitor.visitMaxs(0, 0);
             methodVisitor.visitEnd();
         }

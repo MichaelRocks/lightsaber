@@ -36,11 +36,12 @@ public class Lightsaber$$InjectorFactory {
     }
 
     private static Injector createRootInjector() {
+        return Lightsaber.createInjector(getPackageModules());
+    }
+
+    private static Module[] getPackageModules() {
         // This method will be generated.
-        final Module[] modules = {
-                new Lightsaber$$GlobalModule()
-        };
-        return Lightsaber.createInjector(modules);
+        return new Module[] {};
     }
 
     public static Injector createInjector(final Module... modules) {
