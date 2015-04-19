@@ -47,6 +47,10 @@ public class ModuleDescriptor {
             this.moduleType = moduleType;
         }
 
+        public Type getModuleType() {
+            return moduleType;
+        }
+
         public Builder addProviderMethod(final MethodDescriptor providerMethod, final ScopeDescriptor scope) {
             final int providerIndex = providers.size() + 1;
             final Type providerType =
