@@ -27,7 +27,7 @@ public class LightsaberSample {
     @Inject
     private final Wookiee wookiee = null;
     @Inject
-    private final Wookiee anotherWookie = null;
+    private final Wookiee anotherWookiee = null;
 
     @Inject
     private final Droid droid = null;
@@ -42,15 +42,15 @@ public class LightsaberSample {
 
     private void run() {
         System.out.println("Before injection");
-        System.out.println("Wookie: " + wookiee);
-        System.out.println("Another wookie: " + anotherWookie);
+        System.out.println("Wookiee: " + wookiee);
+        System.out.println("Another wookiee: " + anotherWookiee);
         System.out.println("Droid: " + droid);
         System.out.println("Another droid: " + anotherDroid);
         final Injector injector = Lightsaber.createInjector(new LightsaberModule());
         injector.injectMembers(this);
         System.out.println("After injection");
-        System.out.println("Wookie: " + wookiee + " from " + wookiee.getPlanet());
-        System.out.println("Another wookie: " + anotherWookie + " from " + anotherWookie.getPlanet());
+        System.out.println("Wookiee: " + wookiee + " from " + wookiee.getPlanet());
+        System.out.println("Another wookiee: " + anotherWookiee + " from " + anotherWookiee.getPlanet());
         System.out.println("Droid: " + droid);
         System.out.println("Another droid: " + anotherDroid);
         wookiee.roar();
