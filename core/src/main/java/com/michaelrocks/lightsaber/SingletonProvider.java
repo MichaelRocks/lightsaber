@@ -16,15 +16,12 @@
 
 package com.michaelrocks.lightsaber;
 
-import javax.inject.Provider;
-
-public class SingletonProvider<T> implements Provider<T> {
-    private final Provider<T> provider;
+public class SingletonProvider<T> extends DelegateProvider<T> {
     private volatile T instance;
     private final Object instanceLock = new Object();
 
-    public SingletonProvider(final Provider<T> provider) {
-        this.provider = provider;
+    public SingletonProvider(final CopyableProvider<T> provider) {
+        super(provider);
     }
 
     @Override
@@ -32,10 +29,15 @@ public class SingletonProvider<T> implements Provider<T> {
         if (instance == null) {
             synchronized (instanceLock) {
                 if (instance == null) {
-                    instance = provider.get();
+                    instance = getDelegate().get();
                 }
             }
         }
         return instance;
+    }
+
+    @Override
+    public CopyableProvider<T> copyWithInjector(final Injector injector) {
+        return new SingletonProvider<T>(getDelegate().copyWithInjector(injector));
     }
 }
