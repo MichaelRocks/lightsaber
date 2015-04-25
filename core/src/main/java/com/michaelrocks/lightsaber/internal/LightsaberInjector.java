@@ -17,6 +17,7 @@
 package com.michaelrocks.lightsaber.internal;
 
 import com.michaelrocks.lightsaber.ConfigurationException;
+import com.michaelrocks.lightsaber.CopyableProvider;
 import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.InstanceProvider;
 
@@ -35,6 +36,20 @@ public class LightsaberInjector implements Injector {
     public LightsaberInjector(final Injector parentInjector) {
         this.parentInjector = parentInjector;
         registerProvider(Injector.class, new InstanceProvider<Injector>(this));
+        if (parentInjector != null) {
+            copyParentProviders();
+        }
+    }
+
+    private void copyParentProviders() {
+        for (final Map.Entry<Class<?>, Provider<?>> entry : parentInjector.getAllProviders().entrySet()) {
+            if (entry.getKey() != Injector.class && entry.getValue() instanceof CopyableProvider) {
+                // noinspection unchecked
+                registerProvider(
+                        (Class<Object>) entry.getKey(),
+                        ((CopyableProvider<Object>) entry.getValue()).copyWithInjector(this));
+            }
+        }
     }
 
     @Override
