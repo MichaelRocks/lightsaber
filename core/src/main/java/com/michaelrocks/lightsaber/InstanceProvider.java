@@ -16,9 +16,7 @@
 
 package com.michaelrocks.lightsaber;
 
-import javax.inject.Provider;
-
-public class InstanceProvider<T> implements Provider<T> {
+public class InstanceProvider<T> implements CopyableProvider<T> {
     private final T instance;
 
     public InstanceProvider(final T instance) {
@@ -31,5 +29,10 @@ public class InstanceProvider<T> implements Provider<T> {
     @Override
     public T get() {
         return instance;
+    }
+
+    @Override
+    public CopyableProvider<T> copyWithInjector(final Injector injector) {
+        return new InstanceProvider<T>(instance);
     }
 }
