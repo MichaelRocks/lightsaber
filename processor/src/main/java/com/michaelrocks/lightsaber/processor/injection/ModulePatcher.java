@@ -16,6 +16,7 @@
 
 package com.michaelrocks.lightsaber.processor.injection;
 
+import com.michaelrocks.lightsaber.CopyableProvider;
 import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.internal.InternalModule;
 import com.michaelrocks.lightsaber.internal.LightsaberInjector;
@@ -88,7 +89,8 @@ public class ModulePatcher extends ProcessorClassVisitor {
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
                 Type.getInternalName(LightsaberInjector.class),
                 "registerProvider",
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Class.class), Type.getType(Provider.class)),
+                Type.getMethodDescriptor(Type.VOID_TYPE,
+                        Type.getType(Class.class), Type.getType(CopyableProvider.class)),
                 false);
     }
 

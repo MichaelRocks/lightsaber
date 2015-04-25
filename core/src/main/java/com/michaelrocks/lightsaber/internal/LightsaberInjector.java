@@ -82,7 +82,7 @@ public class LightsaberInjector implements Injector {
         return new IdentityHashMap<Class<?>, Provider<?>>(providers);
     }
 
-    public <T> void registerProvider(final Class<T> type, final Provider<T> provider) {
+    public <T> void registerProvider(final Class<T> type, final CopyableProvider<T> provider) {
         final Provider<?> oldProvider = providers.put(type, provider);
         if (oldProvider != null) {
             throw new ConfigurationException("Provider for " + type + " already registered");
