@@ -17,6 +17,7 @@
 package com.michaelrocks.lightsaber;
 
 import javax.inject.Provider;
+import java.util.Map;
 
 public interface Injector {
     void injectMembers(Object target);
@@ -24,4 +25,5 @@ public interface Injector {
     <T> T getInstance(Class<T> type);
 
     <T> Provider<T> getProvider(Class<T> type);
+    Map<Class<?>, Provider<?>> getAllProviders();
 }

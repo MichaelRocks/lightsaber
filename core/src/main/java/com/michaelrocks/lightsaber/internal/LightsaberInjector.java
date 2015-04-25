@@ -62,6 +62,11 @@ public class LightsaberInjector implements Injector {
         return provider;
     }
 
+    @Override
+    public Map<Class<?>, Provider<?>> getAllProviders() {
+        return new IdentityHashMap<Class<?>, Provider<?>>(providers);
+    }
+
     public <T> void registerProvider(final Class<T> type, final Provider<T> provider) {
         final Provider<?> oldProvider = providers.put(type, provider);
         if (oldProvider != null) {
