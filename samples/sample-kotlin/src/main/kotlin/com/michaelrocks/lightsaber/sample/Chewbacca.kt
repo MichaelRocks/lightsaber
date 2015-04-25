@@ -20,9 +20,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 Singleton
-private class Chewbacca [Inject] private (kashyyyk: Kashyyyk) : Wookiee {
-    override val planet = kashyyyk
-
+private class Chewbacca [Inject] private (
+        override val planet: Planet
+) : Wookiee {
     override fun roar() {
         System.out.println("AULRGHHHGR")
     }

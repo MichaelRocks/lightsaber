@@ -24,8 +24,8 @@ class Chewbacca implements Wookiee {
     private final Planet planet;
 
     @Inject
-    private Chewbacca(final Kashyyyk kashyyyk) {
-        this.planet = kashyyyk;
+    private Chewbacca(final Planet planet) {
+        this.planet = planet;
     }
 
     @Override

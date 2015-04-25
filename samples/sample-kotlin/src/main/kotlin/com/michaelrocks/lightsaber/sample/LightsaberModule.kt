@@ -18,6 +18,7 @@ package com.michaelrocks.lightsaber.sample
 
 import com.michaelrocks.lightsaber.Module
 import com.michaelrocks.lightsaber.Provides
+import javax.inject.Singleton
 
 private class LightsaberModule : Module {
     Provides
@@ -25,4 +26,8 @@ private class LightsaberModule : Module {
 
     Provides
     fun provideDroid(r2d2: R2D2): Droid = r2d2
+
+    Provides
+    Singleton
+    fun providePlanet(kashyyyk: Kashyyyk): Planet = kashyyyk
 }

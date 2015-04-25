@@ -19,6 +19,8 @@ package com.michaelrocks.lightsaber.sample;
 import com.michaelrocks.lightsaber.Module;
 import com.michaelrocks.lightsaber.Provides;
 
+import javax.inject.Singleton;
+
 class LightsaberModule implements Module {
     @Provides
     public Wookiee provideWookie(final Chewbacca chewbacca) {
@@ -28,5 +30,11 @@ class LightsaberModule implements Module {
     @Provides
     public Droid provideDroid(final R2D2 r2d2) {
         return r2d2;
+    }
+
+    @Provides
+    @Singleton
+    public Planet providePlanet(final Kashyyyk kashyyyk) {
+        return kashyyyk;
     }
 }
