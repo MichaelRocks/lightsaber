@@ -99,7 +99,8 @@ public class ModulePatcher extends ProcessorClassVisitor {
         methodVisitor.visitTypeInsn(NEW, delegatorType.getInternalName());
         methodVisitor.visitInsn(DUP);
         generateProviderConstruction(methodVisitor, provider);
-        final MethodDescriptor constructorDescriptor = MethodDescriptor.forConstructor(Type.getType(Provider.class));
+        final MethodDescriptor constructorDescriptor =
+                MethodDescriptor.forConstructor(Type.getType(CopyableProvider.class));
         methodVisitor.visitMethodInsn(INVOKESPECIAL,
                 delegatorType.getInternalName(),
                 constructorDescriptor.getName(),
