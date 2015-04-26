@@ -56,7 +56,6 @@ public class FieldDescriptor {
 
         final FieldDescriptor field = (FieldDescriptor) object;
         return name.equals(field.name) && type.equals(field.type);
-
     }
 
     @Override
