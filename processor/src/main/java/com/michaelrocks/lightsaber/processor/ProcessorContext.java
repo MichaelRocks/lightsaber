@@ -65,6 +65,10 @@ public class ProcessorContext {
         return Collections.unmodifiableMap(errorsByPath);
     }
 
+    public void reportError(final String errorMessage) {
+        reportError(new ProcessingException(errorMessage, classFilePath));
+    }
+
     public void reportError(final Exception error) {
         List<Exception> errors = errorsByPath.get(classFilePath);
         if (errors == null) {
