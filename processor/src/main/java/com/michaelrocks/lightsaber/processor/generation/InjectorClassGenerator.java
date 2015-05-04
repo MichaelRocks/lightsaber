@@ -84,6 +84,9 @@ public class InjectorClassGenerator {
                 null);
         methodVisitor.visitCode();
 
+        methodVisitor.visitVarInsn(ALOAD, 2);
+        methodVisitor.visitTypeInsn(CHECKCAST, injector.getInjectableTarget().getTargetType().getInternalName());
+        methodVisitor.visitVarInsn(ASTORE, 3);
         for (final FieldDescriptor fieldDescriptor : injector.getInjectableTarget().getInjectableFields()) {
             generateFieldInitializer(methodVisitor, fieldDescriptor);
         }
@@ -94,8 +97,7 @@ public class InjectorClassGenerator {
     }
 
     private void generateFieldInitializer(final MethodVisitor methodVisitor, final FieldDescriptor fieldDescriptor) {
-        methodVisitor.visitVarInsn(ALOAD, 2);
-        methodVisitor.visitTypeInsn(CHECKCAST, injector.getInjectableTarget().getTargetType().getInternalName());
+        methodVisitor.visitVarInsn(ALOAD, 3);
         methodVisitor.visitVarInsn(ALOAD, 1);
         methodVisitor.visitLdcInsn(fieldDescriptor.getRawType());
         methodVisitor.visitMethodInsn(
