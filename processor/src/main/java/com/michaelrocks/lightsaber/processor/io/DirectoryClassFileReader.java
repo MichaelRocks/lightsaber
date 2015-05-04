@@ -35,7 +35,7 @@ public class DirectoryClassFileReader extends ClassFileReader<File> {
     @Override
     protected Iterable<File> iterateFiles() throws IOException {
         if (!classesDirectory.exists() || !classesDirectory.isDirectory()) {
-            throw new ProcessingException(classesDirectory, "Invalid classes directory");
+            throw new ProcessingException("Invalid classes directory", classesDirectory.getAbsolutePath());
         }
 
         final Iterator<File> filesIterator =

@@ -20,7 +20,6 @@ import com.michaelrocks.lightsaber.processor.ProcessingException;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.io.ClassFileVisitor;
 
-import java.io.File;
 import java.io.IOException;
 
 public class ProcessorClassProducer implements ClassProducer {
@@ -39,7 +38,7 @@ public class ProcessorClassProducer implements ClassProducer {
             classFileVisitor.visitClassFile(classFileName, classData);
         } catch (final IOException exception) {
             final String message = String.format("Failed to produce class with %d bytes", classData.length);
-            processorContext.reportError(new ProcessingException(new File(classFileName), message, exception));
+            processorContext.reportError(new ProcessingException(message, exception, classFileName));
         }
     }
 }

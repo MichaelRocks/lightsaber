@@ -16,45 +16,44 @@
 
 package com.michaelrocks.lightsaber.processor;
 
-import java.io.File;
 import java.io.IOException;
 
 public class ProcessingException extends IOException {
-    private final File jarFile;
+    private final String path;
 
     public ProcessingException(final String message) {
-        this(null, message);
+        this(message, (String) null);
     }
 
-    public ProcessingException(final File jarFile, final String message) {
+    public ProcessingException(final String message, final String path) {
         super(message);
-        this.jarFile = jarFile;
+        this.path = path;
     }
 
     public ProcessingException(final Throwable cause) {
-        this((File) null, cause);
+        this(cause, null);
     }
 
-    public ProcessingException(final File jarFile, final Throwable cause) {
+    public ProcessingException(final Throwable cause, final String path) {
         super(cause);
-        this.jarFile = jarFile;
+        this.path = path;
     }
 
     public ProcessingException(final String message, final Throwable cause) {
-        this(null, message, cause);
+        this(message, cause, null);
     }
 
-    public ProcessingException(final File jarFile, final String message, final Throwable cause) {
+    public ProcessingException(final String message, final Throwable cause, final String path) {
         super(message, cause);
-        this.jarFile = jarFile;
+        this.path = path;
     }
 
-    public File getJarFile() {
-        return jarFile;
+    public String getPath() {
+        return path;
     }
 
     @Override
     public String getMessage() {
-        return jarFile == null ? super.getMessage() : "[" + jarFile.getAbsolutePath() + "] " + super.getMessage();
+        return path == null ? super.getMessage() : "[" + path + "] " + super.getMessage();
     }
 }

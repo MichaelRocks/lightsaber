@@ -35,7 +35,7 @@ public class JarClassFileReader extends ClassFileReader<JarEntry> {
         try {
             jarFile = new JarFile(sourceFile, true);
         } catch (final IOException exception) {
-            throw new ProcessingException(new File(sourceFile.getName()), exception);
+            throw new ProcessingException(exception, sourceFile.getName());
         }
     }
 
