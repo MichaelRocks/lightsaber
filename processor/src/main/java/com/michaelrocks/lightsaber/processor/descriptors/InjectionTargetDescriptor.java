@@ -19,13 +19,16 @@ package com.michaelrocks.lightsaber.processor.descriptors;
 import org.objectweb.asm.Type;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class InjectionTargetDescriptor {
     private final Type targetType;
     private final Set<FieldDescriptor> injectableFields;
+    private final Map<String, FieldDescriptor> injectableFieldsByName;
     private final MethodDescriptor injectableConstructor;
     private final Set<MethodDescriptor> injectableConstructors;
     private final Set<MethodDescriptor> injectableMethods;
@@ -36,6 +39,10 @@ public class InjectionTargetDescriptor {
             final ScopeDescriptor scopeDescriptor) {
         this.targetType = targetType;
         this.injectableFields = Collections.unmodifiableSet(injectableFields);
+        this.injectableFieldsByName = new HashMap<>();
+        for (final FieldDescriptor injectableField : injectableFields) {
+            this.injectableFieldsByName.put(injectableField.getName(), injectableField);
+        }
         final Iterator<MethodDescriptor> constructorIterator = injectableConstructors.iterator();
         this.injectableConstructor = constructorIterator.hasNext() ? constructorIterator.next() : null;
         this.injectableConstructors = Collections.unmodifiableSet(injectableConstructors);
@@ -45,6 +52,10 @@ public class InjectionTargetDescriptor {
 
     public Type getTargetType() {
         return targetType;
+    }
+
+    public boolean isInjectableField(final String name) {
+        return injectableFieldsByName.containsKey(name);
     }
 
     public Set<FieldDescriptor> getInjectableFields() {

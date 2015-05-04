@@ -21,12 +21,14 @@ import com.michaelrocks.lightsaber.processor.ProcessorContext;
 import com.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import com.michaelrocks.lightsaber.processor.descriptors.ParameterizedType;
 import com.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.signature.SignatureReader;
 
 import javax.inject.Inject;
 
@@ -93,8 +95,12 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 if (Type.getDescriptor(Inject.class).equals(desc)) {
+                    final Type fieldType = Type.getType(fieldDesc);
+                    final ParameterizedType parameterizedType = signature == null
+                            ? ParameterizedType.fromType(fieldType)
+                            : parseTypeSignature(signature, fieldType);
                     final FieldDescriptor fieldDescriptor =
-                            new FieldDescriptor(fieldName, Type.getType(fieldDesc));
+                            new FieldDescriptor(fieldName, parameterizedType);
                     injectionTargetDescriptorBuilder.addInjectableField(fieldDescriptor);
                 }
                 return super.visitAnnotation(desc, visible);
@@ -119,4 +125,13 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
 
         super.visitEnd();
     }
+
+    private ParameterizedType parseTypeSignature(final String signature, final Type fieldType) {
+        final SignatureReader signatureReader = new SignatureReader(signature);
+        final ParameterizedTypeSignatureParser signatureParser = new ParameterizedTypeSignatureParser(getProcessorContext());
+        signatureReader.acceptType(signatureParser);
+        final ParameterizedType parameterizedType = signatureParser.getParameterizedType();
+        return parameterizedType != null ? parameterizedType : ParameterizedType.fromType(fieldType);
+    }
+
 }

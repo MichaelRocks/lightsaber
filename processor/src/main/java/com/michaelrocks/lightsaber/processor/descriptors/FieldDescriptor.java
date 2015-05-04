@@ -16,17 +16,24 @@
 
 package com.michaelrocks.lightsaber.processor.descriptors;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.objectweb.asm.Type;
 
 public class FieldDescriptor {
     private final String name;
-    private final Type type;
+    private final ParameterizedType type;
 
     public FieldDescriptor(final String name, final String desc) {
         this(name, Type.getType(desc));
     }
 
     public FieldDescriptor(final String name, final Type type) {
+        this.name = name;
+        this.type = new ParameterizedType(type);
+    }
+
+    public FieldDescriptor(final String name, final ParameterizedType type) {
         this.name = name;
         this.type = type;
     }
@@ -35,8 +42,20 @@ public class FieldDescriptor {
         return name;
     }
 
-    public Type getType() {
+    public ParameterizedType getParameterizedType() {
         return type;
+    }
+
+    public boolean isParameterized() {
+        return type.getParameterType() != null;
+    }
+
+    public Type getRawType() {
+        return type.getRawType();
+    }
+
+    public Type getArgumentType() {
+        return type.getParameterType();
     }
 
     @Override
@@ -54,12 +73,18 @@ public class FieldDescriptor {
             return false;
         }
 
-        final FieldDescriptor field = (FieldDescriptor) object;
-        return name.equals(field.name) && type.equals(field.type);
+        final FieldDescriptor that = (FieldDescriptor) object;
+        return new EqualsBuilder()
+                .append(name, that.name)
+                .append(type, that.type)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode() * 31 + type.hashCode();
+        return new HashCodeBuilder(17, 37)
+                .append(name)
+                .append(type)
+                .toHashCode();
     }
 }

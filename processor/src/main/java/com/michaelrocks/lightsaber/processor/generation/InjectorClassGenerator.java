@@ -97,18 +97,18 @@ public class InjectorClassGenerator {
         methodVisitor.visitVarInsn(ALOAD, 2);
         methodVisitor.visitTypeInsn(CHECKCAST, injector.getInjectableTarget().getTargetType().getInternalName());
         methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitLdcInsn(fieldDescriptor.getType());
+        methodVisitor.visitLdcInsn(fieldDescriptor.getRawType());
         methodVisitor.visitMethodInsn(
                 INVOKEINTERFACE,
                 Type.getInternalName(Injector.class),
                 GET_INSTANCE_METHOD_NAME,
                 Type.getMethodDescriptor(Type.getType(Object.class), Type.getType(Class.class)),
                 true);
-        methodVisitor.visitTypeInsn(CHECKCAST, fieldDescriptor.getType().getInternalName());
+        methodVisitor.visitTypeInsn(CHECKCAST, fieldDescriptor.getRawType().getInternalName());
         methodVisitor.visitFieldInsn(
                 PUTFIELD,
                 injector.getInjectableTarget().getTargetType().getInternalName(),
                 fieldDescriptor.getName(),
-                fieldDescriptor.getType().getDescriptor());
+                fieldDescriptor.getRawType().getDescriptor());
     }
 }
