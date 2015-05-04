@@ -20,6 +20,7 @@ import com.michaelrocks.lightsaber.Injector;
 import com.michaelrocks.lightsaber.Lightsaber;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import java.io.File;
 import java.net.URISyntaxException;
 
@@ -27,12 +28,12 @@ public class LightsaberSample {
     @Inject
     private final Wookiee wookiee = null;
     @Inject
-    private final Wookiee anotherWookiee = null;
+    private final Provider<Wookiee> wookieeProvider = null;
 
     @Inject
     private final Droid droid = null;
     @Inject
-    private final Droid anotherDroid = null;
+    private final Provider<Droid> droidProvider = null;
 
     public static void main(final String[] args) throws URISyntaxException {
         System.out.println(
@@ -43,15 +44,15 @@ public class LightsaberSample {
     private void run() {
         System.out.println("Before injection");
         System.out.println("Wookiee: " + wookiee);
-        System.out.println("Another wookiee: " + anotherWookiee);
         System.out.println("Droid: " + droid);
-        System.out.println("Another droid: " + anotherDroid);
         final Injector injector = Lightsaber.createInjector(new LightsaberModule());
         injector.injectMembers(this);
         System.out.println("After injection");
         System.out.println("Wookiee: " + wookiee + " from " + wookiee.getPlanet());
+        final Wookiee anotherWookiee = wookieeProvider.get();
         System.out.println("Another wookiee: " + anotherWookiee + " from " + anotherWookiee.getPlanet());
         System.out.println("Droid: " + droid);
+        final Droid anotherDroid = droidProvider.get();
         System.out.println("Another droid: " + anotherDroid);
         wookiee.roar();
         droid.repair();
