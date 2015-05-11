@@ -19,6 +19,7 @@ package com.michaelrocks.lightsaber.processor.generation;
 import com.michaelrocks.lightsaber.Module;
 import com.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import com.michaelrocks.lightsaber.processor.ProcessorContext;
+import com.michaelrocks.lightsaber.processor.commons.JavaVersionChanger;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -27,6 +28,9 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.commons.Remapper;
+import org.objectweb.asm.commons.RemappingClassAdapter;
+import org.objectweb.asm.commons.SimpleRemapper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,8 +54,14 @@ public class InjectorFactoryClassGenerator {
             final ClassReader classReader = new ClassReader(stream);
             final ClassWriter classWriter =
                     new ClassWriter(classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
-            classReader.accept(
-                    new InjectorFactoryClassVisitor(classWriter), ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG);
+            final ClassVisitor generator = new InjectorFactoryClassVisitor(classWriter);
+            final Remapper remapper =
+                    new SimpleRemapper(
+                            Type.getInternalName(Lightsaber$$InjectorFactory.class),
+                            processorContext.getInjectorFactoryType().getInternalName());
+            final ClassVisitor remappingAdapter = new RemappingClassAdapter(generator, remapper);
+            final ClassVisitor javaVersionChanger = new JavaVersionChanger(remappingAdapter, V1_6);
+            classReader.accept(javaVersionChanger, ClassReader.SKIP_FRAMES | ClassReader.SKIP_DEBUG);
             final byte[] classData = classWriter.toByteArray();
             classProducer.produceClass(processorContext.getInjectorFactoryType().getInternalName(), classData);
         } catch (final IOException exception) {
@@ -62,13 +72,6 @@ public class InjectorFactoryClassGenerator {
     private class InjectorFactoryClassVisitor extends ClassVisitor {
         public InjectorFactoryClassVisitor(final ClassVisitor classVisitor) {
             super(ASM5, classVisitor);
-        }
-
-        @Override
-        public void visit(final int version, final int access, final String name, final String signature,
-                final String superName, final String[] interfaces) {
-            final String newName = processorContext.getInjectorFactoryType().getInternalName();
-            super.visit(V1_6, access, newName, signature, superName, interfaces);
         }
 
         @Override
@@ -125,7 +128,6 @@ public class InjectorFactoryClassGenerator {
             final Collection<ModuleDescriptor> packageModules = processorContext.getPackageModules();
             methodVisitor.visitIntInsn(BIPUSH, packageModules.size());
             methodVisitor.visitTypeInsn(ANEWARRAY, Type.getInternalName(Module.class));
-
 
             int index = 0;
             for (final ModuleDescriptor packageModule : packageModules) {
