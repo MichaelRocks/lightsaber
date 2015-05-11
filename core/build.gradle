@@ -11,8 +11,4 @@ dependencies {
 
 jar {
     destinationDir = file('build/jar')
-
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
 }
