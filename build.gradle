@@ -3,6 +3,8 @@ task wrapper(type: Wrapper) {
 }
 
 allprojects {
+    ext.kotlinVersion = '0.11.91.4'
+
     buildscript {
         repositories {
             mavenCentral()
