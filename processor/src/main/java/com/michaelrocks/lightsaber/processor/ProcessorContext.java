@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ProcessorContext {
+    private static final String PACKAGE_MODULE_CLASS_NAME = "Lightsaber$$PackageModule";
     private static final Type INJECTOR_FACTORY_TYPE = Type.getType(Lightsaber$$InjectorFactory.class);
     private static final ScopeDescriptor SINGLETON_SCOPE_DESCRIPTOR =
             new ScopeDescriptor(Type.getType(Singleton.class), Type.getType(SingletonProvider.class));
@@ -144,6 +145,10 @@ public class ProcessorContext {
 
     public Collection<ScopeDescriptor> getScopes() {
         return Collections.singleton(SINGLETON_SCOPE_DESCRIPTOR);
+    }
+
+    public Type getPackageModuleType(final String packageName) {
+        return Type.getObjectType(packageName + PACKAGE_MODULE_CLASS_NAME);
     }
 
     public Type getInjectorFactoryType() {

@@ -16,7 +16,6 @@
 
 package com.michaelrocks.lightsaber.processor;
 
-import com.michaelrocks.lightsaber.internal.Lightsaber$$PackageModule;
 import com.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import com.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
@@ -84,8 +83,7 @@ public class ClassProcessor {
             final String packageName = FilenameUtils.getPath(providableTargetType.getInternalName());
             ModuleDescriptor.Builder moduleBuilder = moduleBuilders.get(packageName);
             if (moduleBuilder == null) {
-                final Type moduleType =
-                        Type.getObjectType(packageName + Lightsaber$$PackageModule.class.getSimpleName());
+                final Type moduleType = processorContext.getPackageModuleType(packageName);
                 moduleBuilder = new ModuleDescriptor.Builder(moduleType);
                 moduleBuilders.put(packageName, moduleBuilder);
             }
