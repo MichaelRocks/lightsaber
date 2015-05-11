@@ -5,3 +5,4 @@ include 'processor'
 
 include 'samples:sample-java'
 include 'samples:sample-kotlin'
+include 'samples:sample-android-kotlin'

@@ -27,4 +27,6 @@ ext {
     commonsCollectionsVersion = '4.0'
 
     junitVersion = '4.12'
+
+    supportVersion = '22.1.1'
 }
