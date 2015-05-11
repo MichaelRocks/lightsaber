@@ -29,8 +29,6 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
-import javax.inject.Provider;
-
 import static org.objectweb.asm.Opcodes.*;
 
 public class ModulePatcher extends ProcessorClassVisitor {
