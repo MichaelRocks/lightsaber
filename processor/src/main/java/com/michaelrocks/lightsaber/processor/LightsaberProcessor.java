@@ -55,7 +55,13 @@ public class LightsaberProcessor {
         }
 
         final LightsaberProcessor processor = new LightsaberProcessor(parameters);
-        if (!processor.process()) {
+        try {
+            processor.process();
+        } catch (final Exception exception) {
+            System.err.println(exception.getMessage());
+            if (parameters.printStacktrace) {
+                exception.printStackTrace();
+            }
             System.exit(2);
         }
     }
@@ -80,24 +86,15 @@ public class LightsaberProcessor {
         }
     }
 
-    public boolean process() {
-        try {
-            if (parameters.jar != null) {
-                final File jarFile = new File(parameters.jar);
-                processJarFile(jarFile);
-            } else if (parameters.classes != null) {
-                final File classesDirectory = new File(parameters.classes);
-                processClasses(classesDirectory);
-            }
-            System.out.println("DONE");
-            return true;
-        } catch (final Exception exception) {
-            System.err.println(exception.getMessage());
-            if (parameters.printStacktrace) {
-                exception.printStackTrace();
-            }
+    public void process() throws Exception {
+        if (parameters.jar != null) {
+            final File jarFile = new File(parameters.jar);
+            processJarFile(jarFile);
+        } else if (parameters.classes != null) {
+            final File classesDirectory = new File(parameters.classes);
+            processClasses(classesDirectory);
         }
-        return false;
+        System.out.println("DONE");
     }
 
     private void processJarFile(final File file) throws Exception {
