@@ -1,6 +1,7 @@
 apply plugin: 'java'
 
 sourceCompatibility = '1.6'
+publishToBintray = true
 
 dependencies {
     compile "javax.inject:javax.inject:$javaxInjectVersion"
