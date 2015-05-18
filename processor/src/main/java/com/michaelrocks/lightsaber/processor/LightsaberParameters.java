@@ -17,6 +17,7 @@
 package com.michaelrocks.lightsaber.processor;
 
 import com.beust.jcommander.Parameter;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class LightsaberParameters {
     @Parameter(names = "--jar", description = "Jar file to process")
@@ -33,4 +34,15 @@ public class LightsaberParameters {
 
     @Parameter(names = "--stacktrace", description = "Print stack traces")
     public boolean printStacktrace = false;
+
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this)
+                .append("jar", jar)
+                .append("classes", classes)
+                .append("output", output)
+                .append("verbose", verbose)
+                .append("printStacktrace", printStacktrace)
+                .toString();
+    }
 }
