@@ -8,5 +8,5 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
     compile "com.android.tools.build:gradle:$androidToolsVersion"
-    compile "com.michaelrocks:lightsaber-processor:$version"
+    compile project(':processor')
 }
