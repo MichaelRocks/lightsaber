@@ -1,4 +1,4 @@
-rootProject.name = 'Lightsaber'
+rootProject.name = 'lightsaber'
 
 include 'core'
 include 'processor'
