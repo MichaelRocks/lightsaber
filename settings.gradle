@@ -3,6 +3,8 @@ rootProject.name = 'lightsaber'
 include ':core'
 include ':processor'
 
-include ':samples:sample-java'
-include ':samples:sample-kotlin'
-include ':samples:sample-android-kotlin'
+if (!properties['skipSamples'].toBoolean()) {
+    include ':samples:sample-java'
+    include ':samples:sample-kotlin'
+    include ':samples:sample-android-kotlin'
+}
