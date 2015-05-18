@@ -1,12 +1,14 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-
 buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:$androidToolsVersion"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "com.michaelrocks:lightsaber-gradle-plugin:$version"
     }
 }
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'com.michaelrocks.lightsaber'
 
 android {
     compileSdkVersion 22

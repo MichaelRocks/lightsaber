@@ -1,6 +1,7 @@
 buildscript {
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+        classpath "com.michaelrocks:lightsaber-gradle-plugin:$version"
     }
 }
 
@@ -11,6 +12,7 @@ plugins {
 apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'application'
+apply plugin: 'com.michaelrocks.lightsaber'
 
 sourceCompatibility = 1.6
 
@@ -30,21 +32,3 @@ jar {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
-
-task lightsaberProcess(type: JavaExec) {
-    def originalClasses = compileJava.destinationDir.getAbsolutePath()
-    def lightsaberClasses = originalClasses + "-lightsaber"
-    classpath rootProject.project(':processor').shadowJar.archivePath
-    main "com.michaelrocks.lightsaber.processor.LightsaberProcessor"
-    args = [
-            "--classes", originalClasses,
-            "--output", lightsaberClasses,
-            "--stacktrace"]
-
-    doLast {
-        sourceSets.main.output.classesDir = lightsaberClasses
-    }
-}
-
-lightsaberProcess.dependsOn compileJava
-shadowJar.dependsOn lightsaberProcess
