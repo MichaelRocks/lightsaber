@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        classpath "com.michaelrocks:lightsaber-gradle-plugin:$version"
+        classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
     }
 }
 
@@ -10,14 +10,14 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'application'
-apply plugin: 'com.michaelrocks.lightsaber'
+apply plugin: 'io.michaelrocks.lightsaber'
 
 sourceCompatibility = 1.6
 
-mainClassName = 'com.michaelrocks.lightsaber.sample.LightsaberSample'
+mainClassName = 'io.michaelrocks.lightsaber.sample.LightsaberSample'
 
 dependencies {
-    compile "com.michaelrocks:lightsaber-core:$version"
+    compile "io.michaelrocks:lightsaber-core:$version"
 
     testCompile "junit:junit:$junitVersion"
 }

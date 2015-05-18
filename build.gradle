@@ -46,7 +46,7 @@ allprojects {
     def patch = properties['version.patch'] as int
     def snapshot = properties['version.snapshot'].toBoolean()
     version = "$major.$minor.$patch" + (snapshot ? '-SNAPSHOT' : '')
-    group = 'com.michaelrocks'
+    group = 'io.michaelrocks'
 
     ext.dryRun = properties['version.dryRun'].toBoolean()
     ext.publish = properties['version.publish'].toBoolean()

@@ -2,20 +2,20 @@ buildscript {
     dependencies {
         classpath "com.android.tools.build:gradle:$androidToolsVersion"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "com.michaelrocks:lightsaber-gradle-plugin:$version"
+        classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
     }
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'com.michaelrocks.lightsaber'
+apply plugin: 'io.michaelrocks.lightsaber'
 
 android {
     compileSdkVersion 22
     buildToolsVersion '22.0.1'
 
     defaultConfig {
-        applicationId 'com.michaelrocks.lightsaber.sample'
+        applicationId 'io.michaelrocks.lightsaber.sample'
         minSdkVersion 16
         targetSdkVersion 22
         versionCode 1
@@ -50,5 +50,5 @@ dependencies {
     compile "com.android.support:support-v13:$supportVersion"
     compile "com.android.support:appcompat-v7:$supportVersion"
 
-    compile "com.michaelrocks:lightsaber-core:$version"
+    compile "io.michaelrocks:lightsaber-core:$version"
 }
