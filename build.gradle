@@ -99,7 +99,7 @@ subprojects {
                     name = rootProject.name + '-' + project.name
                     websiteUrl = 'https://github.com/michaelrocks/lightsaber'
                     issueTrackerUrl = 'https://github.com/michaelrocks/lightsaber/issues'
-                    vcsUrl = 'git://github.com/michaelrocks/lightsaber.git'
+                    vcsUrl = 'https://github.com/michaelrocks/lightsaber'
                     licenses = ['Apache-2.0']
                     labels = ['lightsaber']
                     publicDownloadNumbers = true
