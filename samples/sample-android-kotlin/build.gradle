@@ -2,11 +2,6 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 buildscript {
-    repositories {
-        mavenLocal()
-        jcenter()
-    }
-
     dependencies {
         classpath 'com.android.tools.build:gradle:1.2.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
@@ -53,5 +48,5 @@ dependencies {
     compile "com.android.support:support-v13:$supportVersion"
     compile "com.android.support:appcompat-v7:$supportVersion"
 
-    compile project(':core')
+    compile "com.michaelrocks:lightsaber-core:$version"
 }

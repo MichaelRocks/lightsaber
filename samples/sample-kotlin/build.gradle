@@ -1,8 +1,4 @@
 buildscript {
-    repositories {
-        jcenter()
-    }
-
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
@@ -21,7 +17,7 @@ sourceCompatibility = 1.6
 mainClassName = 'com.michaelrocks.lightsaber.sample.LightsaberSample'
 
 dependencies {
-    compile project(':core')
+    compile "com.michaelrocks:lightsaber-core:$version"
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
     testCompile "junit:junit:$junitVersion"
