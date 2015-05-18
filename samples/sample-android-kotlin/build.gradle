@@ -3,7 +3,7 @@ apply plugin: 'kotlin-android'
 
 buildscript {
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.2.3'
+        classpath "com.android.tools.build:gradle:$androidToolsVersion"
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     }
 }

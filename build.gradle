@@ -155,5 +155,6 @@ ext {
 
     junitVersion = '4.12'
 
+    androidToolsVersion = '1.2.3'
     supportVersion = '22.1.1'
 }
