@@ -1,0 +1,12 @@
+apply plugin: 'groovy'
+
+targetCompatibility = JavaVersion.VERSION_1_7
+sourceCompatibility = JavaVersion.VERSION_1_7
+publishToBintray = true
+
+dependencies {
+    compile gradleApi()
+    compile localGroovy()
+    compile "com.android.tools.build:gradle:$androidToolsVersion"
+    compile "com.michaelrocks:lightsaber-processor:$version"
+}
