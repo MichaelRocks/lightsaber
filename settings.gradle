@@ -1,8 +1,8 @@
 rootProject.name = 'lightsaber'
 
-include 'core'
-include 'processor'
+include ':core'
+include ':processor'
 
-include 'samples:sample-java'
-include 'samples:sample-kotlin'
-include 'samples:sample-android-kotlin'
+include ':samples:sample-java'
+include ':samples:sample-kotlin'
+include ':samples:sample-android-kotlin'
