@@ -105,6 +105,7 @@ subprojects {
                     publicDownloadNumbers = true
 
                     version {
+                        released = new Date()
                         vcsTag = "v${project.version}"
                     }
                 }
