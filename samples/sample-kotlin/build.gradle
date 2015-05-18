@@ -17,7 +17,6 @@ apply plugin: 'kotlin'
 apply plugin: 'application'
 
 sourceCompatibility = 1.6
-version = '1.0'
 
 mainClassName = 'com.michaelrocks.lightsaber.sample.LightsaberSample'
 

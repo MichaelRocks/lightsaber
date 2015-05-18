@@ -16,6 +16,20 @@ allprojects {
     }
 }
 
+allprojects {
+    def properties = new Properties()
+    properties.load(new FileInputStream(new File(rootDir, "version.properties")))
+    def major = properties['version.major'] as int
+    def minor = properties['version.minor'] as int
+    def patch = properties['version.patch'] as int
+    def snapshot = properties['version.snapshot'].toBoolean()
+    version = "$major.$minor.$patch" + (snapshot ? '-SNAPSHOT' : '')
+    group = 'com.michaelrocks'
+
+    ext.dryRun = properties['version.dryRun'].toBoolean()
+    ext.publish = properties['version.publish'].toBoolean()
+}
+
 ext {
     shadowVersion = '1.2.1'
 
