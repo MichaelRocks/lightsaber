@@ -35,7 +35,7 @@ public class LightsaberProcessor {
 
     private final LightsaberParameters parameters;
 
-    private LightsaberProcessor(final LightsaberParameters parameters) {
+    public LightsaberProcessor(final LightsaberParameters parameters) {
         this.parameters = parameters;
     }
 
