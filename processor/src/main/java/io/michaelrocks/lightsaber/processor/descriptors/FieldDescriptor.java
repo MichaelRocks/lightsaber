@@ -16,13 +16,14 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
+import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.objectweb.asm.Type;
 
 public class FieldDescriptor {
     private final String name;
-    private final ParameterizedType type;
+    private final TypeSignature type;
 
     public FieldDescriptor(final String name, final String desc) {
         this(name, Type.getType(desc));
@@ -30,10 +31,10 @@ public class FieldDescriptor {
 
     public FieldDescriptor(final String name, final Type type) {
         this.name = name;
-        this.type = new ParameterizedType(type);
+        this.type = new TypeSignature(type);
     }
 
-    public FieldDescriptor(final String name, final ParameterizedType type) {
+    public FieldDescriptor(final String name, final TypeSignature type) {
         this.name = name;
         this.type = type;
     }
@@ -42,7 +43,7 @@ public class FieldDescriptor {
         return name;
     }
 
-    public ParameterizedType getParameterizedType() {
+    public TypeSignature getParameterizedType() {
         return type;
     }
 

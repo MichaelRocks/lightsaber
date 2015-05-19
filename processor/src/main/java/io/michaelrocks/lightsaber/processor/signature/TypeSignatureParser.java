@@ -17,7 +17,6 @@
 package io.michaelrocks.lightsaber.processor.signature;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
-import io.michaelrocks.lightsaber.processor.descriptors.ParameterizedType;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.signature.SignatureVisitor;
 
@@ -30,15 +29,15 @@ public class TypeSignatureParser extends SignatureVisitor {
     private Type classTypeParameter;
     private boolean isValid = true;
 
-    private ParameterizedType parameterizedType;
+    private TypeSignature typeSignature;
 
     public TypeSignatureParser(final ProcessorContext processorContext) {
         super(ASM5);
         this.processorContext = processorContext;
     }
 
-    public ParameterizedType getParameterizedType() {
-        return parameterizedType;
+    public TypeSignature getTypeSignature() {
+        return typeSignature;
     }
 
     @Override
@@ -64,7 +63,7 @@ public class TypeSignatureParser extends SignatureVisitor {
 
     @Override
     public void visitEnd() {
-        parameterizedType = isValid ? new ParameterizedType(classType, classTypeParameter) : null;
+        typeSignature = isValid ? new TypeSignature(classType, classTypeParameter) : null;
     }
 
     // Prohibited callbacks.
