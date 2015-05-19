@@ -97,11 +97,9 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 if (Type.getDescriptor(Inject.class).equals(desc)) {
                     final Type fieldType = Type.getType(fieldDesc);
-                    final TypeSignature typeSignature = signature == null
-                            ? TypeSignature.fromType(fieldType)
-                            : parseTypeSignature(signature, fieldType);
-                    final FieldDescriptor fieldDescriptor =
-                            new FieldDescriptor(fieldName, typeSignature);
+                    final TypeSignature typeSignature =
+                            TypeSignatureParser.parseTypeSignature(getProcessorContext(), signature, fieldType);
+                    final FieldDescriptor fieldDescriptor = new FieldDescriptor(fieldName, typeSignature);
                     injectionTargetDescriptorBuilder.addInjectableField(fieldDescriptor);
                 }
                 return super.visitAnnotation(desc, visible);
@@ -125,13 +123,5 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
         }
 
         super.visitEnd();
-    }
-
-    private TypeSignature parseTypeSignature(final String signature, final Type fieldType) {
-        final SignatureReader signatureReader = new SignatureReader(signature);
-        final TypeSignatureParser signatureParser = new TypeSignatureParser(getProcessorContext());
-        signatureReader.acceptType(signatureParser);
-        final TypeSignature typeSignature = signatureParser.getTypeSignature();
-        return typeSignature != null ? typeSignature : TypeSignature.fromType(fieldType);
     }
 }

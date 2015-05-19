@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.processor.signature;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 import static org.objectweb.asm.Opcodes.ASM5;
@@ -34,6 +35,20 @@ public class TypeSignatureParser extends SignatureVisitor {
     public TypeSignatureParser(final ProcessorContext processorContext) {
         super(ASM5);
         this.processorContext = processorContext;
+    }
+
+    public static TypeSignature parseTypeSignature(final ProcessorContext processorContext, final String signature,
+            final Type fieldType) {
+        final TypeSignature typeSignature;
+        if (signature == null) {
+            typeSignature = null;
+        } else {
+            final SignatureReader signatureReader = new SignatureReader(signature);
+            final TypeSignatureParser signatureParser = new TypeSignatureParser(processorContext);
+            signatureReader.acceptType(signatureParser);
+            typeSignature = signatureParser.getTypeSignature();
+        }
+        return typeSignature != null ? typeSignature : TypeSignature.fromType(fieldType);
     }
 
     public TypeSignature getTypeSignature() {
