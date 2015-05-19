@@ -60,10 +60,19 @@ public class TypeSignatureParser extends SignatureVisitor {
 
     @Override
     public void visitClassType(final String name) {
+        visitType(Type.getObjectType(name));
+    }
+
+    @Override
+    public void visitBaseType(final char descriptor) {
+        visitType(Type.getType(Character.toString(descriptor)));
+    }
+
+    private void visitType(final Type type) {
         if (classType == null) {
-            classType = Type.getObjectType(name);
+            classType = type;
         } else if (classTypeParameter == null) {
-            classTypeParameter = Type.getObjectType(name);
+            classTypeParameter = type;
         } else {
             reportError(classType + " has multiple type arguments");
         }
@@ -84,11 +93,6 @@ public class TypeSignatureParser extends SignatureVisitor {
     @Override
     public void visitInnerClassType(final String name) {
         reportError("Injectable type cannot have an inner class type in its signature");
-    }
-
-    @Override
-    public void visitBaseType(final char descriptor) {
-        reportError("Injectable type cannot be a primitive type");
     }
 
     @Override
