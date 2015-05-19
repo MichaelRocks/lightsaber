@@ -17,12 +17,15 @@
 package io.michaelrocks.lightsaber.sample
 
 import javax.inject.Inject
+import javax.inject.Provider
 import javax.inject.Singleton
 
 Singleton
 private class Chewbacca [Inject] private (
-        override val planet: Planet
+        planetProvider: Provider<Planet>
 ) : Wookiee {
+    override val planet: Planet = planetProvider.get()
+
     override fun roar() {
         System.out.println("AULRGHHHGR")
     }
