@@ -16,9 +16,9 @@
 
 package io.michaelrocks.lightsaber.processor.signature;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.objectweb.asm.Type;
 
 import java.util.ArrayList;
@@ -78,9 +78,6 @@ public class MethodSignature {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
-                .append("returnType", returnType)
-                .append("argumentTypes", argumentTypes)
-                .toString();
+        return "(" + StringUtils.join(argumentTypes, ", ") + "): " + returnType;
     }
 }
