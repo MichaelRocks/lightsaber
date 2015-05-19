@@ -23,14 +23,14 @@ import org.objectweb.asm.signature.SignatureVisitor;
 
 import static org.objectweb.asm.Opcodes.ASM5;
 
-class ParameterizedTypeSignatureParser extends SignatureVisitor {
+class TypeSignatureParser extends SignatureVisitor {
     private final ProcessorContext processorContext;
 
     private Type classType;
     private Type classTypeParameter;
     private boolean isValid = true;
 
-    public ParameterizedTypeSignatureParser(final ProcessorContext processorContext) {
+    public TypeSignatureParser(final ProcessorContext processorContext) {
         super(ASM5);
         this.processorContext = processorContext;
     }
