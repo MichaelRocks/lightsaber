@@ -75,7 +75,7 @@ public class TypeSignatureParser extends SignatureVisitor {
             return this;
         }
 
-        reportError("Injectable field cannot have wildcards in its signature");
+        reportError("Injectable type cannot have wildcards in its signature");
         return this;
     }
 
@@ -83,28 +83,28 @@ public class TypeSignatureParser extends SignatureVisitor {
 
     @Override
     public void visitInnerClassType(final String name) {
-        reportError("Injectable field cannot have an inner class type in its signature");
+        reportError("Injectable type cannot have an inner class type in its signature");
     }
 
     @Override
     public void visitBaseType(final char descriptor) {
-        reportError("Injectable field cannot be a primitive type");
+        reportError("Injectable type cannot be a primitive type");
     }
 
     @Override
     public SignatureVisitor visitArrayType() {
-        reportError("Injectable field cannot be an array");
+        reportError("Injectable type cannot be an array");
         return this;
     }
 
     @Override
     public void visitTypeVariable(final String name) {
-        reportError("Injectable field cannot have type variables in its signature");
+        reportError("Injectable type cannot have type variables in its signature");
     }
 
     @Override
     public void visitTypeArgument() {
-        reportError("Injectable field cannot have unbounded type arguments in its signature");
+        reportError("Injectable type cannot have unbounded type arguments in its signature");
     }
 
     private void reportError(final String message) {
