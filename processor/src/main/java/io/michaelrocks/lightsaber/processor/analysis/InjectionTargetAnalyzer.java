@@ -128,10 +128,9 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
 
     private ParameterizedType parseTypeSignature(final String signature, final Type fieldType) {
         final SignatureReader signatureReader = new SignatureReader(signature);
-        final ParameterizedTypeSignatureParser signatureParser = new ParameterizedTypeSignatureParser(getProcessorContext());
+        final TypeSignatureParser signatureParser = new TypeSignatureParser(getProcessorContext());
         signatureReader.acceptType(signatureParser);
         final ParameterizedType parameterizedType = signatureParser.getParameterizedType();
         return parameterizedType != null ? parameterizedType : ParameterizedType.fromType(fieldType);
     }
-
 }
