@@ -57,8 +57,8 @@ public class ModuleDescriptor {
                     Type.getObjectType(moduleType.getInternalName() + "$$Provider$$" + providerIndex);
             final Type delegatorType = scope != null ? scope.getProviderType() : null;
             final ProviderDescriptor provider =
-                    new ProviderDescriptor(providerType, providerMethod.getReturnType(), providerMethod, moduleType,
-                            delegatorType);
+                    new ProviderDescriptor(providerType, providerMethod.getReturnType().getRawType(),
+                            providerMethod, moduleType, delegatorType);
             return addProvider(provider);
         }
 

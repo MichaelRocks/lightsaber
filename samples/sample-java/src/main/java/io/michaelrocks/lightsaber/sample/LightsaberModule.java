@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber.sample;
 import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.Provides;
 
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 class LightsaberModule implements Module {
@@ -34,7 +35,7 @@ class LightsaberModule implements Module {
 
     @Provides
     @Singleton
-    public Planet providePlanet(final Kashyyyk kashyyyk) {
-        return kashyyyk;
+    public Planet providePlanet(final Provider<Kashyyyk> kashyyykProvider) {
+        return kashyyykProvider.get();
     }
 }

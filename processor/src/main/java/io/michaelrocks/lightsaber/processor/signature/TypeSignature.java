@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.descriptors;
+package io.michaelrocks.lightsaber.processor.signature;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.objectweb.asm.Type;
 
-public class ParameterizedType {
+public class TypeSignature {
     private final Type rawType;
     private final Type parameterType;
 
-    public ParameterizedType(final Type rawType) {
+    public TypeSignature(final Type rawType) {
         this(rawType, null);
     }
 
-    public ParameterizedType(final Type rawType, final Type parameterType) {
+    public TypeSignature(final Type rawType, final Type parameterType) {
         this.rawType = rawType;
         this.parameterType = parameterType;
     }
 
-    public static ParameterizedType fromType(final Type type) {
-        return new ParameterizedType(type, null);
+    public static TypeSignature fromType(final Type type) {
+        return new TypeSignature(type, null);
     }
 
     public Type getRawType() {
@@ -55,7 +55,7 @@ public class ParameterizedType {
             return false;
         }
 
-        final ParameterizedType that = (ParameterizedType) object;
+        final TypeSignature that = (TypeSignature) object;
         return new EqualsBuilder()
                 .append(rawType, that.rawType)
                 .append(parameterType, that.parameterType)

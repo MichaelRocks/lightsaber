@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.graph;
 
+import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.processor.ProcessingException;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -23,6 +24,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import org.objectweb.asm.Type;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +35,7 @@ public class DependencyGraph {
     private final Map<Type, List<Type>> typeGraph = new HashMap<>();
 
     public DependencyGraph(final ProcessorContext processorContext, final Collection<ModuleDescriptor> modules) {
+        typeGraph.put(Type.getType(Injector.class), Collections.<Type>emptyList());
         for (final ModuleDescriptor module : modules) {
             final Set<Type> providableModuleTypes = new HashSet<>();
             for (final ProviderDescriptor provider : module.getProviders()) {

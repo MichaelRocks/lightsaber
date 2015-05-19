@@ -21,14 +21,16 @@ import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
-import io.michaelrocks.lightsaber.processor.descriptors.ParameterizedType;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
+import io.michaelrocks.lightsaber.processor.signature.MethodSignature;
+import io.michaelrocks.lightsaber.processor.signature.MethodSignatureParser;
+import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
+import io.michaelrocks.lightsaber.processor.signature.TypeSignatureParser;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.signature.SignatureReader;
 
 import javax.inject.Inject;
 
@@ -72,8 +74,10 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 if (Type.getDescriptor(Inject.class).equals(desc)) {
-                    final MethodDescriptor methodDescriptor =
-                            new MethodDescriptor(methodName, Type.getMethodType(methodDesc));
+                    final Type methodType = Type.getMethodType(methodDesc);
+                    final MethodSignature methodSignature =
+                            MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
+                    final MethodDescriptor methodDescriptor = new MethodDescriptor(methodName, methodSignature);
                     if (MethodDescriptor.isConstructor(methodName)) {
                         injectionTargetDescriptorBuilder.addInjectableConstructor(methodDescriptor);
                     } else {
@@ -96,11 +100,9 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 if (Type.getDescriptor(Inject.class).equals(desc)) {
                     final Type fieldType = Type.getType(fieldDesc);
-                    final ParameterizedType parameterizedType = signature == null
-                            ? ParameterizedType.fromType(fieldType)
-                            : parseTypeSignature(signature, fieldType);
-                    final FieldDescriptor fieldDescriptor =
-                            new FieldDescriptor(fieldName, parameterizedType);
+                    final TypeSignature typeSignature =
+                            TypeSignatureParser.parseTypeSignature(getProcessorContext(), signature, fieldType);
+                    final FieldDescriptor fieldDescriptor = new FieldDescriptor(fieldName, typeSignature);
                     injectionTargetDescriptorBuilder.addInjectableField(fieldDescriptor);
                 }
                 return super.visitAnnotation(desc, visible);
@@ -125,13 +127,4 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
 
         super.visitEnd();
     }
-
-    private ParameterizedType parseTypeSignature(final String signature, final Type fieldType) {
-        final SignatureReader signatureReader = new SignatureReader(signature);
-        final ParameterizedTypeSignatureParser signatureParser = new ParameterizedTypeSignatureParser(getProcessorContext());
-        signatureReader.acceptType(signatureParser);
-        final ParameterizedType parameterizedType = signatureParser.getParameterizedType();
-        return parameterizedType != null ? parameterizedType : ParameterizedType.fromType(fieldType);
-    }
-
 }

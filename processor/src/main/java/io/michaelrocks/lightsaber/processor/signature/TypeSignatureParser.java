@@ -14,29 +14,48 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.analysis;
+package io.michaelrocks.lightsaber.processor.signature;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
-import io.michaelrocks.lightsaber.processor.descriptors.ParameterizedType;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.signature.SignatureReader;
 import org.objectweb.asm.signature.SignatureVisitor;
 
 import static org.objectweb.asm.Opcodes.ASM5;
 
-class ParameterizedTypeSignatureParser extends SignatureVisitor {
+public class TypeSignatureParser extends SignatureVisitor {
     private final ProcessorContext processorContext;
 
     private Type classType;
     private Type classTypeParameter;
     private boolean isValid = true;
 
-    public ParameterizedTypeSignatureParser(final ProcessorContext processorContext) {
+    private TypeSignature typeSignature;
+
+    public TypeSignatureParser(final ProcessorContext processorContext) {
         super(ASM5);
         this.processorContext = processorContext;
     }
 
-    public ParameterizedType getParameterizedType() {
-        return isValid ? new ParameterizedType(classType, classTypeParameter) : null;
+    public static TypeSignature parseTypeSignature(final ProcessorContext processorContext, final String signature,
+            final Type fieldType) {
+        final TypeSignature typeSignature;
+        if (signature == null) {
+            typeSignature = null;
+        } else {
+            final SignatureReader signatureReader = new SignatureReader(signature);
+            final TypeSignatureParser signatureParser = new TypeSignatureParser(processorContext);
+            signatureReader.acceptType(signatureParser);
+            typeSignature = signatureParser.getTypeSignature();
+        }
+        return typeSignature != null ? typeSignature : TypeSignature.fromType(fieldType);
+    }
+
+    public TypeSignature getTypeSignature() {
+        if (isValid && typeSignature == null) {
+            typeSignature = new TypeSignature(classType, classTypeParameter);
+        }
+        return typeSignature;
     }
 
     @Override

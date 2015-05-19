@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.sample
 
 import io.michaelrocks.lightsaber.Module
 import io.michaelrocks.lightsaber.Provides
+import javax.inject.Provider
 import javax.inject.Singleton
 
 private class LightsaberModule : Module {
@@ -29,5 +30,5 @@ private class LightsaberModule : Module {
 
     Provides
     Singleton
-    fun providePlanet(kashyyyk: Kashyyyk): Planet = kashyyyk
+    fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet = kashyyykProvider.get()
 }
