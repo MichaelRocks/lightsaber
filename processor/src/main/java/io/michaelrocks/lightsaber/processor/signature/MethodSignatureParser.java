@@ -68,6 +68,9 @@ public class MethodSignatureParser extends SignatureVisitor {
         }
 
         final TypeSignature returnType = returnTypeParser.getTypeSignature();
+        if (returnType == null) {
+            return null;
+        }
 
         final List<TypeSignature> argumentTypes = new ArrayList<>(argumentTypeParsers.size());
         for (final TypeSignatureParser argumentTypeParser : argumentTypeParsers) {
