@@ -22,6 +22,8 @@ import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
+import io.michaelrocks.lightsaber.processor.signature.MethodSignature;
+import io.michaelrocks.lightsaber.processor.signature.MethodSignatureParser;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignatureParser;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +31,6 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.signature.SignatureReader;
 
 import javax.inject.Inject;
 
@@ -73,8 +74,10 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 if (Type.getDescriptor(Inject.class).equals(desc)) {
-                    final MethodDescriptor methodDescriptor =
-                            new MethodDescriptor(methodName, Type.getMethodType(methodDesc));
+                    final Type methodType = Type.getMethodType(methodDesc);
+                    final MethodSignature methodSignature =
+                            MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
+                    final MethodDescriptor methodDescriptor = new MethodDescriptor(methodName, methodSignature);
                     if (MethodDescriptor.isConstructor(methodName)) {
                         injectionTargetDescriptorBuilder.addInjectableConstructor(methodDescriptor);
                     } else {

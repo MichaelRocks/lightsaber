@@ -22,6 +22,8 @@ import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
+import io.michaelrocks.lightsaber.processor.signature.MethodSignature;
+import io.michaelrocks.lightsaber.processor.signature.MethodSignatureParser;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -65,8 +67,10 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
             @Override
             public void visitEnd() {
                 if (isProviderMethod) {
-                    final MethodDescriptor providerMethod =
-                            new MethodDescriptor(methodName, Type.getMethodType(methodDesc));
+                    final Type methodType = Type.getMethodType(methodDesc);
+                    final MethodSignature methodSignature =
+                            MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
+                    final MethodDescriptor providerMethod = new MethodDescriptor(methodName, methodSignature);
                     moduleDescriptorBuilder.addProviderMethod(providerMethod, scope);
                 }
                 super.visitEnd();
