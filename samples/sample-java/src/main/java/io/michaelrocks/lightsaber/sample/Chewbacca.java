@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber.sample;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 
 @Singleton
@@ -24,8 +25,8 @@ class Chewbacca implements Wookiee {
     private final Planet planet;
 
     @Inject
-    private Chewbacca(final Planet planet) {
-        this.planet = planet;
+    private Chewbacca(final Provider<Planet> planetProvider) {
+        this.planet = planetProvider.get();
     }
 
     @Override
