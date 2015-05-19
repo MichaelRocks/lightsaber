@@ -21,6 +21,7 @@ import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -131,7 +132,7 @@ public class ProviderClassGenerator {
                 null);
         methodVisitor.visitCode();
 
-        if (provider.getProviderMethod().isConstructior()) {
+        if (provider.getProviderMethod().isConstructor()) {
             generateConstructorInvocation(methodVisitor);
         } else {
             generateProviderMethodInvocation(methodVisitor);
@@ -173,32 +174,36 @@ public class ProviderClassGenerator {
     }
 
     private void generateProvideMethodArguments(final MethodVisitor methodVisitor) {
-        for (final Type argumentType : provider.getProviderMethod().getArgumentTypes()) {
+        for (final TypeSignature argumentType : provider.getProviderMethod().getArgumentTypes()) {
             generateProviderMethodArgument(methodVisitor, argumentType);
         }
     }
 
-    private void generateProviderMethodArgument(final MethodVisitor methodVisitor, final Type argumentType) {
+    private void generateProviderMethodArgument(final MethodVisitor methodVisitor, final TypeSignature argumentType) {
         methodVisitor.visitVarInsn(ALOAD, 0);
         methodVisitor.visitFieldInsn(
                 GETFIELD,
                 provider.getProviderType().getInternalName(),
                 INJECTOR_FIELD_NAME,
                 Type.getDescriptor(Injector.class));
-        methodVisitor.visitLdcInsn(argumentType);
+        final Type dependencyType =
+                argumentType.getParameterType() != null ? argumentType.getParameterType() : argumentType.getRawType();
+        methodVisitor.visitLdcInsn(dependencyType);
         methodVisitor.visitMethodInsn(
                 INVOKEINTERFACE,
                 Type.getInternalName(Injector.class),
                 GET_PROVIDER_METHOD_NAME,
                 Type.getMethodDescriptor(Type.getType(Provider.class), Type.getType(Class.class)),
                 true);
-        methodVisitor.visitMethodInsn(
-                INVOKEINTERFACE,
-                Type.getInternalName(Provider.class),
-                GET_METHOD_NAME,
-                Type.getMethodDescriptor(Type.getType(Object.class)),
-                true);
-        methodVisitor.visitTypeInsn(CHECKCAST, argumentType.getInternalName());
+        if (argumentType.getParameterType() == null) {
+            methodVisitor.visitMethodInsn(
+                    INVOKEINTERFACE,
+                    Type.getInternalName(Provider.class),
+                    GET_METHOD_NAME,
+                    Type.getMethodDescriptor(Type.getType(Object.class)),
+                    true);
+            methodVisitor.visitTypeInsn(CHECKCAST, dependencyType.getInternalName());
+        }
     }
 
     private void generateInjectMembersInvocation(final MethodVisitor methodVisitor) {
