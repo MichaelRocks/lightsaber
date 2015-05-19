@@ -87,16 +87,14 @@ public class MethodSignature {
 
         final MethodSignature that = (MethodSignature) object;
         return new EqualsBuilder()
-                .append(returnType, that.returnType)
-                .append(argumentTypes, that.argumentTypes)
+                .append(methodType, that.methodType)
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
-                .append(returnType)
-                .append(argumentTypes)
+                .append(methodType)
                 .toHashCode();
     }
 
