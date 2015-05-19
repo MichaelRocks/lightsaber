@@ -16,10 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
+import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.objectweb.asm.Type;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ProviderDescriptor {
@@ -59,6 +59,12 @@ public class ProviderDescriptor {
     }
 
     public List<Type> getDependencies() {
-        return Collections.unmodifiableList(Arrays.asList(providerMethod.getType().getArgumentTypes()));
+        final List<Type> dependencies = new ArrayList<>(providerMethod.getArgumentTypes().size());
+        for (final TypeSignature argumentType : providerMethod.getArgumentTypes()) {
+            final Type dependencyType = argumentType.getParameterType() != null
+                    ? argumentType.getParameterType() : argumentType.getRawType();
+            dependencies.add(dependencyType);
+        }
+        return dependencies;
     }
 }
