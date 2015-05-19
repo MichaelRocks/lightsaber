@@ -51,16 +51,30 @@ class LightsaberPlugin implements Plugin<Project> {
             final def variantName = variant.name.capitalize()
             final def newTaskName = "lightsaberProcess${variantName}"
             logger.trace("Creating Lightsaber task for variant ${variantName}")
-            createLightsaberProcessTask(newTaskName, variant.javaCompile)
+            final def lightsaberProcess = createLightsaberProcessTask(newTaskName, variant.javaCompile)
+            lightsaberProcess.doLast {
+                final def newDestinationDir = lightsaberProcess.outputDir
+                logger.info("Changing JavaCompile destination dir...")
+                logger.info("  from [${variant.javaCompile.destinationDir.absolutePath}]")
+                logger.info("    to [${newDestinationDir}]")
+                variant.javaCompile.destinationDir = newDestinationDir
+            }
         }
     }
 
     private void setupLightsaberForJava() {
         logger.info("Setting up Lightsaber task for Java project ${project.name}...")
-        createLightsaberProcessTask("lightsaberProcess", project.tasks.compileJava)
+        final def lightsaberProcess = createLightsaberProcessTask("lightsaberProcess", project.tasks.compileJava)
+        lightsaberProcess.doLast {
+            final def newDestinationDir = lightsaberProcess.outputDir
+            logger.info("Changing classes dir for main source set...")
+            logger.info("  from [${project.sourceSets.main.output.classesDir}]")
+            logger.info("    to [${newDestinationDir}]")
+            project.sourceSets.main.output.classesDir = newDestinationDir
+        }
     }
 
-    private void createLightsaberProcessTask(final String taskName, final JavaCompile javaCompile) {
+    private LightsaberTask createLightsaberProcessTask(final String taskName, final JavaCompile javaCompile) {
         logger.info("Creating Lighsaber task ${taskName}...")
         final def originalClasses = javaCompile.destinationDir.absolutePath
         final def lightsaberClasses = originalClasses + "-lightsaber"
@@ -76,12 +90,6 @@ class LightsaberPlugin implements Plugin<Project> {
         lightsaberProcess.mustRunAfter javaCompile
         lightsaberProcess.dependsOn javaCompile
         javaCompile.finalizedBy lightsaberProcess
-        lightsaberProcess.doLast {
-            final def newDestinationDir = project.file(lightsaberClasses)
-            logger.trace("Changing JavaCompile destination dir...")
-            logger.trace("  from [${javaCompile.destinationDir.absolutePath}]")
-            logger.trace("    to [${newDestinationDir.absolutePath}]")
-            javaCompile.destinationDir = newDestinationDir
-        }
+        return lightsaberProcess
     }
 }
