@@ -37,6 +37,9 @@ public class TypeSignatureParser extends SignatureVisitor {
     }
 
     public TypeSignature getTypeSignature() {
+        if (isValid && typeSignature == null) {
+            typeSignature = new TypeSignature(classType, classTypeParameter);
+        }
         return typeSignature;
     }
 
@@ -59,11 +62,6 @@ public class TypeSignatureParser extends SignatureVisitor {
 
         reportError("Injectable field cannot have wildcards in its signature");
         return this;
-    }
-
-    @Override
-    public void visitEnd() {
-        typeSignature = isValid ? new TypeSignature(classType, classTypeParameter) : null;
     }
 
     // Prohibited callbacks.
