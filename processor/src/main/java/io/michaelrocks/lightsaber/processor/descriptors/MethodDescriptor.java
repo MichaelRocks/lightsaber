@@ -16,10 +16,12 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
+import io.michaelrocks.lightsaber.processor.signature.MethodSignature;
+import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.objectweb.asm.Type;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class MethodDescriptor {
@@ -30,16 +32,19 @@ public class MethodDescriptor {
     private static final MethodDescriptor STATIC_INITIALIZER_DESCRIPTOR = forMethod("<clinit>", Type.VOID_TYPE);
 
     private final String name;
-    private final Type type;
+    private final MethodSignature signature;
 
     public MethodDescriptor(final String name, final String desc) {
-        this.name = name;
-        this.type = Type.getType(desc);
+        this(name, Type.getType(desc));
     }
 
     public MethodDescriptor(final String name, final Type type) {
+        this(name, new MethodSignature(type));
+    }
+
+    public MethodDescriptor(final String name, final MethodSignature signature) {
         this.name = name;
-        this.type = type;
+        this.signature = signature;
     }
 
     public static MethodDescriptor forMethod(final String name, final Type returnType, final Type... argumentTypes) {
@@ -74,34 +79,33 @@ public class MethodDescriptor {
         return name;
     }
 
+    public MethodSignature getSignature() {
+        return signature;
+    }
+
     public Type getType() {
-        return type;
+        return signature.getMethodType();
     }
 
-    public String getDescriptor() { return type.getDescriptor(); }
+    public String getDescriptor() { return signature.getMethodType().getDescriptor(); }
 
-    public Type getReturnType() {
-        return type.getReturnType();
+    public TypeSignature getReturnType() {
+        return signature.getReturnType();
     }
 
-    public List<Type> getArgumentTypes() {
-        return Collections.unmodifiableList(Arrays.asList(type.getArgumentTypes()));
+    public List<TypeSignature> getArgumentTypes() {
+        return signature.getArgumentTypes();
     }
 
-    public boolean isConstructior() {
+    public boolean isConstructor() {
         return isConstructor(name);
     }
 
     public boolean isDefaultConstructor() {
-        return isDefaultConstructor(name, type.getDescriptor());
+        return isDefaultConstructor(name, signature.getMethodType().getDescriptor());
     }
 
     public boolean isStaticInitializer() { return STATIC_INITIALIZER_DESCRIPTOR.equals(this); }
-
-    @Override
-    public String toString() {
-        return name + type;
-    }
 
     @Override
     public boolean equals(final Object object) {
@@ -113,13 +117,23 @@ public class MethodDescriptor {
             return false;
         }
 
-        final MethodDescriptor descriptor = (MethodDescriptor) object;
-        return name.equals(descriptor.name) && type.equals(descriptor.type);
-
+        final MethodDescriptor that = (MethodDescriptor) object;
+        return new EqualsBuilder()
+                .append(name, that.name)
+                .append(signature, that.signature)
+                .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return name.hashCode() * 31 + type.hashCode();
+        return new HashCodeBuilder(17, 37)
+                .append(name)
+                .append(signature)
+                .toHashCode();
+    }
+
+    @Override
+    public String toString() {
+        return name + " " + signature;
     }
 }
