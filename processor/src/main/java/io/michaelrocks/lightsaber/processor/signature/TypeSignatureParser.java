@@ -30,13 +30,15 @@ public class TypeSignatureParser extends SignatureVisitor {
     private Type classTypeParameter;
     private boolean isValid = true;
 
+    private ParameterizedType parameterizedType;
+
     public TypeSignatureParser(final ProcessorContext processorContext) {
         super(ASM5);
         this.processorContext = processorContext;
     }
 
     public ParameterizedType getParameterizedType() {
-        return isValid ? new ParameterizedType(classType, classTypeParameter) : null;
+        return parameterizedType;
     }
 
     @Override
@@ -58,6 +60,11 @@ public class TypeSignatureParser extends SignatureVisitor {
 
         reportError("Injectable field cannot have wildcards in its signature");
         return this;
+    }
+
+    @Override
+    public void visitEnd() {
+        parameterizedType = isValid ? new ParameterizedType(classType, classTypeParameter) : null;
     }
 
     // Prohibited callbacks.
