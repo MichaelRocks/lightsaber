@@ -69,7 +69,7 @@ public class InjectorClassGenerator {
         final MethodVisitor methodVisitor = classWriter.visitMethod(
                 ACC_PUBLIC,
                 defaultConstructor.getName(),
-                defaultConstructor.getType().getDescriptor(),
+                defaultConstructor.getDescriptor(),
                 null,
                 null);
         methodVisitor.visitCode();
@@ -78,7 +78,7 @@ public class InjectorClassGenerator {
                 INVOKESPECIAL,
                 Type.getInternalName(Object.class),
                 defaultConstructor.getName(),
-                defaultConstructor.getType().getDescriptor(),
+                defaultConstructor.getDescriptor(),
                 false);
         methodVisitor.visitInsn(RETURN);
         methodVisitor.visitMaxs(0, 0);
