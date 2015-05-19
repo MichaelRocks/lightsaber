@@ -26,29 +26,53 @@ import java.util.Collections;
 import java.util.List;
 
 public class MethodSignature {
+    private final Type methodType;
     private final TypeSignature returnType;
     private final List<TypeSignature> argumentTypes;
 
     public MethodSignature(final Type methodType) {
-        this.returnType = getReturnTypeSignature(methodType);
-        this.argumentTypes = Collections.unmodifiableList(getArgumentTypesSignatures(methodType));
+        this.methodType = methodType;
+        this.returnType = createReturnTypeSignature(methodType);
+        this.argumentTypes = Collections.unmodifiableList(createArgumentTypesSignatures(methodType));
     }
 
     public MethodSignature(final TypeSignature returnType, final List<TypeSignature> argumentTypes) {
+        this.methodType = createRawType(returnType, argumentTypes);
         this.returnType = returnType;
         this.argumentTypes = Collections.unmodifiableList(new ArrayList<>(argumentTypes));
     }
 
-    private static TypeSignature getReturnTypeSignature(final Type methodType) {
+    public Type getMethodType() {
+        return methodType;
+    }
+
+    public TypeSignature getReturnType() {
+        return returnType;
+    }
+
+    public List<TypeSignature> getArgumentTypes() {
+        return argumentTypes;
+    }
+
+    private static TypeSignature createReturnTypeSignature(final Type methodType) {
         return new TypeSignature(methodType.getReturnType());
     }
 
-    private static List<TypeSignature> getArgumentTypesSignatures(final Type methodType) {
+    private static List<TypeSignature> createArgumentTypesSignatures(final Type methodType) {
         final ArrayList<TypeSignature> argumentTypes = new ArrayList<>();
         for (final Type argumentType : methodType.getArgumentTypes()) {
             argumentTypes.add(new TypeSignature(argumentType));
         }
         return argumentTypes;
+    }
+
+    private static Type createRawType(final TypeSignature returnTypeSignature,
+            final List<TypeSignature> argumentTypesSignatures) {
+        final Type[] argumentTypes = new Type[argumentTypesSignatures.size()];
+        for (int i = 0; i < argumentTypesSignatures.size(); ++i) {
+            argumentTypes[i] = argumentTypesSignatures.get(i).getRawType();
+        }
+        return Type.getMethodType(returnTypeSignature.getRawType(), argumentTypes);
     }
 
     @Override
