@@ -23,6 +23,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescripto
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ParameterizedType;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
+import io.michaelrocks.lightsaber.processor.signature.TypeSignatureParser;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;

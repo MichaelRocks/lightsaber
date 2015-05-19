@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.analysis;
+package io.michaelrocks.lightsaber.processor.signature;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.descriptors.ParameterizedType;
@@ -23,7 +23,7 @@ import org.objectweb.asm.signature.SignatureVisitor;
 
 import static org.objectweb.asm.Opcodes.ASM5;
 
-class TypeSignatureParser extends SignatureVisitor {
+public class TypeSignatureParser extends SignatureVisitor {
     private final ProcessorContext processorContext;
 
     private Type classType;
