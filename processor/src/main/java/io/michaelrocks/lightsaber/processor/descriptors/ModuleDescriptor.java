@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
+import io.michaelrocks.lightsaber.InstanceProvider;
 import org.objectweb.asm.Type;
 
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class ModuleDescriptor {
     public static class Builder {
         private final Type moduleType;
         private final List<ProviderDescriptor> providers = new ArrayList<>();
+        private int providerIndex;
 
         public Builder(final Type moduleType) {
             this.moduleType = moduleType;
@@ -51,8 +53,15 @@ public class ModuleDescriptor {
             return moduleType;
         }
 
+        public Builder addProviderField(final FieldDescriptor providerField) {
+            final Type providerType = Type.getType(InstanceProvider.class);
+            final ProviderDescriptor provider =
+                    new ProviderDescriptor(providerType, providerField.getRawType(), providerField, moduleType);
+            return addProvider(provider);
+        }
+
         public Builder addProviderMethod(final MethodDescriptor providerMethod, final ScopeDescriptor scope) {
-            final int providerIndex = providers.size() + 1;
+            providerIndex += 1;
             final Type providerType =
                     Type.getObjectType(moduleType.getInternalName() + "$$Provider$$" + providerIndex);
             final Type delegatorType = scope != null ? scope.getProviderType() : null;

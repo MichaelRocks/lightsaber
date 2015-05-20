@@ -19,12 +19,14 @@ package io.michaelrocks.lightsaber.processor.analysis;
 import io.michaelrocks.lightsaber.Provides;
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.MethodSignature;
 import io.michaelrocks.lightsaber.processor.signature.MethodSignatureParser;
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
@@ -72,6 +74,35 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
                             MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
                     final MethodDescriptor providerMethod = new MethodDescriptor(methodName, methodSignature);
                     moduleDescriptorBuilder.addProviderMethod(providerMethod, scope);
+                }
+                super.visitEnd();
+            }
+        };
+    }
+
+    @Override
+    public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
+            final Object value) {
+        final String fieldName = name;
+        final String fieldDesc = desc;
+        final FieldVisitor fieldVisitor = super.visitField(access, name, desc, signature, value);
+        return new FieldVisitor(ASM5, fieldVisitor) {
+            private boolean isProviderField;
+
+            @Override
+            public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+                if (Type.getDescriptor(Provides.class).equals(desc)) {
+                    isProviderField = true;
+                }
+
+                return super.visitAnnotation(desc, visible);
+            }
+
+            @Override
+            public void visitEnd() {
+                if (isProviderField) {
+                    final FieldDescriptor providerField = new FieldDescriptor(fieldName, fieldDesc);
+                    moduleDescriptorBuilder.addProviderField(providerField);
                 }
                 super.visitEnd();
             }

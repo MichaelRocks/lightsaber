@@ -22,6 +22,7 @@ import io.michaelrocks.lightsaber.internal.InternalModule;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
@@ -73,6 +74,43 @@ public class ModulePatcher extends ProcessorClassVisitor {
 
     private void generateRegisterProviderInvocation(final MethodVisitor methodVisitor,
             final ProviderDescriptor provider) {
+        if (provider.getProviderField() != null) {
+            generateProviderConstructionForField(methodVisitor, provider);
+        } else {
+            generateProviderConstructionForMethod(methodVisitor, provider);
+        }
+
+        methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
+                Type.getInternalName(LightsaberInjector.class),
+                "registerProvider",
+                Type.getMethodDescriptor(Type.VOID_TYPE,
+                        Type.getType(Class.class), Type.getType(CopyableProvider.class)),
+                false);
+    }
+
+    private void generateProviderConstructionForField(final MethodVisitor methodVisitor,
+            final ProviderDescriptor provider) {
+        System.out.println("Generating invocation for field " + provider.getProviderField().getName());
+
+        methodVisitor.visitTypeInsn(NEW, provider.getProviderType().getInternalName());
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        final FieldDescriptor fieldDescriptor = provider.getProviderField();
+        methodVisitor.visitFieldInsn(
+                GETFIELD,
+                module.getModuleType().getInternalName(),
+                fieldDescriptor.getName(),
+                fieldDescriptor.getDescriptor());
+        final MethodDescriptor constructorDescriptor = MethodDescriptor.forConstructor(Type.getType(Object.class));
+        methodVisitor.visitMethodInsn(INVOKESPECIAL,
+                provider.getProviderType().getInternalName(),
+                constructorDescriptor.getName(),
+                constructorDescriptor.getDescriptor(),
+                false);
+    }
+
+    private void generateProviderConstructionForMethod(final MethodVisitor methodVisitor,
+            final ProviderDescriptor provider) {
         System.out.println("Generating invocation for method " + provider.getProviderMethod().getName());
 
         methodVisitor.visitVarInsn(ALOAD, 1);
@@ -83,13 +121,6 @@ public class ModulePatcher extends ProcessorClassVisitor {
         } else {
             generateProviderConstruction(methodVisitor, provider);
         }
-
-        methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
-                Type.getInternalName(LightsaberInjector.class),
-                "registerProvider",
-                Type.getMethodDescriptor(Type.VOID_TYPE,
-                        Type.getType(Class.class), Type.getType(CopyableProvider.class)),
-                false);
     }
 
     private void generateDelegatorConstruction(final MethodVisitor methodVisitor, final ProviderDescriptor provider) {
