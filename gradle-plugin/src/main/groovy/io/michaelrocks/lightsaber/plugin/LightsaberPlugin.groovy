@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.plugin
 
-import com.android.builder.model.Variant
+import com.android.build.gradle.api.BaseVariant
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -45,9 +45,9 @@ class LightsaberPlugin implements Plugin<Project> {
         }
     }
 
-    private void setupLightsaberForAndroid(final Collection<Variant> variants) {
+    private void setupLightsaberForAndroid(final Collection<BaseVariant> variants) {
         logger.info("Setting up Lightsaber task for Android project ${project.name}...")
-        variants.all { final variant ->
+        variants.all { final BaseVariant variant ->
             final def variantName = variant.name.capitalize()
             final def newTaskName = "lightsaberProcess${variantName}"
             logger.trace("Creating Lightsaber task for variant ${variantName}")
