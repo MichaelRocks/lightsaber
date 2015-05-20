@@ -21,7 +21,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logger
-import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.api.tasks.compile.AbstractCompile
 
 class LightsaberPlugin implements Plugin<Project> {
     private Project project
@@ -51,13 +51,13 @@ class LightsaberPlugin implements Plugin<Project> {
             final def variantName = variant.name.capitalize()
             final def newTaskName = "lightsaberProcess${variantName}"
             logger.trace("Creating Lightsaber task for variant ${variantName}")
-            final def lightsaberProcess = createLightsaberProcessTask(newTaskName, variant.javaCompile)
+            final def lightsaberProcess = createLightsaberProcessTask(newTaskName, variant.javaCompiler)
             lightsaberProcess.doLast {
                 final def newDestinationDir = lightsaberProcess.outputDir
                 logger.info("Changing JavaCompile destination dir...")
-                logger.info("  from [${variant.javaCompile.destinationDir.absolutePath}]")
+                logger.info("  from [${variant.javaCompiler.destinationDir.absolutePath}]")
                 logger.info("    to [${newDestinationDir}]")
-                variant.javaCompile.destinationDir = newDestinationDir
+                variant.javaCompiler.destinationDir = newDestinationDir
             }
         }
     }
@@ -74,7 +74,7 @@ class LightsaberPlugin implements Plugin<Project> {
         }
     }
 
-    private LightsaberTask createLightsaberProcessTask(final String taskName, final JavaCompile javaCompile) {
+    private LightsaberTask createLightsaberProcessTask(final String taskName, final AbstractCompile javaCompile) {
         logger.info("Creating Lighsaber task ${taskName}...")
         final def originalClasses = javaCompile.destinationDir.absolutePath
         final def lightsaberClasses = originalClasses + "-lightsaber"
