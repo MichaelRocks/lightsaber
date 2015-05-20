@@ -85,7 +85,7 @@ class LightsaberPlugin implements Plugin<Project> {
             description 'Processes .class files with Lightsaber Processor.'
             classesDir originalClasses
             outputDir lightsaberClasses
-        }
+        } as LightsaberTask
 
         lightsaberProcess.mustRunAfter javaCompile
         lightsaberProcess.dependsOn javaCompile
