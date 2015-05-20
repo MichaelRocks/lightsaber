@@ -23,45 +23,45 @@ import org.objectweb.asm.Type;
 
 public class FieldDescriptor {
     private final String name;
-    private final TypeSignature type;
+    private final TypeSignature signature;
 
     public FieldDescriptor(final String name, final String desc) {
         this(name, Type.getType(desc));
     }
 
-    public FieldDescriptor(final String name, final Type type) {
+    public FieldDescriptor(final String name, final Type signature) {
         this.name = name;
-        this.type = new TypeSignature(type);
+        this.signature = new TypeSignature(signature);
     }
 
-    public FieldDescriptor(final String name, final TypeSignature type) {
+    public FieldDescriptor(final String name, final TypeSignature signature) {
         this.name = name;
-        this.type = type;
+        this.signature = signature;
     }
 
     public String getName() {
         return name;
     }
 
-    public TypeSignature getParameterizedType() {
-        return type;
+    public TypeSignature getSignature() {
+        return signature;
     }
 
     public boolean isParameterized() {
-        return type.getParameterType() != null;
+        return signature.getParameterType() != null;
     }
 
     public Type getRawType() {
-        return type.getRawType();
+        return signature.getRawType();
     }
 
-    public Type getArgumentType() {
-        return type.getParameterType();
+    public Type getParameterType() {
+        return signature.getParameterType();
     }
 
     @Override
     public String toString() {
-        return type + " " + name;
+        return signature + " " + name;
     }
 
     @Override
@@ -77,7 +77,7 @@ public class FieldDescriptor {
         final FieldDescriptor that = (FieldDescriptor) object;
         return new EqualsBuilder()
                 .append(name, that.name)
-                .append(type, that.type)
+                .append(signature, that.signature)
                 .isEquals();
     }
 
@@ -85,7 +85,7 @@ public class FieldDescriptor {
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
                 .append(name)
-                .append(type)
+                .append(signature)
                 .toHashCode();
     }
 }
