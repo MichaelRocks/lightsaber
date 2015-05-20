@@ -131,7 +131,7 @@ public class InjectorClassGenerator {
     }
 
     private static Type getDependencyTypeForField(final FieldDescriptor field) {
-        return field.isParameterized() ? field.getArgumentType() : field.getRawType();
+        return field.isParameterized() ? field.getParameterType() : field.getRawType();
     }
 
     private static MethodDescriptor getInjectorMethodForField(final FieldDescriptor field) {
