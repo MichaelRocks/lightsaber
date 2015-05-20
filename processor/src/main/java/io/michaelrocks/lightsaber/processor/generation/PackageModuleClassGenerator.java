@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.processor.generation;
 
 import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.injection.ModulePatcher;
@@ -40,7 +41,8 @@ public class PackageModuleClassGenerator {
     }
 
     public void generatePackageModule(final ModuleDescriptor packageModule) {
-        final ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        final ClassWriter classWriter =
+                new StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
         final ModulePatcher modulePatcher = new ModulePatcher(processorContext, classWriter, packageModule);
 
         generateClass(modulePatcher, packageModule.getModuleType().getInternalName());
