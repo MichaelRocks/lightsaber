@@ -36,6 +36,7 @@ import io.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import io.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import io.michaelrocks.lightsaber.processor.io.ClassFileWriter;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.objectweb.asm.Type;
 
 import java.io.IOException;
@@ -187,7 +188,9 @@ public class ClassProcessor {
                         .append(System.lineSeparator())
                         .append(path)
                         .append(": ")
-                        .append(error.getMessage());
+                        .append(error.getMessage())
+                        .append(System.lineSeparator())
+                        .append(ExceptionUtils.getStackTrace(error));
             }
         }
         return builder.toString();
