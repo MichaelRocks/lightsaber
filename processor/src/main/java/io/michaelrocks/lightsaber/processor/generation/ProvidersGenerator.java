@@ -37,7 +37,10 @@ public class ProvidersGenerator {
 
     private void generateModuleProviders(final ModuleDescriptor module) {
         for (final ProviderDescriptor provider : module.getProviders()) {
-            generateProvider(provider);
+            // TODO: That's not the best way to ensure that the provider should be generated.
+            if (provider.getProviderMethod() != null) {
+                generateProvider(provider);
+            }
         }
     }
 

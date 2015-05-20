@@ -20,19 +20,32 @@ import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.objectweb.asm.Type;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ProviderDescriptor {
     private final Type providerType;
     private final Type providableType;
+    private final FieldDescriptor providerField;
     private final MethodDescriptor providerMethod;
     private final Type moduleType;
     private final Type delegatorType;
 
     public ProviderDescriptor(final Type providerType, final Type providableType,
+            final FieldDescriptor providerField, final Type moduleType) {
+        this(providerType, providableType, providerField, null, moduleType, null);
+    }
+
+    public ProviderDescriptor(final Type providerType, final Type providableType,
+            final MethodDescriptor providerMethod, final Type moduleType, final Type delegatorType) {
+        this(providerType, providableType, null, providerMethod, moduleType, delegatorType);
+    }
+
+    private ProviderDescriptor(final Type providerType, final Type providableType, final FieldDescriptor providerField,
             final MethodDescriptor providerMethod, final Type moduleType, final Type delegatorType) {
         this.providerType = providerType;
         this.providableType = providableType;
+        this.providerField = providerField;
         this.providerMethod = providerMethod;
         this.moduleType = moduleType;
         this.delegatorType = delegatorType;
@@ -44,6 +57,10 @@ public class ProviderDescriptor {
 
     public Type getProvidableType() {
         return providableType;
+    }
+
+    public FieldDescriptor getProviderField() {
+        return providerField;
     }
 
     public MethodDescriptor getProviderMethod() {
@@ -59,6 +76,10 @@ public class ProviderDescriptor {
     }
 
     public List<Type> getDependencies() {
+        if (providerMethod == null) {
+            return Collections.emptyList();
+        }
+
         final List<Type> dependencies = new ArrayList<>(providerMethod.getArgumentTypes().size());
         for (final TypeSignature argumentType : providerMethod.getArgumentTypes()) {
             final Type dependencyType = argumentType.getParameterType() != null

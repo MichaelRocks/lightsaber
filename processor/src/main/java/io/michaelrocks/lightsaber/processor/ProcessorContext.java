@@ -159,7 +159,11 @@ public class ProcessorContext {
         for (final ModuleDescriptor module : getModules()) {
             System.out.println("Module: " + module.getModuleType());
             for (final ProviderDescriptor provider : module.getProviders()) {
-                System.out.println("\tProvides: " + provider.getProviderMethod());
+                if (provider.getProviderMethod() != null) {
+                    System.out.println("\tProvides: " + provider.getProviderMethod());
+                } else {
+                    System.out.println("\tProvides: " + provider.getProviderField());
+                }
             }
         }
         for (final InjectionTargetDescriptor injectableTarget : getInjectableTargets()) {
