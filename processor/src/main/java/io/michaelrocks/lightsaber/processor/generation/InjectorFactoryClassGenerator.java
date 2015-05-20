@@ -20,6 +20,7 @@ import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.JavaVersionChanger;
+import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -53,7 +54,7 @@ public class InjectorFactoryClassGenerator {
         try (final InputStream stream = Lightsaber$$InjectorFactory.class.getResourceAsStream(path)) {
             final ClassReader classReader = new ClassReader(stream);
             final ClassWriter classWriter =
-                    new ClassWriter(classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+                    new StandaloneClassWriter(classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
             final ClassVisitor generator = new InjectorFactoryClassVisitor(classWriter);
             final Remapper remapper =
                     new SimpleRemapper(

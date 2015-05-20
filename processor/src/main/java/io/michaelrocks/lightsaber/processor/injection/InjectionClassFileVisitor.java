@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber.processor.injection;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.io.ClassFileVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -35,7 +36,7 @@ public class InjectionClassFileVisitor extends ClassFileVisitor {
     public void visitClassFile(final String path, final byte[] classData) throws IOException {
         final ClassReader classReader = new ClassReader(classData);
         final ClassWriter classWriter =
-                new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+                new StandaloneClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         classReader.accept(new InjectionDispatcher(classWriter, processorContext), ClassReader.SKIP_FRAMES);
         super.visitClassFile(path, classWriter.toByteArray());
     }
