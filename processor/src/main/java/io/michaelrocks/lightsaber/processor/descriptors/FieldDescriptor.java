@@ -59,6 +59,10 @@ public class FieldDescriptor {
         return signature.getParameterType();
     }
 
+    public String getDescriptor() {
+        return signature.getRawType().getDescriptor();
+    }
+
     @Override
     public String toString() {
         return signature + " " + name;
