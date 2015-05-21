@@ -29,6 +29,7 @@ import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public class LightsaberProcessor {
     private static final String DEFAULT_SUFFIX = "-lightsaber";
@@ -82,6 +83,23 @@ public class LightsaberProcessor {
                                 + FilenameUtils.getExtension(parameters.jar);
             } else {
                 parameters.output = parameters.classes + DEFAULT_SUFFIX;
+            }
+        }
+
+        validateLibraries(parameters.libs);
+    }
+
+    private static void validateLibraries(final List<File> libraries) {
+        if (libraries == null || libraries.isEmpty()) {
+            return;
+        }
+
+        for (final File library : libraries) {
+            if (!library.exists()) {
+                throw new ParameterException("Library doesn't exist: " + library);
+            }
+            if (!library.isFile()) {
+                throw new ParameterException("Library is not a file: " + library);
             }
         }
     }
