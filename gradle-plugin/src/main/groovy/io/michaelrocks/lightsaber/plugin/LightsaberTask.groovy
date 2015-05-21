@@ -17,15 +17,16 @@
 package io.michaelrocks.lightsaber.plugin
 
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
-import io.michaelrocks.lightsaber.processor.LightsaberProcessor;
+import io.michaelrocks.lightsaber.processor.LightsaberProcessor
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleScriptException
-import org.gradle.api.logging.LogLevel;
-import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.logging.LogLevel
+import org.gradle.api.tasks.TaskAction
 
 public class LightsaberTask extends DefaultTask {
     private File classesDir
     private File outputDir
+    private List<File> classpath
 
     LightsaberTask() {
         logging.captureStandardOutput LogLevel.INFO
@@ -51,11 +52,21 @@ public class LightsaberTask extends DefaultTask {
         // outputs.dir(path)
     }
 
+    Collection<File> getClasspath() {
+        return classpath
+    }
+
+    void setClasspath(final Collection<File> classpath) {
+        this.classpath = new ArrayList<>(classpath)
+        classpath.forEach { inputs.file(it) }
+    }
+
     @TaskAction
     def process() {
         final def parameters = new LightsaberParameters()
         parameters.classes = classesDir.absolutePath
         parameters.output = outputDir.absolutePath
+        parameters.libs = classpath
         parameters.verbose = logger.isEnabled(LogLevel.DEBUG)
         logger.info("Starting Lightsaber processor: $parameters")
         final def processor = new LightsaberProcessor(parameters)
