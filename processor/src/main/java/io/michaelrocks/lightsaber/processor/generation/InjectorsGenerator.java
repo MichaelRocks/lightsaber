@@ -36,7 +36,7 @@ public class InjectorsGenerator {
     }
 
     private void generateInjector(final InjectorDescriptor injectorDescriptor) {
-        final InjectorClassGenerator generator = new InjectorClassGenerator(injectorDescriptor);
+        final InjectorClassGenerator generator = new InjectorClassGenerator(processorContext, injectorDescriptor);
         final byte[] injectorClassData = generator.generate();
         classProducer.produceClass(injectorDescriptor.getInjectorType().getInternalName(), injectorClassData);
     }

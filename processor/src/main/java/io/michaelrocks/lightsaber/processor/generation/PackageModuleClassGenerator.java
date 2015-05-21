@@ -42,7 +42,7 @@ public class PackageModuleClassGenerator {
 
     public void generatePackageModule(final ModuleDescriptor packageModule) {
         final ClassWriter classWriter =
-                new StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+                new StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, processorContext);
         final ModulePatcher modulePatcher = new ModulePatcher(processorContext, classWriter, packageModule);
 
         generateClass(modulePatcher, packageModule.getModuleType().getInternalName());

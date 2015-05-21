@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.processor.generation;
 
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.internal.TypeInjector;
+import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
@@ -42,15 +43,17 @@ public class InjectorClassGenerator {
             MethodDescriptor.forMethod(GET_PROVIDER_METHOD_NAME,
                     Type.getType(Provider.class), Type.getType(Class.class));
 
+    private final ProcessorContext processorContext;
     private final InjectorDescriptor injector;
 
-    public InjectorClassGenerator(final InjectorDescriptor injector) {
+    public InjectorClassGenerator(final ProcessorContext processorContext, final InjectorDescriptor injector) {
+        this.processorContext = processorContext;
         this.injector = injector;
     }
 
     public byte[] generate() {
         final ClassWriter classWriter =
-                new StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+                new StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, processorContext);
         classWriter.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,

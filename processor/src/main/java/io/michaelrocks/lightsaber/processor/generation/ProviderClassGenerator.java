@@ -50,7 +50,7 @@ public class ProviderClassGenerator {
 
     public byte[] generate() {
         final ClassWriter classWriter =
-                new StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+                new StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, processorContext);
         classWriter.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,
