@@ -35,6 +35,9 @@ public class LightsaberSample {
     @Inject
     private final Provider<Droid> droidProvider = null;
 
+    @Inject
+    private final DarthVader darthVader = null;
+
     public static void main(final String[] args) throws URISyntaxException {
         System.out.println(
                 new File(LightsaberSample.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()));
@@ -45,6 +48,7 @@ public class LightsaberSample {
         System.out.println("Before injection");
         System.out.println("Wookiee: " + wookiee);
         System.out.println("Droid: " + droid);
+        System.out.println("Darth Vader: " + darthVader);
         final Injector injector = Lightsaber.createInjector(new LightsaberModule());
         injector.injectMembers(this);
         System.out.println("After injection");
@@ -54,6 +58,7 @@ public class LightsaberSample {
         System.out.println("Droid: " + droid);
         final Droid anotherDroid = droidProvider.get();
         System.out.println("Another droid: " + anotherDroid);
+        System.out.println("Darth Vader: " + darthVader);
         wookiee.roar();
         droid.repair();
     }

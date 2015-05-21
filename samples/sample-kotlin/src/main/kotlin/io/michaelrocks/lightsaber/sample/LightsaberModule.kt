@@ -23,6 +23,9 @@ import javax.inject.Singleton
 
 private class LightsaberModule : Module {
     Provides
+    private val darthVader = DarthVader
+
+    Provides
     fun provideWookie(chewbacca: Chewbacca): Wookiee = chewbacca
 
     Provides
