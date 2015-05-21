@@ -19,12 +19,19 @@ package io.michaelrocks.lightsaber.processor;
 import com.beust.jcommander.Parameter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.List;
+
 public class LightsaberParameters {
     @Parameter(names = "--jar", description = "Jar file to process")
     public String jar;
 
     @Parameter(names = "--classes", description = "Classes directory to process")
     public String classes;
+
+    @Parameter(names = "--libs", description = "Project dependencies", variableArity = true)
+    public List<File> libs = Collections.emptyList();
 
     @Parameter(names = "--output", description = "Output jar file or classes directory")
     public String output;
@@ -40,6 +47,7 @@ public class LightsaberParameters {
         return new ToStringBuilder(this)
                 .append("jar", jar)
                 .append("classes", classes)
+                .append("libs", libs)
                 .append("output", output)
                 .append("verbose", verbose)
                 .append("printStacktrace", printStacktrace)
