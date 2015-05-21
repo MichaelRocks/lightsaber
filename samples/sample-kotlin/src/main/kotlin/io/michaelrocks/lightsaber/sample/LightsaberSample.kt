@@ -38,10 +38,14 @@ public class LightsaberSample {
     Inject
     private var droidProvider: Provider<Droid>? = null
 
+    Inject
+    private var darthVader: DarthVader? = null
+
     private fun run() {
         System.out.println("Before injection")
         System.out.println("Wookiee: $wookiee")
         System.out.println("Droid: $droid")
+        System.out.println("Darth Vader: " + darthVader)
         val injector = Lightsaber.createInjector(LightsaberModule())
         injector.injectMembers(this)
         System.out.println("After injection")
@@ -51,6 +55,7 @@ public class LightsaberSample {
         System.out.println("Droid: $droid")
         val anotherDroid = droidProvider!!.get()
         System.out.println("Another droid: $anotherDroid")
+        System.out.println("Darth Vader: " + darthVader)
         wookiee!!.roar()
         droid!!.repair()
     }

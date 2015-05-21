@@ -24,6 +24,9 @@ import javax.inject.Singleton;
 
 class LightsaberModule implements Module {
     @Provides
+    private final DarthVader darthVader = DarthVader.INSTANCE;
+
+    @Provides
     public Wookiee provideWookie(final Chewbacca chewbacca) {
         return chewbacca;
     }
