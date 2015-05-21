@@ -25,6 +25,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
+import io.michaelrocks.lightsaber.processor.graph.TypeGraph;
 import org.objectweb.asm.Type;
 
 import javax.inject.Singleton;
@@ -44,6 +45,8 @@ public class ProcessorContext {
 
     private String classFilePath;
     private final Map<String, List<Exception>> errorsByPath = new LinkedHashMap<>();
+
+    private TypeGraph typeGraph;
     private final Map<Type, ModuleDescriptor> modules = new HashMap<>();
     private final Map<Type, ModuleDescriptor> packageModules = new HashMap<>();
     private final Map<Type, InjectionTargetDescriptor> injectableTargets = new HashMap<>();
@@ -77,6 +80,14 @@ public class ProcessorContext {
             errorsByPath.put(classFilePath, errors);
         }
         errors.add(error);
+    }
+
+    public TypeGraph getTypeGraph() {
+        return typeGraph;
+    }
+
+    public void setTypeGraph(final TypeGraph typeGraph) {
+        this.typeGraph = typeGraph;
     }
 
     public ModuleDescriptor findModuleByType(final Type moduleType) {
