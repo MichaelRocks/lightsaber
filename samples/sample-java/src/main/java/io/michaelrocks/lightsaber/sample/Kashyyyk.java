@@ -21,8 +21,17 @@ import javax.inject.Singleton;
 
 @Singleton
 class Kashyyyk implements Planet {
+    private boolean isSettled = false;
+
     @Inject
     private Kashyyyk() {
+    }
+
+    public void settle() {
+        if (isSettled) {
+            throw new IllegalStateException("Already settled");
+        }
+        isSettled = true;
     }
 
     @Override

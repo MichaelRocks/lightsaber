@@ -38,6 +38,9 @@ public class MainActivity : Activity() {
     Inject
     private var darthVader: DarthVader? = null
 
+    Inject
+    private val planet: Planet? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main)
@@ -48,6 +51,7 @@ public class MainActivity : Activity() {
         print(beforeInjectionTextView, "Wookiee: $wookiee")
         print(beforeInjectionTextView, "Droid: $droid")
         print(beforeInjectionTextView, "Darth Vader: $darthVader")
+        print(beforeInjectionTextView, "Planet: $planet")
 
         val injector = Lightsaber.createInjector(LightsaberModule())
         injector.injectMembers(this)
@@ -59,6 +63,7 @@ public class MainActivity : Activity() {
         val anotherDroid = droidProvider!!.get()
         print(afterInjectionTextView, "Another droid: $anotherDroid")
         print(afterInjectionTextView, "Darth Vader: $darthVader")
+        print(afterInjectionTextView, "Planet: $planet")
     }
 
     private fun print(textView: TextView, message: CharSequence) {

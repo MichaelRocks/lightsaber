@@ -23,4 +23,13 @@ Singleton
 private class Kashyyyk [Inject] private () : Planet {
     override val name = "Kashyyyk"
     override val sector = "Mytaranor"
+
+    private var isSettled = false
+
+    public fun settle() {
+        if (isSettled) {
+            throw IllegalStateException("Already settled")
+        }
+        isSettled = true
+    }
 }
