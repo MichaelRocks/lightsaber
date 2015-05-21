@@ -59,8 +59,11 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 if (Type.getDescriptor(Provides.class).equals(desc)) {
                     isProviderMethod = true;
-                } else if (scope != null) {
+                } else if (scope == null) {
                     scope = getProcessorContext().findScopeByAnnotationType(Type.getType(desc));
+                } else if (getProcessorContext().findScopeByAnnotationType(Type.getType(desc)) != null) {
+                    reportError("Method has multiple scope annotations: " + moduleDescriptorBuilder.getModuleType()
+                            + "." + methodName + methodDesc);
                 }
 
                 return super.visitAnnotation(desc, visible);
