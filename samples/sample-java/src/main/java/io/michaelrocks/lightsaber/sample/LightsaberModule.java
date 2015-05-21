@@ -39,6 +39,8 @@ class LightsaberModule implements Module {
     @Provides
     @Singleton
     public Planet providePlanet(final Provider<Kashyyyk> kashyyykProvider) {
-        return kashyyykProvider.get();
+        final Kashyyyk kashyyyk = kashyyykProvider.get();
+        kashyyyk.settle();
+        return kashyyyk;
     }
 }
