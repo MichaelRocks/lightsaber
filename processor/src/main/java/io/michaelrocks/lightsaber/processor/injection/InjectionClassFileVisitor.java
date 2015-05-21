@@ -35,8 +35,8 @@ public class InjectionClassFileVisitor extends ClassFileVisitor {
     @Override
     public void visitClassFile(final String path, final byte[] classData) throws IOException {
         final ClassReader classReader = new ClassReader(classData);
-        final ClassWriter classWriter =
-                new StandaloneClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+        final ClassWriter classWriter = new StandaloneClassWriter(
+                classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES, processorContext);
         classReader.accept(new InjectionDispatcher(classWriter, processorContext), ClassReader.SKIP_FRAMES);
         super.visitClassFile(path, classWriter.toByteArray());
     }
