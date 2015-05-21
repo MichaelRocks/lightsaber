@@ -48,10 +48,11 @@ class LightsaberPlugin implements Plugin<Project> {
     private void setupLightsaberForAndroid(final Collection<BaseVariant> variants) {
         logger.info("Setting up Lightsaber task for Android project ${project.name}...")
         variants.all { final BaseVariant variant ->
+            final def classpath = project.android.bootClasspath.toList() + variant.javaCompiler.classpath.toList()
             final def variantName = variant.name.capitalize()
             final def newTaskName = "lightsaberProcess${variantName}"
             logger.trace("Creating Lightsaber task for variant ${variantName}")
-            final def lightsaberProcess = createLightsaberProcessTask(newTaskName, variant.javaCompiler)
+            final def lightsaberProcess = createLightsaberProcessTask(newTaskName, variant.javaCompiler, classpath)
             lightsaberProcess.doLast {
                 final def newDestinationDir = lightsaberProcess.outputDir
                 logger.info("Changing JavaCompile destination dir...")
@@ -64,7 +65,9 @@ class LightsaberPlugin implements Plugin<Project> {
 
     private void setupLightsaberForJava() {
         logger.info("Setting up Lightsaber task for Java project ${project.name}...")
-        final def lightsaberProcess = createLightsaberProcessTask("lightsaberProcess", project.tasks.compileJava)
+
+        final def lightsaberProcess = createLightsaberProcessTask("lightsaberProcess", project.tasks.compileJava,
+                project.tasks.compileJava.classpath.toList())
         lightsaberProcess.doLast {
             final def newDestinationDir = lightsaberProcess.outputDir
             logger.info("Changing classes dir for main source set...")
@@ -74,7 +77,8 @@ class LightsaberPlugin implements Plugin<Project> {
         }
     }
 
-    private LightsaberTask createLightsaberProcessTask(final String taskName, final AbstractCompile javaCompile) {
+    private LightsaberTask createLightsaberProcessTask(final String taskName, final AbstractCompile javaCompile,
+            final List<File> libraries) {
         logger.info("Creating Lighsaber task ${taskName}...")
         final def originalClasses = javaCompile.destinationDir.absolutePath
         final def lightsaberClasses = originalClasses + "-lightsaber"
@@ -85,6 +89,7 @@ class LightsaberPlugin implements Plugin<Project> {
             description 'Processes .class files with Lightsaber Processor.'
             classesDir originalClasses
             outputDir lightsaberClasses
+            classpath = libraries
         } as LightsaberTask
 
         lightsaberProcess.mustRunAfter javaCompile
