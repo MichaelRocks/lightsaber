@@ -24,6 +24,7 @@ import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import org.apache.commons.io.IOUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -33,10 +34,16 @@ import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.commons.RemappingClassAdapter;
 import org.objectweb.asm.commons.SimpleRemapper;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Collection;
 import java.util.Map;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -50,11 +57,10 @@ public class InjectorFactoryClassGenerator {
     }
 
     public void generateInjectorFactory() {
-        final String path = Lightsaber$$InjectorFactory.class.getSimpleName() + ".class";
-        try (final InputStream stream = Lightsaber$$InjectorFactory.class.getResourceAsStream(path)) {
-            final ClassReader classReader = new ClassReader(stream);
-            final ClassWriter classWriter =
-                    new StandaloneClassWriter(classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+        try {
+            final ClassReader classReader = new ClassReader(readClassBytes(Lightsaber$$InjectorFactory.class));
+            final ClassWriter classWriter = new StandaloneClassWriter(
+                    classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, processorContext);
             final ClassVisitor generator = new InjectorFactoryClassVisitor(classWriter);
             final Remapper remapper =
                     new SimpleRemapper(
@@ -67,6 +73,35 @@ public class InjectorFactoryClassGenerator {
             classProducer.produceClass(processorContext.getInjectorFactoryType().getInternalName(), classData);
         } catch (final IOException exception) {
             processorContext.reportError(exception);
+        }
+    }
+
+    private byte[] readClassBytes(final Class<?> targetClass) throws IOException {
+        final String path = targetClass.getName().replace('.', '/') + ".class";
+        final URL url = targetClass.getClassLoader().getResource(path);
+        if (url == null) {
+            throw new FileNotFoundException("Class not found: " + targetClass);
+        }
+
+        final URLConnection connection = url.openConnection();
+        if (connection instanceof JarURLConnection) {
+            final JarURLConnection jarConnection = (JarURLConnection) connection;
+            final URL jarFileUrl = jarConnection.getJarFileURL();
+            final String entryName = jarConnection.getEntryName();
+            try (final JarFile jarFile = new JarFile(jarFileUrl.getFile())) {
+                final ZipEntry entry = jarFile.getEntry(entryName);
+                if (entry == null) {
+                    throw new FileNotFoundException("JAR entry " + entryName + " not found in " + jarFileUrl);
+                }
+
+                try (final InputStream stream = jarFile.getInputStream(entry)) {
+                    return IOUtils.toByteArray(stream);
+                }
+            }
+        } else {
+            try (final InputStream stream = connection.getInputStream()) {
+                return IOUtils.toByteArray(stream);
+            }
         }
     }
 
