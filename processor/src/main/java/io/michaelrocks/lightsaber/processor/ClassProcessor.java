@@ -31,6 +31,7 @@ import io.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.ProvidersGenerator;
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher;
 import io.michaelrocks.lightsaber.processor.graph.DependencyGraph;
+import io.michaelrocks.lightsaber.processor.graph.TypeGraphBuilder;
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher;
 import io.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import io.michaelrocks.lightsaber.processor.io.ClassFileReader;
@@ -39,7 +40,9 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.objectweb.asm.Type;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -48,15 +51,19 @@ import java.util.Map;
 public class ClassProcessor {
     private final ClassFileReader classFileReader;
     private final ClassFileWriter classFileWriter;
+    private final List<File> libraries;
 
     private final ProcessorContext processorContext = new ProcessorContext();
 
-    public ClassProcessor(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter) {
+    public ClassProcessor(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter,
+            final List<File> libraries) {
         this.classFileWriter = classFileWriter;
         this.classFileReader = classFileReader;
+        this.libraries = new ArrayList<>(libraries);
     }
 
     public void processClasses() throws IOException {
+        buildTypeGraph();
         performAnalysis();
         composePackageModules();
         composeInjectors();
@@ -67,6 +74,19 @@ public class ClassProcessor {
         generateInjectorFactory();
         generateInjectors();
         copyAndPatchClasses();
+    }
+
+    private void buildTypeGraph() throws IOException {
+        final TypeGraphBuilder typeGraphBuilder = new TypeGraphBuilder();
+        for (final File library : libraries) {
+            if (library.isDirectory()) {
+                typeGraphBuilder.addClassesFromClasses(library);
+            } else {
+                typeGraphBuilder.addClassesFromJar(library);
+            }
+        }
+        typeGraphBuilder.addClassesFromReader(classFileReader);
+        processorContext.setTypeGraph(typeGraphBuilder.build());
     }
 
     private void performAnalysis() throws IOException {

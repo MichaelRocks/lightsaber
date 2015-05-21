@@ -142,7 +142,7 @@ public class LightsaberProcessor {
 
     private void processClassFiles(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter)
             throws IOException {
-        final ClassProcessor classProcessor = new ClassProcessor(classFileReader, classFileWriter);
+        final ClassProcessor classProcessor = new ClassProcessor(classFileReader, classFileWriter, parameters.libs);
         classProcessor.processClasses();
     }
 }
