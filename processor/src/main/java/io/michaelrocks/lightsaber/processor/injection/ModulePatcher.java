@@ -74,6 +74,9 @@ public class ModulePatcher extends ProcessorClassVisitor {
 
     private void generateRegisterProviderInvocation(final MethodVisitor methodVisitor,
             final ProviderDescriptor provider) {
+        methodVisitor.visitVarInsn(ALOAD, 1);
+        methodVisitor.visitLdcInsn(provider.getProvidableType());
+
         if (provider.getProviderField() != null) {
             generateProviderConstructionForField(methodVisitor, provider);
         } else {
@@ -112,9 +115,6 @@ public class ModulePatcher extends ProcessorClassVisitor {
     private void generateProviderConstructionForMethod(final MethodVisitor methodVisitor,
             final ProviderDescriptor provider) {
         System.out.println("Generating invocation for method " + provider.getProviderMethod().getName());
-
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitLdcInsn(provider.getProvidableType());
 
         if (provider.getDelegatorType() != null) {
             generateDelegatorConstruction(methodVisitor, provider);
