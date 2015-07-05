@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.processor.generation;
 
 import io.michaelrocks.lightsaber.Injector;
-import io.michaelrocks.lightsaber.internal.TypeInjector;
+import io.michaelrocks.lightsaber.internal.TypeAgent;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
@@ -63,7 +63,7 @@ public class InjectorClassGenerator {
                 injector.getInjectorType().getInternalName(),
                 null,
                 Type.getInternalName(Object.class),
-                new String[] { Type.getInternalName(TypeInjector.class) });
+                new String[] { Type.getInternalName(TypeAgent.class) });
 
         generateConstructor(classWriter);
         generateGetTypeMethod(classWriter);
