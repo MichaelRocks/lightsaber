@@ -32,6 +32,7 @@ import javax.inject.Provider;
 import static org.objectweb.asm.Opcodes.*;
 
 public class InjectorClassGenerator {
+    private static final String GET_TYPE_METHOD_NAME = "getType";
     private static final String INJECT_MEMBERS_METHOD_NAME = "injectMembers";
     private static final String GET_INSTANCE_METHOD_NAME = "getInstance";
     private static final String GET_PROVIDER_METHOD_NAME = "getProvider";
@@ -63,6 +64,7 @@ public class InjectorClassGenerator {
                 new String[] { Type.getInternalName(TypeInjector.class) });
 
         generateConstructor(classWriter);
+        generateGetTypeMethod(classWriter);
         generateInjectMembersMethod(classWriter);
 
         classWriter.visitEnd();
@@ -86,6 +88,22 @@ public class InjectorClassGenerator {
                 defaultConstructor.getDescriptor(),
                 false);
         methodVisitor.visitInsn(RETURN);
+        methodVisitor.visitMaxs(0, 0);
+        methodVisitor.visitEnd();
+    }
+
+    private void generateGetTypeMethod(final ClassWriter classWriter) {
+        final MethodVisitor methodVisitor = classWriter.visitMethod(
+                ACC_PUBLIC,
+                GET_TYPE_METHOD_NAME,
+                Type.getMethodDescriptor(Type.getType(Class.class)),
+                null,
+                null);
+        methodVisitor.visitCode();
+
+        methodVisitor.visitLdcInsn(injector.getInjectableTarget().getTargetType());
+
+        methodVisitor.visitInsn(ARETURN);
         methodVisitor.visitMaxs(0, 0);
         methodVisitor.visitEnd();
     }

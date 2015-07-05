@@ -19,5 +19,6 @@ package io.michaelrocks.lightsaber.internal;
 import io.michaelrocks.lightsaber.Injector;
 
 public interface TypeInjector<T> {
+    Class<T> getType();
     void injectMembers(Injector injector, T target);
 }

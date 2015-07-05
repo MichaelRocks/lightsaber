@@ -39,6 +39,10 @@ public class Lightsaber$$InjectorFactory {
         return Lightsaber.createInjector(getPackageModules());
     }
 
+    private static void registerTypeInjector(final TypeInjector<?> typeInjector) {
+        typeInjectors.put(typeInjector.getType(), typeInjector);
+    }
+
     private static Module[] getPackageModules() {
         // This method will be generated.
         return new Module[] {};
