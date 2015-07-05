@@ -34,7 +34,7 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class InjectorClassGenerator {
     private static final String GET_TYPE_METHOD_NAME = "getType";
-    private static final String INJECT_MEMBERS_METHOD_NAME = "injectMembers";
+    private static final String INJECT_FIELDS_METHOD_NAME = "injectFields";
     private static final String INJECT_METHODS_METHOD_NAME = "injectMethods";
     private static final String GET_INSTANCE_METHOD_NAME = "getInstance";
     private static final String GET_PROVIDER_METHOD_NAME = "getProvider";
@@ -67,7 +67,7 @@ public class InjectorClassGenerator {
 
         generateConstructor(classWriter);
         generateGetTypeMethod(classWriter);
-        generateInjectMembersMethod(classWriter);
+        generateInjectFieldsMethod(classWriter);
         generateInjectMethodsMethod(classWriter);
 
         classWriter.visitEnd();
@@ -111,10 +111,10 @@ public class InjectorClassGenerator {
         methodVisitor.visitEnd();
     }
 
-    private void generateInjectMembersMethod(final ClassWriter classWriter) {
+    private void generateInjectFieldsMethod(final ClassWriter classWriter) {
         final MethodVisitor methodVisitor = classWriter.visitMethod(
                 ACC_PUBLIC,
-                INJECT_MEMBERS_METHOD_NAME,
+                INJECT_FIELDS_METHOD_NAME,
                 Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
                 null,
                 null);

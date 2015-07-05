@@ -66,7 +66,7 @@ public class Lightsaber$$InjectorFactory {
         final TypeInjector typeInjector = typeInjectors.get(type);
         if (typeInjector != null) {
             // noinspection unchecked
-            typeInjector.injectMembers(injector, object);
+            typeInjector.injectFields(injector, object);
         }
     }
 

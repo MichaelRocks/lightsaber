@@ -20,6 +20,6 @@ import io.michaelrocks.lightsaber.Injector;
 
 public interface TypeInjector<T> {
     Class<T> getType();
-    void injectMembers(Injector injector, T target);
+    void injectFields(Injector injector, T target);
     void injectMethods(Injector injector, T target);
 }
