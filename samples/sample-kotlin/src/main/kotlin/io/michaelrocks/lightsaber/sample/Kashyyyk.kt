@@ -26,10 +26,12 @@ private class Kashyyyk [Inject] private () : Planet {
 
     private var isSettled = false
 
-    public fun settle() {
+    Inject
+    fun settle(droid1: Droid, droid2: Droid) {
         if (isSettled) {
             throw IllegalStateException("Already settled")
         }
+        System.out.println("Settling Kashyyyk with $droid1 and $droid2")
         isSettled = true
     }
 }

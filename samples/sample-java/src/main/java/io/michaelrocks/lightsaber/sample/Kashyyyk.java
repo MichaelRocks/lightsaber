@@ -27,10 +27,12 @@ class Kashyyyk implements Planet {
     private Kashyyyk() {
     }
 
-    public void settle() {
+    @Inject
+    public void settle(final Droid droid1, final Droid droid2) {
         if (isSettled) {
             throw new IllegalStateException("Already settled");
         }
+        System.out.println("Settling Kashyyyk with " + droid1 + " and " + droid2);
         isSettled = true;
     }
 
