@@ -136,11 +136,10 @@ public class ProviderClassGenerator {
 
         if (provider.getProviderMethod().isConstructor()) {
             generateConstructorInvocation(methodVisitor);
+            generateInjectMembersInvocation(methodVisitor);
         } else {
             generateProviderMethodInvocation(methodVisitor);
         }
-
-        generateInjectMembersInvocation(methodVisitor);
 
         methodVisitor.visitInsn(ARETURN);
         methodVisitor.visitMaxs(0, 0);
