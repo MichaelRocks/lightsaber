@@ -23,6 +23,7 @@ import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -34,6 +35,7 @@ import static org.objectweb.asm.Opcodes.*;
 public class InjectorClassGenerator {
     private static final String GET_TYPE_METHOD_NAME = "getType";
     private static final String INJECT_MEMBERS_METHOD_NAME = "injectMembers";
+    private static final String INJECT_METHODS_METHOD_NAME = "injectMethods";
     private static final String GET_INSTANCE_METHOD_NAME = "getInstance";
     private static final String GET_PROVIDER_METHOD_NAME = "getProvider";
 
@@ -66,6 +68,7 @@ public class InjectorClassGenerator {
         generateConstructor(classWriter);
         generateGetTypeMethod(classWriter);
         generateInjectMembersMethod(classWriter);
+        generateInjectMethodsMethod(classWriter);
 
         classWriter.visitEnd();
         return classWriter.toByteArray();
@@ -133,8 +136,8 @@ public class InjectorClassGenerator {
         methodVisitor.visitVarInsn(ALOAD, 3);
         methodVisitor.visitVarInsn(ALOAD, 1);
 
-        methodVisitor.visitLdcInsn(getDependencyTypeForField(fieldDescriptor));
-        final MethodDescriptor method = getInjectorMethodForField(fieldDescriptor);
+        methodVisitor.visitLdcInsn(getDependencyTypeForType(fieldDescriptor.getSignature()));
+        final MethodDescriptor method = getInjectorMethodForType(fieldDescriptor.getSignature());
         methodVisitor.visitMethodInsn(
                 INVOKEINTERFACE,
                 Type.getInternalName(Injector.class),
@@ -151,12 +154,58 @@ public class InjectorClassGenerator {
                 fieldDescriptor.getRawType().getDescriptor());
     }
 
-    private static Type getDependencyTypeForField(final FieldDescriptor field) {
-        return field.isParameterized() ? field.getParameterType() : field.getRawType();
+    private void generateInjectMethodsMethod(final ClassWriter classWriter) {
+        final MethodVisitor methodVisitor = classWriter.visitMethod(
+                ACC_PUBLIC,
+                INJECT_METHODS_METHOD_NAME,
+                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
+                null,
+                null);
+        methodVisitor.visitCode();
+
+        methodVisitor.visitVarInsn(ALOAD, 2);
+        methodVisitor.visitTypeInsn(CHECKCAST, injector.getInjectableTarget().getTargetType().getInternalName());
+        methodVisitor.visitVarInsn(ASTORE, 3);
+        for (final MethodDescriptor methodDescriptor : injector.getInjectableTarget().getInjectableMethods()) {
+            generateMethodInvocation(methodVisitor, methodDescriptor);
+        }
+
+        methodVisitor.visitInsn(RETURN);
+        methodVisitor.visitMaxs(0, 0);
+        methodVisitor.visitEnd();
     }
 
-    private static MethodDescriptor getInjectorMethodForField(final FieldDescriptor field) {
-        if (field.isParameterized()) {
+    private void generateMethodInvocation(final MethodVisitor methodVisitor, final MethodDescriptor methodDescriptor) {
+        methodVisitor.visitVarInsn(ALOAD, 3);
+
+        for (final TypeSignature argumentType : methodDescriptor.getArgumentTypes()) {
+            methodVisitor.visitVarInsn(ALOAD, 1);
+            methodVisitor.visitLdcInsn(getDependencyTypeForType(argumentType));
+            final MethodDescriptor method = getInjectorMethodForType(argumentType);
+            methodVisitor.visitMethodInsn(
+                    INVOKEINTERFACE,
+                    Type.getInternalName(Injector.class),
+                    method.getName(),
+                    method.getDescriptor(),
+                    true);
+            if (!argumentType.isParameterized()) {
+                methodVisitor.visitTypeInsn(CHECKCAST, argumentType.getRawType().getInternalName());
+            }
+        }
+        methodVisitor.visitMethodInsn(
+                INVOKEVIRTUAL,
+                injector.getInjectableTarget().getTargetType().getInternalName(),
+                methodDescriptor.getName(),
+                methodDescriptor.getDescriptor(),
+                false);
+    }
+
+    private static Type getDependencyTypeForType(final TypeSignature type) {
+        return type.isParameterized() ? type.getParameterType() : type.getRawType();
+    }
+
+    private static MethodDescriptor getInjectorMethodForType(final TypeSignature type) {
+        if (type.isParameterized()) {
             return GET_PROVIDER_METHOD;
         } else {
             return GET_INSTANCE_METHOD;

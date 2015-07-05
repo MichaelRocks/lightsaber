@@ -54,6 +54,7 @@ public class Lightsaber$$InjectorFactory {
 
     public static void injectMembers(final Injector injector, final Object object) {
         injectFieldsIntoObject(injector, object, object.getClass());
+        injectMethodsIntoObject(injector, object, object.getClass());
     }
 
     private static void injectFieldsIntoObject(final Injector injector, final Object object, final Class type) {
@@ -64,7 +65,21 @@ public class Lightsaber$$InjectorFactory {
         injectFieldsIntoObject(injector, object, type.getSuperclass());
         final TypeInjector typeInjector = typeInjectors.get(type);
         if (typeInjector != null) {
+            // noinspection unchecked
             typeInjector.injectMembers(injector, object);
+        }
+    }
+
+    private static void injectMethodsIntoObject(final Injector injector, final Object object, final Class type) {
+        if (type == Object.class) {
+            return;
+        }
+
+        injectMethodsIntoObject(injector, object, type.getSuperclass());
+        final TypeInjector typeInjector = typeInjectors.get(type);
+        if (typeInjector != null) {
+            // noinspection unchecked
+            typeInjector.injectMethods(injector, object);
         }
     }
 }
