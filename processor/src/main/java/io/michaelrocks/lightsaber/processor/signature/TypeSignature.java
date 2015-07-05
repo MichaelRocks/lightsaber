@@ -45,6 +45,10 @@ public class TypeSignature {
         return parameterType;
     }
 
+    public boolean isParameterized() {
+        return parameterType != null;
+    }
+
     @Override
     public boolean equals(final Object object) {
         if (this == object) {
