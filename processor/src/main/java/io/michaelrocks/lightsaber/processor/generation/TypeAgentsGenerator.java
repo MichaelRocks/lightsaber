@@ -20,23 +20,23 @@ package io.michaelrocks.lightsaber.processor.generation;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 
-public class InjectorsGenerator {
+public class TypeAgentsGenerator {
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
 
-    public InjectorsGenerator(final ClassProducer classProducer, final ProcessorContext processorContext) {
+    public TypeAgentsGenerator(final ClassProducer classProducer, final ProcessorContext processorContext) {
         this.classProducer = classProducer;
         this.processorContext = processorContext;
     }
 
     public void generateInjectors() {
         for (final InjectorDescriptor injector : processorContext.getInjectors()) {
-            generateInjector(injector);
+            generateTypeAgent(injector);
         }
     }
 
-    private void generateInjector(final InjectorDescriptor injectorDescriptor) {
-        final InjectorClassGenerator generator = new InjectorClassGenerator(processorContext, injectorDescriptor);
+    private void generateTypeAgent(final InjectorDescriptor injectorDescriptor) {
+        final TypeAgentClassGenerator generator = new TypeAgentClassGenerator(processorContext, injectorDescriptor);
         final byte[] injectorClassData = generator.generate();
         classProducer.produceClass(injectorDescriptor.getInjectorType().getInternalName(), injectorClassData);
     }

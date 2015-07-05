@@ -32,7 +32,7 @@ import javax.inject.Provider;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class InjectorClassGenerator {
+public class TypeAgentClassGenerator {
     private static final String GET_TYPE_METHOD_NAME = "getType";
     private static final String INJECT_FIELDS_METHOD_NAME = "injectFields";
     private static final String INJECT_METHODS_METHOD_NAME = "injectMethods";
@@ -49,7 +49,7 @@ public class InjectorClassGenerator {
     private final ProcessorContext processorContext;
     private final InjectorDescriptor injector;
 
-    public InjectorClassGenerator(final ProcessorContext processorContext, final InjectorDescriptor injector) {
+    public TypeAgentClassGenerator(final ProcessorContext processorContext, final InjectorDescriptor injector) {
         this.processorContext = processorContext;
         this.injector = injector;
     }

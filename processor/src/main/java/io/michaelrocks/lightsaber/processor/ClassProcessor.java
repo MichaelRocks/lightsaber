@@ -25,10 +25,10 @@ import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.InjectorFactoryClassGenerator;
-import io.michaelrocks.lightsaber.processor.generation.InjectorsGenerator;
 import io.michaelrocks.lightsaber.processor.generation.PackageModuleClassGenerator;
 import io.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.ProvidersGenerator;
+import io.michaelrocks.lightsaber.processor.generation.TypeAgentsGenerator;
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher;
 import io.michaelrocks.lightsaber.processor.graph.DependencyGraph;
 import io.michaelrocks.lightsaber.processor.graph.TypeGraphBuilder;
@@ -182,8 +182,8 @@ public class ClassProcessor {
 
     private void generateInjectors() throws ProcessingException {
         final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
-        final InjectorsGenerator injectorsGenerator = new InjectorsGenerator(classProducer, processorContext);
-        injectorsGenerator.generateInjectors();
+        final TypeAgentsGenerator typeAgentsGenerator = new TypeAgentsGenerator(classProducer, processorContext);
+        typeAgentsGenerator.generateInjectors();
         checkErrors();
     }
 
