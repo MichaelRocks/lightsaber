@@ -22,6 +22,7 @@ import io.michaelrocks.lightsaber.internal.InternalModule;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -75,7 +76,7 @@ public class ModulePatcher extends ProcessorClassVisitor {
     private void generateRegisterProviderInvocation(final MethodVisitor methodVisitor,
             final ProviderDescriptor provider) {
         methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitLdcInsn(provider.getProvidableType());
+        methodVisitor.visitLdcInsn(Types.box(provider.getProvidableType()));
 
         if (provider.getProviderField() != null) {
             generateProviderConstructionForField(methodVisitor, provider);
