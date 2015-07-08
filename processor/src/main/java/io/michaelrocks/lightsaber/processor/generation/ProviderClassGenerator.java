@@ -20,6 +20,7 @@ import io.michaelrocks.lightsaber.CopyableProvider;
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
+import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
@@ -39,6 +40,8 @@ public class ProviderClassGenerator {
     private static final String GET_PROVIDER_METHOD_NAME = "getProvider";
     private static final String INJECT_MEMBERS_METHOD_NAME = "injectMembers";
     private static final String COPY_WITH_INJECTOR_METHOD_NAME = "copyWithInjector";
+
+    private static final String VALUE_OF_METHOD_NAME = "valueOf";
 
     private final ProcessorContext processorContext;
     private final ProviderDescriptor provider;
@@ -141,6 +144,8 @@ public class ProviderClassGenerator {
             generateProviderMethodInvocation(methodVisitor);
         }
 
+        generateResultBoxingIfNecessary(methodVisitor);
+
         methodVisitor.visitInsn(ARETURN);
         methodVisitor.visitMaxs(0, 0);
         methodVisitor.visitEnd();
@@ -224,6 +229,21 @@ public class ProviderClassGenerator {
                 Type.getMethodDescriptor(
                         Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
                 false);
+    }
+
+    private void generateResultBoxingIfNecessary(final MethodVisitor methodVisitor) {
+        final Type rawProvidableType = provider.getProvidableType();
+        final Type boxedProvidableType = Types.box(rawProvidableType);
+        if (!rawProvidableType.equals(boxedProvidableType)) {
+            final MethodDescriptor valueOfMethod =
+                    MethodDescriptor.forMethod(VALUE_OF_METHOD_NAME, boxedProvidableType, rawProvidableType);
+            methodVisitor.visitMethodInsn(
+                    INVOKESTATIC,
+                    boxedProvidableType.getInternalName(),
+                    valueOfMethod.getName(),
+                    valueOfMethod.getDescriptor(),
+                    false);
+        }
     }
 
     private void generateCopyWithInjector(final ClassWriter classWriter) {
