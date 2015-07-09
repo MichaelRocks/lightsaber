@@ -128,7 +128,7 @@ public class ClassProcessor {
     private void composeInjectors() {
         for (final InjectionTargetDescriptor injectableTarget : processorContext.getInjectableTargets()) {
             final Type injectorType =
-                    Type.getObjectType(injectableTarget.getTargetType().getInternalName() + "$$Injector");
+                    Type.getObjectType(injectableTarget.getTargetType().getInternalName() + "$$Agent");
             final InjectorDescriptor injector = new InjectorDescriptor(injectorType, injectableTarget);
             processorContext.addInjector(injector);
         }
