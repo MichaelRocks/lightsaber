@@ -116,9 +116,9 @@ public class Boxer {
         private static Type findOwnerType(final Type unboxedType) {
             switch (unboxedType.getSort()) {
                 case Type.BOOLEAN:
-                    return Type.BOOLEAN_TYPE;
+                    return Types.BOXED_BOOLEAN_TYPE;
                 case Type.CHAR:
-                    return Type.CHAR_TYPE;
+                    return Types.BOXED_CHAR_TYPE;
                 case Type.BYTE:
                 case Type.FLOAT:
                 case Type.DOUBLE:
