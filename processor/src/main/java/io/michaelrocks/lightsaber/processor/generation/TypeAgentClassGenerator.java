@@ -19,7 +19,9 @@ package io.michaelrocks.lightsaber.processor.generation;
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.internal.TypeAgent;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.commons.Boxer;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
+import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
@@ -145,7 +147,11 @@ public class TypeAgentClassGenerator {
                 method.getDescriptor(),
                 true);
         if (!fieldDescriptor.isParameterized()) {
-            methodVisitor.visitTypeInsn(CHECKCAST, fieldDescriptor.getRawType().getInternalName());
+            final Type boxedType = Types.box(fieldDescriptor.getRawType());
+            methodVisitor.visitTypeInsn(CHECKCAST, boxedType.getInternalName());
+            if (!fieldDescriptor.getRawType().equals(boxedType)) {
+                Boxer.unbox(methodVisitor, boxedType);
+            }
         }
         methodVisitor.visitFieldInsn(
                 PUTFIELD,
@@ -201,7 +207,7 @@ public class TypeAgentClassGenerator {
     }
 
     private static Type getDependencyTypeForType(final TypeSignature type) {
-        return type.isParameterized() ? type.getParameterType() : type.getRawType();
+        return type.isParameterized() ? type.getParameterType() : Types.box(type.getRawType());
     }
 
     private static MethodDescriptor getInjectorMethodForType(final TypeSignature type) {
