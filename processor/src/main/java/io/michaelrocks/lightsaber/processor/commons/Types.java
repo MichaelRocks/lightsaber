@@ -21,19 +21,29 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.objectweb.asm.Type;
 
 public class Types {
+    public static final Type BOXED_VOID_TYPE = Type.getType(Byte.class);
+    public static final Type BOXED_BOOLEAN_TYPE = Type.getType(Boolean.class);
+    public static final Type BOXED_BYTE_TYPE = Type.getType(Byte.class);
+    public static final Type BOXED_CHAR_TYPE = Type.getType(Character.class);
+    public static final Type BOXED_DOUBLE_TYPE = Type.getType(Double.class);
+    public static final Type BOXED_FLOAT_TYPE = Type.getType(Float.class);
+    public static final Type BOXED_INT_TYPE = Type.getType(Integer.class);
+    public static final Type BOXED_LONG_TYPE = Type.getType(Long.class);
+    public static final Type BOXED_SHORT_TYPE = Type.getType(Short.class);
+
     private static final BidiMap<Type, Type> primitiveToBoxedMap;
 
     static {
         primitiveToBoxedMap = new DualHashBidiMap<>();
-        primitiveToBoxedMap.put(Type.VOID_TYPE, Type.getType(Void.class));
-        primitiveToBoxedMap.put(Type.BOOLEAN_TYPE, Type.getType(Boolean.class));
-        primitiveToBoxedMap.put(Type.BYTE_TYPE, Type.getType(Byte.class));
-        primitiveToBoxedMap.put(Type.CHAR_TYPE, Type.getType(Character.class));
-        primitiveToBoxedMap.put(Type.DOUBLE_TYPE, Type.getType(Double.class));
-        primitiveToBoxedMap.put(Type.FLOAT_TYPE, Type.getType(Float.class));
-        primitiveToBoxedMap.put(Type.INT_TYPE, Type.getType(Integer.class));
-        primitiveToBoxedMap.put(Type.LONG_TYPE, Type.getType(Long.class));
-        primitiveToBoxedMap.put(Type.SHORT_TYPE, Type.getType(Short.class));
+        primitiveToBoxedMap.put(Type.VOID_TYPE, BOXED_VOID_TYPE);
+        primitiveToBoxedMap.put(Type.BOOLEAN_TYPE, BOXED_BOOLEAN_TYPE);
+        primitiveToBoxedMap.put(Type.BYTE_TYPE, BOXED_BYTE_TYPE);
+        primitiveToBoxedMap.put(Type.CHAR_TYPE, BOXED_CHAR_TYPE);
+        primitiveToBoxedMap.put(Type.DOUBLE_TYPE, BOXED_DOUBLE_TYPE);
+        primitiveToBoxedMap.put(Type.FLOAT_TYPE, BOXED_FLOAT_TYPE);
+        primitiveToBoxedMap.put(Type.INT_TYPE, BOXED_INT_TYPE);
+        primitiveToBoxedMap.put(Type.LONG_TYPE, BOXED_LONG_TYPE);
+        primitiveToBoxedMap.put(Type.SHORT_TYPE, BOXED_SHORT_TYPE);
     }
 
     private Types() {
