@@ -146,13 +146,7 @@ public class TypeAgentClassGenerator {
                 method.getName(),
                 method.getDescriptor(),
                 true);
-        if (!fieldDescriptor.isParameterized()) {
-            final Type boxedType = Types.box(fieldDescriptor.getRawType());
-            methodVisitor.visitTypeInsn(CHECKCAST, boxedType.getInternalName());
-            if (!fieldDescriptor.getRawType().equals(boxedType)) {
-                Boxer.unbox(methodVisitor, boxedType);
-            }
-        }
+        generateTypeCast(methodVisitor, fieldDescriptor.getSignature());
         methodVisitor.visitFieldInsn(
                 PUTFIELD,
                 injector.getInjectableTarget().getTargetType().getInternalName(),
@@ -194,9 +188,7 @@ public class TypeAgentClassGenerator {
                     method.getName(),
                     method.getDescriptor(),
                     true);
-            if (!argumentType.isParameterized()) {
-                methodVisitor.visitTypeInsn(CHECKCAST, argumentType.getRawType().getInternalName());
-            }
+            generateTypeCast(methodVisitor, argumentType);
         }
         methodVisitor.visitMethodInsn(
                 INVOKEVIRTUAL,
@@ -215,6 +207,16 @@ public class TypeAgentClassGenerator {
             return GET_PROVIDER_METHOD;
         } else {
             return GET_INSTANCE_METHOD;
+        }
+    }
+
+    private static void generateTypeCast(final MethodVisitor methodVisitor, final TypeSignature type) {
+        if (!type.isParameterized()) {
+            final Type boxedType = Types.box(type.getRawType());
+            methodVisitor.visitTypeInsn(CHECKCAST, boxedType.getInternalName());
+            if (!type.getRawType().equals(boxedType)) {
+                Boxer.unbox(methodVisitor, boxedType);
+            }
         }
     }
 }
