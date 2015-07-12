@@ -19,7 +19,6 @@ package io.michaelrocks.lightsaber.processor.generation;
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.internal.TypeAgent;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
-import io.michaelrocks.lightsaber.processor.commons.Boxer;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
@@ -146,7 +145,7 @@ public class TypeAgentClassGenerator {
                 method.getName(),
                 method.getDescriptor(),
                 true);
-        generateTypeCast(methodVisitor, fieldDescriptor.getSignature());
+        GenerationHelper.generateTypeCast(methodVisitor, fieldDescriptor.getSignature());
         methodVisitor.visitFieldInsn(
                 PUTFIELD,
                 injector.getInjectableTarget().getTargetType().getInternalName(),
@@ -188,7 +187,7 @@ public class TypeAgentClassGenerator {
                     method.getName(),
                     method.getDescriptor(),
                     true);
-            generateTypeCast(methodVisitor, argumentType);
+            GenerationHelper.generateTypeCast(methodVisitor, argumentType);
         }
         methodVisitor.visitMethodInsn(
                 INVOKEVIRTUAL,
@@ -207,16 +206,6 @@ public class TypeAgentClassGenerator {
             return GET_PROVIDER_METHOD;
         } else {
             return GET_INSTANCE_METHOD;
-        }
-    }
-
-    private static void generateTypeCast(final MethodVisitor methodVisitor, final TypeSignature type) {
-        if (!type.isParameterized()) {
-            final Type boxedType = Types.box(type.getRawType());
-            methodVisitor.visitTypeInsn(CHECKCAST, boxedType.getInternalName());
-            if (!type.getRawType().equals(boxedType)) {
-                Boxer.unbox(methodVisitor, boxedType);
-            }
         }
     }
 }
