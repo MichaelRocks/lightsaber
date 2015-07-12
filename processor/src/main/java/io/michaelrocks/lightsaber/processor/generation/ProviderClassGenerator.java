@@ -21,6 +21,7 @@ import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.Boxer;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
+import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
@@ -190,8 +191,8 @@ public class ProviderClassGenerator {
                 provider.getProviderType().getInternalName(),
                 INJECTOR_FIELD_NAME,
                 Type.getDescriptor(Injector.class));
-        final Type dependencyType =
-                argumentType.getParameterType() != null ? argumentType.getParameterType() : argumentType.getRawType();
+        final Type dependencyType = argumentType.getParameterType() != null
+                ? argumentType.getParameterType() : Types.box(argumentType.getRawType());
         methodVisitor.visitLdcInsn(dependencyType);
         methodVisitor.visitMethodInsn(
                 INVOKEINTERFACE,
@@ -206,7 +207,7 @@ public class ProviderClassGenerator {
                     GET_METHOD_NAME,
                     Type.getMethodDescriptor(Type.getType(Object.class)),
                     true);
-            methodVisitor.visitTypeInsn(CHECKCAST, dependencyType.getInternalName());
+            GenerationHelper.generateTypeCast(methodVisitor, argumentType);
         }
     }
 
