@@ -21,13 +21,14 @@ import org.junit.Test;
 import javax.inject.Inject;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class PrimitiveTest {
     @Test
     public void testUnboxedIntoUnboxedInjection() {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
         final Injector injector = Lightsaber.createInjector(module);
-        final UnboxedContainer container = new UnboxedContainer();
+        final UnboxedInjectableContainer container = new UnboxedInjectableContainer();
         injector.injectMembers(container);
 
         assertEquals(module.provideBoolean(), container.booleanField);
@@ -44,7 +45,7 @@ public class PrimitiveTest {
     public void testUnboxedIntoBoxedInjection() {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
         final Injector injector = Lightsaber.createInjector(module);
-        final BoxedContainer container = new BoxedContainer();
+        final BoxedInjectableContainer container = new BoxedInjectableContainer();
         injector.injectMembers(container);
 
         assertEquals(module.provideBoolean(), container.booleanField);
@@ -61,7 +62,7 @@ public class PrimitiveTest {
     public void testBoxedIntoUnboxedInjection() {
         final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
         final Injector injector = Lightsaber.createInjector(module);
-        final UnboxedContainer container = new UnboxedContainer();
+        final UnboxedInjectableContainer container = new UnboxedInjectableContainer();
         injector.injectMembers(container);
 
         assertEquals(module.provideBoolean(), container.booleanField);
@@ -78,7 +79,7 @@ public class PrimitiveTest {
     public void testBoxedIntoBoxedInjection() {
         final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
         final Injector injector = Lightsaber.createInjector(module);
-        final BoxedContainer container = new BoxedContainer();
+        final BoxedInjectableContainer container = new BoxedInjectableContainer();
         injector.injectMembers(container);
 
         assertEquals(module.provideBoolean(), container.booleanField);
@@ -91,7 +92,95 @@ public class PrimitiveTest {
         assertEquals(module.provideShort(), container.shortField);
     }
 
-    private static class UnboxedContainer {
+    @Test
+    public void testUnboxedForUnboxedConstruction() {
+        final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
+        final Injector injector = Lightsaber.createInjector(module);
+        final UnboxedConstructableContainer container = injector.getInstance(UnboxedConstructableContainer.class);
+
+        assertEquals(module.provideBoolean(), container.booleanField);
+        assertEquals(module.provideByte(), container.byteField);
+        assertEquals(module.provideChar(), container.charField);
+        assertEquals(module.provideDouble(), container.doubleField, Double.MIN_VALUE);
+        assertEquals(module.provideFloat(), container.floatField, Float.MIN_VALUE);
+        assertEquals(module.provideInt(), container.intField);
+        assertEquals(module.provideLong(), container.longField);
+        assertEquals(module.provideShort(), container.shortField);
+    }
+
+    @Test
+    public void testUnboxedForBoxedConstruction() {
+        final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
+        final Injector injector = Lightsaber.createInjector(module);
+        final BoxedConstructableContainer container = injector.getInstance(BoxedConstructableContainer.class);
+
+        assertEquals(module.provideBoolean(), container.booleanField);
+        assertEquals(module.provideByte(), (byte) container.byteField);
+        assertEquals(module.provideChar(), (char) container.characterField);
+        assertEquals(module.provideDouble(), container.doubleField, Double.MIN_VALUE);
+        assertEquals(module.provideFloat(), container.floatField, Float.MIN_VALUE);
+        assertEquals(module.provideInt(), (int) container.integerField);
+        assertEquals(module.provideLong(), (long) container.longField);
+        assertEquals(module.provideShort(), (short) container.shortField);
+    }
+
+    @Test
+    public void testBoxedForUnboxedConstruction() {
+        final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
+        final Injector injector = Lightsaber.createInjector(module);
+        final UnboxedConstructableContainer container = injector.getInstance(UnboxedConstructableContainer.class);
+
+        assertEquals(module.provideBoolean(), container.booleanField);
+        assertEquals(module.provideByte(), Byte.valueOf(container.byteField));
+        assertEquals(module.provideCharacter(), Character.valueOf(container.charField));
+        assertEquals(module.provideDouble(), Double.valueOf(container.doubleField));
+        assertEquals(module.provideFloat(), Float.valueOf(container.floatField));
+        assertEquals(module.provideInteger(), Integer.valueOf(container.intField));
+        assertEquals(module.provideLong(), Long.valueOf(container.longField));
+        assertEquals(module.provideShort(), Short.valueOf(container.shortField));
+    }
+
+    @Test
+    public void testBoxedForBoxedConstruction() {
+        final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
+        final Injector injector = Lightsaber.createInjector(module);
+        final BoxedConstructableContainer container = injector.getInstance(BoxedConstructableContainer.class);
+
+        assertEquals(module.provideBoolean(), container.booleanField);
+        assertEquals(module.provideByte(), container.byteField);
+        assertEquals(module.provideCharacter(), container.characterField);
+        assertEquals(module.provideDouble(), container.doubleField);
+        assertEquals(module.provideFloat(), container.floatField);
+        assertEquals(module.provideInteger(), container.integerField);
+        assertEquals(module.provideLong(), container.longField);
+        assertEquals(module.provideShort(), container.shortField);
+    }
+
+    @Test
+    public void testUnboxedProvision() {
+        final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
+        final Injector injector = Lightsaber.createInjector(module);
+
+        final UnboxedResult unboxedResult = injector.getInstance(UnboxedResult.class);
+        final BoxedResult boxedResult = injector.getInstance(BoxedResult.class);
+
+        assertNotNull(unboxedResult);
+        assertNotNull(boxedResult);
+    }
+
+    @Test
+    public void testBoxedProvision() {
+        final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
+        final Injector injector = Lightsaber.createInjector(module);
+
+        final UnboxedResult unboxedResult = injector.getInstance(UnboxedResult.class);
+        final BoxedResult boxedResult = injector.getInstance(BoxedResult.class);
+
+        assertNotNull(unboxedResult);
+        assertNotNull(boxedResult);
+    }
+
+    private static class UnboxedInjectableContainer {
         @Inject
         boolean booleanField;
         @Inject
@@ -137,7 +226,7 @@ public class PrimitiveTest {
         }
     }
 
-    private static class BoxedContainer {
+    private static class BoxedInjectableContainer {
         @Inject
         Boolean booleanField;
         @Inject
@@ -223,6 +312,35 @@ public class PrimitiveTest {
         public short provideShort() {
             return 4242;
         }
+
+        @Provides
+        UnboxedResult consumeUnboxed(final boolean booleanArg, final byte byteArg, final char charArg, final double doubleArg,
+                final float floatArg, final int intArg, final long longArg, final short shortArg) {
+            assertEquals(provideBoolean(), booleanArg);
+            assertEquals(provideByte(), byteArg);
+            assertEquals(provideChar(), charArg);
+            assertEquals(provideDouble(), doubleArg, Double.MIN_VALUE);
+            assertEquals(provideFloat(), floatArg, Float.MIN_VALUE);
+            assertEquals(provideInt(), intArg);
+            assertEquals(provideLong(), longArg);
+            assertEquals(provideShort(), shortArg);
+            return new UnboxedResult();
+        }
+
+        @Provides
+        BoxedResult consumeBoxed(final Boolean booleanArg, final Byte byteArg, final Character characterArg,
+                final Double doubleArg, final Float floatArg, final Integer integerArg, final Long longArg,
+                final Short shortArg) {
+            assertEquals(provideBoolean(), booleanArg);
+            assertEquals(provideByte(), (byte) byteArg);
+            assertEquals(provideChar(), (char) characterArg);
+            assertEquals(provideDouble(), doubleArg, Double.MIN_VALUE);
+            assertEquals(provideFloat(), floatArg, Float.MIN_VALUE);
+            assertEquals(provideInt(), (int) integerArg);
+            assertEquals(provideLong(), (long) longArg);
+            assertEquals(provideShort(), (short) shortArg);
+            return new BoxedResult();
+        }
     }
 
     private static class BoxedPrimitiveModule implements Module {
@@ -264,6 +382,88 @@ public class PrimitiveTest {
         @Provides
         public Short provideShort() {
             return -4242;
+        }
+
+        @Provides
+        UnboxedResult consumeUnboxed(final boolean booleanArg, final byte byteArg, final char charArg, final double doubleArg,
+                final float floatArg, final int intArg, final long longArg, final short shortArg) {
+            assertEquals(provideBoolean(), booleanArg);
+            assertEquals(provideByte(), Byte.valueOf(byteArg));
+            assertEquals(provideCharacter(), Character.valueOf(charArg));
+            assertEquals(provideDouble(), Double.valueOf(doubleArg));
+            assertEquals(provideFloat(), Float.valueOf(floatArg));
+            assertEquals(provideInteger(), Integer.valueOf(intArg));
+            assertEquals(provideLong(), Long.valueOf(longArg));
+            assertEquals(provideShort(), Short.valueOf(shortArg));
+            return new UnboxedResult();
+        }
+
+        @Provides
+        BoxedResult consumeBoxed(final Boolean booleanArg, final Byte byteArg, final Character characterArg,
+                final Double doubleArg, final Float floatArg, final Integer integerArg, final Long longArg,
+                final Short shortArg) {
+            assertEquals(provideBoolean(), booleanArg);
+            assertEquals(provideByte(), byteArg);
+            assertEquals(provideCharacter(), characterArg);
+            assertEquals(provideDouble(), doubleArg);
+            assertEquals(provideFloat(), floatArg);
+            assertEquals(provideInteger(), integerArg);
+            assertEquals(provideLong(), longArg);
+            assertEquals(provideShort(), shortArg);
+            return new BoxedResult();
+        }
+    }
+
+    private static class UnboxedResult {}
+    private static class BoxedResult {}
+
+    private static class UnboxedConstructableContainer {
+        final boolean booleanField;
+        final byte byteField;
+        final char charField;
+        final double doubleField;
+        final float floatField;
+        final int intField;
+        final long longField;
+        final short shortField;
+
+        @Inject
+        UnboxedConstructableContainer(final boolean booleanArg, final byte byteArg, final char charArg,
+                final double doubleArg,
+                final float floatArg, final int intArg, final long longArg, final short shortArg) {
+            booleanField = booleanArg;
+            byteField = byteArg;
+            charField = charArg;
+            doubleField = doubleArg;
+            floatField = floatArg;
+            intField = intArg;
+            longField = longArg;
+            shortField = shortArg;
+        }
+    }
+
+    private static class BoxedConstructableContainer {
+        final Boolean booleanField;
+        final Byte byteField;
+        final Character characterField;
+        final Double doubleField;
+        final Float floatField;
+        final Integer integerField;
+        final Long longField;
+        final Short shortField;
+
+        @Inject
+        BoxedConstructableContainer(final Boolean booleanArg, final Byte byteArg, final Character characterArg,
+                final Double doubleArg, final Float floatArg, final Integer integerArg, final Long longArg,
+                final Short shortArg) {
+            booleanField = booleanArg;
+            byteField = byteArg;
+            characterField = characterArg;
+            doubleField = doubleArg;
+            floatField = floatArg;
+            integerField = integerArg;
+            longField = longArg;
+            shortField = shortArg;
         }
     }
 }
