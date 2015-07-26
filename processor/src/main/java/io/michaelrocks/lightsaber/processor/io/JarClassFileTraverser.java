@@ -28,10 +28,10 @@ import java.util.Iterator;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-public class JarClassFileReader extends ClassFileReader<JarEntry> {
+public class JarClassFileTraverser extends ClassFileTraverser<JarEntry> {
     private final JarFile jarFile;
 
-    public JarClassFileReader(final File sourceFile) throws IOException {
+    public JarClassFileTraverser(final File sourceFile) throws IOException {
         try {
             jarFile = new JarFile(sourceFile, true);
         } catch (final IOException exception) {

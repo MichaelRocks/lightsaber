@@ -20,9 +20,9 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import io.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import io.michaelrocks.lightsaber.processor.io.ClassFileWriter;
-import io.michaelrocks.lightsaber.processor.io.DirectoryClassFileReader;
+import io.michaelrocks.lightsaber.processor.io.DirectoryClassFileTraverser;
 import io.michaelrocks.lightsaber.processor.io.DirectoryClassFileWriter;
-import io.michaelrocks.lightsaber.processor.io.JarClassFileReader;
+import io.michaelrocks.lightsaber.processor.io.JarClassFileTraverser;
 import io.michaelrocks.lightsaber.processor.io.JarClassFileWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -118,8 +118,8 @@ public class LightsaberProcessor {
     private void processJarFile(final File file) throws Exception {
         final File processedFile = new File(parameters.output);
         try (
-            final ClassFileReader<?> classFileReader = new JarClassFileReader(file);
-            final ClassFileWriter classFileWriter = new JarClassFileWriter(processedFile)
+                final ClassFileReader classFileReader = new ClassFileReader(new JarClassFileTraverser(file));
+                final ClassFileWriter classFileWriter = new JarClassFileWriter(processedFile)
         ) {
             processClassFiles(classFileReader, classFileWriter);
         }
@@ -133,8 +133,8 @@ public class LightsaberProcessor {
         }
 
         try (
-            final ClassFileReader<?> classFileReader = new DirectoryClassFileReader(directory);
-            final ClassFileWriter classFileWriter = new DirectoryClassFileWriter(processedDirectory)
+                final ClassFileReader classFileReader = new ClassFileReader(new DirectoryClassFileTraverser(directory));
+                final ClassFileWriter classFileWriter = new DirectoryClassFileWriter(processedDirectory)
         ) {
             processClassFiles(classFileReader, classFileWriter);
         }

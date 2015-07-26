@@ -19,8 +19,8 @@ package io.michaelrocks.lightsaber.processor.graph;
 import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor;
 import io.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import io.michaelrocks.lightsaber.processor.io.ClassFileVisitor;
-import io.michaelrocks.lightsaber.processor.io.DirectoryClassFileReader;
-import io.michaelrocks.lightsaber.processor.io.JarClassFileReader;
+import io.michaelrocks.lightsaber.processor.io.DirectoryClassFileTraverser;
+import io.michaelrocks.lightsaber.processor.io.JarClassFileTraverser;
 import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -37,7 +37,7 @@ public class TypeGraphBuilder {
     final Map<Type, ClassDescriptor> classDescriptors = new HashMap<>();
 
     public void addClassesFromJar(final File jarFile) throws IOException {
-        try (final ClassFileReader<?> classFileReader = new JarClassFileReader(jarFile)) {
+        try (final ClassFileReader classFileReader = new ClassFileReader(new JarClassFileTraverser(jarFile))) {
             addClassesFromReader(classFileReader);
         } catch (final Exception exception) {
             throw new IOException(exception);
@@ -45,14 +45,14 @@ public class TypeGraphBuilder {
     }
 
     public void addClassesFromClasses(final File classesDir) throws IOException {
-        try (final ClassFileReader<?> classFileReader = new DirectoryClassFileReader(classesDir)) {
+        try (final ClassFileReader classFileReader = new ClassFileReader(new DirectoryClassFileTraverser(classesDir))) {
             addClassesFromReader(classFileReader);
         } catch (final Exception exception) {
             throw new IOException(exception);
         }
     }
 
-    public void addClassesFromReader(final ClassFileReader<?> classFileReader) throws IOException {
+    public void addClassesFromReader(final ClassFileReader classFileReader) throws IOException {
         classFileReader.accept(new ClassFileVisitor(null) {
             @Override
             public void visitClassFile(final String path, final byte[] classData) throws IOException {

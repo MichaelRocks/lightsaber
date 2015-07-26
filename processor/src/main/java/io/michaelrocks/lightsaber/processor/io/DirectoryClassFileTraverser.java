@@ -25,10 +25,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
-public class DirectoryClassFileReader extends ClassFileReader<File> {
+public class DirectoryClassFileTraverser extends ClassFileTraverser<File> {
     private final File classesDirectory;
 
-    public DirectoryClassFileReader(final File classesDirectory) throws IOException {
+    public DirectoryClassFileTraverser(final File classesDirectory) throws IOException {
         this.classesDirectory = classesDirectory;
     }
 

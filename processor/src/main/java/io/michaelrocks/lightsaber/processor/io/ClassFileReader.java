@@ -18,35 +18,19 @@ package io.michaelrocks.lightsaber.processor.io;
 
 import java.io.IOException;
 
-public abstract class ClassFileReader<T> implements AutoCloseable {
+public class ClassFileReader implements AutoCloseable {
+    private final ClassFileTraverser<?> traverser;
+
+    public ClassFileReader(final ClassFileTraverser<?> traverser) {
+        this.traverser = traverser;
+    }
+
     public void accept(final ClassFileVisitor visitor) throws IOException {
-        for (final T file : iterateFiles()) {
-            processFile(visitor, file);
-        }
-        visitor.visitEnd();
+        traverser.processFiles(visitor);
     }
 
-    private void processFile(final ClassFileVisitor visitor, final T file) throws IOException {
-        final String path = getFilePath(file);
-        if (path.isEmpty()) {
-            // Skip empty path as it's the root path.
-        } else if (isDirectory(file)) {
-            visitor.visitDirectory(path);
-        } else {
-            final byte[] fileData = readAsByteArray(file);
-            if (path.endsWith(".class")) {
-                visitor.visitClassFile(path, fileData);
-            } else {
-                visitor.visitOtherFile(path, fileData);
-            }
-        }
+    @Override
+    public void close() throws Exception {
+        traverser.close();
     }
-
-    protected abstract Iterable<T> iterateFiles() throws IOException;
-
-    protected abstract boolean isDirectory(T file);
-
-    protected abstract String getFilePath(T file);
-
-    protected abstract byte[] readAsByteArray(T file) throws IOException;
 }
