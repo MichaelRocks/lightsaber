@@ -22,8 +22,9 @@ import org.objectweb.asm.Type;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 public class AnnotationDescriptorTest {
     @Test
@@ -65,6 +66,79 @@ public class AnnotationDescriptorTest {
         assertEquals(2, annotation1.getValues().size());
         assertEquals(annotation1, annotation2);
         assertEquals(annotation1.hashCode(), annotation2.hashCode());
+    }
+
+    @Test
+    public void testNotEqualsToNull() throws Exception {
+        final AnnotationDescriptor annotation = createAnnotation("NotEqualsToNull");
+        // noinspection ObjectEqualsNull
+        assertFalse(annotation.equals(null));
+    }
+
+    @Test
+    public void testNotEqualsToString() throws Exception {
+        final AnnotationDescriptor annotation = createAnnotation("NotEqualsToString");
+        assertNotEquals("NotEqualsToString", annotation);
+    }
+
+    @Test
+    public void testNotEqualsByType() throws Exception {
+        final AnnotationDescriptor annotation1 = createAnnotation("NotEqualsByType1");
+        final AnnotationDescriptor annotation2 = createAnnotation("NotEqualsByType2");
+        assertNotEquals(annotation1, annotation2);
+        assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
+    }
+
+    @Test
+    public void testNotEqualsWithStrings() throws Exception {
+        final AnnotationDescriptor annotation1 = createAnnotation("NotEqualsWithStrings", "Value1");
+        final AnnotationDescriptor annotation2 = createAnnotation("NotEqualsWithStrings", "Value2");
+        assertNotEquals(annotation1, annotation2);
+        assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
+    }
+
+    @Test
+    public void testNotEqualsWithIntArrays() throws Exception {
+        final AnnotationDescriptor annotation1 = createAnnotation("NotEqualsWithIntArrays", new int[] { 42 });
+        final AnnotationDescriptor annotation2 = createAnnotation("NotEqualsWithIntArrays", new int[] { -42 });
+        assertNotEquals(annotation1, annotation2);
+        assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
+    }
+
+    @Test
+    public void testNotEqualsWithAnnotationArrays() throws Exception {
+        final AnnotationDescriptor annotation1 = createAnnotation("NotEqualsWithAnnotationArrays", new Object[] {
+                createAnnotation("EqualsWithIntArrays", new int[] { 42, 43, 44 }),
+                createAnnotation("EqualsWithIntArrays", new int[] { 45, 46, 47 }),
+                createAnnotation("EqualsWithIntArrays", new int[] { 48, 49, 50 }),
+                createAnnotation("EqualsWithIntArrays", new int[] { 1 })
+        });
+        final AnnotationDescriptor annotation2 = createAnnotation("NotEqualsWithAnnotationArrays", new Object[] {
+                createAnnotation("EqualsWithIntArrays", new int[] { 42, 43, 44 }),
+                createAnnotation("EqualsWithIntArrays", new int[] { 45, 46, 47 }),
+                createAnnotation("EqualsWithIntArrays", new int[] { 48, 49, 50 }),
+                createAnnotation("EqualsWithIntArrays", new int[] { -1 })
+        });
+        assertNotEquals(annotation1, annotation2);
+        assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
+    }
+
+    @Test
+    public void testToString() throws Exception {
+        final UUID nameUuid = UUID.randomUUID();
+        final String name = "ToString"
+                + Long.toHexString(nameUuid.getMostSignificantBits())
+                + Long.toHexString(nameUuid.getLeastSignificantBits());
+        final String value = UUID.randomUUID().toString();
+        final AnnotationDescriptor annotation = createAnnotation(name, value);
+        final String annotationDescription = annotation.toString();
+        assertNotNull(annotationDescription);
+        assertTrue(annotationDescription.contains(name));
+        assertTrue(annotationDescription.contains(value));
+    }
+
+    private static AnnotationDescriptor createAnnotation(final String annotationName) {
+        return new AnnotationDescriptor(getAnnotationType(annotationName), Collections.<String, Object>emptyMap(), false);
     }
 
     private static AnnotationDescriptor createAnnotation(final String annotationName, final Object defaultValue) {
