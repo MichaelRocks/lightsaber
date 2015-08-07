@@ -16,9 +16,11 @@
 
 package io.michaelrocks.lightsaber.processor.annotations;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.objectweb.asm.Type;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 class AnnotationHelper {
@@ -35,12 +37,50 @@ class AnnotationHelper {
         return createAnnotation(annotationName, Collections.singletonMap(methodName, defaultValue));
     }
 
+    @SafeVarargs
+    public static AnnotationDescriptor createAnnotation(final String annotationName,
+            final Pair<String, ?>... values) {
+        return new AnnotationDescriptor(getAnnotationType(annotationName), pairsToMap(values), false);
+    }
+
     public static AnnotationDescriptor createAnnotation(final String annotationName,
             final Map<String, Object> values) {
         return new AnnotationDescriptor(getAnnotationType(annotationName), values, false);
     }
 
+    public static AnnotationDescriptor createResolvedAnnotation(final String annotationName) {
+        return new AnnotationDescriptor(getAnnotationType(annotationName), Collections.<String, Object>emptyMap(), true);
+    }
+
+    public static AnnotationDescriptor createResolvedAnnotation(final String annotationName, final Object defaultValue) {
+        return createResolvedAnnotation(annotationName, "value", defaultValue);
+    }
+
+    public static AnnotationDescriptor createResolvedAnnotation(final String annotationName, final String methodName,
+            final Object defaultValue) {
+        return createResolvedAnnotation(annotationName, Collections.singletonMap(methodName, defaultValue));
+    }
+
+    @SafeVarargs
+    public static AnnotationDescriptor createResolvedAnnotation(final String annotationName,
+            final Pair<String, ?>... values) {
+        return new AnnotationDescriptor(getAnnotationType(annotationName), pairsToMap(values), false);
+    }
+
+    public static AnnotationDescriptor createResolvedAnnotation(final String annotationName,
+            final Map<String, Object> values) {
+        return new AnnotationDescriptor(getAnnotationType(annotationName), values, true);
+    }
+
     public static Type getAnnotationType(final String annotationName) {
         return Type.getObjectType(annotationName);
+    }
+
+    private static Map<String, Object> pairsToMap(final Pair<String, ?>[] pairs) {
+        final Map<String, Object> values = new HashMap<>();
+        for (final Pair<String, ?> pair : pairs) {
+            values.put(pair.getKey(), pair.getValue());
+        }
+        return values;
     }
 }
