@@ -34,7 +34,7 @@ import java.util.Map;
 import static org.objectweb.asm.Opcodes.ASM5;
 
 public class TypeGraphBuilder {
-    final Map<Type, ClassDescriptor> classDescriptors = new HashMap<>();
+    private final Map<Type, ClassDescriptor> classDescriptors = new HashMap<>();
 
     public void addClassesFromJar(final File jarFile) throws IOException {
         try (final ClassFileReader classFileReader = new ClassFileReader(new JarClassFileTraverser(jarFile))) {
