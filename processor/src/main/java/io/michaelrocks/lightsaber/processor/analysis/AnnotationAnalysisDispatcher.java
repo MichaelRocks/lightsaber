@@ -14,33 +14,26 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.graph;
+package io.michaelrocks.lightsaber.processor.analysis;
 
-import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Type;
+import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
+import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import org.objectweb.asm.Opcodes;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.objectweb.asm.Opcodes.ASM5;
-
-public class TypeGraphBuilder extends ClassVisitor {
-    private final Map<Type, ClassDescriptor> classDescriptors = new HashMap<>();
-
-    public TypeGraph build() {
-        return new TypeGraph(classDescriptors);
-    }
-
-    public TypeGraphBuilder() {
-        super(ASM5);
+public class AnnotationAnalysisDispatcher extends ProcessorClassVisitor {
+    public AnnotationAnalysisDispatcher(final ProcessorContext processorContext) {
+        super(processorContext);
     }
 
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
+        if ((access & Opcodes.ACC_ANNOTATION) != 0) {
+            cv = new AnnotationClassAnalyzer(getProcessorContext());
+        } else {
+            cv = null;
+        }
+
         super.visit(version, access, name, signature, superName, interfaces);
-        final ClassDescriptor classDescriptor = new ClassDescriptor(name, superName, interfaces);
-        classDescriptors.put(classDescriptor.getClassType(), classDescriptor);
     }
 }

@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor;
 
-import io.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
+import io.michaelrocks.lightsaber.processor.analysis.Analyzer;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
@@ -31,7 +31,6 @@ import io.michaelrocks.lightsaber.processor.generation.ProvidersGenerator;
 import io.michaelrocks.lightsaber.processor.generation.TypeAgentsGenerator;
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher;
 import io.michaelrocks.lightsaber.processor.graph.DependencyGraph;
-import io.michaelrocks.lightsaber.processor.graph.TypeGraphBuilder;
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher;
 import io.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import io.michaelrocks.lightsaber.processor.io.ClassFileReader;
@@ -63,7 +62,6 @@ public class ClassProcessor {
     }
 
     public void processClasses() throws IOException {
-        buildTypeGraph();
         performAnalysis();
         composePackageModules();
         composeInjectors();
@@ -76,22 +74,9 @@ public class ClassProcessor {
         copyAndPatchClasses();
     }
 
-    private void buildTypeGraph() throws IOException {
-        final TypeGraphBuilder typeGraphBuilder = new TypeGraphBuilder();
-        for (final File library : libraries) {
-            if (library.isDirectory()) {
-                typeGraphBuilder.addClassesFromClasses(library);
-            } else {
-                typeGraphBuilder.addClassesFromJar(library);
-            }
-        }
-        typeGraphBuilder.addClassesFromReader(classFileReader);
-        processorContext.setTypeGraph(typeGraphBuilder.build());
-    }
-
     private void performAnalysis() throws IOException {
-        final AnalysisClassFileVisitor analysisVisitor = new AnalysisClassFileVisitor(processorContext);
-        classFileReader.accept(analysisVisitor);
+        final Analyzer analyzer = new Analyzer(processorContext);
+        analyzer.analyze(classFileReader, libraries);
         checkErrors();
     }
 
