@@ -25,17 +25,19 @@ import org.objectweb.asm.TypePath;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompositeFieldVisitor extends FieldVisitor {
+public class CompositeFieldVisitor extends FieldVisitor implements CompositeVisitor<FieldVisitor> {
     private final List<FieldVisitor> fieldVisitors = new ArrayList<>();
 
     public CompositeFieldVisitor() {
         super(Opcodes.ASM5);
     }
 
-    public void addFieldVisitor(final FieldVisitor fieldVisitor) {
-        fieldVisitors.add(fieldVisitor);
+    @Override
+    public void addVisitor(final FieldVisitor visitor) {
+        fieldVisitors.add(visitor);
     }
 
+    @Override
     public boolean isEmpty() {
         return fieldVisitors.isEmpty();
     }
@@ -45,9 +47,7 @@ public class CompositeFieldVisitor extends FieldVisitor {
         final CompositeAnnotationVisitor compositeAnnotationVisitor = new CompositeAnnotationVisitor();
         for (final FieldVisitor fieldVisitor : fieldVisitors) {
             final AnnotationVisitor annotationVisitor = fieldVisitor.visitAnnotation(desc, visible);
-            if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, annotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }
@@ -59,9 +59,7 @@ public class CompositeFieldVisitor extends FieldVisitor {
         for (final FieldVisitor fieldVisitor : fieldVisitors) {
             final AnnotationVisitor annotationVisitor =
                     fieldVisitor.visitTypeAnnotation(typeRef, typePath, desc, visible);
-            if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, annotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }

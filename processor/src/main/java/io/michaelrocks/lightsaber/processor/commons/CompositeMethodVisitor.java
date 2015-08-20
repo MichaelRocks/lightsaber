@@ -27,17 +27,19 @@ import org.objectweb.asm.TypePath;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompositeMethodVisitor extends MethodVisitor {
+public class CompositeMethodVisitor extends MethodVisitor implements CompositeVisitor<MethodVisitor> {
     private final List<MethodVisitor> methodVisitors = new ArrayList<>();
 
     public CompositeMethodVisitor() {
         super(Opcodes.ASM5);
     }
 
-    public void addMethodVisitor(final MethodVisitor methodVisitor) {
-        methodVisitors.add(methodVisitor);
+    @Override
+    public void addVisitor(final MethodVisitor visitor) {
+        methodVisitors.add(visitor);
     }
 
+    @Override
     public boolean isEmpty() {
         return methodVisitors.isEmpty();
     }
@@ -54,9 +56,7 @@ public class CompositeMethodVisitor extends MethodVisitor {
         final CompositeAnnotationVisitor compositeAnnotationVisitor = new CompositeAnnotationVisitor();
         for (final MethodVisitor methodVisitor : methodVisitors) {
             final AnnotationVisitor annotationVisitor = methodVisitor.visitAnnotationDefault();
-            if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, annotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }
@@ -66,9 +66,7 @@ public class CompositeMethodVisitor extends MethodVisitor {
         final CompositeAnnotationVisitor compositeAnnotationVisitor = new CompositeAnnotationVisitor();
         for (final MethodVisitor methodVisitor : methodVisitors) {
             final AnnotationVisitor annotationVisitor = methodVisitor.visitAnnotation(desc, visible);
-            if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, annotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }
@@ -80,9 +78,7 @@ public class CompositeMethodVisitor extends MethodVisitor {
         for (final MethodVisitor methodVisitor : methodVisitors) {
             final AnnotationVisitor annotationVisitor =
                     methodVisitor.visitTypeAnnotation(typeRef, typePath, desc, visible);
-            if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, annotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }
@@ -94,7 +90,7 @@ public class CompositeMethodVisitor extends MethodVisitor {
             final AnnotationVisitor annotationVisitor =
                     methodVisitor.visitParameterAnnotation(parameter, desc, visible);
             if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
+                compositeAnnotationVisitor.addVisitor(annotationVisitor);
             }
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
@@ -237,9 +233,7 @@ public class CompositeMethodVisitor extends MethodVisitor {
         for (final MethodVisitor methodVisitor : methodVisitors) {
             final AnnotationVisitor annotationVisitor =
                     methodVisitor.visitInsnAnnotation(typeRef, typePath, desc, visible);
-            if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, annotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }
@@ -258,9 +252,7 @@ public class CompositeMethodVisitor extends MethodVisitor {
         for (final MethodVisitor methodVisitor : methodVisitors) {
             final AnnotationVisitor annotationVisitor =
                     methodVisitor.visitTryCatchAnnotation(typeRef, typePath, desc, visible);
-            if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, annotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }
@@ -281,9 +273,7 @@ public class CompositeMethodVisitor extends MethodVisitor {
         for (final MethodVisitor methodVisitor : methodVisitors) {
             final AnnotationVisitor annotationVisitor =
                     methodVisitor.visitLocalVariableAnnotation(typeRef, typePath, start, end, index, desc, visible);
-            if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, annotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }

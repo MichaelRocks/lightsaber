@@ -45,8 +45,8 @@ public class Analyzer {
 
     private void analyzeTypes(final ClassFileReader classFileReader, final List<File> libraries) throws IOException {
         final CompositeClassVisitor compositeClassVisitor = new CompositeClassVisitor();
-        compositeClassVisitor.addClassVisitor(typeGraphBuilder);
-        compositeClassVisitor.addClassVisitor(new AnnotationAnalysisDispatcher(processorContext));
+        compositeClassVisitor.addVisitor(typeGraphBuilder);
+        compositeClassVisitor.addVisitor(new AnnotationAnalysisDispatcher(processorContext));
         analyzeLibraries(libraries, compositeClassVisitor);
         analyzeClassesFromReader(classFileReader, compositeClassVisitor);
         processorContext.setTypeGraph(typeGraphBuilder.build());

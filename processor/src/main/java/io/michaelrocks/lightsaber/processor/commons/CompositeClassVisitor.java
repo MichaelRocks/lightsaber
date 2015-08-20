@@ -27,17 +27,19 @@ import org.objectweb.asm.TypePath;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompositeClassVisitor extends ClassVisitor {
-    final List<ClassVisitor> classVisitors = new ArrayList<>();
+public class CompositeClassVisitor extends ClassVisitor implements CompositeVisitor<ClassVisitor> {
+    private final List<ClassVisitor> classVisitors = new ArrayList<>();
 
     public CompositeClassVisitor() {
         super(Opcodes.ASM5);
     }
 
-    public void addClassVisitor(final ClassVisitor classVisitor) {
+    @Override
+    public void addVisitor(final ClassVisitor classVisitor) {
         classVisitors.add(classVisitor);
     }
 
+    @Override
     public boolean isEmpty() {
         return classVisitors.isEmpty();
     }
@@ -69,9 +71,7 @@ public class CompositeClassVisitor extends ClassVisitor {
         final CompositeAnnotationVisitor compositeAnnotationVisitor = new CompositeAnnotationVisitor();
         for (final ClassVisitor classVisitor : classVisitors) {
             final AnnotationVisitor annotationVisitor = classVisitor.visitAnnotation(desc, visible);
-            if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, annotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }
@@ -83,9 +83,7 @@ public class CompositeClassVisitor extends ClassVisitor {
         for (final ClassVisitor classVisitor : classVisitors) {
             final AnnotationVisitor annotationVisitor =
                     classVisitor.visitTypeAnnotation(typeRef, typePath, desc, visible);
-            if (annotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(annotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, annotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }
@@ -110,9 +108,7 @@ public class CompositeClassVisitor extends ClassVisitor {
         final CompositeFieldVisitor compositeFieldVisitor = new CompositeFieldVisitor();
         for (final ClassVisitor classVisitor : classVisitors) {
             final FieldVisitor fieldVisitor = classVisitor.visitField(access, name, desc, signature, value);
-            if (fieldVisitor != null) {
-                compositeFieldVisitor.addFieldVisitor(fieldVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeFieldVisitor, fieldVisitor);
         }
         return compositeFieldVisitor.isEmpty() ? null : compositeFieldVisitor;
     }
@@ -123,9 +119,7 @@ public class CompositeClassVisitor extends ClassVisitor {
         final CompositeMethodVisitor compositeMethodVisitor = new CompositeMethodVisitor();
         for (final ClassVisitor classVisitor : classVisitors) {
             final MethodVisitor methodVisitor = classVisitor.visitMethod(access, name, desc, signature, exceptions);
-            if (methodVisitor != null) {
-                compositeMethodVisitor.addMethodVisitor(methodVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeMethodVisitor, methodVisitor);
         }
         return compositeMethodVisitor.isEmpty() ? null : compositeMethodVisitor;
     }

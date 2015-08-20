@@ -22,17 +22,19 @@ import org.objectweb.asm.Opcodes;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CompositeAnnotationVisitor extends AnnotationVisitor {
+public class CompositeAnnotationVisitor extends AnnotationVisitor implements CompositeVisitor<AnnotationVisitor> {
     private final List<AnnotationVisitor> annotationVisitors = new ArrayList<>();
 
     public CompositeAnnotationVisitor() {
         super(Opcodes.ASM5);
     }
 
-    public void addAnnotationVisitor(final AnnotationVisitor annotationVisitor) {
-        annotationVisitors.add(annotationVisitor);
+    @Override
+    public void addVisitor(final AnnotationVisitor visitor) {
+        annotationVisitors.add(visitor);
     }
 
+    @Override
     public boolean isEmpty() {
         return annotationVisitors.isEmpty();
     }
@@ -56,9 +58,7 @@ public class CompositeAnnotationVisitor extends AnnotationVisitor {
         final CompositeAnnotationVisitor compositeAnnotationVisitor = new CompositeAnnotationVisitor();
         for (final AnnotationVisitor annotationVisitor : annotationVisitors) {
             final AnnotationVisitor innerAnnotationVisitor = annotationVisitor.visitAnnotation(name, desc);
-            if (innerAnnotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(innerAnnotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, innerAnnotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }
@@ -68,9 +68,7 @@ public class CompositeAnnotationVisitor extends AnnotationVisitor {
         final CompositeAnnotationVisitor compositeAnnotationVisitor = new CompositeAnnotationVisitor();
         for (final AnnotationVisitor annotationVisitor : annotationVisitors) {
             final AnnotationVisitor innerAnnotationVisitor = annotationVisitor.visitArray(name);
-            if (innerAnnotationVisitor != null) {
-                compositeAnnotationVisitor.addAnnotationVisitor(innerAnnotationVisitor);
-            }
+            CompositeVisitorHelper.addVisitor(compositeAnnotationVisitor, innerAnnotationVisitor);
         }
         return compositeAnnotationVisitor.isEmpty() ? null : compositeAnnotationVisitor;
     }
