@@ -22,6 +22,7 @@ dependencies {
     compile "org.apache.commons:commons-collections4:$commonsCollectionsVersion"
 
     testCompile "junit:junit:$junitVersion"
+    testCompile "org.mockito:mockito-core:$mockitoVersion"
 }
 
 jar {

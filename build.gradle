@@ -155,6 +155,7 @@ ext {
     commonsCollectionsVersion = '4.0'
 
     junitVersion = '4.12'
+    mockitoVersion = '2.0.31-beta'
 
     androidToolsVersion = '1.2.3'
     supportVersion = '22.1.1'
