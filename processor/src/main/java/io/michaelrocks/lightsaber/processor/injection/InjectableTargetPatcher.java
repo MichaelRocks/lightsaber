@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.processor.injection;
 
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import org.objectweb.asm.ClassVisitor;
@@ -39,7 +40,8 @@ public class InjectableTargetPatcher extends ProcessorClassVisitor {
     @Override
     public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
             final Object value) {
-        if (injectableTarget.isInjectableField(name)) {
+        final FieldDescriptor fieldDescriptor = new FieldDescriptor(name, desc);
+        if (injectableTarget.isInjectableField(fieldDescriptor)) {
             final int newAccess = access & ~(ACC_PRIVATE | ACC_FINAL);
             return super.visitField(newAccess, name, desc, signature, value);
         } else {
