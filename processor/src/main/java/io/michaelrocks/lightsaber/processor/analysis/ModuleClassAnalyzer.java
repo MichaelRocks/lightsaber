@@ -33,6 +33,8 @@ import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.ASM5;
 
 public class ModuleClassAnalyzer extends ProcessorClassVisitor {
+    private static final Type PROVIDES_TYPE = Type.getType(Provides.class);
+
     private ModuleDescriptor.Builder moduleDescriptorBuilder;
 
     public ModuleClassAnalyzer(final ProcessorContext processorContext) {
@@ -57,11 +59,12 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
 
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-                if (Type.getDescriptor(Provides.class).equals(desc)) {
+                final Type annotationType = Type.getType(desc);
+                if (PROVIDES_TYPE.equals(annotationType)) {
                     isProviderMethod = true;
                 } else if (scope == null) {
-                    scope = getProcessorContext().findScopeByAnnotationType(Type.getType(desc));
-                } else if (getProcessorContext().findScopeByAnnotationType(Type.getType(desc)) != null) {
+                    scope = getProcessorContext().findScopeByAnnotationType(annotationType);
+                } else if (getProcessorContext().findScopeByAnnotationType(annotationType) != null) {
                     reportError("Method has multiple scope annotations: " + moduleDescriptorBuilder.getModuleType()
                             + "." + methodName + methodDesc);
                 }
@@ -94,7 +97,8 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
 
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-                if (Type.getDescriptor(Provides.class).equals(desc)) {
+                final Type annotationType = Type.getType(desc);
+                if (PROVIDES_TYPE.equals(annotationType)) {
                     isProviderField = true;
                 }
 
