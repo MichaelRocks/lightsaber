@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
 import org.objectweb.asm.Type;
 
 import java.util.Collections;
@@ -92,21 +93,27 @@ public class InjectionTargetDescriptor {
             this.targetType = targetType;
         }
 
+        public Type getTargetType() {
+            return targetType;
+        }
+
         public void setHasDefaultConstructor(final boolean hasDefaultConstructor) {
             this.hasDefaultConstructor = hasDefaultConstructor;
         }
 
-        public Builder addInjectableField(final FieldDescriptor injectableField) {
+        public Builder addInjectableField(final FieldDescriptor injectableField, final AnnotationDescriptor qualifier) {
             injectableFields.add(injectableField);
             return this;
         }
 
-        public Builder addInjectableConstructor(final MethodDescriptor injectableConstructor) {
+        public Builder addInjectableConstructor(final MethodDescriptor injectableConstructor,
+                final Map<Integer, AnnotationDescriptor> parameterQualifiers) {
             injectableConstructors.add(injectableConstructor);
             return this;
         }
 
-        public Builder addInjectableMethod(final MethodDescriptor injectableMethod) {
+        public Builder addInjectableMethod(final MethodDescriptor injectableMethod,
+                final Map<Integer, AnnotationDescriptor> parameterQualifiers) {
             injectableMethods.add(injectableMethod);
             return this;
         }

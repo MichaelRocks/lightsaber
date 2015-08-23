@@ -18,6 +18,8 @@ package io.michaelrocks.lightsaber.processor.analysis;
 
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
@@ -33,6 +35,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.ASM5;
 
@@ -74,6 +78,7 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
         final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         return new MethodVisitor(ASM5, methodVisitor) {
             private boolean isInjectableMethod = false;
+            private final Map<Integer, AnnotationDescriptor> parameterQualifiers = new HashMap<>();
 
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
@@ -82,6 +87,29 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
                     isInjectableMethod = true;
                 }
                 return super.visitAnnotation(desc, visible);
+            }
+
+            @Override
+            public AnnotationVisitor visitParameterAnnotation(final int parameter, final String desc,
+                    final boolean visible) {
+                if (isInjectableMethod) {
+                    final Type annotationType = Type.getType(desc);
+                    if (getProcessorContext().isQualifier(annotationType)) {
+                        return new AnnotationInstanceParser(annotationType) {
+                            @Override
+                            public void visitEnd() {
+                                final AnnotationDescriptor annotation =
+                                        getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
+                                if (parameterQualifiers.put(parameter, annotation) != null) {
+                                    reportError("Method parameter " + parameter + " has multiple qualifiers: "
+                                            + injectionTargetDescriptorBuilder.getTargetType()
+                                            + "." + methodName + methodDesc);
+                                }
+                            }
+                        };
+                    }
+                }
+                return super.visitParameterAnnotation(parameter, desc, visible);
             }
 
             @Override
@@ -94,9 +122,10 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
                             MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
                     final MethodDescriptor methodDescriptor = new MethodDescriptor(methodName, methodSignature);
                     if (MethodDescriptor.isConstructor(methodName)) {
-                        injectionTargetDescriptorBuilder.addInjectableConstructor(methodDescriptor);
+                        injectionTargetDescriptorBuilder.addInjectableConstructor(
+                                methodDescriptor, parameterQualifiers);
                     } else {
-                        injectionTargetDescriptorBuilder.addInjectableMethod(methodDescriptor);
+                        injectionTargetDescriptorBuilder.addInjectableMethod(methodDescriptor, parameterQualifiers);
                     }
                 }
             }
@@ -111,12 +140,29 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
         final FieldVisitor fieldVisitor = super.visitField(access, name, desc, signature, value);
         return new FieldVisitor(ASM5, fieldVisitor) {
             private boolean isInjectableField = false;
+            private AnnotationDescriptor qualifier;
 
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 final Type annotationType = Type.getType(desc);
                 if (INJECT_TYPE.equals(annotationType)) {
                     isInjectableField = true;
+                } else if (getProcessorContext().isQualifier(annotationType)) {
+                    return new AnnotationInstanceParser(annotationType) {
+                        @Override
+                        public void visitEnd() {
+                            final AnnotationDescriptor annotation =
+                                    getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
+                            if (qualifier == null) {
+                                qualifier = annotation;
+                            } else {
+                                reportError("Field has multiple qualifiers: "
+                                        + injectionTargetDescriptorBuilder.getTargetType()
+                                        + "." + fieldName + ": " + fieldDesc);
+
+                            }
+                        }
+                    };
                 }
                 return super.visitAnnotation(desc, visible);
             }
@@ -130,7 +176,7 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
                     final TypeSignature typeSignature =
                             TypeSignatureParser.parseTypeSignature(getProcessorContext(), signature, fieldType);
                     final FieldDescriptor fieldDescriptor = new FieldDescriptor(fieldName, typeSignature);
-                    injectionTargetDescriptorBuilder.addInjectableField(fieldDescriptor);
+                    injectionTargetDescriptorBuilder.addInjectableField(fieldDescriptor, qualifier);
                 }
             }
         };
