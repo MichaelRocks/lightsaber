@@ -14,6 +14,7 @@ mainClassName = 'io.michaelrocks.lightsaber.processor.LightsaberProcessor'
 dependencies {
     compile project(':core')
 
+    compile "com.google.code.findbugs:jsr305:$jsr305Version"
     compile "com.beust:jcommander:$jcommanderVersion"
     compile "org.ow2.asm:asm:$asmVersion"
     compile "org.ow2.asm:asm-commons:$asmVersion"

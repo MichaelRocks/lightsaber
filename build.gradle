@@ -148,6 +148,7 @@ ext {
     shadowVersion = '1.2.1'
 
     javaxInjectVersion = '1'
+    jsr305Version = '3.0.0'
     jcommanderVersion = '1.47'
     asmVersion = '5.0.4'
     commonsLangVersion = '3.3.2'
