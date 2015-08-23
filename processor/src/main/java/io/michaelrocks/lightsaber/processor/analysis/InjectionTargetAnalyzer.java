@@ -37,6 +37,8 @@ import javax.inject.Inject;
 import static org.objectweb.asm.Opcodes.ASM5;
 
 public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
+    private static final Type INJECT_TYPE = Type.getType(Inject.class);
+
     private InjectionTargetDescriptor.Builder injectionTargetDescriptorBuilder;
 
     public InjectionTargetAnalyzer(final ProcessorContext processorContext) {
@@ -71,9 +73,22 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
 
         final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         return new MethodVisitor(ASM5, methodVisitor) {
+            private boolean isInjectableMethod = false;
+
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-                if (Type.getDescriptor(Inject.class).equals(desc)) {
+                final Type annotationType = Type.getType(desc);
+                if (INJECT_TYPE.equals(annotationType)) {
+                    isInjectableMethod = true;
+                }
+                return super.visitAnnotation(desc, visible);
+            }
+
+            @Override
+            public void visitEnd() {
+                super.visitEnd();
+
+                if (isInjectableMethod) {
                     final Type methodType = Type.getMethodType(methodDesc);
                     final MethodSignature methodSignature =
                             MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
@@ -84,7 +99,6 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
                         injectionTargetDescriptorBuilder.addInjectableMethod(methodDescriptor);
                     }
                 }
-                return super.visitAnnotation(desc, visible);
             }
         };
     }
@@ -96,16 +110,28 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
         final String fieldDesc = desc;
         final FieldVisitor fieldVisitor = super.visitField(access, name, desc, signature, value);
         return new FieldVisitor(ASM5, fieldVisitor) {
+            private boolean isInjectableField = false;
+
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-                if (Type.getDescriptor(Inject.class).equals(desc)) {
+                final Type annotationType = Type.getType(desc);
+                if (INJECT_TYPE.equals(annotationType)) {
+                    isInjectableField = true;
+                }
+                return super.visitAnnotation(desc, visible);
+            }
+
+            @Override
+            public void visitEnd() {
+                super.visitEnd();
+
+                if (isInjectableField) {
                     final Type fieldType = Type.getType(fieldDesc);
                     final TypeSignature typeSignature =
                             TypeSignatureParser.parseTypeSignature(getProcessorContext(), signature, fieldType);
                     final FieldDescriptor fieldDescriptor = new FieldDescriptor(fieldName, typeSignature);
                     injectionTargetDescriptorBuilder.addInjectableField(fieldDescriptor);
                 }
-                return super.visitAnnotation(desc, visible);
             }
         };
     }
