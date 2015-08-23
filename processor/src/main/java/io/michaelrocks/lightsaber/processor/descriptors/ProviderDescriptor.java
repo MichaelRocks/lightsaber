@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.objectweb.asm.Type;
 
@@ -25,24 +26,25 @@ import java.util.List;
 
 public class ProviderDescriptor {
     private final Type providerType;
-    private final Type providableType;
+    private final QualifiedType providableType;
     private final FieldDescriptor providerField;
     private final MethodDescriptor providerMethod;
     private final Type moduleType;
     private final Type delegatorType;
 
-    public ProviderDescriptor(final Type providerType, final Type providableType,
+    public ProviderDescriptor(final Type providerType, final QualifiedType providableType,
             final FieldDescriptor providerField, final Type moduleType) {
         this(providerType, providableType, providerField, null, moduleType, null);
     }
 
-    public ProviderDescriptor(final Type providerType, final Type providableType,
+    public ProviderDescriptor(final Type providerType, final QualifiedType providableType,
             final MethodDescriptor providerMethod, final Type moduleType, final Type delegatorType) {
         this(providerType, providableType, null, providerMethod, moduleType, delegatorType);
     }
 
-    private ProviderDescriptor(final Type providerType, final Type providableType, final FieldDescriptor providerField,
-            final MethodDescriptor providerMethod, final Type moduleType, final Type delegatorType) {
+    private ProviderDescriptor(final Type providerType, final QualifiedType providableType,
+            final FieldDescriptor providerField, final MethodDescriptor providerMethod, final Type moduleType,
+            final Type delegatorType) {
         this.providerType = providerType;
         this.providableType = providableType;
         this.providerField = providerField;
@@ -55,8 +57,16 @@ public class ProviderDescriptor {
         return providerType;
     }
 
-    public Type getProvidableType() {
+    public QualifiedType getQualifiedProvidableType() {
         return providableType;
+    }
+
+    public AnnotationDescriptor getQualifier() {
+        return providableType.getQualifier();
+    }
+
+    public Type getProvidableType() {
+        return providableType.getType();
     }
 
     public FieldDescriptor getProviderField() {

@@ -76,7 +76,7 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
                     final MethodSignature methodSignature =
                             MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
                     final MethodDescriptor providerMethod = new MethodDescriptor(methodName, methodSignature);
-                    moduleDescriptorBuilder.addProviderMethod(providerMethod, scope);
+                    moduleDescriptorBuilder.addProviderMethod(providerMethod, scope, null);
                 }
                 super.visitEnd();
             }
@@ -105,7 +105,7 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
             public void visitEnd() {
                 if (isProviderField) {
                     final FieldDescriptor providerField = new FieldDescriptor(fieldName, fieldDesc);
-                    moduleDescriptorBuilder.addProviderField(providerField);
+                    moduleDescriptorBuilder.addProviderField(providerField, null);
                 }
                 super.visitEnd();
             }

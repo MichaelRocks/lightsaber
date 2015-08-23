@@ -22,6 +22,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.InjectorFactoryClassGenerator;
@@ -96,10 +97,11 @@ public class ClassProcessor {
 
             final Type providerType = Type.getObjectType(
                     providableTargetType.getInternalName() + "$$Provider");
+            final QualifiedType providableType = new QualifiedType(providableTarget.getTargetType());
             final ScopeDescriptor scope = providableTarget.getScope();
             final Type delegatorType = scope != null ? scope.getProviderType() : null;
             final ProviderDescriptor provider =
-                    new ProviderDescriptor(providerType, providableTarget.getTargetType(), providableTargetConstructor,
+                    new ProviderDescriptor(providerType, providableType, providableTargetConstructor,
                             moduleBuilder.getModuleType(), delegatorType);
 
             moduleBuilder.addProvider(provider);
