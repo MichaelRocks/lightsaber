@@ -22,9 +22,9 @@ import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import org.apache.commons.lang3.ArrayUtils;
 import org.objectweb.asm.Type;
 
-public class InjectionTargetAnalysisDispatcher extends ProcessorClassVisitor {
+public class InjectionAnalysisDispatcher extends ProcessorClassVisitor {
 
-    public InjectionTargetAnalysisDispatcher(final ProcessorContext processorContext) {
+    public InjectionAnalysisDispatcher(final ProcessorContext processorContext) {
         super(processorContext);
     }
 

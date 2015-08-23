@@ -53,7 +53,7 @@ public class Analyzer {
     }
 
     private void analyzeInjectionTargets(final ClassFileReader classFileReader) throws IOException {
-        analyzeClassesFromReader(classFileReader, new InjectionTargetAnalysisDispatcher(processorContext));
+        analyzeClassesFromReader(classFileReader, new InjectionAnalysisDispatcher(processorContext));
     }
 
     private void analyzeLibraries(final List<File> libraries, final ClassVisitor classVisitor) throws IOException {
