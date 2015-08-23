@@ -16,7 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.commons;
 
-public class CompositeVisitorHelper {
+public final class CompositeVisitorHelper {
+    private CompositeVisitorHelper() {
+    }
+
     public static <T> void addVisitor(final CompositeVisitor<? super T> compositeVisitor, final T visitor) {
         if (visitor != null) {
             compositeVisitor.addVisitor(visitor);
