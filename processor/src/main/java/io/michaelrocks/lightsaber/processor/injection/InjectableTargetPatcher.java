@@ -51,7 +51,7 @@ public class InjectableTargetPatcher extends ProcessorClassVisitor {
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
             final String[] exceptions) {
         final MethodDescriptor methodDescriptor = new MethodDescriptor(name, desc);
-        if (injectableTarget.getInjectableMethods().contains(methodDescriptor)) {
+        if (injectableTarget.isInjectableMethod(methodDescriptor)) {
             final int newAccess = access & ~(ACC_PRIVATE | ACC_FINAL);
             return super.visitMethod(newAccess, name, desc, signature, exceptions);
         } else {

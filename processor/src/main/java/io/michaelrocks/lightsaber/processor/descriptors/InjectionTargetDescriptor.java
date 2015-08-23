@@ -62,12 +62,20 @@ public class InjectionTargetDescriptor {
         return injectableFields;
     }
 
+    public boolean isInjectableConstructor(final MethodDescriptor constructor) {
+        return injectableConstructor.equals(constructor);
+    }
+
     public MethodDescriptor getInjectableConstructor() {
         return injectableConstructor;
     }
 
     public Set<MethodDescriptor> getInjectableConstructors() {
         return injectableConstructors;
+    }
+
+    public boolean isInjectableMethod(final MethodDescriptor method) {
+        return injectableMethods.contains(method);
     }
 
     public Set<MethodDescriptor> getInjectableMethods() {

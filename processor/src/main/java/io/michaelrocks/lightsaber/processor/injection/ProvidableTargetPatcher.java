@@ -38,7 +38,7 @@ public class ProvidableTargetPatcher extends ProcessorClassVisitor {
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
             final String[] exceptions) {
         final MethodDescriptor methodDescriptor = new MethodDescriptor(name, desc);
-        if (providableTarget.getInjectableConstructor().equals(methodDescriptor)) {
+        if (providableTarget.isInjectableConstructor(methodDescriptor)) {
             final int newAccess = access & ~ACC_PRIVATE;
             return super.visitMethod(newAccess, name, desc, signature, exceptions);
         } else {
