@@ -19,6 +19,8 @@ package io.michaelrocks.lightsaber.processor.analysis;
 import io.michaelrocks.lightsaber.Provides;
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -54,14 +56,28 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
         final String methodDesc = desc;
         final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
         return new MethodVisitor(ASM5, methodVisitor) {
-            private ScopeDescriptor scope;
             private boolean isProviderMethod;
+            private AnnotationDescriptor qualifier;
+            private ScopeDescriptor scope;
 
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 final Type annotationType = Type.getType(desc);
                 if (PROVIDES_TYPE.equals(annotationType)) {
                     isProviderMethod = true;
+                } else if (getProcessorContext().isQualifier(annotationType)) {
+                    if (qualifier == null) {
+                        return new AnnotationInstanceParser(annotationType) {
+                            @Override
+                            public void visitEnd() {
+                                qualifier =
+                                        getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
+                            }
+                        };
+                    } else {
+                        reportError("Method has multiple qualifier annotations: "
+                                + moduleDescriptorBuilder.getModuleType() + "." + methodName + methodDesc);
+                    }
                 } else if (scope == null) {
                     scope = getProcessorContext().findScopeByAnnotationType(annotationType);
                 } else if (getProcessorContext().findScopeByAnnotationType(annotationType) != null) {
@@ -79,7 +95,7 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
                     final MethodSignature methodSignature =
                             MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
                     final MethodDescriptor providerMethod = new MethodDescriptor(methodName, methodSignature);
-                    moduleDescriptorBuilder.addProviderMethod(providerMethod, scope, null);
+                    moduleDescriptorBuilder.addProviderMethod(providerMethod, scope, qualifier);
                 }
                 super.visitEnd();
             }
@@ -94,12 +110,26 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
         final FieldVisitor fieldVisitor = super.visitField(access, name, desc, signature, value);
         return new FieldVisitor(ASM5, fieldVisitor) {
             private boolean isProviderField;
+            private AnnotationDescriptor qualifier;
 
             @Override
             public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
                 final Type annotationType = Type.getType(desc);
                 if (PROVIDES_TYPE.equals(annotationType)) {
                     isProviderField = true;
+                } else if (getProcessorContext().isQualifier(annotationType)) {
+                    if (qualifier == null) {
+                        return new AnnotationInstanceParser(annotationType) {
+                            @Override
+                            public void visitEnd() {
+                                qualifier =
+                                        getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
+                            }
+                        };
+                    } else {
+                        reportError("Field has multiple qualifier annotations: "
+                                + moduleDescriptorBuilder.getModuleType() + "." + fieldName + ": " + fieldDesc);
+                    }
                 }
 
                 return super.visitAnnotation(desc, visible);
@@ -109,7 +139,7 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
             public void visitEnd() {
                 if (isProviderField) {
                     final FieldDescriptor providerField = new FieldDescriptor(fieldName, fieldDesc);
-                    moduleDescriptorBuilder.addProviderField(providerField, null);
+                    moduleDescriptorBuilder.addProviderField(providerField, qualifier);
                 }
                 super.visitEnd();
             }
