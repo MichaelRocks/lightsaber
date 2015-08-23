@@ -85,16 +85,16 @@ public class ProviderDescriptor {
         return delegatorType;
     }
 
-    public List<Type> getDependencies() {
+    public List<QualifiedType> getDependencies() {
         if (providerMethod == null) {
             return Collections.emptyList();
         }
 
-        final List<Type> dependencies = new ArrayList<>(providerMethod.getArgumentTypes().size());
+        final List<QualifiedType> dependencies = new ArrayList<>(providerMethod.getArgumentTypes().size());
         for (final TypeSignature argumentType : providerMethod.getArgumentTypes()) {
             final Type dependencyType = argumentType.getParameterType() != null
                     ? argumentType.getParameterType() : argumentType.getRawType();
-            dependencies.add(dependencyType);
+            dependencies.add(new QualifiedType(dependencyType));
         }
         return dependencies;
     }

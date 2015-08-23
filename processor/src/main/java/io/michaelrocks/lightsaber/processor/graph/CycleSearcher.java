@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.graph;
 
-import org.objectweb.asm.Type;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -27,21 +27,21 @@ import java.util.Set;
 
 public class CycleSearcher {
     private final DependencyGraph graph;
-    private final Map<Type, VertexColor> colors = new HashMap<>();
-    private final Set<Type> cycles = new HashSet<>();
+    private final Map<QualifiedType, VertexColor> colors = new HashMap<>();
+    private final Set<QualifiedType> cycles = new HashSet<>();
 
     public CycleSearcher(final DependencyGraph graph) {
         this.graph = graph;
     }
 
-    public Collection<Type> findCycles() {
-        for (final Type type : graph.getTypes()) {
+    public Collection<QualifiedType> findCycles() {
+        for (final QualifiedType type : graph.getTypes()) {
             traverse(type);
         }
         return Collections.unmodifiableSet(cycles);
     }
 
-    private void traverse(final Type type) {
+    private void traverse(final QualifiedType type) {
         final VertexColor color = colors.get(type);
         if (color == VertexColor.BLACK) {
             return;
@@ -53,9 +53,9 @@ public class CycleSearcher {
         }
 
         colors.put(type, VertexColor.GRAY);
-        final Collection<Type> dependencies = graph.getTypeDependencies(type);
+        final Collection<QualifiedType> dependencies = graph.getTypeDependencies(type);
         if (dependencies != null) {
-            for (final Type dependency : dependencies) {
+            for (final QualifiedType dependency : dependencies) {
                 traverse(dependency);
             }
         }

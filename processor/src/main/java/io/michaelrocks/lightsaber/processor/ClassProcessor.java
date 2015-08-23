@@ -126,15 +126,16 @@ public class ClassProcessor {
 
         final UnresolvedDependenciesSearcher unresolvedDependenciesSearcher =
                 new UnresolvedDependenciesSearcher(dependencyGraph);
-        final Collection<Type> unresolvedDependencies = unresolvedDependenciesSearcher.findUnresolvedDependencies();
-        for (final Type unresolvedDependency : unresolvedDependencies) {
+        final Collection<QualifiedType> unresolvedDependencies =
+                unresolvedDependenciesSearcher.findUnresolvedDependencies();
+        for (final QualifiedType unresolvedDependency : unresolvedDependencies) {
             processorContext.reportError(
                     new ProcessingException("Unresolved dependency: " + unresolvedDependency));
         }
 
         final CycleSearcher cycleSearcher = new CycleSearcher(dependencyGraph);
-        final Collection<Type> cycles = cycleSearcher.findCycles();
-        for (final Type cycle : cycles) {
+        final Collection<QualifiedType> cycles = cycleSearcher.findCycles();
+        for (final QualifiedType cycle : cycles) {
             processorContext.reportError(
                     new ProcessingException("Cycled dependency: " + cycle));
         }
