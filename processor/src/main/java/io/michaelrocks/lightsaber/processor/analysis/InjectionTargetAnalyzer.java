@@ -18,32 +18,17 @@ package io.michaelrocks.lightsaber.processor.analysis;
 
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser;
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
-import io.michaelrocks.lightsaber.processor.signature.MethodSignature;
-import io.michaelrocks.lightsaber.processor.signature.MethodSignatureParser;
-import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
-import io.michaelrocks.lightsaber.processor.signature.TypeSignatureParser;
 import org.apache.commons.lang3.StringUtils;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
-import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.objectweb.asm.Opcodes.ASM5;
-
 public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
-    private static final Type INJECT_TYPE = Type.getType(Inject.class);
-
-    private InjectionTargetDescriptor.Builder injectionTargetDescriptorBuilder;
+    private InjectionTargetDescriptor.Builder injectionTargetBuilder;
 
     public InjectionTargetAnalyzer(final ProcessorContext processorContext) {
         super(processorContext);
@@ -52,7 +37,7 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        injectionTargetDescriptorBuilder = new InjectionTargetDescriptor.Builder(Type.getObjectType(name));
+        injectionTargetBuilder = new InjectionTargetDescriptor.Builder(Type.getObjectType(name));
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
@@ -60,7 +45,7 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
     public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
         final ScopeDescriptor scope = getProcessorContext().findScopeByAnnotationType(Type.getType(desc));
         if (scope != null) {
-            injectionTargetDescriptorBuilder.setScope(scope);
+            injectionTargetBuilder.setScope(scope);
         }
         return super.visitAnnotation(desc, visible);
     }
@@ -68,123 +53,22 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
     @Override
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
             final String[] exceptions) {
-        final String methodName = name;
-        final String methodDesc = desc;
-
-        if (MethodDescriptor.isDefaultConstructor(methodName, methodDesc)) {
-            injectionTargetDescriptorBuilder.setHasDefaultConstructor(true);
+        if (MethodDescriptor.isDefaultConstructor(name, desc)) {
+            injectionTargetBuilder.setHasDefaultConstructor(true);
         }
 
-        final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-        return new MethodVisitor(ASM5, methodVisitor) {
-            private boolean isInjectableMethod = false;
-            private final Map<Integer, AnnotationDescriptor> parameterQualifiers = new HashMap<>();
-
-            @Override
-            public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-                final Type annotationType = Type.getType(desc);
-                if (INJECT_TYPE.equals(annotationType)) {
-                    isInjectableMethod = true;
-                }
-                return super.visitAnnotation(desc, visible);
-            }
-
-            @Override
-            public AnnotationVisitor visitParameterAnnotation(final int parameter, final String desc,
-                    final boolean visible) {
-                if (isInjectableMethod) {
-                    final Type annotationType = Type.getType(desc);
-                    if (getProcessorContext().isQualifier(annotationType)) {
-                        return new AnnotationInstanceParser(annotationType) {
-                            @Override
-                            public void visitEnd() {
-                                final AnnotationDescriptor annotation =
-                                        getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
-                                if (parameterQualifiers.put(parameter, annotation) != null) {
-                                    reportError("Method parameter " + parameter + " has multiple qualifiers: "
-                                            + injectionTargetDescriptorBuilder.getTargetType()
-                                            + "." + methodName + methodDesc);
-                                }
-                            }
-                        };
-                    }
-                }
-                return super.visitParameterAnnotation(parameter, desc, visible);
-            }
-
-            @Override
-            public void visitEnd() {
-                super.visitEnd();
-
-                if (isInjectableMethod) {
-                    final Type methodType = Type.getMethodType(methodDesc);
-                    final MethodSignature methodSignature =
-                            MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
-                    final MethodDescriptor methodDescriptor = new MethodDescriptor(methodName, methodSignature);
-                    if (MethodDescriptor.isConstructor(methodName)) {
-                        injectionTargetDescriptorBuilder.addInjectableConstructor(
-                                methodDescriptor, parameterQualifiers);
-                    } else {
-                        injectionTargetDescriptorBuilder.addInjectableMethod(methodDescriptor, parameterQualifiers);
-                    }
-                }
-            }
-        };
+        return new InjectionMethodAnalyzer(getProcessorContext(), injectionTargetBuilder, name, desc, signature);
     }
 
     @Override
     public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
             final Object value) {
-        final String fieldName = name;
-        final String fieldDesc = desc;
-        final FieldVisitor fieldVisitor = super.visitField(access, name, desc, signature, value);
-        return new FieldVisitor(ASM5, fieldVisitor) {
-            private boolean isInjectableField = false;
-            private AnnotationDescriptor qualifier;
-
-            @Override
-            public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
-                final Type annotationType = Type.getType(desc);
-                if (INJECT_TYPE.equals(annotationType)) {
-                    isInjectableField = true;
-                } else if (getProcessorContext().isQualifier(annotationType)) {
-                    return new AnnotationInstanceParser(annotationType) {
-                        @Override
-                        public void visitEnd() {
-                            final AnnotationDescriptor annotation =
-                                    getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
-                            if (qualifier == null) {
-                                qualifier = annotation;
-                            } else {
-                                reportError("Field has multiple qualifiers: "
-                                        + injectionTargetDescriptorBuilder.getTargetType()
-                                        + "." + fieldName + ": " + fieldDesc);
-
-                            }
-                        }
-                    };
-                }
-                return super.visitAnnotation(desc, visible);
-            }
-
-            @Override
-            public void visitEnd() {
-                super.visitEnd();
-
-                if (isInjectableField) {
-                    final Type fieldType = Type.getType(fieldDesc);
-                    final TypeSignature typeSignature =
-                            TypeSignatureParser.parseTypeSignature(getProcessorContext(), signature, fieldType);
-                    final FieldDescriptor fieldDescriptor = new FieldDescriptor(fieldName, typeSignature);
-                    injectionTargetDescriptorBuilder.addInjectableField(fieldDescriptor, qualifier);
-                }
-            }
-        };
+        return new InjectionFieldAnalyzer(getProcessorContext(), injectionTargetBuilder, name, desc, signature);
     }
 
     @Override
     public void visitEnd() {
-        final InjectionTargetDescriptor injectionTarget = injectionTargetDescriptorBuilder.build();
+        final InjectionTargetDescriptor injectionTarget = injectionTargetBuilder.build();
         if (!injectionTarget.getInjectableFields().isEmpty() || !injectionTarget.getInjectableMethods().isEmpty()) {
             getProcessorContext().addInjectableTarget(injectionTarget);
         }
@@ -196,7 +80,5 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
         } else if (!injectionTarget.getInjectableConstructors().isEmpty()) {
             getProcessorContext().addProvidableTarget(injectionTarget);
         }
-
-        super.visitEnd();
     }
 }
