@@ -73,8 +73,7 @@ class InjectionMethodAnalyzer extends ProcessorMethodVisitor {
                                 getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
                         if (parameterQualifiers.put(parameter, annotation) != null) {
                             reportError("Method parameter " + parameter + " has multiple qualifiers: "
-                                    + injectionTargetBuilder.getTargetType()
-                                    + "." + methodName + methodDesc);
+                                    + injectionTargetBuilder.getTargetType() + "." + methodName + methodDesc);
                         }
                     }
                 };
@@ -91,8 +90,7 @@ class InjectionMethodAnalyzer extends ProcessorMethodVisitor {
                     MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
             final MethodDescriptor methodDescriptor = new MethodDescriptor(methodName, methodSignature);
             if (MethodDescriptor.isConstructor(methodName)) {
-                injectionTargetBuilder.addInjectableConstructor(
-                        methodDescriptor, parameterQualifiers);
+                injectionTargetBuilder.addInjectableConstructor(methodDescriptor, parameterQualifiers);
             } else {
                 injectionTargetBuilder.addInjectableMethod(methodDescriptor, parameterQualifiers);
             }
