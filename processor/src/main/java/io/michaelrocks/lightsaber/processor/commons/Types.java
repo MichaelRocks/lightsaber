@@ -16,11 +16,17 @@
 
 package io.michaelrocks.lightsaber.processor.commons;
 
+import io.michaelrocks.lightsaber.Provides;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.objectweb.asm.Type;
 
+import javax.inject.Inject;
+
 public class Types {
+    public static final Type INJECT_TYPE = Type.getType(Inject.class);
+    public static final Type PROVIDES_TYPE = Type.getType(Provides.class);
+
     public static final Type BOXED_VOID_TYPE = Type.getType(Byte.class);
     public static final Type BOXED_BOOLEAN_TYPE = Type.getType(Boolean.class);
     public static final Type BOXED_BYTE_TYPE = Type.getType(Byte.class);
