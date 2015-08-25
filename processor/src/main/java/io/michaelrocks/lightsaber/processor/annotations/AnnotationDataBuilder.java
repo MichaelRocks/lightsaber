@@ -19,13 +19,17 @@ package io.michaelrocks.lightsaber.processor.annotations;
 import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@ParametersAreNonnullByDefault
 public class AnnotationDataBuilder {
     private final Type annotationType;
-    private final Map<String, Object> values = new HashMap<>();
+    @Nullable
+    private Map<String, Object> values;
     private boolean isResolved = false;
 
     public AnnotationDataBuilder(final Type annotationType) {
@@ -39,6 +43,9 @@ public class AnnotationDataBuilder {
     public AnnotationDataBuilder addDefaultValue(final String name, final Object defaultValue) {
         Validate.notNull(name);
         Validate.notNull(defaultValue);
+        if (values == null) {
+            values = new HashMap<>();
+        }
         values.put(name, defaultValue);
         return this;
     }
@@ -49,6 +56,8 @@ public class AnnotationDataBuilder {
     }
 
     public AnnotationData build() {
-        return new AnnotationData(annotationType, Collections.unmodifiableMap(values), isResolved);
+        final Map<String, Object> unmodifiableValues =
+                values == null ? Collections.<String, Object>emptyMap() : Collections.unmodifiableMap(values);
+        return new AnnotationData(annotationType, unmodifiableValues, isResolved);
     }
 }
