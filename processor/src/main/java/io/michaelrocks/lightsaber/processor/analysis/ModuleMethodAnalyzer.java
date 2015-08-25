@@ -29,6 +29,9 @@ import io.michaelrocks.lightsaber.processor.signature.MethodSignatureParser;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Type;
 
+import java.util.HashMap;
+import java.util.Map;
+
 class ModuleMethodAnalyzer extends ProcessorMethodVisitor {
     private final ModuleDescriptor.Builder moduleBuilder;
 
@@ -38,6 +41,7 @@ class ModuleMethodAnalyzer extends ProcessorMethodVisitor {
 
     private boolean isProviderMethod;
     private AnnotationDescriptor qualifier;
+    private final Map<Integer, AnnotationDescriptor> parameterQualifiers = new HashMap<>();
     private ScopeDescriptor scope;
 
     public ModuleMethodAnalyzer(final ProcessorContext processorContext, final ModuleDescriptor.Builder moduleBuilder,
@@ -74,6 +78,28 @@ class ModuleMethodAnalyzer extends ProcessorMethodVisitor {
         }
 
         return super.visitAnnotation(desc, visible);
+    }
+
+    @Override
+    public AnnotationVisitor visitParameterAnnotation(final int parameter, final String desc,
+            final boolean visible) {
+        if (isProviderMethod) {
+            final Type annotationType = Type.getType(desc);
+            if (getProcessorContext().isQualifier(annotationType)) {
+                return new AnnotationInstanceParser(annotationType) {
+                    @Override
+                    public void visitEnd() {
+                        final AnnotationDescriptor annotation =
+                                getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
+                        if (parameterQualifiers.put(parameter, annotation) != null) {
+                            reportError("Method parameter " + parameter + " has multiple qualifiers: "
+                                    + moduleBuilder.getModuleType() + "." + methodName + methodDesc);
+                        }
+                    }
+                };
+            }
+        }
+        return null;
     }
 
     @Override
