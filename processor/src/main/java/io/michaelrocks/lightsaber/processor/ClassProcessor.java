@@ -19,9 +19,9 @@ package io.michaelrocks.lightsaber.processor;
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
-import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer;
@@ -85,7 +85,7 @@ public class ClassProcessor {
         final Map<String, ModuleDescriptor.Builder> moduleBuilders = new HashMap<>();
         for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
             final Type providableTargetType = providableTarget.getTargetType();
-            final MethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructor();
+            final QualifiedMethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructor();
 
             final String packageName = FilenameUtils.getPath(providableTargetType.getInternalName());
             ModuleDescriptor.Builder moduleBuilder = moduleBuilders.get(packageName);

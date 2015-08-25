@@ -19,12 +19,12 @@ package io.michaelrocks.lightsaber.processor;
 import io.michaelrocks.lightsaber.SingletonProvider;
 import io.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry;
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
-import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.graph.TypeGraph;
 import org.objectweb.asm.Type;
@@ -197,16 +197,16 @@ public class ProcessorContext {
         }
         for (final InjectionTargetDescriptor injectableTarget : getInjectableTargets()) {
             System.out.println("Injectable: " + injectableTarget.getTargetType());
-            for (final FieldDescriptor injectableField : injectableTarget.getInjectableFields()) {
+            for (final QualifiedFieldDescriptor injectableField : injectableTarget.getInjectableFields()) {
                 System.out.println("\tField: " + injectableField);
             }
-            for (final MethodDescriptor injectableMethod : injectableTarget.getInjectableMethods()) {
+            for (final QualifiedMethodDescriptor injectableMethod : injectableTarget.getInjectableMethods()) {
                 System.out.println("\tMethod: " + injectableMethod);
             }
         }
         for (final InjectionTargetDescriptor providableTarget : getProvidableTargets()) {
             System.out.println("Providable: " + providableTarget.getTargetType());
-            for (final MethodDescriptor injectableConstructor : providableTarget.getInjectableConstructors()) {
+            for (final QualifiedMethodDescriptor injectableConstructor : providableTarget.getInjectableConstructors()) {
                 System.out.println("\tConstructor: " + injectableConstructor);
             }
         }

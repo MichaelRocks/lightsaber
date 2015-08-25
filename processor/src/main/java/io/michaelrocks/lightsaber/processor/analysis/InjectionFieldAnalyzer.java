@@ -23,6 +23,7 @@ import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignatureParser;
 import org.objectweb.asm.AnnotationVisitor;
@@ -79,8 +80,9 @@ class InjectionFieldAnalyzer extends ProcessorFieldVisitor {
             final Type fieldType = Type.getType(fieldDesc);
             final TypeSignature typeSignature =
                     TypeSignatureParser.parseTypeSignature(getProcessorContext(), signature, fieldType);
-            final FieldDescriptor fieldDescriptor = new FieldDescriptor(fieldName, typeSignature);
-            injectionTargetBuilder.addInjectableField(fieldDescriptor, qualifier);
+            final FieldDescriptor field = new FieldDescriptor(fieldName, typeSignature);
+            final QualifiedFieldDescriptor qualifiedField = new QualifiedFieldDescriptor(field, qualifier);
+            injectionTargetBuilder.addInjectableField(qualifiedField);
         }
     }
 }

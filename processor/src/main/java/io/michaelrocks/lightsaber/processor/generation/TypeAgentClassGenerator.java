@@ -21,9 +21,10 @@ import io.michaelrocks.lightsaber.internal.TypeAgent;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
@@ -124,8 +125,8 @@ public class TypeAgentClassGenerator {
         methodVisitor.visitVarInsn(ALOAD, 2);
         methodVisitor.visitTypeInsn(CHECKCAST, injector.getInjectableTarget().getTargetType().getInternalName());
         methodVisitor.visitVarInsn(ASTORE, 3);
-        for (final FieldDescriptor fieldDescriptor : injector.getInjectableTarget().getInjectableFields()) {
-            generateFieldInitializer(methodVisitor, fieldDescriptor);
+        for (final QualifiedFieldDescriptor injectableField : injector.getInjectableTarget().getInjectableFields()) {
+            generateFieldInitializer(methodVisitor, injectableField);
         }
 
         methodVisitor.visitInsn(RETURN);
@@ -133,24 +134,25 @@ public class TypeAgentClassGenerator {
         methodVisitor.visitEnd();
     }
 
-    private void generateFieldInitializer(final MethodVisitor methodVisitor, final FieldDescriptor fieldDescriptor) {
+    private void generateFieldInitializer(final MethodVisitor methodVisitor,
+            final QualifiedFieldDescriptor qualifiedField) {
         methodVisitor.visitVarInsn(ALOAD, 3);
         methodVisitor.visitVarInsn(ALOAD, 1);
 
-        methodVisitor.visitLdcInsn(getDependencyTypeForType(fieldDescriptor.getSignature()));
-        final MethodDescriptor method = getInjectorMethodForType(fieldDescriptor.getSignature());
+        methodVisitor.visitLdcInsn(getDependencyTypeForType(qualifiedField.getSignature()));
+        final MethodDescriptor method = getInjectorMethodForType(qualifiedField.getSignature());
         methodVisitor.visitMethodInsn(
                 INVOKEINTERFACE,
                 Type.getInternalName(Injector.class),
                 method.getName(),
                 method.getDescriptor(),
                 true);
-        GenerationHelper.generateTypeCast(methodVisitor, fieldDescriptor.getSignature());
+        GenerationHelper.generateTypeCast(methodVisitor, qualifiedField.getSignature());
         methodVisitor.visitFieldInsn(
                 PUTFIELD,
                 injector.getInjectableTarget().getTargetType().getInternalName(),
-                fieldDescriptor.getName(),
-                fieldDescriptor.getRawType().getDescriptor());
+                qualifiedField.getName(),
+                qualifiedField.getRawType().getDescriptor());
     }
 
     private void generateInjectMethodsMethod(final ClassWriter classWriter) {
@@ -165,8 +167,8 @@ public class TypeAgentClassGenerator {
         methodVisitor.visitVarInsn(ALOAD, 2);
         methodVisitor.visitTypeInsn(CHECKCAST, injector.getInjectableTarget().getTargetType().getInternalName());
         methodVisitor.visitVarInsn(ASTORE, 3);
-        for (final MethodDescriptor methodDescriptor : injector.getInjectableTarget().getInjectableMethods()) {
-            generateMethodInvocation(methodVisitor, methodDescriptor);
+        for (final QualifiedMethodDescriptor injectableMethod : injector.getInjectableTarget().getInjectableMethods()) {
+            generateMethodInvocation(methodVisitor, injectableMethod);
         }
 
         methodVisitor.visitInsn(RETURN);
@@ -174,10 +176,11 @@ public class TypeAgentClassGenerator {
         methodVisitor.visitEnd();
     }
 
-    private void generateMethodInvocation(final MethodVisitor methodVisitor, final MethodDescriptor methodDescriptor) {
+    private void generateMethodInvocation(final MethodVisitor methodVisitor,
+            final QualifiedMethodDescriptor qualifiedMethod) {
         methodVisitor.visitVarInsn(ALOAD, 3);
 
-        for (final TypeSignature argumentType : methodDescriptor.getArgumentTypes()) {
+        for (final TypeSignature argumentType : qualifiedMethod.getArgumentTypes()) {
             methodVisitor.visitVarInsn(ALOAD, 1);
             methodVisitor.visitLdcInsn(getDependencyTypeForType(argumentType));
             final MethodDescriptor method = getInjectorMethodForType(argumentType);
@@ -192,8 +195,8 @@ public class TypeAgentClassGenerator {
         methodVisitor.visitMethodInsn(
                 INVOKEVIRTUAL,
                 injector.getInjectableTarget().getTargetType().getInternalName(),
-                methodDescriptor.getName(),
-                methodDescriptor.getDescriptor(),
+                qualifiedMethod.getName(),
+                qualifiedMethod.getDescriptor(),
                 false);
     }
 

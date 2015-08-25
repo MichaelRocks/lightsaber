@@ -23,6 +23,7 @@ import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.MethodSignature;
 import io.michaelrocks.lightsaber.processor.signature.MethodSignatureParser;
 import org.objectweb.asm.AnnotationVisitor;
@@ -88,11 +89,13 @@ class InjectionMethodAnalyzer extends ProcessorMethodVisitor {
             final Type methodType = Type.getMethodType(methodDesc);
             final MethodSignature methodSignature =
                     MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
-            final MethodDescriptor methodDescriptor = new MethodDescriptor(methodName, methodSignature);
+            final MethodDescriptor method = new MethodDescriptor(methodName, methodSignature);
+            final QualifiedMethodDescriptor qualifiedMethod =
+                    QualifiedMethodDescriptor.from(method, parameterQualifiers);
             if (MethodDescriptor.isConstructor(methodName)) {
-                injectionTargetBuilder.addInjectableConstructor(methodDescriptor, parameterQualifiers);
+                injectionTargetBuilder.addInjectableConstructor(qualifiedMethod);
             } else {
-                injectionTargetBuilder.addInjectableMethod(methodDescriptor, parameterQualifiers);
+                injectionTargetBuilder.addInjectableMethod(qualifiedMethod);
             }
         }
     }
