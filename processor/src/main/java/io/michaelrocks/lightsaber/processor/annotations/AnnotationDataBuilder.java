@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber.processor.annotations;
 import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,6 +49,6 @@ public class AnnotationDataBuilder {
     }
 
     public AnnotationData build() {
-        return new AnnotationData(annotationType, values, isResolved);
+        return new AnnotationData(annotationType, Collections.unmodifiableMap(values), isResolved);
     }
 }
