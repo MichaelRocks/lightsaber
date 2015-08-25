@@ -23,10 +23,10 @@ import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.Types;
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -99,7 +99,7 @@ public class ModulePatcher extends ProcessorClassVisitor {
         methodVisitor.visitTypeInsn(NEW, provider.getProviderType().getInternalName());
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ALOAD, 0);
-        final FieldDescriptor fieldDescriptor = provider.getProviderField();
+        final QualifiedFieldDescriptor fieldDescriptor = provider.getProviderField();
         methodVisitor.visitFieldInsn(
                 GETFIELD,
                 module.getModuleType().getInternalName(),

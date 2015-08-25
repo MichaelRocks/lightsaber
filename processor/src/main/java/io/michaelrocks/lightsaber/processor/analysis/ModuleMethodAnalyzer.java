@@ -23,6 +23,7 @@ import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.MethodSignature;
 import io.michaelrocks.lightsaber.processor.signature.MethodSignatureParser;
@@ -40,7 +41,7 @@ class ModuleMethodAnalyzer extends ProcessorMethodVisitor {
     private final String signature;
 
     private boolean isProviderMethod;
-    private AnnotationDescriptor qualifier;
+    private AnnotationDescriptor resultQualifier;
     private final Map<Integer, AnnotationDescriptor> parameterQualifiers = new HashMap<>();
     private ScopeDescriptor scope;
 
@@ -59,11 +60,11 @@ class ModuleMethodAnalyzer extends ProcessorMethodVisitor {
         if (Types.PROVIDES_TYPE.equals(annotationType)) {
             isProviderMethod = true;
         } else if (getProcessorContext().isQualifier(annotationType)) {
-            if (qualifier == null) {
+            if (resultQualifier == null) {
                 return new AnnotationInstanceParser(annotationType) {
                     @Override
                     public void visitEnd() {
-                        qualifier = getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
+                        resultQualifier = getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
                     }
                 };
             } else {
@@ -109,7 +110,9 @@ class ModuleMethodAnalyzer extends ProcessorMethodVisitor {
             final MethodSignature methodSignature =
                     MethodSignatureParser.parseMethodSignature(getProcessorContext(), signature, methodType);
             final MethodDescriptor providerMethod = new MethodDescriptor(methodName, methodSignature);
-            moduleBuilder.addProviderMethod(providerMethod, scope, qualifier);
+            final QualifiedMethodDescriptor qualifiedProviderMethod =
+                    QualifiedMethodDescriptor.from(providerMethod, parameterQualifiers, resultQualifier);
+            moduleBuilder.addProviderMethod(qualifiedProviderMethod, scope);
         }
         super.visitEnd();
     }

@@ -23,6 +23,7 @@ import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Type;
 
@@ -69,7 +70,9 @@ class ModuleFieldAnalyzer extends ProcessorFieldVisitor {
     public void visitEnd() {
         if (isProviderField) {
             final FieldDescriptor providerField = new FieldDescriptor(fieldName, fieldDesc);
-            moduleBuilder.addProviderField(providerField, qualifier);
+            final QualifiedFieldDescriptor qualifiedProviderField =
+                    new QualifiedFieldDescriptor(providerField, qualifier);
+            moduleBuilder.addProviderField(qualifiedProviderField);
         }
         super.visitEnd();
     }

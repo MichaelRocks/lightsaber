@@ -27,24 +27,24 @@ import java.util.List;
 public class ProviderDescriptor {
     private final Type providerType;
     private final QualifiedType providableType;
-    private final FieldDescriptor providerField;
-    private final MethodDescriptor providerMethod;
+    private final QualifiedFieldDescriptor providerField;
+    private final QualifiedMethodDescriptor providerMethod;
     private final Type moduleType;
     private final Type delegatorType;
 
     public ProviderDescriptor(final Type providerType, final QualifiedType providableType,
-            final FieldDescriptor providerField, final Type moduleType) {
+            final QualifiedFieldDescriptor providerField, final Type moduleType) {
         this(providerType, providableType, providerField, null, moduleType, null);
     }
 
     public ProviderDescriptor(final Type providerType, final QualifiedType providableType,
-            final MethodDescriptor providerMethod, final Type moduleType, final Type delegatorType) {
+            final QualifiedMethodDescriptor providerMethod, final Type moduleType, final Type delegatorType) {
         this(providerType, providableType, null, providerMethod, moduleType, delegatorType);
     }
 
     private ProviderDescriptor(final Type providerType, final QualifiedType providableType,
-            final FieldDescriptor providerField, final MethodDescriptor providerMethod, final Type moduleType,
-            final Type delegatorType) {
+            final QualifiedFieldDescriptor providerField, final QualifiedMethodDescriptor providerMethod,
+            final Type moduleType, final Type delegatorType) {
         this.providerType = providerType;
         this.providableType = providableType;
         this.providerField = providerField;
@@ -69,11 +69,11 @@ public class ProviderDescriptor {
         return providableType.getType();
     }
 
-    public FieldDescriptor getProviderField() {
+    public QualifiedFieldDescriptor getProviderField() {
         return providerField;
     }
 
-    public MethodDescriptor getProviderMethod() {
+    public QualifiedMethodDescriptor getProviderMethod() {
         return providerMethod;
     }
 

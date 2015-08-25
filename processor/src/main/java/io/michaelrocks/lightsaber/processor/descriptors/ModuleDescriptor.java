@@ -17,7 +17,6 @@
 package io.michaelrocks.lightsaber.processor.descriptors;
 
 import io.michaelrocks.lightsaber.InstanceProvider;
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
 import org.objectweb.asm.Type;
 
 import java.util.ArrayList;
@@ -54,21 +53,21 @@ public class ModuleDescriptor {
             return moduleType;
         }
 
-        public Builder addProviderField(final FieldDescriptor providerField, final AnnotationDescriptor qualifier) {
+        public Builder addProviderField(final QualifiedFieldDescriptor providerField) {
             final Type providerType = Type.getType(InstanceProvider.class);
-            final QualifiedType providableType = new QualifiedType(providerField.getRawType(), qualifier);
+            final QualifiedType providableType =
+                    new QualifiedType(providerField.getRawType(), providerField.getQualifier());
             final ProviderDescriptor provider =
                     new ProviderDescriptor(providerType, providableType, providerField, moduleType);
             return addProvider(provider);
         }
 
-        public Builder addProviderMethod(final MethodDescriptor providerMethod, final ScopeDescriptor scope,
-                final AnnotationDescriptor qualifier) {
+        public Builder addProviderMethod(final QualifiedMethodDescriptor providerMethod, final ScopeDescriptor scope) {
             providerIndex += 1;
             final Type providerType =
                     Type.getObjectType(moduleType.getInternalName() + "$$Provider$$" + providerIndex);
             final QualifiedType providableType =
-                    new QualifiedType(providerMethod.getReturnType().getRawType(), qualifier);
+                    new QualifiedType(providerMethod.getReturnType().getRawType(), providerMethod.getResultQualifier());
             final Type delegatorType = scope != null ? scope.getProviderType() : null;
             final ProviderDescriptor provider =
                     new ProviderDescriptor(providerType, providableType, providerMethod, moduleType, delegatorType);
