@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -25,9 +25,9 @@ import org.objectweb.asm.Type;
 
 public class QualifiedFieldDescriptor {
     private final FieldDescriptor field;
-    private final AnnotationDescriptor qualifier;
+    private final AnnotationData qualifier;
 
-    public QualifiedFieldDescriptor(final FieldDescriptor field, final AnnotationDescriptor qualifier) {
+    public QualifiedFieldDescriptor(final FieldDescriptor field, final AnnotationData qualifier) {
         this.field = field;
         this.qualifier = qualifier;
     }
@@ -36,7 +36,7 @@ public class QualifiedFieldDescriptor {
         return field;
     }
 
-    public AnnotationDescriptor getQualifier() {
+    public AnnotationData getQualifier() {
         return qualifier;
     }
 

@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.analysis;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.ProcessorFieldVisitor;
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
@@ -37,7 +37,7 @@ class InjectionFieldAnalyzer extends ProcessorFieldVisitor {
     private final String signature;
 
     private boolean isInjectableField;
-    private AnnotationDescriptor qualifier;
+    private AnnotationData qualifier;
 
     public InjectionFieldAnalyzer(final ProcessorContext processorContext,
             final InjectionTargetDescriptor.Builder injectionTargetBuilder,
@@ -58,7 +58,7 @@ class InjectionFieldAnalyzer extends ProcessorFieldVisitor {
             return new AnnotationInstanceParser(annotationType) {
                 @Override
                 public void visitEnd() {
-                    final AnnotationDescriptor annotation =
+                    final AnnotationData annotation =
                             getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
                     if (qualifier == null) {
                         qualifier = annotation;

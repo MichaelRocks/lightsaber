@@ -19,13 +19,13 @@ package io.michaelrocks.lightsaber.processor.annotations;
 import org.objectweb.asm.Type;
 
 public class AnnotationInstanceParser extends AbstractAnnotationParser {
-    private final AnnotationDescriptorBuilder annotationBuilder;
+    private final AnnotationDataBuilder annotationBuilder;
 
     public AnnotationInstanceParser(final Type annotationType) {
-        this.annotationBuilder = new AnnotationDescriptorBuilder(annotationType);
+        this.annotationBuilder = new AnnotationDataBuilder(annotationType);
     }
 
-    public AnnotationDescriptor toAnnotation() {
+    public AnnotationData toAnnotation() {
         return annotationBuilder.build();
     }
 

@@ -39,7 +39,7 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testAddResolvedEmptyDefaults() throws Exception {
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createResolvedAnnotation("ResolvedEmptyAnnotation");
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(annotationDefaults);
@@ -49,7 +49,7 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testAddUnresolvedEmptyDefaults() throws Exception {
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createAnnotation("UnresolvedEmptyAnnotation");
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(annotationDefaults);
@@ -59,11 +59,11 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveEmptyAnnotationWithResolvedEmptyDefaults() throws Exception {
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createResolvedAnnotation("ResolvedEmptyAnnotation");
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor resolvedAnnotation = registry.resolveAnnotation(annotationDefaults);
+        final AnnotationData resolvedAnnotation = registry.resolveAnnotation(annotationDefaults);
         assertTrue(annotationDefaults == resolvedAnnotation);
         assertTrue(registry.hasResolvedDefaults(annotationDefaults.getType()));
         assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.getType()));
@@ -71,11 +71,11 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveEmptyAnnotationWithUnresolvedEmptyDefaults() throws Exception {
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createAnnotation("UnresolvedEmptyAnnotation");
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor resolvedAnnotation = registry.resolveAnnotation(annotationDefaults);
+        final AnnotationData resolvedAnnotation = registry.resolveAnnotation(annotationDefaults);
         assertTrue(annotationDefaults != resolvedAnnotation);
         assertEquals(annotationDefaults, resolvedAnnotation);
         assertTrue(registry.hasResolvedDefaults(annotationDefaults.getType()));
@@ -84,11 +84,11 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveEmptyAnnotationWithResolvedSimpleDefaults() throws Exception {
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createResolvedAnnotation("ResolvedSimpleAnnotation", "DefaultValue");
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor resolvedAnnotation =
+        final AnnotationData resolvedAnnotation =
                 registry.resolveAnnotation(AnnotationHelper.createAnnotation("ResolvedSimpleAnnotation"));
         assertEquals(annotationDefaults, resolvedAnnotation);
         assertTrue(registry.hasResolvedDefaults(annotationDefaults.getType()));
@@ -97,11 +97,11 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveEmptyAnnotationWithUnresolvedSimpleDefaults() throws Exception {
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createAnnotation("UnresolvedSimpleAnnotation", "DefaultValue");
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor resolvedAnnotation =
+        final AnnotationData resolvedAnnotation =
                 registry.resolveAnnotation(AnnotationHelper.createAnnotation("UnresolvedSimpleAnnotation"));
         assertEquals(annotationDefaults, resolvedAnnotation);
         assertTrue(registry.hasResolvedDefaults(annotationDefaults.getType()));
@@ -110,44 +110,44 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveAnnotationWithOverriddenField() throws Exception {
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createResolvedAnnotation("OverriddenFieldAnnotation", "DefaultValue");
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor unresolvedAnnotation =
+        final AnnotationData unresolvedAnnotation =
                 AnnotationHelper.createAnnotation("OverriddenFieldAnnotation", "DefaultValue");
-        final AnnotationDescriptor resolvedAnnotation = registry.resolveAnnotation(unresolvedAnnotation);
-        final AnnotationDescriptor expectedAnnotation =
+        final AnnotationData resolvedAnnotation = registry.resolveAnnotation(unresolvedAnnotation);
+        final AnnotationData expectedAnnotation =
                 AnnotationHelper.createResolvedAnnotation("OverriddenFieldAnnotation", "DefaultValue");
         assertEquals(expectedAnnotation, resolvedAnnotation);
     }
 
     @Test
     public void testResolveAnnotationWithExtraField() throws Exception {
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createResolvedAnnotation("ExtraFieldAnnotation", "DefaultValue");
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor unresolvedAnnotation =
+        final AnnotationData unresolvedAnnotation =
                 AnnotationHelper.createAnnotation("ExtraFieldAnnotation", "extraValue", "ExtraValue");
-        final AnnotationDescriptor resolvedAnnotation = registry.resolveAnnotation(unresolvedAnnotation);
+        final AnnotationData resolvedAnnotation = registry.resolveAnnotation(unresolvedAnnotation);
         final Map<String, Object> expectedValues = new HashMap<>();
         expectedValues.put("value", "DefaultValue");
         expectedValues.put("extraValue", "ExtraValue");
-        final AnnotationDescriptor expectedAnnotation =
+        final AnnotationData expectedAnnotation =
                 AnnotationHelper.createResolvedAnnotation("ExtraFieldAnnotation", expectedValues);
         assertEquals(expectedAnnotation, resolvedAnnotation);
     }
 
     @Test
     public void testResolveResolvedAnnotationWithEmptyInnerResolvedAnnotation() throws Exception {
-        final AnnotationDescriptor innerAnnotation = AnnotationHelper.createResolvedAnnotation("InnerAnnotation");
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData innerAnnotation = AnnotationHelper.createResolvedAnnotation("InnerAnnotation");
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createResolvedAnnotation("OuterAnnotation", innerAnnotation);
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(innerAnnotation);
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor resolvedAnnotation =
+        final AnnotationData resolvedAnnotation =
                 registry.resolveAnnotation(AnnotationHelper.createAnnotation("OuterAnnotation"));
         assertEquals(annotationDefaults, resolvedAnnotation);
         assertTrue(registry.hasResolvedDefaults(annotationDefaults.getType()));
@@ -158,15 +158,15 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveUnresolvedAnnotationWithEmptyInnerResolvedAnnotation() throws Exception {
-        final AnnotationDescriptor innerAnnotation = AnnotationHelper.createResolvedAnnotation("InnerAnnotation");
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData innerAnnotation = AnnotationHelper.createResolvedAnnotation("InnerAnnotation");
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createAnnotation("OuterAnnotation", innerAnnotation);
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(innerAnnotation);
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor resolvedAnnotation =
+        final AnnotationData resolvedAnnotation =
                 registry.resolveAnnotation(AnnotationHelper.createAnnotation("OuterAnnotation"));
-        final AnnotationDescriptor expectedAnnotation =
+        final AnnotationData expectedAnnotation =
                 AnnotationHelper.createResolvedAnnotation("OuterAnnotation", innerAnnotation);
         assertEquals(expectedAnnotation, resolvedAnnotation);
         assertTrue(registry.hasResolvedDefaults(annotationDefaults.getType()));
@@ -177,17 +177,17 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveUnresolvedAnnotationWithEmptyInnerUnresolvedAnnotation() throws Exception {
-        final AnnotationDescriptor innerAnnotation = AnnotationHelper.createAnnotation("InnerAnnotation");
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData innerAnnotation = AnnotationHelper.createAnnotation("InnerAnnotation");
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createAnnotation("OuterAnnotation", innerAnnotation);
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(innerAnnotation);
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor resolvedAnnotation =
+        final AnnotationData resolvedAnnotation =
                 registry.resolveAnnotation(AnnotationHelper.createAnnotation("OuterAnnotation"));
-        final AnnotationDescriptor resolvedInnerAnnotation =
+        final AnnotationData resolvedInnerAnnotation =
                 AnnotationHelper.createResolvedAnnotation("InnerAnnotation");
-        final AnnotationDescriptor expectedAnnotation =
+        final AnnotationData expectedAnnotation =
                 AnnotationHelper.createResolvedAnnotation("OuterAnnotation", resolvedInnerAnnotation);
         assertEquals(expectedAnnotation, resolvedAnnotation);
         assertTrue(registry.hasResolvedDefaults(annotationDefaults.getType()));
@@ -198,12 +198,12 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveUnresolvedAnnotationWithInnerUnresolvableAnnotation() throws Exception {
-        final AnnotationDescriptor unresolvableAnnotation = AnnotationHelper.createAnnotation("UnresolvableAnnotation");
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData unresolvableAnnotation = AnnotationHelper.createAnnotation("UnresolvableAnnotation");
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createAnnotation("OuterAnnotation", unresolvableAnnotation);
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor resolvedAnnotation =
+        final AnnotationData resolvedAnnotation =
                 registry.resolveAnnotation(AnnotationHelper.createAnnotation("OuterAnnotation"));
         assertEquals(annotationDefaults, resolvedAnnotation);
         assertTrue(registry.hasResolvedDefaults(annotationDefaults.getType()));
@@ -214,15 +214,15 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveUnresolvedAnnotationWithNestedInnerUnresolvableAnnotation() throws Exception {
-        final AnnotationDescriptor unresolvableAnnotation = AnnotationHelper.createAnnotation("UnresolvableAnnotation");
-        final AnnotationDescriptor innerAnnotation =
+        final AnnotationData unresolvableAnnotation = AnnotationHelper.createAnnotation("UnresolvableAnnotation");
+        final AnnotationData innerAnnotation =
                 AnnotationHelper.createAnnotation("InnerAnnotation", unresolvableAnnotation);
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createAnnotation("OuterAnnotation", innerAnnotation);
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(innerAnnotation);
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor resolvedAnnotation =
+        final AnnotationData resolvedAnnotation =
                 registry.resolveAnnotation(AnnotationHelper.createAnnotation("OuterAnnotation"));
         assertEquals(annotationDefaults, resolvedAnnotation);
         assertTrue(registry.hasResolvedDefaults(annotationDefaults.getType()));
@@ -235,39 +235,39 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveUnresolvedAnnotationWithNestedInnerAnnotation() throws Exception {
-        final AnnotationDescriptor innerInnerAnnotation =
+        final AnnotationData innerInnerAnnotation =
                 AnnotationHelper.createAnnotation("InnerInnerAnnotation", "InnerInnerDefaultValue");
-        final AnnotationDescriptor innerAnnotation =
+        final AnnotationData innerAnnotation =
                 AnnotationHelper.createAnnotation("InnerAnnotation", innerInnerAnnotation);
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createAnnotation("OuterAnnotation", innerAnnotation);
         final AnnotationRegistry registry = new AnnotationRegistry();
         registry.addAnnotationDefaults(innerInnerAnnotation);
         registry.addAnnotationDefaults(innerAnnotation);
         registry.addAnnotationDefaults(annotationDefaults);
 
-        final AnnotationDescriptor unresolvedInnerInnerAnnotation =
+        final AnnotationData unresolvedInnerInnerAnnotation =
                 AnnotationHelper.createAnnotation("InnerInnerAnnotation",
                         "innerInnerStringValue", "InnerInnerStringValue");
-        final AnnotationDescriptor unresolvedInnerAnnotation =
+        final AnnotationData unresolvedInnerAnnotation =
                 AnnotationHelper.createAnnotation("InnerAnnotation",
                         Pair.of("value", unresolvedInnerInnerAnnotation),
                         Pair.of("innerStringValue", "InnerStringValue"));
-        final AnnotationDescriptor unresolvedAnnotation =
+        final AnnotationData unresolvedAnnotation =
                 AnnotationHelper.createAnnotation("OuterAnnotation",
                         Pair.of("value", unresolvedInnerAnnotation),
                         Pair.of("outerStringValue", "OuterStringValue"));
-        final AnnotationDescriptor resolvedAnnotation = registry.resolveAnnotation(unresolvedAnnotation);
+        final AnnotationData resolvedAnnotation = registry.resolveAnnotation(unresolvedAnnotation);
 
-        final AnnotationDescriptor expectedInnerInnerAnnotation =
+        final AnnotationData expectedInnerInnerAnnotation =
                 AnnotationHelper.createAnnotation("InnerInnerAnnotation",
                         Pair.of("value", "InnerInnerDefaultValue"),
                         Pair.of("innerInnerStringValue", "InnerInnerStringValue"));
-        final AnnotationDescriptor expectedInnerAnnotation =
+        final AnnotationData expectedInnerAnnotation =
                 AnnotationHelper.createAnnotation("InnerAnnotation",
                         Pair.of("value", expectedInnerInnerAnnotation),
                         Pair.of("innerStringValue", "InnerStringValue"));
-        final AnnotationDescriptor expectedAnnotation =
+        final AnnotationData expectedAnnotation =
                 AnnotationHelper.createAnnotation("OuterAnnotation",
                         Pair.of("value", expectedInnerAnnotation),
                         Pair.of("outerStringValue", "OuterStringValue"));
@@ -282,26 +282,26 @@ public class AnnotationRegistryTest {
 
     @Test
     public void testResolveUnresolvedAnnotationWithNestedUnresolvedAnnotationArray() throws Exception {
-        final AnnotationDescriptor innerAnnotation =
+        final AnnotationData innerAnnotation =
                 AnnotationHelper.createAnnotation("InnerAnnotation", "DefaultValue");
-        final List<AnnotationDescriptor> innerAnnotations = Arrays.asList(
+        final List<AnnotationData> innerAnnotations = Arrays.asList(
                 AnnotationHelper.createAnnotation("InnerAnnotation", "ExplicitValue"),
                 AnnotationHelper.createAnnotation("InnerAnnotation", "stringValue", "StringValue"));
-        final AnnotationDescriptor annotationDefaults =
+        final AnnotationData annotationDefaults =
                 AnnotationHelper.createAnnotation("OuterAnnotation", innerAnnotations);
         final AnnotationRegistry registry = new AnnotationRegistry();
 
         registry.addAnnotationDefaults(innerAnnotation);
         registry.addAnnotationDefaults(annotationDefaults);
-        final AnnotationDescriptor resolvedAnnotation =
+        final AnnotationData resolvedAnnotation =
                 registry.resolveAnnotation(AnnotationHelper.createAnnotation("OuterAnnotation"));
 
-        final List<AnnotationDescriptor> expectedInnerAnnotations = Arrays.asList(
+        final List<AnnotationData> expectedInnerAnnotations = Arrays.asList(
                 AnnotationHelper.createResolvedAnnotation("InnerAnnotation", "ExplicitValue"),
                 AnnotationHelper.createResolvedAnnotation("InnerAnnotation",
                         Pair.of("stringValue", "StringValue"),
                         Pair.of("value", "DefaultValue")));
-        final AnnotationDescriptor expectedAnnotation =
+        final AnnotationData expectedAnnotation =
                 AnnotationHelper.createResolvedAnnotation("OuterAnnotation", expectedInnerAnnotations);
 
         assertEquals(expectedAnnotation, resolvedAnnotation);

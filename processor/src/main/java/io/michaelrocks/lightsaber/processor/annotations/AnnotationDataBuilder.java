@@ -22,32 +22,32 @@ import org.objectweb.asm.Type;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AnnotationDescriptorBuilder {
+public class AnnotationDataBuilder {
     private final Type annotationType;
     private final Map<String, Object> values = new HashMap<>();
     private boolean isResolved = false;
 
-    public AnnotationDescriptorBuilder(final Type annotationType) {
+    public AnnotationDataBuilder(final Type annotationType) {
         this.annotationType = annotationType;
     }
 
-    public AnnotationDescriptorBuilder addDefaultValue(final Object defaultValue) {
+    public AnnotationDataBuilder addDefaultValue(final Object defaultValue) {
         return addDefaultValue("value", defaultValue);
     }
 
-    public AnnotationDescriptorBuilder addDefaultValue(final String name, final Object defaultValue) {
+    public AnnotationDataBuilder addDefaultValue(final String name, final Object defaultValue) {
         Validate.notNull(name);
         Validate.notNull(defaultValue);
         values.put(name, defaultValue);
         return this;
     }
 
-    public AnnotationDescriptorBuilder setResolved(final boolean resolved) {
+    public AnnotationDataBuilder setResolved(final boolean resolved) {
         isResolved = resolved;
         return this;
     }
 
-    public AnnotationDescriptor build() {
-        return new AnnotationDescriptor(annotationType, values, isResolved);
+    public AnnotationData build() {
+        return new AnnotationData(annotationType, values, isResolved);
     }
 }

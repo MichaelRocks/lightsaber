@@ -77,15 +77,15 @@ public class AnnotationClassGenerator {
         if (defaultValue instanceof EnumValueDescriptor) {
             final EnumValueDescriptor enumValue = (EnumValueDescriptor) defaultValue;
             annotationVisitor.visitEnum(name, enumValue.getType().getDescriptor(), enumValue.getValue());
-        } else if (defaultValue instanceof AnnotationDescriptor) {
-            final AnnotationDescriptor annotation = (AnnotationDescriptor) defaultValue;
+        } else if (defaultValue instanceof AnnotationData) {
+            final AnnotationData annotation = (AnnotationData) defaultValue;
             final AnnotationVisitor innerAnnotationVisitor =
                     annotationVisitor.visitAnnotation(name, annotation.getType().getDescriptor());
             for (final Map.Entry<String, Object> entry : annotation.getValues().entrySet()) {
                 addValue(innerAnnotationVisitor, entry.getKey(), entry.getValue());
             }
             innerAnnotationVisitor.visitEnd();
-        } else if (defaultValue instanceof EnumValueDescriptor[] || defaultValue instanceof AnnotationDescriptor[]) {
+        } else if (defaultValue instanceof EnumValueDescriptor[] || defaultValue instanceof AnnotationData[]) {
             final AnnotationVisitor innerAnnotationVisitor = annotationVisitor.visitArray(name);
             for (int i = 0, length = Array.getLength(defaultValue); i < length; ++i) {
                 addValue(innerAnnotationVisitor, null, Array.get(defaultValue, i));

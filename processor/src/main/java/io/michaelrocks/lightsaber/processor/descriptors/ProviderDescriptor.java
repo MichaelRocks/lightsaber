@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.objectweb.asm.Type;
 
@@ -61,7 +61,7 @@ public class ProviderDescriptor {
         return providableType;
     }
 
-    public AnnotationDescriptor getQualifier() {
+    public AnnotationData getQualifier() {
         return providableType.getQualifier();
     }
 

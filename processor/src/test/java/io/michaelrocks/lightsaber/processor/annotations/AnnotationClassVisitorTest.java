@@ -32,7 +32,7 @@ public class AnnotationClassVisitorTest {
         AnnotationClassGenerator
                 .create(visitor, annotationType)
                 .generate();
-        final AnnotationDescriptor actualAnnotation = visitor.toAnnotation();
+        final AnnotationData actualAnnotation = visitor.toAnnotation();
         assertEquals(annotationType, actualAnnotation.getType());
         assertTrue(actualAnnotation.getValues().isEmpty());
         assertFalse(actualAnnotation.isResolved());
@@ -46,7 +46,7 @@ public class AnnotationClassVisitorTest {
                 .create(visitor, annotationType)
                 .addMethod("explicitValue", Type.getType(String.class))
                 .generate();
-        final AnnotationDescriptor actualAnnotation = visitor.toAnnotation();
+        final AnnotationData actualAnnotation = visitor.toAnnotation();
         assertEquals(annotationType, actualAnnotation.getType());
         assertTrue(actualAnnotation.getValues().isEmpty());
         assertFalse(actualAnnotation.isResolved());
@@ -60,7 +60,7 @@ public class AnnotationClassVisitorTest {
                 .create(visitor, annotationType)
                 .addMethod("implicitValue", Type.getType(String.class), "defaultImplicitValue")
                 .generate();
-        final AnnotationDescriptor actualAnnotation = visitor.toAnnotation();
+        final AnnotationData actualAnnotation = visitor.toAnnotation();
         assertEquals(annotationType, actualAnnotation.getType());
         assertEquals("defaultImplicitValue", actualAnnotation.getValues().get("implicitValue"));
         assertEquals(1, actualAnnotation.getValues().size());
@@ -76,7 +76,7 @@ public class AnnotationClassVisitorTest {
                 .addMethod("explicitValue", Type.getType(String.class))
                 .addMethod("implicitValue", Type.getType(String.class), "defaultImplicitValue")
                 .generate();
-        final AnnotationDescriptor actualAnnotation = visitor.toAnnotation();
+        final AnnotationData actualAnnotation = visitor.toAnnotation();
         assertEquals(annotationType, actualAnnotation.getType());
         assertEquals("defaultImplicitValue", actualAnnotation.getValues().get("implicitValue"));
         assertEquals(1, actualAnnotation.getValues().size());
@@ -99,7 +99,7 @@ public class AnnotationClassVisitorTest {
                 .addMethod("shortValue", Type.SHORT_TYPE, (short) 42)
                 .addMethod("stringValue", Type.getType(String.class), "x")
                 .generate();
-        final AnnotationDescriptor actualAnnotation = visitor.toAnnotation();
+        final AnnotationData actualAnnotation = visitor.toAnnotation();
         assertEquals(annotationType, actualAnnotation.getType());
         assertEquals(true, actualAnnotation.getValues().get("booleanValue"));
         assertEquals((byte) 42, actualAnnotation.getValues().get("byteValue"));
@@ -130,7 +130,7 @@ public class AnnotationClassVisitorTest {
                 .addMethod("shortArrayValue", Type.getType(short[].class), new short[] { 42, 43, 44 })
                 .addMethod("stringArrayValue", Type.getType(String[].class), new String[] { "x", "y", "z" })
                 .generate();
-        final AnnotationDescriptor actualAnnotation = visitor.toAnnotation();
+        final AnnotationData actualAnnotation = visitor.toAnnotation();
         assertEquals(annotationType, actualAnnotation.getType());
         assertArrayEquals(new boolean[] { true, false, true },
                 (boolean[]) actualAnnotation.getValues().get("booleanArrayValue"));
@@ -163,7 +163,7 @@ public class AnnotationClassVisitorTest {
         AnnotationClassGenerator.create(visitor, annotationType)
                 .addMethod("enumValue", enumType, enumValue)
                 .generate();
-        final AnnotationDescriptor actualAnnotation = visitor.toAnnotation();
+        final AnnotationData actualAnnotation = visitor.toAnnotation();
         assertEquals(annotationType, actualAnnotation.getType());
         assertEquals(enumValue, actualAnnotation.getValues().get("enumValue"));
         assertEquals(1, actualAnnotation.getValues().size());
@@ -184,7 +184,7 @@ public class AnnotationClassVisitorTest {
         AnnotationClassGenerator.create(visitor, annotationType)
                 .addMethod("enumArrayValue", enumArrayType, enumValues)
                 .generate();
-        final AnnotationDescriptor actualAnnotation = visitor.toAnnotation();
+        final AnnotationData actualAnnotation = visitor.toAnnotation();
         assertEquals(annotationType, actualAnnotation.getType());
         assertEquals(Arrays.asList(enumValues), actualAnnotation.getValues().get("enumArrayValue"));
         assertEquals(1, actualAnnotation.getValues().size());
@@ -193,13 +193,13 @@ public class AnnotationClassVisitorTest {
 
     @Test
     public void testNestedAnnotationAnnotation() throws Exception {
-        final AnnotationDescriptor nestedAnnotation = AnnotationHelper.createAnnotation("NestedAnnotation", "Nested");
+        final AnnotationData nestedAnnotation = AnnotationHelper.createAnnotation("NestedAnnotation", "Nested");
         final AnnotationClassVisitor visitor = new AnnotationClassVisitor();
         final Type annotationType = Type.getObjectType("NestedAnnotationAnnotation");
         AnnotationClassGenerator.create(visitor, annotationType)
                 .addMethod("annotationValue", nestedAnnotation.getType(), nestedAnnotation)
                 .generate();
-        final AnnotationDescriptor actualAnnotation = visitor.toAnnotation();
+        final AnnotationData actualAnnotation = visitor.toAnnotation();
         assertEquals(annotationType, actualAnnotation.getType());
         assertEquals(nestedAnnotation, actualAnnotation.getValues().get("annotationValue"));
         assertEquals(1, actualAnnotation.getValues().size());
@@ -208,7 +208,7 @@ public class AnnotationClassVisitorTest {
 
     @Test
     public void testNestedAnnotationArrayAnnotation() throws Exception {
-        final AnnotationDescriptor[] nestedAnnotations = new AnnotationDescriptor[] {
+        final AnnotationData[] nestedAnnotations = new AnnotationData[] {
                 AnnotationHelper.createAnnotation("NestedAnnotation", "Nested1"),
                 AnnotationHelper.createAnnotation("NestedAnnotation", "Nested2"),
                 AnnotationHelper.createAnnotation("NestedAnnotation", "Nested3")
@@ -219,7 +219,7 @@ public class AnnotationClassVisitorTest {
         AnnotationClassGenerator.create(visitor, annotationType)
                 .addMethod("annotationArrayValue", annotationArrayType, nestedAnnotations)
                 .generate();
-        final AnnotationDescriptor actualAnnotation = visitor.toAnnotation();
+        final AnnotationData actualAnnotation = visitor.toAnnotation();
         assertEquals(annotationType, actualAnnotation.getType());
         assertEquals(Arrays.asList(nestedAnnotations), actualAnnotation.getValues().get("annotationArrayValue"));
         assertEquals(1, actualAnnotation.getValues().size());

@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.signature.MethodSignature;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.apache.commons.lang3.builder.EqualsBuilder;
@@ -31,32 +31,32 @@ import java.util.Map;
 
 public class QualifiedMethodDescriptor {
     private final MethodDescriptor method;
-    private final List<AnnotationDescriptor> parameterQualifiers;
-    private final AnnotationDescriptor resultQualifier;
+    private final List<AnnotationData> parameterQualifiers;
+    private final AnnotationData resultQualifier;
 
     private QualifiedMethodDescriptor(final MethodDescriptor method,
-            final List<AnnotationDescriptor> parameterQualifiers, final AnnotationDescriptor resultQualifier) {
+            final List<AnnotationData> parameterQualifiers, final AnnotationData resultQualifier) {
         this.method = method;
         this.parameterQualifiers = parameterQualifiers;
         this.resultQualifier = resultQualifier;
     }
 
     public static QualifiedMethodDescriptor from(final MethodDescriptor method,
-            final Map<Integer, AnnotationDescriptor> parameterQualifiers) {
+            final Map<Integer, AnnotationData> parameterQualifiers) {
         return QualifiedMethodDescriptor.from(method, parameterQualifiers, null);
     }
 
     public static QualifiedMethodDescriptor from(final MethodDescriptor method,
-            final Map<Integer, AnnotationDescriptor> parameterQualifiers, final AnnotationDescriptor resultQualifier) {
+            final Map<Integer, AnnotationData> parameterQualifiers, final AnnotationData resultQualifier) {
         final int parameterCount = method.getArgumentTypes().size();
         return new QualifiedMethodDescriptor(method, toQualifierList(parameterQualifiers, parameterCount),
                 resultQualifier
         );
     }
 
-    private static List<AnnotationDescriptor> toQualifierList(
-            final Map<Integer, AnnotationDescriptor> parameterQualifiers, final int parameterCount) {
-        final List<AnnotationDescriptor> qualifiers = new ArrayList<>(parameterCount);
+    private static List<AnnotationData> toQualifierList(
+            final Map<Integer, AnnotationData> parameterQualifiers, final int parameterCount) {
+        final List<AnnotationData> qualifiers = new ArrayList<>(parameterCount);
         for (int i = 0; i < parameterCount; ++i) {
             qualifiers.add(parameterQualifiers.get(i));
         }
@@ -67,11 +67,11 @@ public class QualifiedMethodDescriptor {
         return method;
     }
 
-    public List<AnnotationDescriptor> getParameterQualifiers() {
+    public List<AnnotationData> getParameterQualifiers() {
         return parameterQualifiers;
     }
 
-    public AnnotationDescriptor getResultQualifier() {
+    public AnnotationData getResultQualifier() {
         return resultQualifier;
     }
 

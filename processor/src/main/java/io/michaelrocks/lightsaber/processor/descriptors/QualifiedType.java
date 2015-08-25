@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -29,13 +29,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class QualifiedType {
     private final Type type;
     @Nullable
-    private final AnnotationDescriptor qualifier;
+    private final AnnotationData qualifier;
 
     public QualifiedType(final Type type) {
         this(type, null);
     }
 
-    public QualifiedType(final Type type, @Nullable final AnnotationDescriptor qualifier) {
+    public QualifiedType(final Type type, @Nullable final AnnotationData qualifier) {
         this.type = type;
         this.qualifier = qualifier;
     }
@@ -45,7 +45,7 @@ public final class QualifiedType {
     }
 
     @Nullable
-    public AnnotationDescriptor getQualifier() {
+    public AnnotationData getQualifier() {
         return qualifier;
     }
 

@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.processor.analysis;
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationClassVisitor;
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Type;
 
@@ -60,7 +60,7 @@ public class AnnotationClassAnalyzer extends ProcessorClassVisitor {
     public void visitEnd() {
         super.visitEnd();
 
-        final AnnotationDescriptor annotation = annotationClassVisitor.toAnnotation();
+        final AnnotationData annotation = annotationClassVisitor.toAnnotation();
         getProcessorContext().getAnnotationRegistry().addAnnotationDefaults(annotation);
         if (isQualifier) {
             getProcessorContext().addQualifier(annotation.getType());

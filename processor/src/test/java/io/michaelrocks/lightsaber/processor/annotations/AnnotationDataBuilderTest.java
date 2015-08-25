@@ -21,10 +21,10 @@ import org.objectweb.asm.Type;
 
 import static org.junit.Assert.*;
 
-public class AnnotationDescriptorBuilderTest {
+public class AnnotationDataBuilderTest {
     @Test
     public void testEmptyAnnotation() throws Exception {
-        final AnnotationDescriptor annotation = newAnnotationBuilder("EmptyAnnotation")
+        final AnnotationData annotation = newAnnotationBuilder("EmptyAnnotation")
                 .build();
         assertEquals("EmptyAnnotation", annotation.getType().getInternalName());
         assertTrue(annotation.getValues().isEmpty());
@@ -33,7 +33,7 @@ public class AnnotationDescriptorBuilderTest {
 
     @Test
     public void testDefaultValueAnnotation() throws Exception {
-        final AnnotationDescriptor annotation = newAnnotationBuilder("DefaultValueAnnotation")
+        final AnnotationData annotation = newAnnotationBuilder("DefaultValueAnnotation")
                 .addDefaultValue("DefaultValue")
                 .build();
         assertEquals("DefaultValueAnnotation", annotation.getType().getInternalName());
@@ -44,7 +44,7 @@ public class AnnotationDescriptorBuilderTest {
 
     @Test
     public void testNamedValueAnnotation() throws Exception {
-        final AnnotationDescriptor annotation = newAnnotationBuilder("NamedValueAnnotation")
+        final AnnotationData annotation = newAnnotationBuilder("NamedValueAnnotation")
                 .addDefaultValue("namedValue", "NamedValue")
                 .build();
         assertEquals("NamedValueAnnotation", annotation.getType().getInternalName());
@@ -55,8 +55,8 @@ public class AnnotationDescriptorBuilderTest {
 
     @Test
     public void testVariousValuesAnnotation() throws Exception {
-        final AnnotationDescriptor innerAnnotation = newAnnotationBuilder("InnerAnnotation").build();
-        final AnnotationDescriptor annotation = newAnnotationBuilder("VariousValuesAnnotation")
+        final AnnotationData innerAnnotation = newAnnotationBuilder("InnerAnnotation").build();
+        final AnnotationData annotation = newAnnotationBuilder("VariousValuesAnnotation")
                 .addDefaultValue("booleanValue", true)
                 .addDefaultValue("byteValue", (byte) 42)
                 .addDefaultValue("charValue", 'x')
@@ -106,7 +106,7 @@ public class AnnotationDescriptorBuilderTest {
 
     @Test
     public void testResolvedAnnotation() throws Exception {
-        final AnnotationDescriptor annotation = newAnnotationBuilder("ResolvedAnnotation")
+        final AnnotationData annotation = newAnnotationBuilder("ResolvedAnnotation")
                 .setResolved(true)
                 .build();
         assertEquals("ResolvedAnnotation", annotation.getType().getInternalName());
@@ -114,8 +114,8 @@ public class AnnotationDescriptorBuilderTest {
         assertTrue(annotation.isResolved());
     }
 
-    private static AnnotationDescriptorBuilder newAnnotationBuilder(final String annotationName) {
+    private static AnnotationDataBuilder newAnnotationBuilder(final String annotationName) {
         final Type type = Type.getObjectType(annotationName);
-        return new AnnotationDescriptorBuilder(type);
+        return new AnnotationDataBuilder(type);
     }
 }

@@ -24,13 +24,13 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 public class AnnotationClassVisitor extends ClassVisitor {
-    private AnnotationDescriptorBuilder annotationBuilder;
+    private AnnotationDataBuilder annotationBuilder;
 
     public AnnotationClassVisitor() {
         super(Opcodes.ASM5);
     }
 
-    public AnnotationDescriptor toAnnotation() {
+    public AnnotationData toAnnotation() {
         Validate.notNull(annotationBuilder);
         return annotationBuilder.build();
     }
@@ -39,7 +39,7 @@ public class AnnotationClassVisitor extends ClassVisitor {
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
-        annotationBuilder = new AnnotationDescriptorBuilder(Type.getObjectType(name));
+        annotationBuilder = new AnnotationDataBuilder(Type.getObjectType(name));
     }
 
     @Override

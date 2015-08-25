@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.analysis;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.ProcessorMethodVisitor;
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
@@ -40,7 +40,7 @@ class InjectionMethodAnalyzer extends ProcessorMethodVisitor {
     private final String signature;
 
     private boolean isInjectableMethod;
-    private final Map<Integer, AnnotationDescriptor> parameterQualifiers = new HashMap<>();
+    private final Map<Integer, AnnotationData> parameterQualifiers = new HashMap<>();
 
     public InjectionMethodAnalyzer(final ProcessorContext processorContext,
             final InjectionTargetDescriptor.Builder injectionTargetBuilder,
@@ -70,7 +70,7 @@ class InjectionMethodAnalyzer extends ProcessorMethodVisitor {
                 return new AnnotationInstanceParser(annotationType) {
                     @Override
                     public void visitEnd() {
-                        final AnnotationDescriptor annotation =
+                        final AnnotationData annotation =
                                 getProcessorContext().getAnnotationRegistry().resolveAnnotation(toAnnotation());
                         if (parameterQualifiers.put(parameter, annotation) != null) {
                             reportError("Method parameter " + parameter + " has multiple qualifiers: "

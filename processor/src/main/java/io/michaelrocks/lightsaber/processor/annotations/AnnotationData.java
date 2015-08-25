@@ -23,12 +23,12 @@ import org.objectweb.asm.Type;
 
 import java.util.Map;
 
-public class AnnotationDescriptor {
+public class AnnotationData {
     private final Type type;
     private final Map<String, Object> values;
     private final boolean resolved;
 
-    AnnotationDescriptor(final Type type, final Map<String, Object> values, final boolean resolved) {
+    AnnotationData(final Type type, final Map<String, Object> values, final boolean resolved) {
         this.type = type;
         this.values = values;
         this.resolved = resolved;
@@ -56,7 +56,7 @@ public class AnnotationDescriptor {
             return false;
         }
 
-        final AnnotationDescriptor that = (AnnotationDescriptor) object;
+        final AnnotationData that = (AnnotationData) object;
         final EqualsBuilder equalsBuilder = new EqualsBuilder()
                 .append(type, that.type)
                 .append(values.size(), that.values.size());

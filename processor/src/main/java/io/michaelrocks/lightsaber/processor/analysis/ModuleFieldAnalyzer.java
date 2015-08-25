@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.analysis;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.ProcessorFieldVisitor;
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
@@ -34,7 +34,7 @@ class ModuleFieldAnalyzer extends ProcessorFieldVisitor {
     private final String fieldDesc;
 
     private boolean isProviderField;
-    private AnnotationDescriptor qualifier;
+    private AnnotationData qualifier;
 
     public ModuleFieldAnalyzer(final ProcessorContext processorContext, final ModuleDescriptor.Builder moduleBuilder,
             final String fieldName, final String fieldDesc) {

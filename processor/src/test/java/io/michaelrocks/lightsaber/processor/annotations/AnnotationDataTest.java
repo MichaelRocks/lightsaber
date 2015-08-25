@@ -24,12 +24,12 @@ import java.util.UUID;
 
 import static org.junit.Assert.*;
 
-public class AnnotationDescriptorTest {
+public class AnnotationDataTest {
     @Test
     public void testEqualsWithIntArrays() throws Exception {
-        final AnnotationDescriptor annotation1 =
+        final AnnotationData annotation1 =
                 AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 42, 43, 44 });
-        final AnnotationDescriptor annotation2 =
+        final AnnotationData annotation2 =
                 AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 42, 43, 44 });
         assertEquals(1, annotation1.getValues().size());
         assertEquals(annotation1, annotation2);
@@ -38,13 +38,13 @@ public class AnnotationDescriptorTest {
 
     @Test
     public void testEqualsWithAnnotationArrays() throws Exception {
-        final AnnotationDescriptor annotation1 =
+        final AnnotationData annotation1 =
                 AnnotationHelper.createAnnotation("EqualsWithAnnotationArrays", new Object[] {
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 42, 43, 44 }),
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 45, 46, 47 }),
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 48, 49, 50 })
                 });
-        final AnnotationDescriptor annotation2 =
+        final AnnotationData annotation2 =
                 AnnotationHelper.createAnnotation("EqualsWithAnnotationArrays", new Object[] {
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 42, 43, 44 }),
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 45, 46, 47 }),
@@ -60,12 +60,12 @@ public class AnnotationDescriptorTest {
         final Map<String, Object> values1 = new HashMap<>();
         values1.put("intValue", 42);
         values1.put("stringValue", "42");
-        final AnnotationDescriptor annotation1 =
+        final AnnotationData annotation1 =
                 AnnotationHelper.createAnnotation("EqualsWithAnnotationArrays", values1);
         final Map<String, Object> values2 = new HashMap<>();
         values2.put("intValue", 42);
         values2.put("stringValue", "42");
-        final AnnotationDescriptor annotation2 =
+        final AnnotationData annotation2 =
                 AnnotationHelper.createAnnotation("EqualsWithAnnotationArrays", values2);
         assertEquals(2, annotation1.getValues().size());
         assertEquals(annotation1, annotation2);
@@ -74,38 +74,38 @@ public class AnnotationDescriptorTest {
 
     @Test
     public void testNotEqualsToNull() throws Exception {
-        final AnnotationDescriptor annotation = AnnotationHelper.createAnnotation("NotEqualsToNull");
+        final AnnotationData annotation = AnnotationHelper.createAnnotation("NotEqualsToNull");
         // noinspection ObjectEqualsNull
         assertFalse(annotation.equals(null));
     }
 
     @Test
     public void testNotEqualsToString() throws Exception {
-        final AnnotationDescriptor annotation = AnnotationHelper.createAnnotation("NotEqualsToString");
+        final AnnotationData annotation = AnnotationHelper.createAnnotation("NotEqualsToString");
         assertNotEquals("NotEqualsToString", annotation);
     }
 
     @Test
     public void testNotEqualsByType() throws Exception {
-        final AnnotationDescriptor annotation1 = AnnotationHelper.createAnnotation("NotEqualsByType1");
-        final AnnotationDescriptor annotation2 = AnnotationHelper.createAnnotation("NotEqualsByType2");
+        final AnnotationData annotation1 = AnnotationHelper.createAnnotation("NotEqualsByType1");
+        final AnnotationData annotation2 = AnnotationHelper.createAnnotation("NotEqualsByType2");
         assertNotEquals(annotation1, annotation2);
         assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
     }
 
     @Test
     public void testNotEqualsWithStrings() throws Exception {
-        final AnnotationDescriptor annotation1 = AnnotationHelper.createAnnotation("NotEqualsWithStrings", "Value1");
-        final AnnotationDescriptor annotation2 = AnnotationHelper.createAnnotation("NotEqualsWithStrings", "Value2");
+        final AnnotationData annotation1 = AnnotationHelper.createAnnotation("NotEqualsWithStrings", "Value1");
+        final AnnotationData annotation2 = AnnotationHelper.createAnnotation("NotEqualsWithStrings", "Value2");
         assertNotEquals(annotation1, annotation2);
         assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
     }
 
     @Test
     public void testNotEqualsWithIntArrays() throws Exception {
-        final AnnotationDescriptor annotation1 =
+        final AnnotationData annotation1 =
                 AnnotationHelper.createAnnotation("NotEqualsWithIntArrays", new int[] { 42 });
-        final AnnotationDescriptor annotation2 =
+        final AnnotationData annotation2 =
                 AnnotationHelper.createAnnotation("NotEqualsWithIntArrays", new int[] { -42 });
         assertNotEquals(annotation1, annotation2);
         assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
@@ -113,14 +113,14 @@ public class AnnotationDescriptorTest {
 
     @Test
     public void testNotEqualsWithAnnotationArrays() throws Exception {
-        final AnnotationDescriptor annotation1 =
+        final AnnotationData annotation1 =
                 AnnotationHelper.createAnnotation("NotEqualsWithAnnotationArrays", new Object[] {
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 42, 43, 44 }),
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 45, 46, 47 }),
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 48, 49, 50 }),
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 1 })
                 });
-        final AnnotationDescriptor annotation2 =
+        final AnnotationData annotation2 =
                 AnnotationHelper.createAnnotation("NotEqualsWithAnnotationArrays", new Object[] {
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 42, 43, 44 }),
                         AnnotationHelper.createAnnotation("EqualsWithIntArrays", new int[] { 45, 46, 47 }),
@@ -138,7 +138,7 @@ public class AnnotationDescriptorTest {
                 + Long.toHexString(nameUuid.getMostSignificantBits())
                 + Long.toHexString(nameUuid.getLeastSignificantBits());
         final String value = UUID.randomUUID().toString();
-        final AnnotationDescriptor annotation = AnnotationHelper.createAnnotation(name, value);
+        final AnnotationData annotation = AnnotationHelper.createAnnotation(name, value);
         final String annotationDescription = annotation.toString();
         assertNotNull(annotationDescription);
         assertTrue(annotationDescription.contains(name));
