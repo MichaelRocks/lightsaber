@@ -23,39 +23,47 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+
 @ParametersAreNonnullByDefault
 public class AnnotationClassVisitor extends ClassVisitor {
-    private AnnotationDataBuilder annotationBuilder;
+    private AnnotationDescriptorBuilder annotationDescriptorBuilder;
+    private AnnotationDataBuilder annotationDataBuilder;
 
     public AnnotationClassVisitor() {
         super(Opcodes.ASM5);
     }
 
-    public AnnotationData toAnnotation() {
-        Validate.notNull(annotationBuilder);
-        return annotationBuilder.build();
+    public AnnotationDescriptor toAnnotationDescriptor() {
+        Validate.notNull(annotationDescriptorBuilder);
+        return annotationDescriptorBuilder.build();
+    }
+
+    public AnnotationData toAnnotationData() {
+        Validate.notNull(annotationDescriptorBuilder);
+        return annotationDataBuilder.build();
     }
 
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        super.visit(version, access, name, signature, superName, interfaces);
-        annotationBuilder = new AnnotationDataBuilder(Type.getObjectType(name));
+        final Type annotationType = Type.getObjectType(name);
+        annotationDescriptorBuilder = new AnnotationDescriptorBuilder(annotationType);
+        annotationDataBuilder = new AnnotationDataBuilder(annotationType);
     }
 
     @Override
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
             final String[] exceptions) {
+        Validate.notNull(annotationDescriptorBuilder);
+        annotationDescriptorBuilder.addField(name, Type.getType(desc));
         return new MethodVisitor(Opcodes.ASM5) {
             @Override
             public AnnotationVisitor visitAnnotationDefault() {
                 return new AnnotationValueParser() {
                     @Override
                     public void visitEnd() {
-                        Validate.notNull(annotationBuilder);
-                        annotationBuilder.addDefaultValue(name, getValue());
+                        annotationDataBuilder.addDefaultValue(name, getValue());
                     }
                 };
             }

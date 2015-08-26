@@ -26,25 +26,35 @@ import java.util.List;
 import java.util.Map;
 
 public class AnnotationRegistry {
+    private final Map<Type, AnnotationDescriptor> annotationsByType = new HashMap<>();
     private final Map<Type, AnnotationData> unresolvedDefaultsByType = new HashMap<>();
     private final Map<Type, AnnotationData> resolvedDefaultsByType = new HashMap<>();
 
-    public void addAnnotationDefaults(final AnnotationData annotationDefaults) {
-        if (annotationDefaults.isResolved()) {
-            Validate.isTrue(!unresolvedDefaultsByType.containsKey(annotationDefaults.getType()));
-            resolvedDefaultsByType.put(annotationDefaults.getType(), annotationDefaults);
+    public void addAnnotationDefaults(final AnnotationDescriptor annotation, final AnnotationData defaults) {
+        Validate.isTrue(annotation.getType().equals(defaults.getType()));
+
+        Validate.isTrue(!annotationsByType.containsKey(annotation.getType()));
+        annotationsByType.put(annotation.getType(), annotation);
+
+        if (defaults.isResolved()) {
+            Validate.isTrue(!unresolvedDefaultsByType.containsKey(annotation.getType()));
+            resolvedDefaultsByType.put(annotation.getType(), defaults);
         } else {
-            Validate.isTrue(!resolvedDefaultsByType.containsKey(annotationDefaults.getType()));
-            unresolvedDefaultsByType.put(annotationDefaults.getType(), annotationDefaults);
+            Validate.isTrue(!resolvedDefaultsByType.containsKey(annotation.getType()));
+            unresolvedDefaultsByType.put(annotation.getType(), defaults);
         }
     }
 
-    public AnnotationData resolveAnnotation(final AnnotationData annotation) {
-        if (annotation.isResolved()) {
-            return annotation;
+    public AnnotationDescriptor findAnnotationByType(final Type annotationType) {
+        return annotationsByType.get(annotationType);
+    }
+
+    public AnnotationData resolveAnnotation(final AnnotationData data) {
+        if (data.isResolved()) {
+            return data;
         }
 
-        return new AnnotationResolver().resolve(annotation);
+        return new AnnotationResolver().resolve(data);
     }
 
     boolean hasUnresolvedDefaults(final Type annotationType) {
@@ -59,22 +69,22 @@ public class AnnotationRegistry {
         private final Map<String, Object> values = new HashMap<>();
         private boolean resolved = true;
 
-        AnnotationData resolve(final AnnotationData annotation) {
-            return resolve(annotation, true);
+        AnnotationData resolve(final AnnotationData data) {
+            return resolve(data, true);
         }
 
-        private AnnotationData resolve(final AnnotationData annotation, final boolean applyDefaults) {
+        private AnnotationData resolve(final AnnotationData data, final boolean applyDefaults) {
             if (applyDefaults) {
-                applyDefaults(annotation);
+                applyDefaults(data);
             }
-            for (final Map.Entry<String, Object> entry : annotation.getValues().entrySet()) {
+            for (final Map.Entry<String, Object> entry : data.getValues().entrySet()) {
                 values.put(entry.getKey(), resolveObject(entry.getValue()));
             }
-            return new AnnotationData(annotation.getType(), Collections.unmodifiableMap(values), resolved);
+            return new AnnotationData(data.getType(), Collections.unmodifiableMap(values), resolved);
         }
 
-        private void applyDefaults(final AnnotationData annotation) {
-            final AnnotationData defaults = resolveDefaults(annotation.getType());
+        private void applyDefaults(final AnnotationData data) {
+            final AnnotationData defaults = resolveDefaults(data.getType());
             if (defaults == null) {
                 resolved = false;
                 return;
@@ -100,9 +110,9 @@ public class AnnotationRegistry {
 
         private Object resolveObject(final Object value) {
             if (value instanceof AnnotationData) {
-                final AnnotationData annotation = resolveAnnotation((AnnotationData) value);
-                resolved &= annotation.isResolved();
-                return annotation;
+                final AnnotationData data = resolveAnnotation((AnnotationData) value);
+                resolved &= data.isResolved();
+                return data;
             } else if (value instanceof List<?>) {
                 return resolveArray((List<?>) value);
             } else {
