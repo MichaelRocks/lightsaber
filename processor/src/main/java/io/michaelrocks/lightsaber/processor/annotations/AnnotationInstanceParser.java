@@ -16,8 +16,13 @@
 
 package io.michaelrocks.lightsaber.processor.annotations;
 
+import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 public class AnnotationInstanceParser extends AbstractAnnotationParser {
     private final AnnotationDataBuilder annotationBuilder;
 
@@ -30,7 +35,8 @@ public class AnnotationInstanceParser extends AbstractAnnotationParser {
     }
 
     @Override
-    protected void addValue(final String name, final Object value) {
+    protected void addValue(@Nullable final String name, final Object value) {
+        Validate.notNull(name);
         annotationBuilder.addDefaultValue(name, value);
     }
 }

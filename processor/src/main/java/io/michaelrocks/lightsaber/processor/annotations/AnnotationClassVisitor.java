@@ -23,6 +23,9 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+@ParametersAreNonnullByDefault
 public class AnnotationClassVisitor extends ClassVisitor {
     private AnnotationDataBuilder annotationBuilder;
 

@@ -18,6 +18,10 @@ package io.michaelrocks.lightsaber.processor.annotations;
 
 import org.apache.commons.lang3.Validate;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 class AnnotationValueParser extends AbstractAnnotationParser {
     private Object value = null;
 
@@ -26,7 +30,7 @@ class AnnotationValueParser extends AbstractAnnotationParser {
     }
 
     @Override
-    protected void addValue(final String name, final Object value) {
+    protected void addValue(@Nullable final String name, final Object value) {
         Validate.isTrue(name == null);
         Validate.isTrue(this.value == null);
         this.value = value;

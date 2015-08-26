@@ -18,10 +18,13 @@ package io.michaelrocks.lightsaber.processor.annotations;
 
 import org.apache.commons.lang3.Validate;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+@ParametersAreNonnullByDefault
 class AnnotationArrayParser extends AbstractAnnotationParser {
     private final List<Object> values = new ArrayList<>();
 
@@ -31,6 +34,7 @@ class AnnotationArrayParser extends AbstractAnnotationParser {
 
     @Override
     protected void addValue(final String name, final Object value) {
+    protected void addValue(@Nullable final String name, final Object value) {
         Validate.isTrue(name == null);
         values.add(value);
     }

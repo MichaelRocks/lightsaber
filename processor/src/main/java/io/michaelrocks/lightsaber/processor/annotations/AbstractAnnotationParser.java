@@ -21,6 +21,10 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 public abstract class AbstractAnnotationParser extends AnnotationVisitor {
     protected AbstractAnnotationParser() {
         super(Opcodes.ASM5);
@@ -58,5 +62,5 @@ public abstract class AbstractAnnotationParser extends AnnotationVisitor {
         };
     }
 
-    protected abstract void addValue(String name, Object value);
+    protected abstract void addValue(@Nullable String name, Object value);
 }
