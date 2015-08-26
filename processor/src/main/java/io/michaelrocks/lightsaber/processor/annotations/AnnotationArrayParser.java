@@ -26,16 +26,19 @@ import java.util.List;
 
 @ParametersAreNonnullByDefault
 class AnnotationArrayParser extends AbstractAnnotationParser {
-    private final List<Object> values = new ArrayList<>();
+    @Nullable
+    private List<Object> values;
 
     public List<Object> getValues() {
-        return Collections.unmodifiableList(values);
+        return values == null ? Collections.emptyList() : Collections.unmodifiableList(values);
     }
 
     @Override
-    protected void addValue(final String name, final Object value) {
     protected void addValue(@Nullable final String name, final Object value) {
         Validate.isTrue(name == null);
+        if (values == null) {
+            values = new ArrayList<>();
+        }
         values.add(value);
     }
 }
