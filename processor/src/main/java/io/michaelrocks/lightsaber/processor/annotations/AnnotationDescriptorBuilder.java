@@ -19,15 +19,17 @@ package io.michaelrocks.lightsaber.processor.annotations;
 import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ParametersAreNonnullByDefault
 public class AnnotationDescriptorBuilder {
     private final Type annotationType;
-    private final Map<String, Type> fields = new HashMap<>();
+    @Nullable
+    private Map<String, Type> fields;
 
     public AnnotationDescriptorBuilder(final Type annotationType) {
         this.annotationType = annotationType;
@@ -40,11 +42,16 @@ public class AnnotationDescriptorBuilder {
     public AnnotationDescriptorBuilder addField(final String name, final Type type) {
         Validate.notNull(name);
         Validate.notNull(type);
+        if (fields == null) {
+            fields = new LinkedHashMap<>();
+        }
         fields.put(name, type);
         return this;
     }
 
     public AnnotationDescriptor build() {
-        return new AnnotationDescriptor(annotationType, Collections.unmodifiableMap(fields));
+        final Map<String, Type> unmodifiableFields =
+                fields == null ? Collections.<String, Type>emptyMap() : Collections.unmodifiableMap(fields);
+        return new AnnotationDescriptor(annotationType, unmodifiableFields);
     }
 }
