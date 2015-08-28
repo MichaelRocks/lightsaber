@@ -90,7 +90,6 @@ public class AnnotationDataTest {
         final AnnotationData annotation1 = AnnotationHelper.createAnnotationData("NotEqualsByType1");
         final AnnotationData annotation2 = AnnotationHelper.createAnnotationData("NotEqualsByType2");
         assertNotEquals(annotation1, annotation2);
-        assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
     }
 
     @Test
@@ -98,7 +97,6 @@ public class AnnotationDataTest {
         final AnnotationData annotation1 = AnnotationHelper.createAnnotationData("NotEqualsWithStrings", "Value1");
         final AnnotationData annotation2 = AnnotationHelper.createAnnotationData("NotEqualsWithStrings", "Value2");
         assertNotEquals(annotation1, annotation2);
-        assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
     }
 
     @Test
@@ -108,7 +106,6 @@ public class AnnotationDataTest {
         final AnnotationData annotation2 =
                 AnnotationHelper.createAnnotationData("NotEqualsWithIntArrays", new int[] { -42 });
         assertNotEquals(annotation1, annotation2);
-        assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
     }
 
     @Test
@@ -128,7 +125,6 @@ public class AnnotationDataTest {
                         AnnotationHelper.createAnnotationData("EqualsWithIntArrays", new int[] { -1 })
                 });
         assertNotEquals(annotation1, annotation2);
-        assertNotEquals(annotation1.hashCode(), annotation2.hashCode());
     }
 
     @Test
