@@ -19,6 +19,8 @@ package io.michaelrocks.lightsaber.processor.annotations;
 import org.junit.Test;
 import org.objectweb.asm.Type;
 
+import java.util.Map;
+
 import static org.junit.Assert.*;
 
 public class AnnotationDataBuilderTest {
@@ -112,6 +114,33 @@ public class AnnotationDataBuilderTest {
         assertEquals("ResolvedAnnotation", annotation.getType().getInternalName());
         assertTrue(annotation.getValues().isEmpty());
         assertTrue(annotation.isResolved());
+    }
+
+    @Test
+    public void testPreservesOrder() throws Exception {
+        final AnnotationDataBuilder builder = newAnnotationBuilder("PreservesOrder");
+        for (int i = 0; i < 100; ++i) {
+            builder.addDefaultValue("value" + i, "Value" + i);
+        }
+        final AnnotationData annotation = builder.build();
+
+        int i;
+        i = 0;
+        for (final String name : annotation.getValues().keySet()) {
+            assertEquals("value" + i, name);
+            i += 1;
+        }
+        i = 0;
+        for (final Object value : annotation.getValues().values()) {
+            assertEquals("Value" + i, value);
+            i += 1;
+        }
+        i = 0;
+        for (final Map.Entry<String, Object> entry : annotation.getValues().entrySet()) {
+            assertEquals("value" + i, entry.getKey());
+            assertEquals("Value" + i, entry.getValue());
+            i += 1;
+        }
     }
 
     private static AnnotationDataBuilder newAnnotationBuilder(final String annotationName) {
