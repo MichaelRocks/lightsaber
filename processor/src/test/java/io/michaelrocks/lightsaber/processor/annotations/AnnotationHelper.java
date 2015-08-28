@@ -76,9 +76,9 @@ class AnnotationHelper {
         return Type.getObjectType(annotationName);
     }
 
-    private static Map<String, Object> pairsToMap(final Pair<String, ?>[] pairs) {
-        final Map<String, Object> values = new HashMap<>();
-        for (final Pair<String, ?> pair : pairs) {
+    private static <T> Map<String, T> pairsToMap(final Pair<String, ? extends T>[] pairs) {
+        final Map<String, T> values = new HashMap<>();
+        for (final Pair<String, ? extends T> pair : pairs) {
             values.put(pair.getKey(), pair.getValue());
         }
         return values;
