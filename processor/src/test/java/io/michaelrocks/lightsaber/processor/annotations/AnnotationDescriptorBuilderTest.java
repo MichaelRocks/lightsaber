@@ -19,6 +19,8 @@ package io.michaelrocks.lightsaber.processor.annotations;
 import org.junit.Test;
 import org.objectweb.asm.Type;
 
+import java.util.Map;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -63,6 +65,33 @@ public class AnnotationDescriptorBuilderTest {
         assertEquals(Type.getType(String.class), annotation.getFields().get("namedValue1"));
         assertEquals(Type.INT_TYPE, annotation.getFields().get("namedValue2"));
         assertEquals(Type.getObjectType("[Z"), annotation.getFields().get("namedValue3"));
+    }
+
+    @Test
+    public void testPreservesOrder() throws Exception {
+        final AnnotationDescriptorBuilder builder = newBuilder("PreservesOrder");
+        for (int i = 0; i < 100; ++i) {
+            builder.addField("value" + i, Type.getObjectType("Type" + i));
+        }
+        final AnnotationDescriptor annotation = builder.build();
+
+        int i;
+        i = 0;
+        for (final String fieldName : annotation.getFields().keySet()) {
+            assertEquals("value" + i, fieldName);
+            i += 1;
+        }
+        i = 0;
+        for (final Type fieldType : annotation.getFields().values()) {
+            assertEquals(Type.getObjectType("Type" + i), fieldType);
+            i += 1;
+        }
+        i = 0;
+        for (final Map.Entry<String, Type> field : annotation.getFields().entrySet()) {
+            assertEquals("value" + i, field.getKey());
+            assertEquals(Type.getObjectType("Type" + i), field.getValue());
+            i += 1;
+        }
     }
 
     private static AnnotationDescriptorBuilder newBuilder(final String annotationName) {
