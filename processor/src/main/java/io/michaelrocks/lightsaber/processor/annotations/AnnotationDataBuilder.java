@@ -22,7 +22,7 @@ import org.objectweb.asm.Type;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ParametersAreNonnullByDefault
@@ -44,7 +44,7 @@ public class AnnotationDataBuilder {
         Validate.notNull(name);
         Validate.notNull(defaultValue);
         if (values == null) {
-            values = new HashMap<>();
+            values = new LinkedHashMap<>();
         }
         values.put(name, defaultValue);
         return this;
