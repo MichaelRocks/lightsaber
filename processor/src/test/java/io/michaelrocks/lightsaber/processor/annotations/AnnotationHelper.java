@@ -24,50 +24,50 @@ import java.util.HashMap;
 import java.util.Map;
 
 class AnnotationHelper {
-    public static AnnotationData createAnnotation(final String annotationName) {
+    public static AnnotationData createAnnotationData(final String annotationName) {
         return new AnnotationData(getAnnotationType(annotationName), Collections.<String, Object>emptyMap(), false);
     }
 
-    public static AnnotationData createAnnotation(final String annotationName, final Object defaultValue) {
-        return createAnnotation(annotationName, "value", defaultValue);
+    public static AnnotationData createAnnotationData(final String annotationName, final Object defaultValue) {
+        return createAnnotationData(annotationName, "value", defaultValue);
     }
 
-    public static AnnotationData createAnnotation(final String annotationName, final String methodName,
+    public static AnnotationData createAnnotationData(final String annotationName, final String methodName,
             final Object defaultValue) {
-        return createAnnotation(annotationName, Collections.singletonMap(methodName, defaultValue));
+        return createAnnotationData(annotationName, Collections.singletonMap(methodName, defaultValue));
     }
 
     @SafeVarargs
-    public static AnnotationData createAnnotation(final String annotationName,
+    public static AnnotationData createAnnotationData(final String annotationName,
             final Pair<String, ?>... values) {
         return new AnnotationData(getAnnotationType(annotationName), pairsToMap(values), false);
     }
 
-    public static AnnotationData createAnnotation(final String annotationName,
+    public static AnnotationData createAnnotationData(final String annotationName,
             final Map<String, Object> values) {
         return new AnnotationData(getAnnotationType(annotationName), values, false);
     }
 
-    public static AnnotationData createResolvedAnnotation(final String annotationName) {
+    public static AnnotationData createResolvedAnnotationData(final String annotationName) {
         return new AnnotationData(getAnnotationType(annotationName), Collections.<String, Object>emptyMap(), true);
     }
 
-    public static AnnotationData createResolvedAnnotation(final String annotationName, final Object defaultValue) {
-        return createResolvedAnnotation(annotationName, "value", defaultValue);
+    public static AnnotationData createResolvedAnnotationData(final String annotationName, final Object defaultValue) {
+        return createResolvedAnnotationData(annotationName, "value", defaultValue);
     }
 
-    public static AnnotationData createResolvedAnnotation(final String annotationName, final String methodName,
+    public static AnnotationData createResolvedAnnotationData(final String annotationName, final String methodName,
             final Object defaultValue) {
-        return createResolvedAnnotation(annotationName, Collections.singletonMap(methodName, defaultValue));
+        return createResolvedAnnotationData(annotationName, Collections.singletonMap(methodName, defaultValue));
     }
 
     @SafeVarargs
-    public static AnnotationData createResolvedAnnotation(final String annotationName,
+    public static AnnotationData createResolvedAnnotationData(final String annotationName,
             final Pair<String, ?>... values) {
         return new AnnotationData(getAnnotationType(annotationName), pairsToMap(values), false);
     }
 
-    public static AnnotationData createResolvedAnnotation(final String annotationName,
+    public static AnnotationData createResolvedAnnotationData(final String annotationName,
             final Map<String, Object> values) {
         return new AnnotationData(getAnnotationType(annotationName), values, true);
     }

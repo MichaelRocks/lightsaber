@@ -193,7 +193,7 @@ public class AnnotationClassVisitorTest {
 
     @Test
     public void testNestedAnnotationAnnotation() throws Exception {
-        final AnnotationData nestedAnnotation = AnnotationHelper.createAnnotation("NestedAnnotation", "Nested");
+        final AnnotationData nestedAnnotation = AnnotationHelper.createAnnotationData("NestedAnnotation", "Nested");
         final AnnotationClassVisitor visitor = new AnnotationClassVisitor();
         final Type annotationType = Type.getObjectType("NestedAnnotationAnnotation");
         AnnotationClassGenerator.create(visitor, annotationType)
@@ -209,9 +209,9 @@ public class AnnotationClassVisitorTest {
     @Test
     public void testNestedAnnotationArrayAnnotation() throws Exception {
         final AnnotationData[] nestedAnnotations = new AnnotationData[] {
-                AnnotationHelper.createAnnotation("NestedAnnotation", "Nested1"),
-                AnnotationHelper.createAnnotation("NestedAnnotation", "Nested2"),
-                AnnotationHelper.createAnnotation("NestedAnnotation", "Nested3")
+                AnnotationHelper.createAnnotationData("NestedAnnotation", "Nested1"),
+                AnnotationHelper.createAnnotationData("NestedAnnotation", "Nested2"),
+                AnnotationHelper.createAnnotationData("NestedAnnotation", "Nested3")
         };
         final Type annotationArrayType = Type.getType("[" + nestedAnnotations[0].getType().getDescriptor());
         final AnnotationClassVisitor visitor = new AnnotationClassVisitor();
