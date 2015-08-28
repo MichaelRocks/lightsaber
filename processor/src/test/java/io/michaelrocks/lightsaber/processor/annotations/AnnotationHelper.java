@@ -24,6 +24,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 class AnnotationHelper {
+    public static AnnotationDescriptor createAnnotationDescriptor(final String annotationName) {
+        return new AnnotationDescriptor(getAnnotationType(annotationName), Collections.<String, Type>emptyMap());
+    }
+
+    public static AnnotationDescriptor createAnnotationDescriptor(final String annotationName, final Type type) {
+        return createAnnotationDescriptor(annotationName, "value", type);
+    }
+
+    public static AnnotationDescriptor createAnnotationDescriptor(final String annotationName, final String name,
+            final Type type) {
+        return createAnnotationDescriptor(annotationName, Collections.singletonMap(name, type));
+    }
+
+    @SafeVarargs
+    public static AnnotationDescriptor createAnnotationDescriptor(final String annotationName,
+            final Pair<String, Type>... values) {
+        return new AnnotationDescriptor(getAnnotationType(annotationName), pairsToMap(values));
+    }
+
     public static AnnotationData createAnnotationData(final String annotationName) {
         return new AnnotationData(getAnnotationType(annotationName), Collections.<String, Object>emptyMap(), false);
     }
@@ -35,6 +54,11 @@ class AnnotationHelper {
     public static AnnotationData createAnnotationData(final String annotationName, final String methodName,
             final Object defaultValue) {
         return createAnnotationData(annotationName, Collections.singletonMap(methodName, defaultValue));
+    }
+
+    public static AnnotationDescriptor createAnnotationDescriptor(final String annotationName,
+            final Map<String, Type> fields) {
+        return new AnnotationDescriptor(getAnnotationType(annotationName), fields);
     }
 
     @SafeVarargs
