@@ -40,17 +40,24 @@ public class AnnotationProxyGenerator {
     private static final String ARRAYS_TYPE_NAME = Type.getInternalName(Arrays.class);
     private static final String FLOAT_TYPE_NAME = Type.getInternalName(Float.class);
     private static final String DOUBLE_TYPE_NAME = Type.getInternalName(Double.class);
+    private static final String STRING_BUILDER_TYPE_NAME = Type.getInternalName(StringBuilder.class);
+
     private static final Type OBJECT_ARRAY_TYPE = Type.getType(Object[].class);
+    private static final Type STRING_BUILDER_TYPE = Type.getType(StringBuilder.class);
 
     private static final MethodDescriptor HASH_CODE_METHOD = MethodDescriptor.forMethod("hashCode", Type.INT_TYPE);
     private static final MethodDescriptor EQUALS_METHOD =
             MethodDescriptor.forMethod("equals", Type.BOOLEAN_TYPE, Types.OBJECT_TYPE);
+    private static final MethodDescriptor TO_STRING_METHOD =
+            MethodDescriptor.forMethod("toString", Types.STRING_TYPE);
     private static final MethodDescriptor FLOAT_TO_INT_BITS_METHOD =
             MethodDescriptor.forMethod("floatToIntBits", Type.INT_TYPE, Type.FLOAT_TYPE);
     private static final MethodDescriptor DOUBLE_TO_LONG_BITS_METHOD =
             MethodDescriptor.forMethod("doubleToLongBits", Type.LONG_TYPE, Type.DOUBLE_TYPE);
     private static final MethodDescriptor ANNOTATION_TYPE_METHOD =
             MethodDescriptor.forMethod("annotationType", Type.getType(Class.class));
+
+    private static final MethodResolver stringBuilderAppendMethodResolver = new StringBuilderAppendMethodResolver();
 
     private final AnnotationDescriptor annotation;
 
@@ -76,9 +83,10 @@ public class AnnotationProxyGenerator {
 
         generateFields(classWriter);
         generateConstructor(classWriter);
-        generateAnnotationTypeMethod(classWriter);
         generateEqualsMethod(classWriter);
         generateHashCodeMethod(classWriter);
+        generateToStringMethod(classWriter);
+        generateAnnotationTypeMethod(classWriter);
         generateGetters(classWriter);
 
         classWriter.visitEnd();
@@ -353,6 +361,86 @@ public class AnnotationProxyGenerator {
         methodVisitor.visitInsn(IXOR);
     }
 
+    private void generateToStringMethod(final ClassVisitor classVisitor) {
+        final MethodVisitor methodVisitor = classVisitor.visitMethod(
+                ACC_PUBLIC,
+                TO_STRING_METHOD.getName(),
+                TO_STRING_METHOD.getDescriptor(),
+                null,
+                null);
+        methodVisitor.visitCode();
+
+        methodVisitor.visitTypeInsn(NEW, STRING_BUILDER_TYPE_NAME);
+        methodVisitor.visitInsn(DUP);
+        final MethodDescriptor constructor = MethodDescriptor.forDefaultConstructor();
+        methodVisitor.visitMethodInsn(
+                INVOKESPECIAL,
+                STRING_BUILDER_TYPE_NAME,
+                constructor.getName(),
+                constructor.getDescriptor(),
+                false);
+
+        methodVisitor.visitLdcInsn("@" + annotation.getType().getClassName() + "(");
+        generateStringBuilderAppendInvocation(methodVisitor, Types.STRING_TYPE);
+
+        boolean addComma = false;
+        for (final Map.Entry<String, Type> entry : annotation.getFields().entrySet()) {
+            final String fieldName = entry.getKey();
+            final Type fieldType = entry.getValue();
+            appendFieldName(methodVisitor, fieldName, addComma);
+            appendFieldValue(methodVisitor, fieldName, fieldType);
+            addComma = true;
+        }
+
+        methodVisitor.visitIntInsn(BIPUSH, ')');
+        generateStringBuilderAppendInvocation(methodVisitor, Type.CHAR_TYPE);
+        methodVisitor.visitMethodInsn(INVOKEVIRTUAL, STRING_BUILDER_TYPE_NAME, "toString", "()Ljava/lang/String;", false);
+
+        methodVisitor.visitInsn(ARETURN);
+        methodVisitor.visitMaxs(0, 0);
+        methodVisitor.visitEnd();
+    }
+
+    private void appendFieldName(final MethodVisitor methodVisitor, final String fieldName, final boolean addComma) {
+        final String prefix = addComma ? ", " : "";
+        methodVisitor.visitLdcInsn(prefix + fieldName + '=');
+        generateStringBuilderAppendInvocation(methodVisitor, Types.STRING_TYPE);
+    }
+
+    private void appendFieldValue(final MethodVisitor methodVisitor, final String fieldName, final Type fieldType) {
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitFieldInsn(GETFIELD, proxyTypeName, fieldName, fieldType.getDescriptor());
+        if (fieldType.getSort() == Type.ARRAY) {
+            generateArraysToStringInvocation(methodVisitor, fieldType);
+            generateStringBuilderAppendInvocation(methodVisitor, Types.STRING_TYPE);
+        } else {
+            generateStringBuilderAppendInvocation(methodVisitor, fieldType);
+        }
+    }
+
+    private void generateArraysToStringInvocation(final MethodVisitor methodVisitor, final Type fieldType) {
+        final Type elementType = fieldType.getElementType();
+        final Type argumentType = Types.isPrimitive(elementType) ? fieldType : OBJECT_ARRAY_TYPE;
+        final MethodDescriptor toStringMethod =
+                MethodDescriptor.forMethod(TO_STRING_METHOD.getName(), Types.STRING_TYPE, argumentType);
+        methodVisitor.visitMethodInsn(
+                INVOKESTATIC,
+                ARRAYS_TYPE_NAME,
+                toStringMethod.getName(),
+                toStringMethod.getDescriptor(),
+                false);
+    }
+
+    private void generateStringBuilderAppendInvocation(final MethodVisitor methodVisitor, final Type parameterType) {
+        final MethodDescriptor appendMethod = stringBuilderAppendMethodResolver.resolveMethod(parameterType);
+        methodVisitor.visitMethodInsn(
+                INVOKEVIRTUAL,
+                STRING_BUILDER_TYPE_NAME,
+                appendMethod.getName(),
+                appendMethod.getDescriptor(),
+                false);
+    }
+
     private void generateAnnotationTypeMethod(final ClassVisitor classVisitor) {
         final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 ACC_PUBLIC,
@@ -386,6 +474,48 @@ public class AnnotationProxyGenerator {
             methodVisitor.visitInsn(type.getOpcode(IRETURN));
             methodVisitor.visitMaxs(0, 0);
             methodVisitor.visitEnd();
+        }
+    }
+
+    private interface MethodResolver {
+        MethodDescriptor resolveMethod(Type type);
+    }
+
+    private static final class StringBuilderAppendMethodResolver implements MethodResolver {
+        private static final String METHOD_NAME = "append";
+        private static final MethodDescriptor BOOLEAN_METHOD = appendMethod(Type.BOOLEAN_TYPE);
+        private static final MethodDescriptor CHAR_METHOD = appendMethod(Type.CHAR_TYPE);
+        private static final MethodDescriptor FLOAT_METHOD = appendMethod(Type.FLOAT_TYPE);
+        private static final MethodDescriptor DOUBLE_METHOD = appendMethod(Type.DOUBLE_TYPE);
+        private static final MethodDescriptor INT_METHOD = appendMethod(Type.INT_TYPE);
+        private static final MethodDescriptor LONG_METHOD = appendMethod(Type.LONG_TYPE);
+        private static final MethodDescriptor OBJECT_METHOD = appendMethod(Types.OBJECT_TYPE);
+        private static final MethodDescriptor STRING_METHOD = appendMethod(Types.STRING_TYPE);
+
+        private static MethodDescriptor appendMethod(final Type parameterType) {
+            return MethodDescriptor.forMethod(METHOD_NAME, STRING_BUILDER_TYPE, parameterType);
+        }
+
+        @Override
+        public MethodDescriptor resolveMethod(final Type type) {
+            switch (type.getSort()) {
+                case Type.BOOLEAN:
+                    return BOOLEAN_METHOD;
+                case Type.CHAR:
+                    return CHAR_METHOD;
+                case Type.FLOAT:
+                    return FLOAT_METHOD;
+                case Type.DOUBLE:
+                    return DOUBLE_METHOD;
+                case Type.BYTE:
+                case Type.SHORT:
+                case Type.INT:
+                    return INT_METHOD;
+                case Type.LONG:
+                    return LONG_METHOD;
+                default:
+                    return Types.STRING_TYPE.equals(type) ? STRING_METHOD : OBJECT_METHOD;
+            }
         }
     }
 }
