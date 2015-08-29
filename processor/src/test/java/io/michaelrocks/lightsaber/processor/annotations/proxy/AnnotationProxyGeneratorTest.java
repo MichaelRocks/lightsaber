@@ -258,6 +258,72 @@ public class AnnotationProxyGeneratorTest {
                 new IntAnnotation[] { createAnnotationProxy(IntAnnotation.class, 42) });
     }
 
+    @Test
+    public void testEmptyToString() throws Exception {
+        final EmptyAnnotation annotation = createAnnotationProxy(EmptyAnnotation.class);
+        final String expected = "@" + EmptyAnnotation.class.getName() + "()";
+        final String actual = annotation.toString();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testCompositeToString() throws Exception {
+        final CompositeAnnotation annotation = createAnnotationProxy(CompositeAnnotation.class,
+                true,
+                (byte) 42,
+                'x',
+                Float.NaN,
+                Double.POSITIVE_INFINITY,
+                42,
+                42L,
+                (short) 42,
+                "Value",
+                RetentionPolicy.RUNTIME,
+                createAnnotationProxy(IntAnnotation.class, 42),
+                new boolean[] { true, false },
+                new byte[] { 42, 43 },
+                new char[] { 'x', 'y' },
+                new float[] { Float.NaN, Float.POSITIVE_INFINITY },
+                new double[] { Double.POSITIVE_INFINITY, Double.NaN },
+                new int[] { 42, 43 },
+                new long[] { 42L, 43L },
+                new short[] { 42, 43 },
+                new String[] { "Value1", "Value2" },
+                new RetentionPolicy[] { RetentionPolicy.RUNTIME, RetentionPolicy.CLASS },
+                new IntAnnotation[] {
+                        createAnnotationProxy(IntAnnotation.class, 42),
+                        createAnnotationProxy(IntAnnotation.class, 43)
+                });
+
+        final String expected = "@" + CompositeAnnotation.class.getName() + "("
+                + "booleanValue=true, "
+                + "byteValue=42, "
+                + "charValue=x, "
+                + "floatValue=NaN, "
+                + "doubleValue=Infinity, "
+                + "intValue=42, "
+                + "longValue=42, "
+                + "shortValue=42, "
+                + "stringValue=Value, "
+                + "enumValue=RUNTIME, "
+                + "annotationValue=@" + IntAnnotation.class.getName() + "(value=42), "
+                + "booleanArrayValue=[true, false], "
+                + "byteArrayValue=[42, 43], "
+                + "charArrayValue=[x, y], "
+                + "floatArrayValue=[NaN, Infinity], "
+                + "doubleArrayValue=[Infinity, NaN], "
+                + "intArrayValue=[42, 43], "
+                + "longArrayValue=[42, 43], "
+                + "shortArrayValue=[42, 43], "
+                + "stringArrayValue=[Value1, Value2], "
+                + "enumArrayValue=[RUNTIME, CLASS], "
+                + "annotationArrayValue=["
+                + "@" + IntAnnotation.class.getName() + "(value=42), @" + IntAnnotation.class.getName() + "(value=43)]"
+                + ")";
+        final String actual = annotation.toString();
+        assertEquals(expected, actual);
+    }
+
     private <T extends Annotation> void assertAnnotationEquals(final Class<T> annotationClass,
             final Object... values) throws Exception {
         final T expectedAnnotation = getAnnotation(annotationClass);
