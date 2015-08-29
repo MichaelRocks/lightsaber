@@ -85,7 +85,6 @@ public class AnnotationProxyGeneratorTest {
 
     @Test
     public void testNotEqualsToOtherType() throws Exception {
-        // noinspection ObjectEqualsNull
         assertNotEquals(new Object(), createAnnotationProxy(EmptyAnnotation.class));
         assertNotEquals(createAnnotationProxy(IntAnnotation.class, 42), createAnnotationProxy(EmptyAnnotation.class));
     }
