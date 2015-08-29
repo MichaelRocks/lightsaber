@@ -24,6 +24,8 @@ import org.objectweb.asm.Type;
 import javax.inject.Inject;
 
 public class Types {
+    public static final Type OBJECT_TYPE = Type.getType(Object.class);
+    public static final Type STRING_TYPE = Type.getType(String.class);
     public static final Type INJECT_TYPE = Type.getType(Inject.class);
     public static final Type PROVIDES_TYPE = Type.getType(Provides.class);
 
