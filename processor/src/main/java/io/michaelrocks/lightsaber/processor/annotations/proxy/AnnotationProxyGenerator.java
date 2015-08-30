@@ -99,7 +99,7 @@ public class AnnotationProxyGenerator {
             final Type type = field.getValue();
 
             final FieldVisitor fieldVisitor = classVisitor.visitField(
-                    ACC_PRIVATE + ACC_FINAL,
+                    ACC_PRIVATE | ACC_FINAL,
                     name,
                     type.getDescriptor(),
                     null,
