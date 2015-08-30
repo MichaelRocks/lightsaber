@@ -431,7 +431,12 @@ public class AnnotationProxyGenerator {
 
         methodVisitor.visitIntInsn(BIPUSH, ')');
         generateStringBuilderAppendInvocation(methodVisitor, Type.CHAR_TYPE);
-        methodVisitor.visitMethodInsn(INVOKEVIRTUAL, STRING_BUILDER_TYPE_NAME, "toString", "()Ljava/lang/String;", false);
+        methodVisitor.visitMethodInsn(
+                INVOKEVIRTUAL,
+                STRING_BUILDER_TYPE_NAME,
+                TO_STRING_METHOD.getName(),
+                TO_STRING_METHOD.getDescriptor(),
+                false);
 
         methodVisitor.visitInsn(ARETURN);
         methodVisitor.visitMaxs(0, 0);
