@@ -352,6 +352,34 @@ public class AnnotationProxyGeneratorTest {
         final int hashCode2 = annotation.hashCode();
     }
 
+    @Test
+    public void testToStringCaching() throws Exception {
+        final IntAnnotation intAnnotation = new IntAnnotation() {
+            private volatile boolean toStringCalled = false;
+
+            @Override
+            @Nonnull
+            public Class<? extends Annotation> annotationType() {
+                return IntAnnotation.class;
+            }
+
+            @Override
+            public int value() {
+                return 0;
+            }
+
+            @Override
+            public String toString() {
+                assertFalse(toStringCalled);
+                toStringCalled = true;
+                return "";
+            }
+        };
+        final AnnotationAnnotation annotation = createAnnotationProxy(AnnotationAnnotation.class, intAnnotation);
+        final String toString1 = annotation.toString();
+        final String toString2 = annotation.toString();
+    }
+
     private <T extends Annotation> void assertAnnotationEquals(final Class<T> annotationClass,
             final Object... values) throws Exception {
         final T expectedAnnotation = getAnnotation(annotationClass);
