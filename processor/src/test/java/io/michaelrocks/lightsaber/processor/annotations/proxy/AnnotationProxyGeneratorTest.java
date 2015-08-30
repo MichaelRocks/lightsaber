@@ -364,7 +364,6 @@ public class AnnotationProxyGeneratorTest {
     }
 
     private static String getAnnotationProxyClassName(final Class<? extends Annotation> annotationClass) {
-//        return annotationClass.getName() + "Proxy";
         return annotationClass.getSimpleName() + "Proxy";
     }
 
