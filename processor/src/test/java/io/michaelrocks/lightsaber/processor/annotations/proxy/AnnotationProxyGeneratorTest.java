@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.objectweb.asm.Type;
 
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -321,6 +322,34 @@ public class AnnotationProxyGeneratorTest {
                 + ")";
         final String actual = annotation.toString();
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testHashCodeCaching() throws Exception {
+        final IntAnnotation intAnnotation = new IntAnnotation() {
+            private volatile boolean hashCodeCalled = false;
+
+            @Override
+            @Nonnull
+            public Class<? extends Annotation> annotationType() {
+                return IntAnnotation.class;
+            }
+
+            @Override
+            public int value() {
+                return 0;
+            }
+
+            @Override
+            public int hashCode() {
+                assertFalse(hashCodeCalled);
+                hashCodeCalled = true;
+                return 0;
+            }
+        };
+        final AnnotationAnnotation annotation = createAnnotationProxy(AnnotationAnnotation.class, intAnnotation);
+        final int hashCode1 = annotation.hashCode();
+        final int hashCode2 = annotation.hashCode();
     }
 
     private <T extends Annotation> void assertAnnotationEquals(final Class<T> annotationClass,
