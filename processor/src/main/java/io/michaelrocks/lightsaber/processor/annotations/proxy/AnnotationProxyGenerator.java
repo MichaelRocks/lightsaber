@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber.processor.annotations.proxy;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
 import io.michaelrocks.lightsaber.processor.commons.Boxer;
 import io.michaelrocks.lightsaber.processor.commons.Types;
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -56,6 +57,9 @@ public class AnnotationProxyGenerator {
             MethodDescriptor.forMethod("doubleToLongBits", Type.LONG_TYPE, Type.DOUBLE_TYPE);
     private static final MethodDescriptor ANNOTATION_TYPE_METHOD =
             MethodDescriptor.forMethod("annotationType", Type.getType(Class.class));
+
+    private static final FieldDescriptor CACHED_HASH_CODE_FIELD =
+            new FieldDescriptor("$cachedHashCode", Types.BOXED_INT_TYPE);
 
     private static final MethodResolver stringBuilderAppendMethodResolver = new StringBuilderAppendMethodResolver();
 
@@ -106,6 +110,14 @@ public class AnnotationProxyGenerator {
                     null);
             fieldVisitor.visitEnd();
         }
+
+        final FieldVisitor cachedHashCodeField = classVisitor.visitField(
+                ACC_PRIVATE,
+                CACHED_HASH_CODE_FIELD.getName(),
+                CACHED_HASH_CODE_FIELD.getDescriptor(),
+                null,
+                null);
+        cachedHashCodeField.visitEnd();
     }
 
     private void generateConstructor(final ClassVisitor classVisitor) {
@@ -294,6 +306,21 @@ public class AnnotationProxyGenerator {
                 null);
         methodVisitor.visitCode();
 
+        final Label cacheHashCodeIsNullLabel = new Label();
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitFieldInsn(
+                GETFIELD,
+                proxyTypeName,
+                CACHED_HASH_CODE_FIELD.getName(),
+                CACHED_HASH_CODE_FIELD.getDescriptor());
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitJumpInsn(IFNULL, cacheHashCodeIsNullLabel);
+        Boxer.unbox(methodVisitor, Types.BOXED_INT_TYPE);
+        methodVisitor.visitInsn(IRETURN);
+
+        methodVisitor.visitLabel(cacheHashCodeIsNullLabel);
+        methodVisitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+
         methodVisitor.visitInsn(ICONST_0);
 
         for (final Map.Entry<String, Type> entry : annotation.getFields().entrySet()) {
@@ -301,6 +328,16 @@ public class AnnotationProxyGenerator {
             generateHashCodeComputationForField(methodVisitor, entry.getKey(), entry.getValue());
             methodVisitor.visitInsn(IADD);
         }
+
+        methodVisitor.visitInsn(DUP);
+        Boxer.box(methodVisitor, Type.INT_TYPE);
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitInsn(SWAP);
+        methodVisitor.visitFieldInsn(
+                PUTFIELD,
+                proxyTypeName,
+                CACHED_HASH_CODE_FIELD.getName(),
+                CACHED_HASH_CODE_FIELD.getDescriptor());
 
         methodVisitor.visitInsn(IRETURN);
         methodVisitor.visitMaxs(0, 0);
