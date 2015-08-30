@@ -60,6 +60,8 @@ public class AnnotationProxyGenerator {
 
     private static final FieldDescriptor CACHED_HASH_CODE_FIELD =
             new FieldDescriptor("$cachedHashCode", Types.BOXED_INT_TYPE);
+    private static final FieldDescriptor CACHED_TO_STRING_FIELD =
+            new FieldDescriptor("$cachedToString", Types.STRING_TYPE);
 
     private static final MethodResolver stringBuilderAppendMethodResolver = new StringBuilderAppendMethodResolver();
 
@@ -118,6 +120,14 @@ public class AnnotationProxyGenerator {
                 null,
                 null);
         cachedHashCodeField.visitEnd();
+
+        final FieldVisitor cachedToStringField = classVisitor.visitField(
+                ACC_PRIVATE,
+                CACHED_TO_STRING_FIELD.getName(),
+                CACHED_TO_STRING_FIELD.getDescriptor(),
+                null,
+                null);
+        cachedToStringField.visitEnd();
     }
 
     private void generateConstructor(final ClassVisitor classVisitor) {
@@ -407,6 +417,20 @@ public class AnnotationProxyGenerator {
                 null);
         methodVisitor.visitCode();
 
+        final Label cachedToStringIsNullLabel = new Label();
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitFieldInsn(
+                GETFIELD,
+                proxyTypeName,
+                CACHED_TO_STRING_FIELD.getName(),
+                CACHED_TO_STRING_FIELD.getDescriptor());
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitJumpInsn(IFNULL, cachedToStringIsNullLabel);
+        methodVisitor.visitInsn(ARETURN);
+
+        methodVisitor.visitLabel(cachedToStringIsNullLabel);
+        methodVisitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+
         methodVisitor.visitTypeInsn(NEW, STRING_BUILDER_TYPE_NAME);
         methodVisitor.visitInsn(DUP);
         final MethodDescriptor constructor = MethodDescriptor.forDefaultConstructor();
@@ -437,6 +461,15 @@ public class AnnotationProxyGenerator {
                 TO_STRING_METHOD.getName(),
                 TO_STRING_METHOD.getDescriptor(),
                 false);
+
+        methodVisitor.visitInsn(DUP);
+        methodVisitor.visitVarInsn(ALOAD, 0);
+        methodVisitor.visitInsn(SWAP);
+        methodVisitor.visitFieldInsn(
+                PUTFIELD,
+                proxyTypeName,
+                CACHED_TO_STRING_FIELD.getName(),
+                CACHED_TO_STRING_FIELD.getDescriptor());
 
         methodVisitor.visitInsn(ARETURN);
         methodVisitor.visitMaxs(0, 0);
