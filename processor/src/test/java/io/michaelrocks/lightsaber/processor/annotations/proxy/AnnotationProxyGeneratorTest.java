@@ -50,6 +50,7 @@ public class AnnotationProxyGeneratorTest {
     @ShortAnnotation
     @StringAnnotation
     @EnumAnnotation
+    @ClassAnnotation
     @AnnotationAnnotation
     @BooleanArrayAnnotation
     @ByteArrayAnnotation
@@ -61,6 +62,7 @@ public class AnnotationProxyGeneratorTest {
     @ShortArrayAnnotation
     @StringArrayAnnotation
     @EnumArrayAnnotation
+    @ClassArrayAnnotation
     @AnnotationArrayAnnotation
     @CompositeAnnotation
     private static final Object ANNOTATION_HOLDER = new Object();
@@ -156,6 +158,12 @@ public class AnnotationProxyGeneratorTest {
     }
 
     @Test
+    public void testClassAnnotation() throws Exception {
+        assertAnnotationEquals(ClassAnnotation.class, Object.class);
+        assertAnnotationNotEquals(ClassAnnotation.class, String.class);
+    }
+
+    @Test
     public void testAnnotationAnnotation() throws Exception {
         assertAnnotationEquals(AnnotationAnnotation.class, createAnnotationProxy(IntAnnotation.class, 42));
         assertAnnotationNotEquals(AnnotationAnnotation.class, createAnnotationProxy(IntAnnotation.class, -42));
@@ -224,6 +232,12 @@ public class AnnotationProxyGeneratorTest {
     }
 
     @Test
+    public void testClassArrayAnnotation() throws Exception {
+        assertAnnotationEquals(ClassArrayAnnotation.class, new Object[] { new Class<?>[] { Object.class } });
+        assertAnnotationNotEquals(ClassArrayAnnotation.class, new Object[] { new Class<?>[] { String.class } });
+    }
+
+    @Test
     public void testAnnotationArrayAnnotation() throws Exception {
         assertAnnotationEquals(AnnotationArrayAnnotation.class,
                 new Object[] { new IntAnnotation[] { createAnnotationProxy(IntAnnotation.class, 42) } });
@@ -244,6 +258,7 @@ public class AnnotationProxyGeneratorTest {
                 (short) 42,
                 "Value",
                 RetentionPolicy.RUNTIME,
+                Object.class,
                 createAnnotationProxy(IntAnnotation.class, 42),
                 new boolean[] { true },
                 new byte[] { (byte) 42 },
@@ -255,6 +270,7 @@ public class AnnotationProxyGeneratorTest {
                 new short[] { (short) 42 },
                 new String[] { "Value" },
                 new RetentionPolicy[] { RetentionPolicy.RUNTIME },
+                new Class<?>[] { Object.class },
                 new IntAnnotation[] { createAnnotationProxy(IntAnnotation.class, 42) });
     }
 
@@ -279,6 +295,7 @@ public class AnnotationProxyGeneratorTest {
                 (short) 42,
                 "Value",
                 RetentionPolicy.RUNTIME,
+                Object.class,
                 createAnnotationProxy(IntAnnotation.class, 42),
                 new boolean[] { true, false },
                 new byte[] { 42, 43 },
@@ -290,6 +307,7 @@ public class AnnotationProxyGeneratorTest {
                 new short[] { 42, 43 },
                 new String[] { "Value1", "Value2" },
                 new RetentionPolicy[] { RetentionPolicy.RUNTIME, RetentionPolicy.CLASS },
+                new Class<?>[] { Object.class },
                 new IntAnnotation[] {
                         createAnnotationProxy(IntAnnotation.class, 42),
                         createAnnotationProxy(IntAnnotation.class, 43)
@@ -306,6 +324,7 @@ public class AnnotationProxyGeneratorTest {
                 + "shortValue=42, "
                 + "stringValue=Value, "
                 + "enumValue=RUNTIME, "
+                + "classValue=class java.lang.Object, "
                 + "annotationValue=@" + IntAnnotation.class.getName() + "(value=42), "
                 + "booleanArrayValue=[true, false], "
                 + "byteArrayValue=[42, 43], "
@@ -317,6 +336,7 @@ public class AnnotationProxyGeneratorTest {
                 + "shortArrayValue=[42, 43], "
                 + "stringArrayValue=[Value1, Value2], "
                 + "enumArrayValue=[RUNTIME, CLASS], "
+                + "classArrayValue=[class java.lang.Object], "
                 + "annotationArrayValue=["
                 + "@" + IntAnnotation.class.getName() + "(value=42), @" + IntAnnotation.class.getName() + "(value=43)]"
                 + ")";
@@ -506,6 +526,11 @@ public class AnnotationProxyGeneratorTest {
     }
 
     @Retention(RetentionPolicy.RUNTIME)
+    public @interface ClassAnnotation {
+        Class<?> value() default Object.class;
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
     public @interface AnnotationAnnotation {
         IntAnnotation value() default @IntAnnotation;
     }
@@ -561,6 +586,11 @@ public class AnnotationProxyGeneratorTest {
     }
 
     @Retention(RetentionPolicy.RUNTIME)
+    public @interface ClassArrayAnnotation {
+        Class<?>[] value() default { Object.class };
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
     public @interface AnnotationArrayAnnotation {
         IntAnnotation[] value() default { @IntAnnotation };
     }
@@ -577,18 +607,20 @@ public class AnnotationProxyGeneratorTest {
         @Order( 7) short shortValue() default 42;
         @Order( 8) String stringValue() default "Value";
         @Order( 9) RetentionPolicy enumValue() default RetentionPolicy.RUNTIME;
-        @Order(10) IntAnnotation annotationValue() default @IntAnnotation;
-        @Order(11) boolean[] booleanArrayValue() default { true };
-        @Order(12) byte[] byteArrayValue() default { 42 };
-        @Order(13) char[] charArrayValue() default { 'x' };
-        @Order(14) float[] floatArrayValue() default { 2.7182818284590452354f };
-        @Order(15) double[] doubleArrayValue() default { 3.14159265358979323846 };
-        @Order(16) int[] intArrayValue() default { 42 };
-        @Order(17) long[] longArrayValue() default { 42L };
-        @Order(18) short[] shortArrayValue() default { 42 };
-        @Order(19) String[] stringArrayValue() default { "Value" };
-        @Order(20) RetentionPolicy[] enumArrayValue() default { RetentionPolicy.RUNTIME };
-        @Order(21) IntAnnotation[] annotationArrayValue() default { @IntAnnotation };
+        @Order(10) Class<?> classValue() default Object.class;
+        @Order(11) IntAnnotation annotationValue() default @IntAnnotation;
+        @Order(12) boolean[] booleanArrayValue() default { true };
+        @Order(13) byte[] byteArrayValue() default { 42 };
+        @Order(14) char[] charArrayValue() default { 'x' };
+        @Order(15) float[] floatArrayValue() default { 2.7182818284590452354f };
+        @Order(16) double[] doubleArrayValue() default { 3.14159265358979323846 };
+        @Order(17) int[] intArrayValue() default { 42 };
+        @Order(18) long[] longArrayValue() default { 42L };
+        @Order(19) short[] shortArrayValue() default { 42 };
+        @Order(20) String[] stringArrayValue() default { "Value" };
+        @Order(21) RetentionPolicy[] enumArrayValue() default { RetentionPolicy.RUNTIME };
+        @Order(22) Class<?>[] classArrayValue() default { Object.class };
+        @Order(23) IntAnnotation[] annotationArrayValue() default { @IntAnnotation };
     }
 
     @Retention(RetentionPolicy.RUNTIME)
