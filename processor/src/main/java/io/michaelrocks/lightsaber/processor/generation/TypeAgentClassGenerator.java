@@ -26,6 +26,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
@@ -76,9 +77,9 @@ public class TypeAgentClassGenerator {
         return classWriter.toByteArray();
     }
 
-    private void generateConstructor(final ClassWriter classWriter) {
+    private void generateConstructor(final ClassVisitor classVisitor) {
         final MethodDescriptor defaultConstructor = MethodDescriptor.forConstructor();
-        final MethodVisitor methodVisitor = classWriter.visitMethod(
+        final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 ACC_PUBLIC,
                 defaultConstructor.getName(),
                 defaultConstructor.getDescriptor(),
@@ -97,8 +98,8 @@ public class TypeAgentClassGenerator {
         methodVisitor.visitEnd();
     }
 
-    private void generateGetTypeMethod(final ClassWriter classWriter) {
-        final MethodVisitor methodVisitor = classWriter.visitMethod(
+    private void generateGetTypeMethod(final ClassVisitor classVisitor) {
+        final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 ACC_PUBLIC,
                 GET_TYPE_METHOD_NAME,
                 Type.getMethodDescriptor(Type.getType(Class.class)),
@@ -113,8 +114,8 @@ public class TypeAgentClassGenerator {
         methodVisitor.visitEnd();
     }
 
-    private void generateInjectFieldsMethod(final ClassWriter classWriter) {
-        final MethodVisitor methodVisitor = classWriter.visitMethod(
+    private void generateInjectFieldsMethod(final ClassVisitor classVisitor) {
+        final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 ACC_PUBLIC,
                 INJECT_FIELDS_METHOD_NAME,
                 Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
@@ -155,8 +156,8 @@ public class TypeAgentClassGenerator {
                 qualifiedField.getRawType().getDescriptor());
     }
 
-    private void generateInjectMethodsMethod(final ClassWriter classWriter) {
-        final MethodVisitor methodVisitor = classWriter.visitMethod(
+    private void generateInjectMethodsMethod(final ClassVisitor classVisitor) {
+        final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 ACC_PUBLIC,
                 INJECT_METHODS_METHOD_NAME,
                 Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
