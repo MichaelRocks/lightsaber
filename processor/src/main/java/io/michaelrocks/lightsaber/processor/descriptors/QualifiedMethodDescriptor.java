@@ -47,11 +47,10 @@ public class QualifiedMethodDescriptor {
     }
 
     public static QualifiedMethodDescriptor from(final MethodDescriptor method,
-            final Map<Integer, AnnotationData> parameterQualifiers, final AnnotationData resultQualifier) {
+            final Map<Integer, AnnotationData> parameterQualifiersMap, final AnnotationData resultQualifier) {
         final int parameterCount = method.getArgumentTypes().size();
-        return new QualifiedMethodDescriptor(method, toQualifierList(parameterQualifiers, parameterCount),
-                resultQualifier
-        );
+        final List<AnnotationData> parameterQualifiers = toQualifierList(parameterQualifiersMap, parameterCount);
+        return new QualifiedMethodDescriptor(method, parameterQualifiers, resultQualifier);
     }
 
     private static List<AnnotationData> toQualifierList(
