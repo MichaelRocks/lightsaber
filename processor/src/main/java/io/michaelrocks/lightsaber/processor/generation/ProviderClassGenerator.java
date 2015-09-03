@@ -25,6 +25,7 @@ import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -61,8 +62,7 @@ public class ProviderClassGenerator {
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(CopyableProvider.class) });
 
-        generateModuleField(classWriter);
-        generateInjectorField(classWriter);
+        generateFields(classWriter);
         generateConstructor(classWriter);
         generateGetMethod(classWriter);
         generateCopyWithInjector(classWriter);
@@ -71,8 +71,13 @@ public class ProviderClassGenerator {
         return classWriter.toByteArray();
     }
 
-    private void generateModuleField(final ClassWriter classWriter) {
-        final FieldVisitor fieldVisitor = classWriter.visitField(
+    private void generateFields(final ClassVisitor classVisitor) {
+        generateModuleField(classVisitor);
+        generateInjectorField(classVisitor);
+    }
+
+    private void generateModuleField(final ClassVisitor classVisitor) {
+        final FieldVisitor fieldVisitor = classVisitor.visitField(
                 ACC_PRIVATE | ACC_FINAL,
                 MODULE_FIELD_NAME,
                 provider.getModuleType().getDescriptor(),
@@ -81,8 +86,8 @@ public class ProviderClassGenerator {
         fieldVisitor.visitEnd();
     }
 
-    private void generateInjectorField(final ClassWriter classWriter) {
-        final FieldVisitor fieldVisitor = classWriter.visitField(
+    private void generateInjectorField(final ClassVisitor classVisitor) {
+        final FieldVisitor fieldVisitor = classVisitor.visitField(
                 ACC_PRIVATE | ACC_FINAL,
                 INJECTOR_FIELD_NAME,
                 Type.getDescriptor(Injector.class),
@@ -91,9 +96,9 @@ public class ProviderClassGenerator {
         fieldVisitor.visitEnd();
     }
 
-    private void generateConstructor(final ClassWriter classWriter) {
+    private void generateConstructor(final ClassVisitor classVisitor) {
         final MethodDescriptor providerConstructor = getProviderConstructor();
-        final MethodVisitor methodVisitor = classWriter.visitMethod(
+        final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 ACC_PUBLIC,
                 providerConstructor.getName(),
                 providerConstructor.getDescriptor(),
@@ -127,8 +132,8 @@ public class ProviderClassGenerator {
         methodVisitor.visitEnd();
     }
 
-    private void generateGetMethod(final ClassWriter classWriter) {
-        final MethodVisitor methodVisitor = classWriter.visitMethod(
+    private void generateGetMethod(final ClassVisitor classVisitor) {
+        final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 ACC_PUBLIC,
                 GET_METHOD_NAME,
                 Type.getMethodDescriptor(Type.getType(Object.class)),
@@ -225,13 +230,12 @@ public class ProviderClassGenerator {
                 INVOKESTATIC,
                 processorContext.getInjectorFactoryType().getInternalName(),
                 INJECT_MEMBERS_METHOD_NAME,
-                Type.getMethodDescriptor(
-                        Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
+                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
                 false);
     }
 
-    private void generateCopyWithInjector(final ClassWriter classWriter) {
-        final MethodVisitor methodVisitor = classWriter.visitMethod(
+    private void generateCopyWithInjector(final ClassVisitor classVisitor) {
+        final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 ACC_PUBLIC,
                 COPY_WITH_INJECTOR_METHOD_NAME,
                 Type.getMethodDescriptor(Type.getType(CopyableProvider.class), Type.getType(Injector.class)),
