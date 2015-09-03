@@ -16,8 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.annotations.proxy;
 
+import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
 import io.michaelrocks.lightsaber.processor.commons.Boxer;
+import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
@@ -65,12 +67,15 @@ public class AnnotationProxyGenerator {
 
     private static final MethodResolver stringBuilderAppendMethodResolver = new StringBuilderAppendMethodResolver();
 
+    private final ProcessorContext processorContext;
     private final AnnotationDescriptor annotation;
 
     private final String annotationTypeName;
     private final String proxyTypeName;
 
-    public AnnotationProxyGenerator(final AnnotationDescriptor annotation, final Type proxyType) {
+    public AnnotationProxyGenerator(final ProcessorContext processorContext, final AnnotationDescriptor annotation,
+            final Type proxyType) {
+        this.processorContext = processorContext;
         this.annotation = annotation;
 
         this.annotationTypeName = annotation.getType().getInternalName();
@@ -78,7 +83,8 @@ public class AnnotationProxyGenerator {
     }
 
     public byte[] generate() {
-        final ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+        final ClassWriter classWriter =
+                new StandaloneClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES, processorContext);
         classWriter.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,

@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.annotations.proxy;
 
+import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptorBuilder;
 import org.junit.Before;
@@ -35,6 +36,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("unused")
 @ParametersAreNonnullByDefault
@@ -433,10 +436,11 @@ public class AnnotationProxyGeneratorTest {
     }
 
     private void addAnnotationProxy(final Class<? extends Annotation> annotationClass) {
+        final ProcessorContext processorContext = mock(ProcessorContext.class, RETURNS_DEEP_STUBS);
         final AnnotationDescriptor annotationDescriptor = getAnnotationDescriptor(annotationClass);
         final Type annotationProxyType = Type.getObjectType(getAnnotationProxyClassName(annotationClass));
         final AnnotationProxyGenerator annotationProxyGenerator =
-                new AnnotationProxyGenerator(annotationDescriptor, annotationProxyType);
+                new AnnotationProxyGenerator(processorContext, annotationDescriptor, annotationProxyType);
         classLoader.addClass(annotationProxyType.getInternalName(), annotationProxyGenerator.generate());
     }
 
