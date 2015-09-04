@@ -31,6 +31,14 @@ public class Key<T> {
         this.qualifier = qualifier;
     }
 
+    public static <T> Key<T> of(final Class<T> type) {
+        return new Key<T>(type);
+    }
+
+    public static <T> Key<T> of(final Class<T> type, final Annotation annotation) {
+        return new Key<T>(type, annotation);
+    }
+
     public Class<T> getType() {
         return type;
     }
