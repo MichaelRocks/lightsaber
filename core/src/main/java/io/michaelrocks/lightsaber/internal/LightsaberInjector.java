@@ -20,14 +20,17 @@ import io.michaelrocks.lightsaber.ConfigurationException;
 import io.michaelrocks.lightsaber.CopyableProvider;
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.InstanceProvider;
+import io.michaelrocks.lightsaber.Key;
 
 import javax.inject.Provider;
-import java.util.IdentityHashMap;
+import java.util.HashMap;
 import java.util.Map;
 
 public class LightsaberInjector implements Injector {
+    private static final Key<Injector> INJECTOR_KEY = new Key<Injector>(Injector.class);
+
     private final Injector parentInjector;
-    private final Map<Class<?>, Provider<?>> providers = new IdentityHashMap<Class<?>, Provider<?>>();
+    private final Map<Key<?>, Provider<?>> providers = new HashMap<Key<?>, Provider<?>>();
 
     public LightsaberInjector() {
         this(null);
@@ -35,18 +38,18 @@ public class LightsaberInjector implements Injector {
 
     public LightsaberInjector(final Injector parentInjector) {
         this.parentInjector = parentInjector;
-        registerProvider(Injector.class, new InstanceProvider<Injector>(this));
+        registerProvider(INJECTOR_KEY, new InstanceProvider<Injector>(this));
         if (parentInjector != null) {
             copyParentProviders();
         }
     }
 
     private void copyParentProviders() {
-        for (final Map.Entry<Class<?>, Provider<?>> entry : parentInjector.getAllProviders().entrySet()) {
-            if (entry.getKey() != Injector.class && entry.getValue() instanceof CopyableProvider) {
+        for (final Map.Entry<Key<?>, Provider<?>> entry : parentInjector.getAllProviders().entrySet()) {
+            if (!INJECTOR_KEY.equals(entry.getKey()) && entry.getValue() instanceof CopyableProvider) {
                 // noinspection unchecked
                 registerProvider(
-                        (Class<Object>) entry.getKey(),
+                        (Key<Object>) entry.getKey(),
                         ((CopyableProvider<Object>) entry.getValue()).copyWithInjector(this));
             }
         }
@@ -59,33 +62,33 @@ public class LightsaberInjector implements Injector {
     }
 
     @Override
-    public <T> T getInstance(final Class<T> type) {
-        return getProvider(type).get();
+    public <T> T getInstance(final Key<T> key) {
+        return getProvider(key).get();
     }
 
     @Override
-    public <T> Provider<T> getProvider(final Class<T> type) {
+    public <T> Provider<T> getProvider(final Key<T> key) {
         // noinspection unchecked
-        final Provider<T> provider = (Provider<T>) providers.get(type);
+        final Provider<T> provider = (Provider<T>) providers.get(key);
         if (provider == null) {
             if (parentInjector == null) {
-                throw new ConfigurationException("Provider for " + type + " not found");
+                throw new ConfigurationException("Provider for " + key + " not found");
             } else {
-                return parentInjector.getProvider(type);
+                return parentInjector.getProvider(key);
             }
         }
         return provider;
     }
 
     @Override
-    public Map<Class<?>, Provider<?>> getAllProviders() {
-        return new IdentityHashMap<Class<?>, Provider<?>>(providers);
+    public Map<Key<?>, Provider<?>> getAllProviders() {
+        return new HashMap<Key<?>, Provider<?>>(providers);
     }
 
-    public <T> void registerProvider(final Class<T> type, final CopyableProvider<T> provider) {
-        final Provider<?> oldProvider = providers.put(type, provider);
+    public <T> void registerProvider(final Key<T> key, final CopyableProvider<T> provider) {
+        final Provider<?> oldProvider = providers.put(key, provider);
         if (oldProvider != null) {
-            throw new ConfigurationException("Provider for " + type + " already registered");
+            throw new ConfigurationException("Provider for " + key + " already registered");
         }
     }
 }

@@ -16,18 +16,25 @@
 
 package io.michaelrocks.lightsaber.processor.commons;
 
+import io.michaelrocks.lightsaber.Key;
 import io.michaelrocks.lightsaber.Provides;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.objectweb.asm.Type;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
+import java.lang.annotation.Annotation;
 
 public class Types {
     public static final Type OBJECT_TYPE = Type.getType(Object.class);
     public static final Type STRING_TYPE = Type.getType(String.class);
     public static final Type INJECT_TYPE = Type.getType(Inject.class);
     public static final Type PROVIDES_TYPE = Type.getType(Provides.class);
+    public static final Type PROVIDER_TYPE = Type.getType(Provider.class);
+    public static final Type KEY_TYPE = Type.getType(Key.class);
+    public static final Type CLASS_TYPE = Type.getType(Class.class);
+    public static final Type ANNOTATION_TYPE = Type.getType(Annotation.class);
 
     public static final Type BOXED_VOID_TYPE = Type.getType(Byte.class);
     public static final Type BOXED_BOOLEAN_TYPE = Type.getType(Boolean.class);
