@@ -22,6 +22,8 @@ import io.michaelrocks.lightsaber.internal.InternalModule;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
+import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
@@ -39,11 +41,13 @@ public class ModulePatcher extends ProcessorClassVisitor {
     private static final MethodDescriptor KEY_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
 
+    private final AnnotationCreator annotationCreator;
     private final ModuleDescriptor module;
 
     public ModulePatcher(final ProcessorContext processorContext, final ClassVisitor classVisitor,
-            final ModuleDescriptor module) {
+            final AnnotationCreator annotationCreator, final ModuleDescriptor module) {
         super(processorContext, classVisitor);
+        this.annotationCreator = annotationCreator;
         this.module = module;
     }
 
@@ -100,6 +104,12 @@ public class ModulePatcher extends ProcessorClassVisitor {
         final QualifiedType providableType = provider.getQualifiedProvidableType();
         generator.push(Types.box(providableType.getType()));
         generator.pushNull();
+        final AnnotationData qualifier = providableType.getQualifier();
+        if (qualifier == null) {
+            generator.pushNull();
+        } else {
+            annotationCreator.newAnnotation(generator, qualifier);
+        }
         generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR);
     }
 

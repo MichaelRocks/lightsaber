@@ -20,6 +20,7 @@ import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.internal.TypeAgent;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
+import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
@@ -56,10 +57,13 @@ public class TypeAgentClassGenerator {
             MethodDescriptor.forMethod(GET_PROVIDER_METHOD_NAME, Types.PROVIDER_TYPE, Types.KEY_TYPE);
 
     private final ProcessorContext processorContext;
+    private final AnnotationCreator annotationCreator;
     private final InjectorDescriptor injector;
 
-    public TypeAgentClassGenerator(final ProcessorContext processorContext, final InjectorDescriptor injector) {
+    public TypeAgentClassGenerator(final ProcessorContext processorContext, final AnnotationCreator annotationCreator,
+            final InjectorDescriptor injector) {
         this.processorContext = processorContext;
+        this.annotationCreator = annotationCreator;
         this.injector = injector;
     }
 
@@ -136,7 +140,11 @@ public class TypeAgentClassGenerator {
             generator.newInstance(Types.KEY_TYPE);
             generator.dup();
             generator.push(dependencyType);
-            generator.pushNull();
+            if (injectableField.getQualifier() == null) {
+                generator.pushNull();
+            } else {
+                annotationCreator.newAnnotation(generator, injectableField.getQualifier());
+            }
             generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR);
             generator.putStatic(injector.getInjectorType(), KEY_FIELD_NAME_PREFIX + i, Types.KEY_TYPE);
 
@@ -158,7 +166,11 @@ public class TypeAgentClassGenerator {
                 generator.newInstance(Types.KEY_TYPE);
                 generator.dup();
                 generator.push(dependencyType);
-                generator.pushNull();
+                if (parameterQualifier == null) {
+                    generator.pushNull();
+                } else {
+                    annotationCreator.newAnnotation(generator, parameterQualifier);
+                }
                 generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR);
                 generator.putStatic(injector.getInjectorType(), KEY_FIELD_NAME_PREFIX + i + '_' + j, Types.KEY_TYPE);
             }

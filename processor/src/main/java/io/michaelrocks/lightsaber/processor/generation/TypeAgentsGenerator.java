@@ -18,15 +18,19 @@ package io.michaelrocks.lightsaber.processor.generation;
 
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 
 public class TypeAgentsGenerator {
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
+    private final AnnotationCreator annotationCreator;
 
-    public TypeAgentsGenerator(final ClassProducer classProducer, final ProcessorContext processorContext) {
+    public TypeAgentsGenerator(final ClassProducer classProducer, final ProcessorContext processorContext,
+            final AnnotationCreator annotationCreator) {
         this.classProducer = classProducer;
         this.processorContext = processorContext;
+        this.annotationCreator = annotationCreator;
     }
 
     public void generateInjectors() {
@@ -36,7 +40,8 @@ public class TypeAgentsGenerator {
     }
 
     private void generateTypeAgent(final InjectorDescriptor injectorDescriptor) {
-        final TypeAgentClassGenerator generator = new TypeAgentClassGenerator(processorContext, injectorDescriptor);
+        final TypeAgentClassGenerator generator = new TypeAgentClassGenerator(processorContext, annotationCreator,
+                injectorDescriptor);
         final byte[] injectorClassData = generator.generate();
         classProducer.produceClass(injectorDescriptor.getInjectorType().getInternalName(), injectorClassData);
     }

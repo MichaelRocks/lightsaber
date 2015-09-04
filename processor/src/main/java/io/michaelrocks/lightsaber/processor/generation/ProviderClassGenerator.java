@@ -20,6 +20,7 @@ import io.michaelrocks.lightsaber.CopyableProvider;
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
+import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.commons.Boxer;
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
@@ -52,10 +53,13 @@ public class ProviderClassGenerator {
             MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
 
     private final ProcessorContext processorContext;
+    private final AnnotationCreator annotationCreator;
     private final ProviderDescriptor provider;
 
-    public ProviderClassGenerator(final ProcessorContext processorContext, final ProviderDescriptor provider) {
+    public ProviderClassGenerator(final ProcessorContext processorContext, final AnnotationCreator annotationCreator,
+            final ProviderDescriptor provider) {
         this.processorContext = processorContext;
+        this.annotationCreator = annotationCreator;
         this.provider = provider;
     }
 
@@ -121,6 +125,9 @@ public class ProviderClassGenerator {
 
     private void generateStaticInitializer(final ClassWriter classWriter) {
         final List<TypeSignature> argumentTypes = provider.getProviderMethod().getArgumentTypes();
+        final List<AnnotationData> parameterQualifiers = provider.getProviderMethod().getParameterQualifiers();
+        Validate.isTrue(argumentTypes.size() == parameterQualifiers.size());
+
         if (argumentTypes.isEmpty()) {
             return;
         }
@@ -132,13 +139,18 @@ public class ProviderClassGenerator {
 
         for (int i = 0, count = argumentTypes.size(); i < count; ++i) {
             final TypeSignature argumentType = argumentTypes.get(i);
+            final AnnotationData parameterQualifier = parameterQualifiers.get(i);
             final Type dependencyType = argumentType.getParameterType() != null
                     ? argumentType.getParameterType() : Types.box(argumentType.getRawType());
 
             generator.newInstance(Types.KEY_TYPE);
             generator.dup();
             generator.push(dependencyType);
-            generator.pushNull();
+            if (parameterQualifier == null) {
+                generator.pushNull();
+            } else {
+                annotationCreator.newAnnotation(generator, parameterQualifier);
+            }
             generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR);
             generator.putStatic(provider.getProviderType(), KEY_FIELD_NAME_PREFIX + i, Types.KEY_TYPE);
         }

@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber.processor;
 
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer;
+import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -55,6 +56,7 @@ public class ClassProcessor {
 
     private final ProcessorContext processorContext = new ProcessorContext();
     private final ClassProducer classProducer;
+    private final AnnotationCreator annotationCreator;
 
     public ClassProcessor(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter,
             final List<File> libraries) {
@@ -63,6 +65,7 @@ public class ClassProcessor {
         this.libraries = new ArrayList<>(libraries);
 
         this.classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
+        this.annotationCreator = new AnnotationCreator(processorContext, classProducer);
     }
 
     public void processClasses() throws IOException {
@@ -156,7 +159,8 @@ public class ClassProcessor {
     }
 
     private void generateProviders() throws ProcessingException {
-        final ProvidersGenerator providersGenerator = new ProvidersGenerator(classProducer, processorContext);
+        final ProvidersGenerator providersGenerator =
+                new ProvidersGenerator(classProducer, processorContext, annotationCreator);
         providersGenerator.generateProviders();
         checkErrors();
     }
@@ -169,14 +173,15 @@ public class ClassProcessor {
     }
 
     private void generateInjectors() throws ProcessingException {
-        final TypeAgentsGenerator typeAgentsGenerator = new TypeAgentsGenerator(classProducer, processorContext);
+        final TypeAgentsGenerator typeAgentsGenerator =
+                new TypeAgentsGenerator(classProducer, processorContext, annotationCreator);
         typeAgentsGenerator.generateInjectors();
         checkErrors();
     }
 
     private void copyAndPatchClasses() throws IOException {
         final InjectionClassFileVisitor injectionVisitor =
-                new InjectionClassFileVisitor(classFileWriter, processorContext);
+                new InjectionClassFileVisitor(classFileWriter, processorContext, annotationCreator);
         classFileReader.accept(injectionVisitor);
     }
 
