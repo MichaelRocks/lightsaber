@@ -96,7 +96,8 @@ public class PrimitiveTest {
     public void testUnboxedForUnboxedConstruction() {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
         final Injector injector = Lightsaber.createInjector(module);
-        final UnboxedConstructableContainer container = injector.getInstance(UnboxedConstructableContainer.class);
+        final UnboxedConstructableContainer container =
+                injector.getInstance(Key.of(UnboxedConstructableContainer.class));
 
         assertEquals(module.provideBoolean(), container.booleanField);
         assertEquals(module.provideByte(), container.byteField);
@@ -112,7 +113,8 @@ public class PrimitiveTest {
     public void testUnboxedForBoxedConstruction() {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
         final Injector injector = Lightsaber.createInjector(module);
-        final BoxedConstructableContainer container = injector.getInstance(BoxedConstructableContainer.class);
+        final BoxedConstructableContainer container =
+                injector.getInstance(Key.of(BoxedConstructableContainer.class));
 
         assertEquals(module.provideBoolean(), container.booleanField);
         assertEquals(module.provideByte(), (byte) container.byteField);
@@ -128,7 +130,8 @@ public class PrimitiveTest {
     public void testBoxedForUnboxedConstruction() {
         final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
         final Injector injector = Lightsaber.createInjector(module);
-        final UnboxedConstructableContainer container = injector.getInstance(UnboxedConstructableContainer.class);
+        final UnboxedConstructableContainer container =
+                injector.getInstance(Key.of(UnboxedConstructableContainer.class));
 
         assertEquals(module.provideBoolean(), container.booleanField);
         assertEquals(module.provideByte(), Byte.valueOf(container.byteField));
@@ -144,7 +147,8 @@ public class PrimitiveTest {
     public void testBoxedForBoxedConstruction() {
         final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
         final Injector injector = Lightsaber.createInjector(module);
-        final BoxedConstructableContainer container = injector.getInstance(BoxedConstructableContainer.class);
+        final BoxedConstructableContainer container =
+                injector.getInstance(Key.of(BoxedConstructableContainer.class));
 
         assertEquals(module.provideBoolean(), container.booleanField);
         assertEquals(module.provideByte(), container.byteField);
@@ -161,8 +165,8 @@ public class PrimitiveTest {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
         final Injector injector = Lightsaber.createInjector(module);
 
-        final UnboxedResult unboxedResult = injector.getInstance(UnboxedResult.class);
-        final BoxedResult boxedResult = injector.getInstance(BoxedResult.class);
+        final UnboxedResult unboxedResult = injector.getInstance(Key.of(UnboxedResult.class));
+        final BoxedResult boxedResult = injector.getInstance(Key.of(BoxedResult.class));
 
         assertNotNull(unboxedResult);
         assertNotNull(boxedResult);
@@ -173,8 +177,8 @@ public class PrimitiveTest {
         final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
         final Injector injector = Lightsaber.createInjector(module);
 
-        final UnboxedResult unboxedResult = injector.getInstance(UnboxedResult.class);
-        final BoxedResult boxedResult = injector.getInstance(BoxedResult.class);
+        final UnboxedResult unboxedResult = injector.getInstance(Key.of(UnboxedResult.class));
+        final BoxedResult boxedResult = injector.getInstance(Key.of(BoxedResult.class));
 
         assertNotNull(unboxedResult);
         assertNotNull(boxedResult);
