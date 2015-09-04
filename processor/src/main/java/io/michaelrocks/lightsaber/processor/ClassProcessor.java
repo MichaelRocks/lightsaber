@@ -54,12 +54,15 @@ public class ClassProcessor {
     private final List<File> libraries;
 
     private final ProcessorContext processorContext = new ProcessorContext();
+    private final ClassProducer classProducer;
 
     public ClassProcessor(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter,
             final List<File> libraries) {
         this.classFileWriter = classFileWriter;
         this.classFileReader = classFileReader;
         this.libraries = new ArrayList<>(libraries);
+
+        this.classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
     }
 
     public void processClasses() throws IOException {
@@ -144,7 +147,6 @@ public class ClassProcessor {
     }
 
     private void generateGlobalModule() throws ProcessingException {
-        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
         final PackageModuleClassGenerator packageModuleClassGenerator =
                 new PackageModuleClassGenerator(classProducer, processorContext);
         for (final ModuleDescriptor packageModule : processorContext.getPackageModules()) {
@@ -154,14 +156,12 @@ public class ClassProcessor {
     }
 
     private void generateProviders() throws ProcessingException {
-        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
         final ProvidersGenerator providersGenerator = new ProvidersGenerator(classProducer, processorContext);
         providersGenerator.generateProviders();
         checkErrors();
     }
 
     private void generateInjectorFactory() throws ProcessingException {
-        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
         final InjectorFactoryClassGenerator injectorFactoryClassGenerator =
                 new InjectorFactoryClassGenerator(classProducer, processorContext);
         injectorFactoryClassGenerator.generateInjectorFactory();
@@ -169,7 +169,6 @@ public class ClassProcessor {
     }
 
     private void generateInjectors() throws ProcessingException {
-        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
         final TypeAgentsGenerator typeAgentsGenerator = new TypeAgentsGenerator(classProducer, processorContext);
         typeAgentsGenerator.generateInjectors();
         checkErrors();
