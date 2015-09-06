@@ -56,7 +56,7 @@ public class AnnotationClassVisitor extends ClassVisitor {
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
             final String[] exceptions) {
         Validate.notNull(annotationDescriptorBuilder);
-        annotationDescriptorBuilder.addField(name, Type.getType(desc));
+        annotationDescriptorBuilder.addField(name, Type.getReturnType(desc));
         return new MethodVisitor(Opcodes.ASM5) {
             @Override
             public AnnotationVisitor visitAnnotationDefault() {
