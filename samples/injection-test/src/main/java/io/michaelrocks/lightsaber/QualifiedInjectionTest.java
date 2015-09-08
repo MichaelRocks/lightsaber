@@ -516,54 +516,103 @@ public class QualifiedInjectionTest {
         @Inject
         public ConstructorInjectionContainer(
                 final String noQualifier,
+                @EmptyQualifier
                 final String emptyQualifier,
+                @BooleanQualifier
                 final String booleanQualifier,
+                @BooleanQualifier(false)
                 final String booleanQualifierExplicit,
+                @ByteQualifier
                 final String byteQualifier,
+                @ByteQualifier(-42)
                 final String byteQualifierExplicit,
+                @CharQualifier
                 final String charQualifier,
+                @CharQualifier('y')
                 final String charQualifierExplicit,
+                @FloatQualifier
                 final String floatQualifier,
+                @FloatQualifier(-0.0f)
                 final String floatQualifierExplicit,
+                @DoubleQualifier
                 final String doubleQualifier,
+                @DoubleQualifier(-0.0f)
                 final String doubleQualifierExplicit,
+                @IntQualifier
                 final String intQualifier,
+                @IntQualifier(-42)
                 final String intQualifierExplicit,
+                @LongQualifier
                 final String longQualifier,
+                @LongQualifier(-42L)
                 final String longQualifierExplicit,
+                @ShortQualifier
                 final String shortQualifier,
+                @ShortQualifier(-42)
                 final String shortQualifierExplicit,
+                @StringQualifier
                 final String stringQualifier,
+                @StringQualifier("ExplicitValue")
                 final String stringQualifierExplicit,
+                @EnumQualifier
                 final String enumQualifier,
+                @EnumQualifier(RetentionPolicy.CLASS)
                 final String enumQualifierExplicit,
+                @ClassQualifier
                 final String classQualifier,
+                @ClassQualifier(String.class)
                 final String classQualifierExplicit,
+                @AnnotationQualifier
                 final String annotationQualifier,
+                @AnnotationQualifier(@IntQualifier(-42))
                 final String annotationQualifierExplicit,
+                @BooleanArrayQualifier
                 final String booleanArrayQualifier,
+                @BooleanArrayQualifier(false)
                 final String booleanArrayQualifierExplicit,
+                @ByteArrayQualifier
                 final String byteArrayQualifier,
+                @ByteArrayQualifier(-42)
                 final String byteArrayQualifierExplicit,
+                @CharArrayQualifier
                 final String charArrayQualifier,
+                @CharArrayQualifier('y')
                 final String charArrayQualifierExplicit,
+                @FloatArrayQualifier
                 final String floatArrayQualifier,
+                @FloatArrayQualifier(-0.0f)
                 final String floatArrayQualifierExplicit,
+                @DoubleArrayQualifier
                 final String doubleArrayQualifier,
+                @DoubleArrayQualifier(-0.0)
                 final String doubleArrayQualifierExplicit,
+                @IntArrayQualifier
                 final String intArrayQualifier,
+                @IntArrayQualifier(-42)
                 final String intArrayQualifierExplicit,
+                @LongArrayQualifier
                 final String longArrayQualifier,
+                @LongArrayQualifier(-42L)
                 final String longArrayQualifierExplicit,
+                @ShortArrayQualifier
                 final String shortArrayQualifier,
+                @ShortArrayQualifier(-42)
                 final String shortArrayQualifierExplicit,
+                @StringArrayQualifier
                 final String stringArrayQualifier,
+                @StringArrayQualifier("ExplicitValue")
                 final String stringArrayQualifierExplicit,
+                @EnumArrayQualifier
                 final String enumArrayQualifier,
+                @EnumArrayQualifier(RetentionPolicy.CLASS)
                 final String enumArrayQualifierExplicit,
+                @ClassArrayQualifier
                 final String classArrayQualifier,
+                @ClassArrayQualifier(String.class)
                 final String classArrayQualifierExplicit,
+                @AnnotationArrayQualifier
                 final String annotationArrayQualifier,
+                @AnnotationArrayQualifier(@IntQualifier(-42))
                 final String annotationArrayQualifierExplicit) {
             this.noQualifier = noQualifier;
             this.emptyQualifier = emptyQualifier;
@@ -1621,212 +1670,262 @@ public class QualifiedInjectionTest {
             return annotationArrayQualifierExplicit;
         }
 
+        @Inject
         private void setNoQualifier(final String noQualifier) {
             this.noQualifier = noQualifier;
         }
 
+        @Inject
         private void setEmptyQualifier(@EmptyQualifier final String emptyQualifier) {
             this.emptyQualifier = emptyQualifier;
         }
 
+        @Inject
         private void setBooleanQualifier(@BooleanQualifier final String booleanQualifier) {
             this.booleanQualifier = booleanQualifier;
         }
 
+        @Inject
         private void setBooleanQualifierExplicit(@BooleanQualifier(false) final String booleanQualifierExplicit) {
             this.booleanQualifierExplicit = booleanQualifierExplicit;
         }
 
+        @Inject
         private void setByteQualifier(@ByteQualifier final String byteQualifier) {
             this.byteQualifier = byteQualifier;
         }
 
+        @Inject
         private void setByteQualifierExplicit(@ByteQualifier(-42) final String byteQualifierExplicit) {
             this.byteQualifierExplicit = byteQualifierExplicit;
         }
 
+        @Inject
         private void setCharQualifier(@CharQualifier final String charQualifier) {
             this.charQualifier = charQualifier;
         }
 
+        @Inject
         private void setCharQualifierExplicit(@CharQualifier('y') final String charQualifierExplicit) {
             this.charQualifierExplicit = charQualifierExplicit;
         }
 
+        @Inject
         private void setFloatQualifier(@FloatQualifier final String floatQualifier) {
             this.floatQualifier = floatQualifier;
         }
 
+        @Inject
         private void setFloatQualifierExplicit(@FloatQualifier(-0.0f) final String floatQualifierExplicit) {
             this.floatQualifierExplicit = floatQualifierExplicit;
         }
 
+        @Inject
         private void setDoubleQualifier(@DoubleQualifier final String doubleQualifier) {
             this.doubleQualifier = doubleQualifier;
         }
 
+        @Inject
         private void setDoubleQualifierExplicit(@DoubleQualifier(-0.0f) final String doubleQualifierExplicit) {
             this.doubleQualifierExplicit = doubleQualifierExplicit;
         }
 
+        @Inject
         private void setIntQualifier(@IntQualifier final String intQualifier) {
             this.intQualifier = intQualifier;
         }
 
+        @Inject
         private void setIntQualifierExplicit(@IntQualifier(-42) final String intQualifierExplicit) {
             this.intQualifierExplicit = intQualifierExplicit;
         }
 
+        @Inject
         private void setLongQualifier(@LongQualifier final String longQualifier) {
             this.longQualifier = longQualifier;
         }
 
+        @Inject
         private void setLongQualifierExplicit(@LongQualifier(-42L) final String longQualifierExplicit) {
             this.longQualifierExplicit = longQualifierExplicit;
         }
 
+        @Inject
         private void setShortQualifier(@ShortQualifier final String shortQualifier) {
             this.shortQualifier = shortQualifier;
         }
 
+        @Inject
         private void setShortQualifierExplicit(@ShortQualifier(-42) final String shortQualifierExplicit) {
             this.shortQualifierExplicit = shortQualifierExplicit;
         }
 
+        @Inject
         private void setStringQualifier(@StringQualifier final String stringQualifier) {
             this.stringQualifier = stringQualifier;
         }
 
+        @Inject
         private void setStringQualifierExplicit(
                 @StringQualifier("ExplicitValue") final String stringQualifierExplicit) {
             this.stringQualifierExplicit = stringQualifierExplicit;
         }
 
+        @Inject
         private void setEnumQualifier(@EnumQualifier final String enumQualifier) {
             this.enumQualifier = enumQualifier;
         }
 
+        @Inject
         private void setEnumQualifierExplicit(
                 @EnumQualifier(RetentionPolicy.CLASS) final String enumQualifierExplicit) {
             this.enumQualifierExplicit = enumQualifierExplicit;
         }
 
+        @Inject
         private void setClassQualifier(@ClassQualifier final String classQualifier) {
             this.classQualifier = classQualifier;
         }
 
+        @Inject
         private void setClassQualifierExplicit(@ClassQualifier(String.class) final String classQualifierExplicit) {
             this.classQualifierExplicit = classQualifierExplicit;
         }
 
+        @Inject
         private void setAnnotationQualifier(@AnnotationQualifier final String annotationQualifier) {
             this.annotationQualifier = annotationQualifier;
         }
 
+        @Inject
         private void setAnnotationQualifierExplicit(
                 @AnnotationQualifier(@IntQualifier(-42)) final String annotationQualifierExplicit) {
             this.annotationQualifierExplicit = annotationQualifierExplicit;
         }
 
+        @Inject
         private void setBooleanArrayQualifier(@BooleanArrayQualifier final String booleanArrayQualifier) {
             this.booleanArrayQualifier = booleanArrayQualifier;
         }
 
+        @Inject
         private void setBooleanArrayQualifierExplicit(
                 @BooleanArrayQualifier(false) final String booleanArrayQualifierExplicit) {
             this.booleanArrayQualifierExplicit = booleanArrayQualifierExplicit;
         }
 
+        @Inject
         private void setByteArrayQualifier(@ByteArrayQualifier final String byteArrayQualifier) {
             this.byteArrayQualifier = byteArrayQualifier;
         }
 
+        @Inject
         private void setByteArrayQualifierExplicit(@ByteArrayQualifier(-42) final String byteArrayQualifierExplicit) {
             this.byteArrayQualifierExplicit = byteArrayQualifierExplicit;
         }
 
+        @Inject
         private void setCharArrayQualifier(@CharArrayQualifier final String charArrayQualifier) {
             this.charArrayQualifier = charArrayQualifier;
         }
 
+        @Inject
         private void setCharArrayQualifierExplicit(@CharArrayQualifier('y') final String charArrayQualifierExplicit) {
             this.charArrayQualifierExplicit = charArrayQualifierExplicit;
         }
 
+        @Inject
         private void setFloatArrayQualifier(@FloatArrayQualifier final String floatArrayQualifier) {
             this.floatArrayQualifier = floatArrayQualifier;
         }
 
+        @Inject
         private void setFloatArrayQualifierExplicit(
                 @FloatArrayQualifier(-0.0f) final String floatArrayQualifierExplicit) {
             this.floatArrayQualifierExplicit = floatArrayQualifierExplicit;
         }
 
+        @Inject
         private void setDoubleArrayQualifier(@DoubleArrayQualifier final String doubleArrayQualifier) {
             this.doubleArrayQualifier = doubleArrayQualifier;
         }
 
+        @Inject
         private void setDoubleArrayQualifierExplicit(
                 @DoubleArrayQualifier(-0.0) final String doubleArrayQualifierExplicit) {
             this.doubleArrayQualifierExplicit = doubleArrayQualifierExplicit;
         }
 
+        @Inject
         private void setIntArrayQualifier(@IntArrayQualifier final String intArrayQualifier) {
             this.intArrayQualifier = intArrayQualifier;
         }
 
+        @Inject
         private void setIntArrayQualifierExplicit(@IntArrayQualifier(-42) final String intArrayQualifierExplicit) {
             this.intArrayQualifierExplicit = intArrayQualifierExplicit;
         }
 
+        @Inject
         private void setLongArrayQualifier(@LongArrayQualifier final String longArrayQualifier) {
             this.longArrayQualifier = longArrayQualifier;
         }
 
+        @Inject
         private void setLongArrayQualifierExplicit(@LongArrayQualifier(-42L) final String longArrayQualifierExplicit) {
             this.longArrayQualifierExplicit = longArrayQualifierExplicit;
         }
 
+        @Inject
         private void setShortArrayQualifier(@ShortArrayQualifier final String shortArrayQualifier) {
             this.shortArrayQualifier = shortArrayQualifier;
         }
 
+        @Inject
         private void setShortArrayQualifierExplicit(
                 @ShortArrayQualifier(-42) final String shortArrayQualifierExplicit) {
             this.shortArrayQualifierExplicit = shortArrayQualifierExplicit;
         }
 
+        @Inject
         private void setStringArrayQualifier(@StringArrayQualifier final String stringArrayQualifier) {
             this.stringArrayQualifier = stringArrayQualifier;
         }
 
+        @Inject
         private void setStringArrayQualifierExplicit(
                 @StringArrayQualifier("ExplicitValue") final String stringArrayQualifierExplicit) {
             this.stringArrayQualifierExplicit = stringArrayQualifierExplicit;
         }
 
+        @Inject
         private void setEnumArrayQualifier(@EnumArrayQualifier final String enumArrayQualifier) {
             this.enumArrayQualifier = enumArrayQualifier;
         }
 
+        @Inject
         private void setEnumArrayQualifierExplicit(
                 @EnumArrayQualifier(RetentionPolicy.CLASS) final String enumArrayQualifierExplicit) {
             this.enumArrayQualifierExplicit = enumArrayQualifierExplicit;
         }
 
+        @Inject
         private void setClassArrayQualifier(@ClassArrayQualifier final String classArrayQualifier) {
             this.classArrayQualifier = classArrayQualifier;
         }
 
+        @Inject
         private void setClassArrayQualifierExplicit(
                 @ClassArrayQualifier(String.class) final String classArrayQualifierExplicit) {
             this.classArrayQualifierExplicit = classArrayQualifierExplicit;
         }
 
+        @Inject
         private void setAnnotationArrayQualifier(@AnnotationArrayQualifier final String annotationArrayQualifier) {
             this.annotationArrayQualifier = annotationArrayQualifier;
         }
 
+        @Inject
         private void setAnnotationArrayQualifierExplicit(
                 @AnnotationArrayQualifier(@IntQualifier(-42)) final String annotationArrayQualifierExplicit) {
             this.annotationArrayQualifierExplicit = annotationArrayQualifierExplicit;
