@@ -22,7 +22,7 @@ import org.junit.runner.notification.Failure;
 
 public class InjectionTestLauncher {
     public static void main(final String[] args) {
-        final Result result = JUnitCore.runClasses(PrimitiveTest.class);
+        final Result result = JUnitCore.runClasses(PrimitiveTest.class, QualifiedInjectionTest.class);
         if (!result.wasSuccessful()) {
             final StringBuilder builder = new StringBuilder();
             for (final Failure failure : result.getFailures()) {
