@@ -318,8 +318,9 @@ public class PrimitiveTest {
         }
 
         @Provides
-        UnboxedResult consumeUnboxed(final boolean booleanArg, final byte byteArg, final char charArg, final double doubleArg,
-                final float floatArg, final int intArg, final long longArg, final short shortArg) {
+        UnboxedResult consumeUnboxed(final boolean booleanArg, final byte byteArg, final char charArg,
+                final double doubleArg, final float floatArg, final int intArg, final long longArg,
+                final short shortArg) {
             assertEquals(provideBoolean(), booleanArg);
             assertEquals(provideByte(), byteArg);
             assertEquals(provideChar(), charArg);
@@ -389,8 +390,9 @@ public class PrimitiveTest {
         }
 
         @Provides
-        UnboxedResult consumeUnboxed(final boolean booleanArg, final byte byteArg, final char charArg, final double doubleArg,
-                final float floatArg, final int intArg, final long longArg, final short shortArg) {
+        UnboxedResult consumeUnboxed(final boolean booleanArg, final byte byteArg, final char charArg,
+                final double doubleArg, final float floatArg, final int intArg, final long longArg,
+                final short shortArg) {
             assertEquals(provideBoolean(), booleanArg);
             assertEquals(provideByte(), Byte.valueOf(byteArg));
             assertEquals(provideCharacter(), Character.valueOf(charArg));
@@ -433,8 +435,8 @@ public class PrimitiveTest {
 
         @Inject
         UnboxedConstructableContainer(final boolean booleanArg, final byte byteArg, final char charArg,
-                final double doubleArg,
-                final float floatArg, final int intArg, final long longArg, final short shortArg) {
+                final double doubleArg, final float floatArg, final int intArg, final long longArg,
+                final short shortArg) {
             booleanField = booleanArg;
             byteField = byteArg;
             charField = charArg;
