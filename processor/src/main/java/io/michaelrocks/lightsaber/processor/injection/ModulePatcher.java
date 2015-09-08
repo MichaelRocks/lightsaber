@@ -103,7 +103,6 @@ public class ModulePatcher extends ProcessorClassVisitor {
         generator.dup();
         final QualifiedType providableType = provider.getQualifiedProvidableType();
         generator.push(Types.box(providableType.getType()));
-        generator.pushNull();
         final AnnotationData qualifier = providableType.getQualifier();
         if (qualifier == null) {
             generator.pushNull();
