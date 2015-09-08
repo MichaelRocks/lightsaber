@@ -117,13 +117,13 @@ public class AnnotationCreator {
         // TODO: Check if the value class corresponds to fieldType.
         final Type elementType = fieldType.getElementType();
         if (value.getClass().isArray()) {
-            generator.newArray(fieldType, Array.getLength(value));
+            generator.newArray(elementType, Array.getLength(value));
             final Iterable<Object> iterable = IteratorUtils.asIterable(IteratorUtils.arrayIterator(value));
             populateArray(generator, elementType, iterable);
         } else {
             // noinspection unchecked
             final List<Object> list = (List<Object>) value;
-            generator.newArray(fieldType, list.size());
+            generator.newArray(elementType, list.size());
             populateArray(generator, elementType, list);
         }
     }
