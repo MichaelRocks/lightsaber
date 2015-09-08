@@ -160,8 +160,8 @@ public class TypeAgentClassGenerator {
             Validate.isTrue(argumentTypes.size() == parameterQualifiers.size());
 
             for (int j = 0, count = argumentTypes.size(); j < count; ++j) {
-                final Type dependencyType = getDependencyTypeForType(argumentTypes.get(i));
-                final AnnotationData parameterQualifier = parameterQualifiers.get(i);
+                final Type dependencyType = getDependencyTypeForType(argumentTypes.get(j));
+                final AnnotationData parameterQualifier = parameterQualifiers.get(j);
 
                 generator.newInstance(Types.KEY_TYPE);
                 generator.dup();
