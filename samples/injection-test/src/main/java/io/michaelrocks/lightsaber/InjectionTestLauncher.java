@@ -26,7 +26,7 @@ public class InjectionTestLauncher {
         if (!result.wasSuccessful()) {
             final StringBuilder builder = new StringBuilder();
             for (final Failure failure : result.getFailures()) {
-                builder.append(failure).append('\n');
+                builder.append(failure.getTestHeader()).append('\n').append(failure.getTrace()).append("\n\n");
             }
             throw new AssertionError(builder.toString());
         }
