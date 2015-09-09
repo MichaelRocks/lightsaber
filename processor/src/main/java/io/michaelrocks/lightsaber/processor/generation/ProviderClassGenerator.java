@@ -280,8 +280,8 @@ public class ProviderClassGenerator {
                     GET_METHOD_NAME,
                     Type.getMethodDescriptor(Type.getType(Object.class)),
                     true);
-            GenerationHelper.generateTypeCast(methodVisitor, argumentType);
         }
+        GenerationHelper.convertDependencyToTargetType(methodVisitor, argumentType);
     }
 
     private void generateInjectMembersInvocation(final MethodVisitor methodVisitor) {

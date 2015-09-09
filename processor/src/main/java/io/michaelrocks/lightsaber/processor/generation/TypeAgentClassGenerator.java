@@ -257,7 +257,7 @@ public class TypeAgentClassGenerator {
                 method.getName(),
                 method.getDescriptor(),
                 true);
-        GenerationHelper.generateTypeCast(methodVisitor, qualifiedField.getSignature());
+        GenerationHelper.convertDependencyToTargetType(methodVisitor, qualifiedField.getSignature());
         methodVisitor.visitFieldInsn(
                 PUTFIELD,
                 injector.getInjectableTarget().getTargetType().getInternalName(),
@@ -309,7 +309,7 @@ public class TypeAgentClassGenerator {
                     method.getName(),
                     method.getDescriptor(),
                     true);
-            GenerationHelper.generateTypeCast(methodVisitor, argumentType);
+            GenerationHelper.convertDependencyToTargetType(methodVisitor, argumentType);
         }
         methodVisitor.visitMethodInsn(
                 INVOKEVIRTUAL,
