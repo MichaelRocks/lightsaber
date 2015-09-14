@@ -23,6 +23,7 @@ import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
+import io.michaelrocks.lightsaber.processor.warermark.WatermarkClassVisitor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -85,7 +86,8 @@ public class AnnotationProxyGenerator {
     public byte[] generate() {
         final ClassWriter classWriter =
                 new StandaloneClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES, processorContext);
-        classWriter.visit(
+        final ClassVisitor classVisitor = new WatermarkClassVisitor(classWriter, true);
+        classVisitor.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,
                 proxyTypeName,
@@ -93,15 +95,15 @@ public class AnnotationProxyGenerator {
                 Type.getInternalName(Object.class),
                 new String[] { annotationTypeName });
 
-        generateFields(classWriter);
-        generateConstructor(classWriter);
-        generateEqualsMethod(classWriter);
-        generateHashCodeMethod(classWriter);
-        generateToStringMethod(classWriter);
-        generateAnnotationTypeMethod(classWriter);
-        generateGetters(classWriter);
+        generateFields(classVisitor);
+        generateConstructor(classVisitor);
+        generateEqualsMethod(classVisitor);
+        generateHashCodeMethod(classVisitor);
+        generateToStringMethod(classVisitor);
+        generateAnnotationTypeMethod(classVisitor);
+        generateGetters(classVisitor);
 
-        classWriter.visitEnd();
+        classVisitor.visitEnd();
         return classWriter.toByteArray();
     }
 

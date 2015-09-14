@@ -29,6 +29,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
+import io.michaelrocks.lightsaber.processor.warermark.WatermarkClassVisitor;
 import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -70,7 +71,8 @@ public class TypeAgentClassGenerator {
     public byte[] generate() {
         final ClassWriter classWriter =
                 new StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, processorContext);
-        classWriter.visit(
+        final ClassVisitor classVisitor = new WatermarkClassVisitor(classWriter, true);
+        classVisitor.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,
                 injector.getInjectorType().getInternalName(),
@@ -78,14 +80,14 @@ public class TypeAgentClassGenerator {
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(TypeAgent.class) });
 
-        generateKeyFields(classWriter);
-        generateStaticInitializer(classWriter);
-        generateConstructor(classWriter);
-        generateGetTypeMethod(classWriter);
-        generateInjectFieldsMethod(classWriter);
-        generateInjectMethodsMethod(classWriter);
+        generateKeyFields(classVisitor);
+        generateStaticInitializer(classVisitor);
+        generateConstructor(classVisitor);
+        generateGetTypeMethod(classVisitor);
+        generateInjectFieldsMethod(classVisitor);
+        generateInjectMethodsMethod(classVisitor);
 
-        classWriter.visitEnd();
+        classVisitor.visitEnd();
         return classWriter.toByteArray();
     }
 
@@ -119,10 +121,10 @@ public class TypeAgentClassGenerator {
         }
     }
 
-    private void generateStaticInitializer(final ClassWriter classWriter) {
+    private void generateStaticInitializer(final ClassVisitor classVisitor) {
         final MethodDescriptor staticInitializer = MethodDescriptor.forStaticInitializer();
         final GeneratorAdapter generator =
-                new GeneratorAdapter(classWriter, ACC_STATIC, staticInitializer, null, null);
+                new GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer, null, null);
         generator.visitCode();
 
         initializeFieldKeys(generator);

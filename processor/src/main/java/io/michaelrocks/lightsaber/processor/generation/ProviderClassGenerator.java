@@ -28,6 +28,7 @@ import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
+import io.michaelrocks.lightsaber.processor.warermark.WatermarkClassVisitor;
 import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -66,7 +67,8 @@ public class ProviderClassGenerator {
     public byte[] generate() {
         final ClassWriter classWriter =
                 new StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, processorContext);
-        classWriter.visit(
+        final ClassVisitor classVisitor = new WatermarkClassVisitor(classWriter, true);
+        classVisitor.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,
                 provider.getProviderType().getInternalName(),
@@ -74,13 +76,13 @@ public class ProviderClassGenerator {
                 Type.getInternalName(Object.class),
                 new String[] { Type.getInternalName(CopyableProvider.class) });
 
-        generateFields(classWriter);
-        generateStaticInitializer(classWriter);
-        generateConstructor(classWriter);
-        generateGetMethod(classWriter);
-        generateCopyWithInjector(classWriter);
+        generateFields(classVisitor);
+        generateStaticInitializer(classVisitor);
+        generateConstructor(classVisitor);
+        generateGetMethod(classVisitor);
+        generateCopyWithInjector(classVisitor);
 
-        classWriter.visitEnd();
+        classVisitor.visitEnd();
         return classWriter.toByteArray();
     }
 
@@ -123,7 +125,7 @@ public class ProviderClassGenerator {
         fieldVisitor.visitEnd();
     }
 
-    private void generateStaticInitializer(final ClassWriter classWriter) {
+    private void generateStaticInitializer(final ClassVisitor classVisitor) {
         final List<TypeSignature> argumentTypes = provider.getProviderMethod().getArgumentTypes();
         final List<AnnotationData> parameterQualifiers = provider.getProviderMethod().getParameterQualifiers();
         Validate.isTrue(argumentTypes.size() == parameterQualifiers.size());
@@ -134,7 +136,7 @@ public class ProviderClassGenerator {
 
         final MethodDescriptor staticInitializer = MethodDescriptor.forStaticInitializer();
         final GeneratorAdapter generator =
-                new GeneratorAdapter(classWriter, ACC_STATIC, staticInitializer, null, null);
+                new GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer, null, null);
         generator.visitCode();
 
         for (int i = 0, count = argumentTypes.size(); i < count; ++i) {

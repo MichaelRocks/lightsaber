@@ -25,6 +25,7 @@ import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import io.michaelrocks.lightsaber.processor.warermark.WatermarkClassVisitor;
 import org.apache.commons.io.IOUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -63,7 +64,8 @@ public class InjectorFactoryClassGenerator {
             final ClassReader classReader = new ClassReader(readClassBytes(Lightsaber$$InjectorFactory.class));
             final ClassWriter classWriter = new StandaloneClassWriter(
                     classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, processorContext);
-            final ClassVisitor generator = new InjectorFactoryClassVisitor(classWriter);
+            final ClassVisitor watermarkClassVisitor = new WatermarkClassVisitor(classWriter, true);
+            final ClassVisitor generator = new InjectorFactoryClassVisitor(watermarkClassVisitor);
             final Remapper remapper =
                     new SimpleRemapper(
                             Type.getInternalName(Lightsaber$$InjectorFactory.class),
