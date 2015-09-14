@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.injection;
 
-import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
@@ -25,7 +24,7 @@ import org.objectweb.asm.MethodVisitor;
 
 import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 
-public class ProvidableTargetPatcher extends ProcessorClassVisitor {
+public class ProvidableTargetPatcher extends BaseInjectionClassVisitor {
     private final InjectionTargetDescriptor providableTarget;
 
     public ProvidableTargetPatcher(final ProcessorContext processorContext, final ClassVisitor classVisitor,
@@ -40,6 +39,9 @@ public class ProvidableTargetPatcher extends ProcessorClassVisitor {
         final MethodDescriptor methodDescriptor = new MethodDescriptor(name, desc);
         if (providableTarget.isInjectableConstructor(methodDescriptor)) {
             final int newAccess = access & ~ACC_PRIVATE;
+            if (newAccess != access) {
+                setDirty(true);
+            }
             return super.visitMethod(newAccess, name, desc, signature, exceptions);
         } else {
             return super.visitMethod(access, name, desc, signature, exceptions);

@@ -20,7 +20,6 @@ import io.michaelrocks.lightsaber.CopyableProvider;
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.internal.InternalModule;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
-import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
@@ -37,7 +36,7 @@ import org.objectweb.asm.Type;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ModulePatcher extends ProcessorClassVisitor {
+public class ModulePatcher extends BaseInjectionClassVisitor {
     private static final MethodDescriptor KEY_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
 
@@ -58,6 +57,7 @@ public class ModulePatcher extends ProcessorClassVisitor {
         System.arraycopy(interfaces, 0, newInterfaces, 0, interfaces.length);
         newInterfaces[interfaces.length] = Type.getInternalName(InternalModule.class);
         super.visit(version, access, name, signature, superName, newInterfaces);
+        setDirty(true);
     }
 
     @Override

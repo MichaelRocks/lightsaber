@@ -18,7 +18,6 @@ package io.michaelrocks.lightsaber.processor.injection;
 
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.Lightsaber;
-import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -27,9 +26,7 @@ import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.ASM5;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
-class InjectionPatcher extends ProcessorClassVisitor {
-    private String className;
-
+class InjectionPatcher extends BaseInjectionClassVisitor {
     public InjectionPatcher(final ProcessorContext processorContext, final ClassVisitor classVisitor) {
         super(processorContext, classVisitor);
     }
@@ -37,7 +34,7 @@ class InjectionPatcher extends ProcessorClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        className = name;
+        System.out.println("Patching injection: " + name);
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
@@ -52,15 +49,17 @@ class InjectionPatcher extends ProcessorClassVisitor {
             public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc,
                     final boolean itf) {
                 if (Type.getInternalName(Injector.class).equals(owner) && "injectMembers".equals(name)) {
-                    System.out.println("Injecting at: " + className + "." + methodName + methodDesc);
+                    System.out.println("Injecting at: " + methodName + methodDesc);
                     final String newOwner = getProcessorContext().getInjectorFactoryType().getInternalName();
                     final String newMethodDesc =
                             Type.getMethodDescriptor(
                                     Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class));
                     super.visitMethodInsn(INVOKESTATIC, newOwner, name, newMethodDesc, false);
+                    setDirty(true);
                 } else if (Type.getInternalName(Lightsaber.class).equals(owner) && "createInjector".equals(name)) {
                     final String newOwner = getProcessorContext().getInjectorFactoryType().getInternalName();
                     super.visitMethodInsn(INVOKESTATIC, newOwner, name, desc, false);
+                    setDirty(true);
                 } else {
                     super.visitMethodInsn(opcode, owner, name, desc, itf);
                 }
