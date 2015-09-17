@@ -20,8 +20,8 @@ import com.android.build.gradle.api.BaseVariant
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.logging.Logger
-import org.gradle.api.tasks.compile.AbstractCompile
 
 class LightsaberPlugin implements Plugin<Project> {
     private Project project
@@ -48,53 +48,60 @@ class LightsaberPlugin implements Plugin<Project> {
     private void setupLightsaberForAndroid(final Collection<BaseVariant> variants) {
         logger.info("Setting up Lightsaber task for Android project ${project.name}...")
         variants.all { final BaseVariant variant ->
-            final def classpath = project.android.bootClasspath.toList() + variant.javaCompiler.classpath.toList()
-            final def variantName = variant.name.capitalize()
-            final def newTaskName = "lightsaberProcess${variantName}"
-            logger.trace("Creating Lightsaber task for variant ${variantName}")
-            final def lightsaberProcess = createLightsaberProcessTask(newTaskName, variant.javaCompiler, classpath)
-            lightsaberProcess.doLast {
-                final def newDestinationDir = lightsaberProcess.outputDir
-                logger.info("Changing JavaCompile destination dir...")
-                logger.info("  from [${variant.javaCompiler.destinationDir.absolutePath}]")
-                logger.info("    to [${newDestinationDir}]")
-                variant.javaCompiler.destinationDir = newDestinationDir
-            }
+            logger.trace("Creating Lightsaber tasks for variant ${variant.name}")
+            final String variantName = variant.name.capitalize()
+            final String newTaskName = "lightsaberProcess$variantName"
+            final File classesDir = variant.javaCompiler.destinationDir
+            final File backupDir = new File(project.buildDir, "lightsaber/$variantName")
+            final List<File> classpath = project.android.bootClasspath.toList() + variant.javaCompiler.classpath.toList()
+            final LightsaberTask lightsaberProcess =
+                    createLightsaberProcessTask(newTaskName, classesDir, backupDir, classpath)
+            final BackupClassesTask backupTask =
+                    createBackupClassFilesTask("lightsaberBackupClasses$variantName", classesDir, backupDir)
+            configureTasks(lightsaberProcess, backupTask, variant.javaCompiler)
         }
     }
 
     private void setupLightsaberForJava() {
         logger.info("Setting up Lightsaber task for Java project ${project.name}...")
-
-        final def lightsaberProcess = createLightsaberProcessTask("lightsaberProcess", project.tasks.compileJava,
-                project.tasks.compileJava.classpath.toList())
-        lightsaberProcess.doLast {
-            final def newDestinationDir = lightsaberProcess.outputDir
-            logger.info("Changing classes dir for main source set...")
-            logger.info("  from [${project.sourceSets.main.output.classesDir}]")
-            logger.info("    to [${newDestinationDir}]")
-            project.sourceSets.main.output.classesDir = newDestinationDir
-        }
+        final File classesDir = project.sourceSets.main.output.classesDir
+        final File backupDir = new File(project.buildDir, "lightsaber")
+        final List<File> classpath = project.tasks.compileJava.classpath.toList()
+        final LightsaberTask lightsaberProcess =
+                createLightsaberProcessTask("lightsaberProcess", classesDir, backupDir, classpath)
+        final BackupClassesTask backupTask =
+                createBackupClassFilesTask("lightsaberBackupClasses", classesDir, backupDir)
+        configureTasks(lightsaberProcess, backupTask, project.tasks.compileJava)
     }
 
-    private LightsaberTask createLightsaberProcessTask(final String taskName, final AbstractCompile javaCompile,
-            final List<File> libraries) {
-        logger.info("Creating Lighsaber task ${taskName}...")
-        final def originalClasses = javaCompile.destinationDir.absolutePath
-        final def lightsaberClasses = originalClasses + "-lightsaber"
-        logger.info("  Source classes directory [$originalClasses]")
-        logger.info("  Processed classes directory [$lightsaberClasses]")
+    private void configureTasks(final LightsaberTask lightsaberTask, final BackupClassesTask backupTask,
+            final Task compileTask) {
+        lightsaberTask.mustRunAfter compileTask
+        lightsaberTask.dependsOn compileTask
+        lightsaberTask.dependsOn backupTask
+        compileTask.finalizedBy lightsaberTask
+    }
 
-        final def lightsaberProcess = project.task(taskName, type: LightsaberTask) {
+    private LightsaberTask createLightsaberProcessTask(final String taskName, final File classesDir,
+            final File backupDir, final List<File> libraries) {
+        logger.info("Creating Lighsaber task $taskName...")
+        logger.info("  Source classes directory [$backupDir]")
+        logger.info("  Processed classes directory [$classesDir]")
+
+        return project.task(taskName, type: LightsaberTask) {
             description 'Processes .class files with Lightsaber Processor.'
-            classesDir originalClasses
-            outputDir lightsaberClasses
-            classpath = libraries
+            setClassesDir(backupDir)
+            setOutputDir(classesDir)
+            setClasspath(libraries)
         } as LightsaberTask
+    }
 
-        lightsaberProcess.mustRunAfter javaCompile
-        lightsaberProcess.dependsOn javaCompile
-        javaCompile.finalizedBy lightsaberProcess
-        return lightsaberProcess
+    private BackupClassesTask createBackupClassFilesTask(final String taskName, final File classesDir,
+            final File backupDir) {
+        return project.task(taskName, type: BackupClassesTask) {
+            description 'Back up original .class files.'
+            setClassesDir(classesDir)
+            setBackupDir(backupDir)
+        } as BackupClassesTask
     }
 }
