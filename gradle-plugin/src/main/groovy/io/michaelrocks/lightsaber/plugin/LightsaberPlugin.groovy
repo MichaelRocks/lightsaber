@@ -94,8 +94,8 @@ class LightsaberPlugin implements Plugin<Project> {
 
         return project.task(taskName, type: LightsaberTask) {
             description 'Processes .class files with Lightsaber Processor.'
-            setClassesDir(backupDir)
-            setOutputDir(classesDir)
+            setBackupDir(backupDir)
+            setClassesDir(classesDir)
             setClasspath(libraries)
         } as LightsaberTask
     }

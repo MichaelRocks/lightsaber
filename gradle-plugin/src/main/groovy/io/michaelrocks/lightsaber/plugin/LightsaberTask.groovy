@@ -21,51 +21,28 @@ import io.michaelrocks.lightsaber.processor.LightsaberProcessor
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleScriptException
 import org.gradle.api.logging.LogLevel
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
 public class LightsaberTask extends DefaultTask {
-    private File classesDir
-    private File outputDir
-    private List<File> classpath
+    @InputDirectory
+    File backupDir
+    @OutputDirectory
+    File classesDir
+    @InputFiles
+    List<File> classpath
 
     LightsaberTask() {
         logging.captureStandardOutput LogLevel.INFO
     }
 
-    File getClassesDir() {
-        return classesDir
-    }
-
-    void setClassesDir(final Object path) {
-        classesDir = project.file(path)
-        inputs.dir(path)
-    }
-
-    File getOutputDir() {
-        return outputDir
-    }
-
-    void setOutputDir(final Object path) {
-        outputDir = project.file(path)
-        // FIXME: Need to handle UP-TO-DATE somehow.
-        // Currently if LightsaberTask is UP-TO-DATE it doesn't change destinationDir of JavaCompile task.
-        // outputs.dir(path)
-    }
-
-    Collection<File> getClasspath() {
-        return classpath
-    }
-
-    void setClasspath(final Collection<File> classpath) {
-        this.classpath = new ArrayList<>(classpath)
-        classpath.forEach { inputs.file(it) }
-    }
-
     @TaskAction
     def process() {
         final def parameters = new LightsaberParameters()
-        parameters.classes = classesDir.absolutePath
-        parameters.output = outputDir.absolutePath
+        parameters.classes = backupDir.absolutePath
+        parameters.output = classesDir.absolutePath
         parameters.libs = classpath
         parameters.verbose = logger.isEnabled(LogLevel.DEBUG)
         logger.info("Starting Lightsaber processor: $parameters")
