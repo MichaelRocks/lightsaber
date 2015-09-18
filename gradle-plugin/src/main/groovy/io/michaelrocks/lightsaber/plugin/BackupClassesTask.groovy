@@ -108,4 +108,20 @@ class BackupClassesTask extends DefaultTask {
             }
         })
     }
+
+    void clean() {
+        final Path classesPath = classesDir.toPath()
+        final Path backupPath = backupDir.toPath()
+        Files.walkFileTree(backupPath, new SimpleFileVisitor<Path>() {
+            @Override
+            FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                super.visitFile(file, attrs)
+                final Path relativePath = backupPath.relativize(file)
+                final Path classesFile = classesPath.resolve(relativePath)
+                Files.createDirectories(classesFile.parent)
+                Files.copy(file, classesFile, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES)
+                return FileVisitResult.CONTINUE
+            }
+        })
+    }
 }

@@ -80,6 +80,10 @@ class LightsaberPlugin implements Plugin<Project> {
         lightsaberTask.dependsOn compileTask
         lightsaberTask.dependsOn backupTask
         compileTask.finalizedBy lightsaberTask
+
+        project.tasks["clean${backupTask.name.capitalize()}"].doFirst {
+            backupTask.clean()
+        }
     }
 
     private LightsaberTask createLightsaberProcessTask(final String taskName, final File classesDir,
