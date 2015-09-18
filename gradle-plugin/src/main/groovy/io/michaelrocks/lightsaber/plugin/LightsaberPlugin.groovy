@@ -52,7 +52,7 @@ class LightsaberPlugin implements Plugin<Project> {
             final String variantName = variant.name.capitalize()
             final String newTaskName = "lightsaberProcess$variantName"
             final File classesDir = variant.javaCompiler.destinationDir
-            final File backupDir = new File(project.buildDir, "lightsaber/$variantName")
+            final File backupDir = new File(project.buildDir, "lightsaber/${variant.name}")
             final List<File> classpath = project.android.bootClasspath.toList() + variant.javaCompiler.classpath.toList()
             final LightsaberTask lightsaberProcess =
                     createLightsaberProcessTask(newTaskName, classesDir, backupDir, classpath)
