@@ -93,18 +93,8 @@ class BackupClassesTask extends DefaultTask {
 
             @Override
             FileVisitResult postVisitDirectory(final Path dir, final IOException exception) throws IOException {
-                deleteDirectoryIfEmpty(dir)
+                PathMethods.deleteDirectoryIfEmpty(dir)
                 return super.postVisitDirectory(dir, exception)
-            }
-
-            private void deleteDirectoryIfEmpty(final Path dir) {
-                if (Files.isDirectory(dir)) {
-                    try {
-                        Files.delete(dir)
-                    } catch (final IOException ignored) {
-                        // Ignore the exception.
-                    }
-                }
             }
         })
     }
