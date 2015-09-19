@@ -29,7 +29,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
-import io.michaelrocks.lightsaber.processor.warermark.WatermarkClassVisitor;
+import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor;
 import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;

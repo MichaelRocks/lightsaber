@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.warermark;
+package io.michaelrocks.lightsaber.processor.watermark;
 
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassVisitor;

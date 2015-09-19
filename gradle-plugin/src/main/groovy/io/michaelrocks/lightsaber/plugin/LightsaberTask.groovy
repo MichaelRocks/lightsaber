@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.plugin
 
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
-import io.michaelrocks.lightsaber.processor.warermark.WatermarkChecker
+import io.michaelrocks.lightsaber.processor.watermark.WatermarkChecker
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleScriptException
 import org.gradle.api.logging.LogLevel

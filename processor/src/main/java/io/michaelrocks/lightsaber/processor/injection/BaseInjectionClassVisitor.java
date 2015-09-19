@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.processor.injection;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
-import io.michaelrocks.lightsaber.processor.warermark.WatermarkClassVisitor;
+import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor;
 import org.objectweb.asm.ClassVisitor;
 
 public class BaseInjectionClassVisitor extends WatermarkClassVisitor {
