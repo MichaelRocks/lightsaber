@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.plugin
 
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
+import io.michaelrocks.lightsaber.processor.warermark.WatermarkChecker
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleScriptException
 import org.gradle.api.logging.LogLevel
@@ -25,6 +26,12 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
 
 public class LightsaberTask extends DefaultTask {
     @InputDirectory
@@ -39,7 +46,7 @@ public class LightsaberTask extends DefaultTask {
     }
 
     @TaskAction
-    def process() {
+    void process() {
         final def parameters = new LightsaberParameters()
         parameters.classes = backupDir.absolutePath
         parameters.output = classesDir.absolutePath
@@ -52,5 +59,25 @@ public class LightsaberTask extends DefaultTask {
         } catch (final Exception exception) {
             throw new GradleScriptException('Lightsaber processor failed to process files', exception)
         }
+    }
+
+    void clean() {
+        final Path classesPath = classesDir.toPath()
+        Files.walkFileTree(classesPath, new SimpleFileVisitor<Path>() {
+            @Override
+            FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+                super.visitFile(file, attrs)
+                if (WatermarkChecker.isLightsaberClass(file)) {
+                    Files.delete(file)
+                }
+                return FileVisitResult.CONTINUE
+            }
+
+            @Override
+            FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
+                PathMethods.deleteDirectoryIfEmpty(dir)
+                return super.postVisitDirectory(dir, exc)
+            }
+        })
     }
 }
