@@ -62,12 +62,12 @@ public class LightsaberInjector implements Injector {
     }
 
     @Override
-    public <T> T getInstance(final Key<T> key) {
+    public <T> T getInstance(final Key<? extends T> key) {
         return getProvider(key).get();
     }
 
     @Override
-    public <T> Provider<T> getProvider(final Key<T> key) {
+    public <T> Provider<T> getProvider(final Key<? extends T> key) {
         // noinspection unchecked
         final Provider<T> provider = (Provider<T>) providers.get(key);
         if (provider == null) {
