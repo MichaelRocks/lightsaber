@@ -21,17 +21,17 @@ import io.michaelrocks.lightsaber.Provides
 import javax.inject.Provider
 import javax.inject.Singleton
 
-private class LightsaberModule : Module {
-    Provides
+internal class LightsaberModule : Module {
+    @Provides
     private val darthVader = DarthVader
 
-    Provides
+    @Provides
     fun provideWookie(chewbacca: Chewbacca): Wookiee = chewbacca
 
-    Provides
+    @Provides
     fun provideDroid(r2d2: R2D2): Droid = r2d2
 
-    Provides
-    Singleton
+    @Provides
+    @Singleton
     fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet = kashyyykProvider.get()
 }
