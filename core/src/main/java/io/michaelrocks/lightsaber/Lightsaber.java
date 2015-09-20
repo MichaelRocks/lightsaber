@@ -19,6 +19,9 @@ package io.michaelrocks.lightsaber;
 import io.michaelrocks.lightsaber.internal.InternalModule;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 
+import javax.inject.Provider;
+import java.lang.annotation.Annotation;
+
 public class Lightsaber {
     public static Injector createInjector(final Module... modules) {
         return createChildInjectorInternal(null, modules);
@@ -47,5 +50,23 @@ public class Lightsaber {
             }
         }
         return injector;
+    }
+
+    public static <T> T getInstance(final Injector injector, final Class<? extends T> type) {
+        return injector.getInstance(Key.of(type));
+    }
+
+    public static <T> T getInstance(final Injector injector, final Class<? extends T> type,
+            final Annotation annotation) {
+        return injector.getInstance(Key.of(type, annotation));
+    }
+
+    public static <T> Provider<T> getProvider(final Injector injector, final Class<? extends T> type) {
+        return injector.getProvider(Key.of(type));
+    }
+
+    public static <T> Provider<T> getProvider(final Injector injector, final Class<? extends T> type,
+            final Annotation annotation) {
+        return injector.getProvider(Key.of(type, annotation));
     }
 }
