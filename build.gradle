@@ -19,15 +19,16 @@ allprojects {
             mavenLocal()
             jcenter()
             mavenCentral()
-            maven {
-                url 'https://dl.bintray.com/michaelrocks/lightsaber'
-            }
+            maven { url 'https://dl.bintray.com/michaelrocks/lightsaber' }
         }
     }
 
     repositories {
         mavenLocal()
+        jcenter()
         mavenCentral()
+        maven { url 'https://dl.bintray.com/michaelrocks/lightsaber' }
+
     }
 }
 
