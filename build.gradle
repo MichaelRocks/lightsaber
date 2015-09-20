@@ -14,7 +14,6 @@ buildscript {
 allprojects {
     ext.kotlinVersion = '0.12.412'
     ext.hasCredentials = project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')
-    ext.publishToBintray = false
 
     buildscript {
         repositories {
@@ -50,98 +49,6 @@ allprojects {
 
     ext.dryRun = properties['version.dryRun'].toBoolean()
     ext.publish = properties['version.publish'].toBoolean()
-}
-
-subprojects {
-    if (name == 'samples') {
-        return
-    }
-
-    repositories {
-        mavenLocal()
-        jcenter()
-        mavenCentral()
-        maven {
-            url 'https://dl.bintray.com/michaelrocks/lightsaber'
-            if (hasCredentials) {
-                credentials {
-                    username = bintrayUser
-                    password = bintrayKey
-                }
-            }
-        }
-    }
-
-    apply plugin: 'maven-publish'
-    apply plugin: 'com.jfrog.bintray'
-
-    project.afterEvaluate {
-        if (!publishToBintray) {
-            project.tasks.remove(bintrayUpload)
-            return
-        }
-
-        if (publishToBintray
-                && !plugins.hasPlugin('com.android.application')
-                && !plugins.hasPlugin('com.android.library')
-                && plugins.hasPlugin('java')) {
-
-            bintray {
-                user = bintrayUser
-                key = bintrayKey
-
-                publications = ['mavenJava']
-
-                dryRun = project.dryRun
-                publish = project.publish
-                pkg {
-                    repo = 'lightsaber'
-                    name = rootProject.name + '-' + project.name
-                    websiteUrl = 'https://github.com/michaelrocks/lightsaber'
-                    issueTrackerUrl = 'https://github.com/michaelrocks/lightsaber/issues'
-                    vcsUrl = 'https://github.com/michaelrocks/lightsaber'
-                    licenses = ['Apache-2.0']
-                    labels = ['lightsaber']
-                    publicDownloadNumbers = true
-
-                    version {
-                        released = new Date()
-                        vcsTag = "v${project.version}"
-                    }
-                }
-            }
-
-            task sourcesJar(type: Jar, dependsOn: classes) {
-                classifier = 'sources'
-                from sourceSets.main.allSource
-            }
-
-            task javadocJar(type: Jar, dependsOn: javadoc) {
-                classifier = 'javadoc'
-                from javadoc.destinationDir
-            }
-
-            artifacts {
-                archives sourcesJar, javadocJar
-            }
-
-            publishing {
-                publications {
-                    mavenJava(MavenPublication) {
-                        artifactId project.bintray.pkg.name
-                        if (plugins.hasPlugin('war')) {
-                            from components.web
-                        } else {
-                            from components.java
-                        }
-
-                        artifact sourcesJar
-                        artifact javadocJar
-                    }
-                }
-            }
-        }
-    }
 }
 
 ext {
