@@ -16,6 +16,6 @@
 
 package io.michaelrocks.lightsaber.sample
 
-trait Droid {
+interface Droid {
     fun repair()
 }

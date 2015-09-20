@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.sample
 
-public trait Wookiee {
+interface Wookiee {
     val planet: Planet
-    public fun roar()
+    fun roar()
 }

@@ -20,8 +20,8 @@ import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
 
-Singleton
-private class Chewbacca [Inject] private (
+@Singleton
+internal class Chewbacca @Inject private constructor(
         planetProvider: Provider<Planet>
 ) : Wookiee {
     override val planet: Planet = planetProvider.get()
