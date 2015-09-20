@@ -20,24 +20,33 @@ import io.michaelrocks.lightsaber.CopyableProvider;
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.internal.InternalModule;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
-import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
+import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
+import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 import static org.objectweb.asm.Opcodes.*;
 
-public class ModulePatcher extends ProcessorClassVisitor {
+public class ModulePatcher extends BaseInjectionClassVisitor {
+    private static final MethodDescriptor KEY_CONSTRUCTOR =
+            MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
+
+    private final AnnotationCreator annotationCreator;
     private final ModuleDescriptor module;
 
     public ModulePatcher(final ProcessorContext processorContext, final ClassVisitor classVisitor,
-            final ModuleDescriptor module) {
+            final AnnotationCreator annotationCreator, final ModuleDescriptor module) {
         super(processorContext, classVisitor);
+        this.annotationCreator = annotationCreator;
         this.module = module;
     }
 
@@ -48,6 +57,7 @@ public class ModulePatcher extends ProcessorClassVisitor {
         System.arraycopy(interfaces, 0, newInterfaces, 0, interfaces.length);
         newInterfaces[interfaces.length] = Type.getInternalName(InternalModule.class);
         super.visit(version, access, name, signature, superName, newInterfaces);
+        setDirty(true);
     }
 
     @Override
@@ -58,11 +68,9 @@ public class ModulePatcher extends ProcessorClassVisitor {
 
     private void generateConfigureInjectorMethod() {
         System.out.println("Generating configureInjector");
-        final MethodVisitor methodVisitor = cv.visitMethod(ACC_PUBLIC,
-                "configureInjector",
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(LightsaberInjector.class)),
-                null,
-                null);
+        final MethodDescriptor method =
+                MethodDescriptor.forMethod("configureInjector", Type.VOID_TYPE, Type.getType(LightsaberInjector.class));
+        final GeneratorAdapter methodVisitor = new GeneratorAdapter(this, ACC_PUBLIC, method, null, null);
         methodVisitor.visitCode();
         for (final ProviderDescriptor provider : module.getProviders()) {
             generateRegisterProviderInvocation(methodVisitor, provider);
@@ -72,10 +80,10 @@ public class ModulePatcher extends ProcessorClassVisitor {
         methodVisitor.visitEnd();
     }
 
-    private void generateRegisterProviderInvocation(final MethodVisitor methodVisitor,
+    private void generateRegisterProviderInvocation(final GeneratorAdapter methodVisitor,
             final ProviderDescriptor provider) {
         methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitLdcInsn(provider.getProvidableType());
+        generateKeyConstruction(methodVisitor, provider);
 
         if (provider.getProviderField() != null) {
             generateProviderConstructionForField(methodVisitor, provider);
@@ -86,9 +94,22 @@ public class ModulePatcher extends ProcessorClassVisitor {
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
                 Type.getInternalName(LightsaberInjector.class),
                 "registerProvider",
-                Type.getMethodDescriptor(Type.VOID_TYPE,
-                        Type.getType(Class.class), Type.getType(CopyableProvider.class)),
+                Type.getMethodDescriptor(Type.VOID_TYPE, Types.KEY_TYPE, Type.getType(CopyableProvider.class)),
                 false);
+    }
+
+    private void generateKeyConstruction(final GeneratorAdapter generator, final ProviderDescriptor provider) {
+        generator.newInstance(Types.KEY_TYPE);
+        generator.dup();
+        final QualifiedType providableType = provider.getQualifiedProvidableType();
+        generator.push(Types.box(providableType.getType()));
+        final AnnotationData qualifier = providableType.getQualifier();
+        if (qualifier == null) {
+            generator.pushNull();
+        } else {
+            annotationCreator.newAnnotation(generator, qualifier);
+        }
+        generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR);
     }
 
     private void generateProviderConstructionForField(final MethodVisitor methodVisitor,
@@ -98,7 +119,7 @@ public class ModulePatcher extends ProcessorClassVisitor {
         methodVisitor.visitTypeInsn(NEW, provider.getProviderType().getInternalName());
         methodVisitor.visitInsn(DUP);
         methodVisitor.visitVarInsn(ALOAD, 0);
-        final FieldDescriptor fieldDescriptor = provider.getProviderField();
+        final QualifiedFieldDescriptor fieldDescriptor = provider.getProviderField();
         methodVisitor.visitFieldInsn(
                 GETFIELD,
                 module.getModuleType().getInternalName(),

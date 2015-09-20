@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.injection;
 
-import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
@@ -27,7 +26,7 @@ import org.objectweb.asm.MethodVisitor;
 import static org.objectweb.asm.Opcodes.ACC_FINAL;
 import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 
-public class InjectableTargetPatcher extends ProcessorClassVisitor {
+public class InjectableTargetPatcher extends BaseInjectionClassVisitor {
     private final InjectionTargetDescriptor injectableTarget;
 
     public InjectableTargetPatcher(final ProcessorContext processorContext, final ClassVisitor classVisitor,
@@ -41,6 +40,9 @@ public class InjectableTargetPatcher extends ProcessorClassVisitor {
             final Object value) {
         if (injectableTarget.isInjectableField(name)) {
             final int newAccess = access & ~(ACC_PRIVATE | ACC_FINAL);
+            if (newAccess != access) {
+                setDirty(true);
+            }
             return super.visitField(newAccess, name, desc, signature, value);
         } else {
             return super.visitField(access, name, desc, signature, value);
@@ -51,8 +53,11 @@ public class InjectableTargetPatcher extends ProcessorClassVisitor {
     public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
             final String[] exceptions) {
         final MethodDescriptor methodDescriptor = new MethodDescriptor(name, desc);
-        if (injectableTarget.getInjectableMethods().contains(methodDescriptor)) {
+        if (injectableTarget.isInjectableMethod(methodDescriptor)) {
             final int newAccess = access & ~(ACC_PRIVATE | ACC_FINAL);
+            if (newAccess != access) {
+                setDirty(true);
+            }
             return super.visitMethod(newAccess, name, desc, signature, exceptions);
         } else {
             return super.visitMethod(access, name, desc, signature, exceptions);

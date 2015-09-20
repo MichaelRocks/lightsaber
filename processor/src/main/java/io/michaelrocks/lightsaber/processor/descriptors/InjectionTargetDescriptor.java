@@ -18,35 +18,31 @@ package io.michaelrocks.lightsaber.processor.descriptors;
 
 import org.objectweb.asm.Type;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class InjectionTargetDescriptor {
     private final Type targetType;
-    private final Set<FieldDescriptor> injectableFields;
-    private final Map<String, FieldDescriptor> injectableFieldsByName;
-    private final MethodDescriptor injectableConstructor;
-    private final Set<MethodDescriptor> injectableConstructors;
-    private final Set<MethodDescriptor> injectableMethods;
+    private final Map<String, QualifiedFieldDescriptor> injectableFields;
+    private final QualifiedMethodDescriptor injectableConstructor;
+    private final Map<MethodDescriptor, QualifiedMethodDescriptor> injectableConstructors;
+    private final Map<MethodDescriptor, QualifiedMethodDescriptor> injectableMethods;
     private final ScopeDescriptor scopeDescriptor;
 
-    private InjectionTargetDescriptor(final Type targetType, final Set<FieldDescriptor> injectableFields,
-            final Set<MethodDescriptor> injectableConstructors, final Set<MethodDescriptor> injectableMethods,
+    private InjectionTargetDescriptor(final Type targetType,
+            final Map<String, QualifiedFieldDescriptor> injectableFields,
+            final Map<MethodDescriptor, QualifiedMethodDescriptor> injectableConstructors,
+            final Map<MethodDescriptor, QualifiedMethodDescriptor> injectableMethods,
             final ScopeDescriptor scopeDescriptor) {
         this.targetType = targetType;
-        this.injectableFields = Collections.unmodifiableSet(injectableFields);
-        this.injectableFieldsByName = new HashMap<>();
-        for (final FieldDescriptor injectableField : injectableFields) {
-            this.injectableFieldsByName.put(injectableField.getName(), injectableField);
-        }
-        final Iterator<MethodDescriptor> constructorIterator = injectableConstructors.iterator();
+        this.injectableFields = Collections.unmodifiableMap(injectableFields);
+        final Iterator<QualifiedMethodDescriptor> constructorIterator = injectableConstructors.values().iterator();
         this.injectableConstructor = constructorIterator.hasNext() ? constructorIterator.next() : null;
-        this.injectableConstructors = Collections.unmodifiableSet(injectableConstructors);
-        this.injectableMethods = Collections.unmodifiableSet(injectableMethods);
+        this.injectableConstructors = Collections.unmodifiableMap(injectableConstructors);
+        this.injectableMethods = Collections.unmodifiableMap(injectableMethods);
         this.scopeDescriptor = scopeDescriptor;
     }
 
@@ -54,24 +50,32 @@ public class InjectionTargetDescriptor {
         return targetType;
     }
 
-    public boolean isInjectableField(final String name) {
-        return injectableFieldsByName.containsKey(name);
+    public boolean isInjectableField(final String fieldName) {
+        return injectableFields.containsKey(fieldName);
     }
 
-    public Set<FieldDescriptor> getInjectableFields() {
-        return injectableFields;
+    public Collection<QualifiedFieldDescriptor> getInjectableFields() {
+        return injectableFields.values();
     }
 
-    public MethodDescriptor getInjectableConstructor() {
+    public boolean isInjectableConstructor(final MethodDescriptor constructor) {
+        return injectableConstructor.getMethod().equals(constructor);
+    }
+
+    public QualifiedMethodDescriptor getInjectableConstructor() {
         return injectableConstructor;
     }
 
-    public Set<MethodDescriptor> getInjectableConstructors() {
-        return injectableConstructors;
+    public Collection<QualifiedMethodDescriptor> getInjectableConstructors() {
+        return injectableConstructors.values();
     }
 
-    public Set<MethodDescriptor> getInjectableMethods() {
-        return injectableMethods;
+    public boolean isInjectableMethod(final MethodDescriptor method) {
+        return injectableMethods.containsKey(method);
+    }
+
+    public Collection<QualifiedMethodDescriptor> getInjectableMethods() {
+        return injectableMethods.values();
     }
 
     public ScopeDescriptor getScope() {
@@ -81,31 +85,35 @@ public class InjectionTargetDescriptor {
     public static class Builder {
         private final Type targetType;
         private boolean hasDefaultConstructor;
-        private final Set<FieldDescriptor> injectableFields = new LinkedHashSet<>();
-        private final Set<MethodDescriptor> injectableConstructors = new LinkedHashSet<>();
-        private final Set<MethodDescriptor> injectableMethods = new LinkedHashSet<>();
+        private final Map<String, QualifiedFieldDescriptor> injectableFields = new LinkedHashMap<>();
+        private final Map<MethodDescriptor, QualifiedMethodDescriptor> injectableConstructors = new LinkedHashMap<>();
+        private final Map<MethodDescriptor, QualifiedMethodDescriptor> injectableMethods = new LinkedHashMap<>();
         private ScopeDescriptor scopeDescriptor;
 
         public Builder(final Type targetType) {
             this.targetType = targetType;
         }
 
+        public Type getTargetType() {
+            return targetType;
+        }
+
         public void setHasDefaultConstructor(final boolean hasDefaultConstructor) {
             this.hasDefaultConstructor = hasDefaultConstructor;
         }
 
-        public Builder addInjectableField(final FieldDescriptor injectableField) {
-            injectableFields.add(injectableField);
+        public Builder addInjectableField(final QualifiedFieldDescriptor injectableField) {
+            injectableFields.put(injectableField.getName(), injectableField);
             return this;
         }
 
-        public Builder addInjectableConstructor(final MethodDescriptor injectableConstructor) {
-            injectableConstructors.add(injectableConstructor);
+        public Builder addInjectableConstructor(final QualifiedMethodDescriptor injectableConstructor) {
+            injectableConstructors.put(injectableConstructor.getMethod(), injectableConstructor);
             return this;
         }
 
-        public Builder addInjectableMethod(final MethodDescriptor injectableMethod) {
-            injectableMethods.add(injectableMethod);
+        public Builder addInjectableMethod(final QualifiedMethodDescriptor injectableMethod) {
+            injectableMethods.put(injectableMethod.getMethod(), injectableMethod);
             return this;
         }
 

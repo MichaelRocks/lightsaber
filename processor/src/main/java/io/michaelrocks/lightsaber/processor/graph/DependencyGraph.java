@@ -21,6 +21,7 @@ import io.michaelrocks.lightsaber.processor.ProcessingException;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import org.objectweb.asm.Type;
 
 import java.util.Collection;
@@ -32,30 +33,31 @@ import java.util.Map;
 import java.util.Set;
 
 public class DependencyGraph {
-    private final Map<Type, List<Type>> typeGraph = new HashMap<>();
+    private final Map<QualifiedType, List<QualifiedType>> typeGraph = new HashMap<>();
 
     public DependencyGraph(final ProcessorContext processorContext, final Collection<ModuleDescriptor> modules) {
-        typeGraph.put(Type.getType(Injector.class), Collections.<Type>emptyList());
+        final QualifiedType rootType = new QualifiedType(Type.getType(Injector.class));
+        typeGraph.put(rootType, Collections.<QualifiedType>emptyList());
         for (final ModuleDescriptor module : modules) {
-            final Set<Type> providableModuleTypes = new HashSet<>();
+            final Set<QualifiedType> providableModuleTypes = new HashSet<>();
             for (final ProviderDescriptor provider : module.getProviders()) {
-                final Type returnType = provider.getProvidableType();
+                final QualifiedType returnType = provider.getQualifiedProvidableType();
                 if (providableModuleTypes.add(returnType)) {
                     typeGraph.put(returnType, provider.getDependencies());
                 } else {
                     final String message = String.format("Module %s provides %s multiple times",
-                            module.getModuleType().getInternalName(), returnType.getInternalName());
+                            module.getModuleType().getInternalName(), returnType);
                     processorContext.reportError(new ProcessingException(message));
                 }
             }
         }
     }
 
-    public Collection<Type> getTypes() {
+    public Collection<QualifiedType> getTypes() {
         return typeGraph.keySet();
     }
 
-    public Collection<Type> getTypeDependencies(final Type type) {
+    public Collection<QualifiedType> getTypeDependencies(final QualifiedType type) {
         return typeGraph.get(type);
     }
 }

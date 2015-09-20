@@ -17,16 +17,20 @@
 package io.michaelrocks.lightsaber.processor.generation;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 
 public class ProvidersGenerator {
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
+    private final AnnotationCreator annotationCreator;
 
-    public ProvidersGenerator(final ClassProducer classProducer, final ProcessorContext processorContext) {
+    public ProvidersGenerator(final ClassProducer classProducer, final ProcessorContext processorContext,
+            final AnnotationCreator annotationCreator) {
         this.classProducer = classProducer;
         this.processorContext = processorContext;
+        this.annotationCreator = annotationCreator;
     }
 
     public void generateProviders() {
@@ -46,7 +50,8 @@ public class ProvidersGenerator {
 
     private void generateProvider(final ProviderDescriptor provider) {
         System.out.println("Generating provider " + provider.getProviderType().getInternalName());
-        final ProviderClassGenerator generator = new ProviderClassGenerator(processorContext, provider);
+        final ProviderClassGenerator generator =
+                new ProviderClassGenerator(processorContext, annotationCreator, provider);
         final byte[] providerClassData = generator.generate();
         classProducer.produceClass(provider.getProviderType().getInternalName(), providerClassData);
     }

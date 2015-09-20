@@ -1,0 +1,24 @@
+buildscript {
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'bintray'
+apply plugin: 'kotlin'
+
+sourceCompatibility = '1.6'
+
+dependencies {
+    compile project(':core')
+
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+
+    testCompile "junit:junit:$junitVersion"
+}
+
+
+jar {
+    destinationDir = file('build/jar')
+}

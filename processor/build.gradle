@@ -4,16 +4,17 @@ plugins {
 
 apply plugin: 'java'
 apply plugin: 'application'
+apply plugin: 'bintray'
 
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
-publishToBintray = true
 
 mainClassName = 'io.michaelrocks.lightsaber.processor.LightsaberProcessor'
 
 dependencies {
     compile project(':core')
 
+    compile "com.google.code.findbugs:jsr305:$jsr305Version"
     compile "com.beust:jcommander:$jcommanderVersion"
     compile "org.ow2.asm:asm:$asmVersion"
     compile "org.ow2.asm:asm-commons:$asmVersion"
@@ -22,6 +23,7 @@ dependencies {
     compile "org.apache.commons:commons-collections4:$commonsCollectionsVersion"
 
     testCompile "junit:junit:$junitVersion"
+    testCompile "org.mockito:mockito-core:$mockitoVersion"
 }
 
 jar {

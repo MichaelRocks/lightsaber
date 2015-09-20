@@ -29,7 +29,8 @@ public class MethodDescriptor {
     private static final String STATIC_INITIALIZER_NAME = "<clinit>";
 
     private static final MethodDescriptor DEFAULT_CONSTRUCTOR_DESCRIPTOR = forConstructor();
-    private static final MethodDescriptor STATIC_INITIALIZER_DESCRIPTOR = forMethod("<clinit>", Type.VOID_TYPE);
+    private static final MethodDescriptor STATIC_INITIALIZER_DESCRIPTOR =
+            forMethod(STATIC_INITIALIZER_NAME, Type.VOID_TYPE);
 
     private final String name;
     private final MethodSignature signature;

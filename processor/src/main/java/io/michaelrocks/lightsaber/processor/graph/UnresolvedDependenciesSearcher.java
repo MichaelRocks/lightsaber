@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.graph;
 
-import org.objectweb.asm.Type;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,27 +27,27 @@ import java.util.Set;
 
 public class UnresolvedDependenciesSearcher {
     private final DependencyGraph graph;
-    private final Set<Type> visitedTypes = new HashSet<>();
-    private final List<Type> unresolvedTypes = new ArrayList<>();
+    private final Set<QualifiedType> visitedTypes = new HashSet<>();
+    private final List<QualifiedType> unresolvedTypes = new ArrayList<>();
 
     public UnresolvedDependenciesSearcher(final DependencyGraph graph) {
         this.graph = graph;
     }
 
-    public Collection<Type> findUnresolvedDependencies() {
-        for (final Type type : graph.getTypes()) {
+    public Collection<QualifiedType> findUnresolvedDependencies() {
+        for (final QualifiedType type : graph.getTypes()) {
             traverse(type);
         }
         return Collections.unmodifiableList(unresolvedTypes);
     }
 
-    private void traverse(final Type type) {
+    private void traverse(final QualifiedType type) {
         if (visitedTypes.add(type)) {
-            final Collection<Type> dependencies = graph.getTypeDependencies(type);
+            final Collection<QualifiedType> dependencies = graph.getTypeDependencies(type);
             if (dependencies == null) {
                 unresolvedTypes.add(type);
             } else {
-                for (final Type dependency : dependencies) {
+                for (final QualifiedType dependency : dependencies) {
                     traverse(dependency);
                 }
             }

@@ -33,9 +33,5 @@ private class LightsaberModule : Module {
 
     Provides
     Singleton
-    fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet {
-        val kashyyyk = kashyyykProvider.get()
-        kashyyyk.settle()
-        return kashyyyk
-    }
+    fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet = kashyyykProvider.get()
 }

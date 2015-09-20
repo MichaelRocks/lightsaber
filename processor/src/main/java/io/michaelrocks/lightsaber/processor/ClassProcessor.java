@@ -16,22 +16,23 @@
 
 package io.michaelrocks.lightsaber.processor;
 
-import io.michaelrocks.lightsaber.processor.analysis.AnalysisClassFileVisitor;
+import io.michaelrocks.lightsaber.processor.analysis.Analyzer;
+import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
-import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.InjectorFactoryClassGenerator;
-import io.michaelrocks.lightsaber.processor.generation.InjectorsGenerator;
 import io.michaelrocks.lightsaber.processor.generation.PackageModuleClassGenerator;
 import io.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.ProvidersGenerator;
+import io.michaelrocks.lightsaber.processor.generation.TypeAgentsGenerator;
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher;
 import io.michaelrocks.lightsaber.processor.graph.DependencyGraph;
-import io.michaelrocks.lightsaber.processor.graph.TypeGraphBuilder;
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher;
 import io.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import io.michaelrocks.lightsaber.processor.io.ClassFileReader;
@@ -54,16 +55,20 @@ public class ClassProcessor {
     private final List<File> libraries;
 
     private final ProcessorContext processorContext = new ProcessorContext();
+    private final ClassProducer classProducer;
+    private final AnnotationCreator annotationCreator;
 
     public ClassProcessor(final ClassFileReader classFileReader, final ClassFileWriter classFileWriter,
             final List<File> libraries) {
         this.classFileWriter = classFileWriter;
         this.classFileReader = classFileReader;
         this.libraries = new ArrayList<>(libraries);
+
+        this.classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
+        this.annotationCreator = new AnnotationCreator(processorContext, classProducer);
     }
 
     public void processClasses() throws IOException {
-        buildTypeGraph();
         performAnalysis();
         composePackageModules();
         composeInjectors();
@@ -76,22 +81,9 @@ public class ClassProcessor {
         copyAndPatchClasses();
     }
 
-    private void buildTypeGraph() throws IOException {
-        final TypeGraphBuilder typeGraphBuilder = new TypeGraphBuilder();
-        for (final File library : libraries) {
-            if (library.isDirectory()) {
-                typeGraphBuilder.addClassesFromClasses(library);
-            } else {
-                typeGraphBuilder.addClassesFromJar(library);
-            }
-        }
-        typeGraphBuilder.addClassesFromReader(classFileReader);
-        processorContext.setTypeGraph(typeGraphBuilder.build());
-    }
-
     private void performAnalysis() throws IOException {
-        final AnalysisClassFileVisitor analysisVisitor = new AnalysisClassFileVisitor(processorContext);
-        classFileReader.accept(analysisVisitor);
+        final Analyzer analyzer = new Analyzer(processorContext);
+        analyzer.analyze(classFileReader, libraries);
         checkErrors();
     }
 
@@ -99,7 +91,7 @@ public class ClassProcessor {
         final Map<String, ModuleDescriptor.Builder> moduleBuilders = new HashMap<>();
         for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
             final Type providableTargetType = providableTarget.getTargetType();
-            final MethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructor();
+            final QualifiedMethodDescriptor providableTargetConstructor = providableTarget.getInjectableConstructor();
 
             final String packageName = FilenameUtils.getPath(providableTargetType.getInternalName());
             ModuleDescriptor.Builder moduleBuilder = moduleBuilders.get(packageName);
@@ -111,10 +103,11 @@ public class ClassProcessor {
 
             final Type providerType = Type.getObjectType(
                     providableTargetType.getInternalName() + "$$Provider");
+            final QualifiedType providableType = new QualifiedType(providableTarget.getTargetType());
             final ScopeDescriptor scope = providableTarget.getScope();
             final Type delegatorType = scope != null ? scope.getProviderType() : null;
             final ProviderDescriptor provider =
-                    new ProviderDescriptor(providerType, providableTarget.getTargetType(), providableTargetConstructor,
+                    new ProviderDescriptor(providerType, providableType, providableTargetConstructor,
                             moduleBuilder.getModuleType(), delegatorType);
 
             moduleBuilder.addProvider(provider);
@@ -128,7 +121,7 @@ public class ClassProcessor {
     private void composeInjectors() {
         for (final InjectionTargetDescriptor injectableTarget : processorContext.getInjectableTargets()) {
             final Type injectorType =
-                    Type.getObjectType(injectableTarget.getTargetType().getInternalName() + "$$Injector");
+                    Type.getObjectType(injectableTarget.getTargetType().getInternalName() + "$$Agent");
             final InjectorDescriptor injector = new InjectorDescriptor(injectorType, injectableTarget);
             processorContext.addInjector(injector);
         }
@@ -139,15 +132,16 @@ public class ClassProcessor {
 
         final UnresolvedDependenciesSearcher unresolvedDependenciesSearcher =
                 new UnresolvedDependenciesSearcher(dependencyGraph);
-        final Collection<Type> unresolvedDependencies = unresolvedDependenciesSearcher.findUnresolvedDependencies();
-        for (final Type unresolvedDependency : unresolvedDependencies) {
+        final Collection<QualifiedType> unresolvedDependencies =
+                unresolvedDependenciesSearcher.findUnresolvedDependencies();
+        for (final QualifiedType unresolvedDependency : unresolvedDependencies) {
             processorContext.reportError(
                     new ProcessingException("Unresolved dependency: " + unresolvedDependency));
         }
 
         final CycleSearcher cycleSearcher = new CycleSearcher(dependencyGraph);
-        final Collection<Type> cycles = cycleSearcher.findCycles();
-        for (final Type cycle : cycles) {
+        final Collection<QualifiedType> cycles = cycleSearcher.findCycles();
+        for (final QualifiedType cycle : cycles) {
             processorContext.reportError(
                     new ProcessingException("Cycled dependency: " + cycle));
         }
@@ -156,7 +150,6 @@ public class ClassProcessor {
     }
 
     private void generateGlobalModule() throws ProcessingException {
-        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
         final PackageModuleClassGenerator packageModuleClassGenerator =
                 new PackageModuleClassGenerator(classProducer, processorContext);
         for (final ModuleDescriptor packageModule : processorContext.getPackageModules()) {
@@ -166,14 +159,13 @@ public class ClassProcessor {
     }
 
     private void generateProviders() throws ProcessingException {
-        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
-        final ProvidersGenerator providersGenerator = new ProvidersGenerator(classProducer, processorContext);
+        final ProvidersGenerator providersGenerator =
+                new ProvidersGenerator(classProducer, processorContext, annotationCreator);
         providersGenerator.generateProviders();
         checkErrors();
     }
 
     private void generateInjectorFactory() throws ProcessingException {
-        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
         final InjectorFactoryClassGenerator injectorFactoryClassGenerator =
                 new InjectorFactoryClassGenerator(classProducer, processorContext);
         injectorFactoryClassGenerator.generateInjectorFactory();
@@ -181,15 +173,15 @@ public class ClassProcessor {
     }
 
     private void generateInjectors() throws ProcessingException {
-        final ClassProducer classProducer = new ProcessorClassProducer(classFileWriter, processorContext);
-        final InjectorsGenerator injectorsGenerator = new InjectorsGenerator(classProducer, processorContext);
-        injectorsGenerator.generateInjectors();
+        final TypeAgentsGenerator typeAgentsGenerator =
+                new TypeAgentsGenerator(classProducer, processorContext, annotationCreator);
+        typeAgentsGenerator.generateInjectors();
         checkErrors();
     }
 
     private void copyAndPatchClasses() throws IOException {
         final InjectionClassFileVisitor injectionVisitor =
-                new InjectionClassFileVisitor(classFileWriter, processorContext);
+                new InjectionClassFileVisitor(classFileWriter, processorContext, annotationCreator);
         classFileReader.accept(injectionVisitor);
     }
 

@@ -25,7 +25,7 @@ public class ClassFileVisitor {
         this.classFileVisitor = classFileVisitor;
     }
 
-    public void visitClassFile(final String path, final byte[] classData)  throws IOException {
+    public void visitClassFile(final String path, final byte[] classData) throws IOException {
         if (classFileVisitor != null) {
             classFileVisitor.visitClassFile(path, classData);
         }

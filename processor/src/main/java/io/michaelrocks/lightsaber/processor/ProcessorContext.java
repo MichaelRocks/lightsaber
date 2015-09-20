@@ -18,12 +18,13 @@ package io.michaelrocks.lightsaber.processor;
 
 import io.michaelrocks.lightsaber.SingletonProvider;
 import io.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
-import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.graph.TypeGraph;
 import org.objectweb.asm.Type;
@@ -33,9 +34,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ProcessorContext {
     private static final String PACKAGE_MODULE_CLASS_NAME = "Lightsaber$$PackageModule";
@@ -46,12 +49,15 @@ public class ProcessorContext {
     private String classFilePath;
     private final Map<String, List<Exception>> errorsByPath = new LinkedHashMap<>();
 
+    private final AnnotationRegistry annotationRegistry = new AnnotationRegistry();
+
     private TypeGraph typeGraph;
     private final Map<Type, ModuleDescriptor> modules = new HashMap<>();
     private final Map<Type, ModuleDescriptor> packageModules = new HashMap<>();
     private final Map<Type, InjectionTargetDescriptor> injectableTargets = new HashMap<>();
     private final Map<Type, InjectionTargetDescriptor> providableTargets = new HashMap<>();
     private final Map<Type, InjectorDescriptor> injectors = new HashMap<>();
+    private final Set<Type> qualifiers = new HashSet<>();
 
     public String getClassFilePath() {
         return classFilePath;
@@ -80,6 +86,10 @@ public class ProcessorContext {
             errorsByPath.put(classFilePath, errors);
         }
         errors.add(error);
+    }
+
+    public AnnotationRegistry getAnnotationRegistry() {
+        return annotationRegistry;
     }
 
     public TypeGraph getTypeGraph() {
@@ -158,6 +168,14 @@ public class ProcessorContext {
         return Collections.singleton(SINGLETON_SCOPE_DESCRIPTOR);
     }
 
+    public void addQualifier(final Type type) {
+        qualifiers.add(type);
+    }
+
+    public boolean isQualifier(final Type type) {
+        return qualifiers.contains(type);
+    }
+
     public Type getPackageModuleType(final String packageName) {
         return Type.getObjectType(packageName + PACKAGE_MODULE_CLASS_NAME);
     }
@@ -179,18 +197,21 @@ public class ProcessorContext {
         }
         for (final InjectionTargetDescriptor injectableTarget : getInjectableTargets()) {
             System.out.println("Injectable: " + injectableTarget.getTargetType());
-            for (final FieldDescriptor injectableField : injectableTarget.getInjectableFields()) {
+            for (final QualifiedFieldDescriptor injectableField : injectableTarget.getInjectableFields()) {
                 System.out.println("\tField: " + injectableField);
             }
-            for (final MethodDescriptor injectableMethod : injectableTarget.getInjectableMethods()) {
+            for (final QualifiedMethodDescriptor injectableMethod : injectableTarget.getInjectableMethods()) {
                 System.out.println("\tMethod: " + injectableMethod);
             }
         }
         for (final InjectionTargetDescriptor providableTarget : getProvidableTargets()) {
             System.out.println("Providable: " + providableTarget.getTargetType());
-            for (final MethodDescriptor injectableConstructor : providableTarget.getInjectableConstructors()) {
+            for (final QualifiedMethodDescriptor injectableConstructor : providableTarget.getInjectableConstructors()) {
                 System.out.println("\tConstructor: " + injectableConstructor);
             }
+        }
+        for (final Type qualifierType : qualifiers) {
+            System.out.println("\tQualifier: " + qualifierType);
         }
     }
 }

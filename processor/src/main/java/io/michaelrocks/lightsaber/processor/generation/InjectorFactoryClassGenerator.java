@@ -18,12 +18,14 @@ package io.michaelrocks.lightsaber.processor.generation;
 
 import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
+import io.michaelrocks.lightsaber.internal.TypeAgent;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.JavaVersionChanger;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor;
 import org.apache.commons.io.IOUtils;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -41,13 +43,14 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Collection;
-import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
 import static org.objectweb.asm.Opcodes.*;
 
 public class InjectorFactoryClassGenerator {
+    private static final String REGISTER_TYPE_AGENT_METHOD_NAME = "registerTypeAgent";
+
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
 
@@ -61,7 +64,8 @@ public class InjectorFactoryClassGenerator {
             final ClassReader classReader = new ClassReader(readClassBytes(Lightsaber$$InjectorFactory.class));
             final ClassWriter classWriter = new StandaloneClassWriter(
                     classReader, ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, processorContext);
-            final ClassVisitor generator = new InjectorFactoryClassVisitor(classWriter);
+            final ClassVisitor watermarkClassVisitor = new WatermarkClassVisitor(classWriter, true);
+            final ClassVisitor generator = new InjectorFactoryClassVisitor(watermarkClassVisitor);
             final Remapper remapper =
                     new SimpleRemapper(
                             Type.getInternalName(Lightsaber$$InjectorFactory.class),
@@ -114,8 +118,8 @@ public class InjectorFactoryClassGenerator {
         public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
                 final String[] exceptions) {
             final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
-            if ("populateTypeInjectors".equals(name)) {
-                patchPopulateTypeInjectorsMethod(methodVisitor);
+            if ("populateTypeAgents".equals(name)) {
+                patchPopulateTypeAgentsMethod(methodVisitor);
                 return null;
             } else if ("getPackageModules".equals(name)) {
                 patchGetPackageModulesMethod(methodVisitor);
@@ -125,18 +129,12 @@ public class InjectorFactoryClassGenerator {
             }
         }
 
-        private void patchPopulateTypeInjectorsMethod(final MethodVisitor methodVisitor) {
+        private void patchPopulateTypeAgentsMethod(final MethodVisitor methodVisitor) {
             methodVisitor.visitCode();
-            final Type objectType = Type.getType(Object.class);
-            final MethodDescriptor putMethodDescriptor =
-                    MethodDescriptor.forMethod("put", objectType, objectType, objectType);
+            final MethodDescriptor registerTypeAgentMethodDescriptor =
+                    MethodDescriptor.forMethod(REGISTER_TYPE_AGENT_METHOD_NAME,
+                            Type.VOID_TYPE, Type.getType(TypeAgent.class));
             for (final InjectorDescriptor injector : processorContext.getInjectors()) {
-                methodVisitor.visitFieldInsn(
-                        GETSTATIC,
-                        Type.getInternalName(Lightsaber$$InjectorFactory.class),
-                        "typeInjectors",
-                        Type.getDescriptor(Map.class));
-                methodVisitor.visitLdcInsn(injector.getInjectableTarget().getTargetType());
                 methodVisitor.visitTypeInsn(NEW, injector.getInjectorType().getInternalName());
                 methodVisitor.visitInsn(DUP);
                 methodVisitor.visitMethodInsn(
@@ -146,12 +144,11 @@ public class InjectorFactoryClassGenerator {
                         MethodDescriptor.forDefaultConstructor().getDescriptor(),
                         false);
                 methodVisitor.visitMethodInsn(
-                        INVOKEINTERFACE,
-                        Type.getInternalName(Map.class),
-                        putMethodDescriptor.getName(),
-                        putMethodDescriptor.getDescriptor(),
-                        true);
-                methodVisitor.visitInsn(POP);
+                        INVOKESTATIC,
+                        Type.getInternalName(Lightsaber$$InjectorFactory.class),
+                        registerTypeAgentMethodDescriptor.getName(),
+                        registerTypeAgentMethodDescriptor.getDescriptor(),
+                        false);
             }
 
             methodVisitor.visitInsn(RETURN);

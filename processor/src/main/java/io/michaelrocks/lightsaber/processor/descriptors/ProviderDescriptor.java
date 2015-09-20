@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import org.objectweb.asm.Type;
 
@@ -25,24 +26,25 @@ import java.util.List;
 
 public class ProviderDescriptor {
     private final Type providerType;
-    private final Type providableType;
-    private final FieldDescriptor providerField;
-    private final MethodDescriptor providerMethod;
+    private final QualifiedType providableType;
+    private final QualifiedFieldDescriptor providerField;
+    private final QualifiedMethodDescriptor providerMethod;
     private final Type moduleType;
     private final Type delegatorType;
 
-    public ProviderDescriptor(final Type providerType, final Type providableType,
-            final FieldDescriptor providerField, final Type moduleType) {
+    public ProviderDescriptor(final Type providerType, final QualifiedType providableType,
+            final QualifiedFieldDescriptor providerField, final Type moduleType) {
         this(providerType, providableType, providerField, null, moduleType, null);
     }
 
-    public ProviderDescriptor(final Type providerType, final Type providableType,
-            final MethodDescriptor providerMethod, final Type moduleType, final Type delegatorType) {
+    public ProviderDescriptor(final Type providerType, final QualifiedType providableType,
+            final QualifiedMethodDescriptor providerMethod, final Type moduleType, final Type delegatorType) {
         this(providerType, providableType, null, providerMethod, moduleType, delegatorType);
     }
 
-    private ProviderDescriptor(final Type providerType, final Type providableType, final FieldDescriptor providerField,
-            final MethodDescriptor providerMethod, final Type moduleType, final Type delegatorType) {
+    private ProviderDescriptor(final Type providerType, final QualifiedType providableType,
+            final QualifiedFieldDescriptor providerField, final QualifiedMethodDescriptor providerMethod,
+            final Type moduleType, final Type delegatorType) {
         this.providerType = providerType;
         this.providableType = providableType;
         this.providerField = providerField;
@@ -55,15 +57,23 @@ public class ProviderDescriptor {
         return providerType;
     }
 
-    public Type getProvidableType() {
+    public QualifiedType getQualifiedProvidableType() {
         return providableType;
     }
 
-    public FieldDescriptor getProviderField() {
+    public AnnotationData getQualifier() {
+        return providableType.getQualifier();
+    }
+
+    public Type getProvidableType() {
+        return providableType.getType();
+    }
+
+    public QualifiedFieldDescriptor getProviderField() {
         return providerField;
     }
 
-    public MethodDescriptor getProviderMethod() {
+    public QualifiedMethodDescriptor getProviderMethod() {
         return providerMethod;
     }
 
@@ -75,16 +85,16 @@ public class ProviderDescriptor {
         return delegatorType;
     }
 
-    public List<Type> getDependencies() {
+    public List<QualifiedType> getDependencies() {
         if (providerMethod == null) {
             return Collections.emptyList();
         }
 
-        final List<Type> dependencies = new ArrayList<>(providerMethod.getArgumentTypes().size());
+        final List<QualifiedType> dependencies = new ArrayList<>(providerMethod.getArgumentTypes().size());
         for (final TypeSignature argumentType : providerMethod.getArgumentTypes()) {
             final Type dependencyType = argumentType.getParameterType() != null
                     ? argumentType.getParameterType() : argumentType.getRawType();
-            dependencies.add(dependencyType);
+            dependencies.add(new QualifiedType(dependencyType));
         }
         return dependencies;
     }

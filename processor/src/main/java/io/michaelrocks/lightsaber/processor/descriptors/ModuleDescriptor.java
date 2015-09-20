@@ -53,21 +53,24 @@ public class ModuleDescriptor {
             return moduleType;
         }
 
-        public Builder addProviderField(final FieldDescriptor providerField) {
+        public Builder addProviderField(final QualifiedFieldDescriptor providerField) {
             final Type providerType = Type.getType(InstanceProvider.class);
+            final QualifiedType providableType =
+                    new QualifiedType(providerField.getRawType(), providerField.getQualifier());
             final ProviderDescriptor provider =
-                    new ProviderDescriptor(providerType, providerField.getRawType(), providerField, moduleType);
+                    new ProviderDescriptor(providerType, providableType, providerField, moduleType);
             return addProvider(provider);
         }
 
-        public Builder addProviderMethod(final MethodDescriptor providerMethod, final ScopeDescriptor scope) {
+        public Builder addProviderMethod(final QualifiedMethodDescriptor providerMethod, final ScopeDescriptor scope) {
             providerIndex += 1;
             final Type providerType =
                     Type.getObjectType(moduleType.getInternalName() + "$$Provider$$" + providerIndex);
+            final QualifiedType providableType =
+                    new QualifiedType(providerMethod.getReturnType().getRawType(), providerMethod.getResultQualifier());
             final Type delegatorType = scope != null ? scope.getProviderType() : null;
             final ProviderDescriptor provider =
-                    new ProviderDescriptor(providerType, providerMethod.getReturnType().getRawType(),
-                            providerMethod, moduleType, delegatorType);
+                    new ProviderDescriptor(providerType, providableType, providerMethod, moduleType, delegatorType);
             return addProvider(provider);
         }
 

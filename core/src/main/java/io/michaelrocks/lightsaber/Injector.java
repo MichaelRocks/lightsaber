@@ -22,8 +22,8 @@ import java.util.Map;
 public interface Injector {
     void injectMembers(Object target);
 
-    <T> T getInstance(Class<T> type);
+    <T> T getInstance(Key<? extends T> type);
 
-    <T> Provider<T> getProvider(Class<T> type);
-    Map<Class<?>, Provider<?>> getAllProviders();
+    <T> Provider<T> getProvider(Key<? extends T> key);
+    Map<Key<?>, Provider<?>> getAllProviders();
 }
