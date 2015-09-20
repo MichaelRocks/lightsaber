@@ -33,7 +33,11 @@ public class AnnotationRegistry {
     public void addAnnotationDefaults(final AnnotationDescriptor annotation, final AnnotationData defaults) {
         Validate.isTrue(annotation.getType().equals(defaults.getType()));
 
-        Validate.isTrue(!annotationsByType.containsKey(annotation.getType()));
+        if (annotationsByType.containsKey(annotation.getType())) {
+            System.out.println("Annotation already registered: " + annotation.getType());
+            return;
+        }
+
         annotationsByType.put(annotation.getType(), annotation);
 
         if (defaults.isResolved()) {
