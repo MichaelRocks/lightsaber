@@ -22,10 +22,14 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 
 public class WatermarkChecker extends ClassVisitor {
+    private static final PathMatcher CLASS_MATCHER = FileSystems.getDefault().getPathMatcher("glob:**.class");
+
     private boolean isLightsaberClass;
 
     public WatermarkChecker() {
@@ -33,6 +37,10 @@ public class WatermarkChecker extends ClassVisitor {
     }
 
     public static boolean isLightsaberClass(final Path file) throws IOException {
+        if (!CLASS_MATCHER.matches(file)) {
+            return false;
+        }
+
         final ClassReader classReader = new ClassReader(Files.readAllBytes(file));
         final WatermarkChecker checker = new WatermarkChecker();
         classReader.accept(checker, new Attribute[] { new LightsaberAttribute() },
