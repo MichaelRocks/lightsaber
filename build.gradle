@@ -12,7 +12,7 @@ buildscript {
 }
 
 allprojects {
-    ext.kotlinVersion = '0.12.412'
+    ext.kotlinVersion = '0.13.1513'
 
     buildscript {
         repositories {
