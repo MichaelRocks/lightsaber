@@ -13,7 +13,6 @@ buildscript {
 
 allprojects {
     ext.kotlinVersion = '0.12.412'
-    ext.hasCredentials = project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')
 
     buildscript {
         repositories {
@@ -22,17 +21,12 @@ allprojects {
             mavenCentral()
             maven {
                 url 'https://dl.bintray.com/michaelrocks/lightsaber'
-                if (hasCredentials) {
-                    credentials {
-                        username = bintrayUser
-                        password = bintrayKey
-                    }
-                }
             }
         }
     }
 
     repositories {
+        mavenLocal()
         mavenCentral()
     }
 }
