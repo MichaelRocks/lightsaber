@@ -25,42 +25,36 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 public class MainActivity : Activity() {
-    Inject
-    private var wookiee: Wookiee? = null
-    Inject
-    private var wookieeProvider: Provider<Wookiee>? = null
+    @Inject
+    private lateinit var wookiee: Wookiee
+    @Inject
+    private lateinit var wookieeProvider: Provider<Wookiee>
 
-    Inject
-    private var droid: Droid? = null
-    Inject
-    private var droidProvider: Provider<Droid>? = null
+    @Inject
+    private lateinit var droid: Droid
+    @Inject
+    private lateinit var droidProvider: Provider<Droid>
 
-    Inject
-    private var darthVader: DarthVader? = null
+    @Inject
+    private lateinit var darthVader: DarthVader
 
-    Inject
-    private val planet: Planet? = null
+    @Inject
+    private lateinit val planet: Planet
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main)
 
-        val beforeInjectionTextView = findViewById(R.id.beforeInjectionTextView) as TextView
         val afterInjectionTextView = findViewById(R.id.afterInjectionTextView) as TextView
-
-        print(beforeInjectionTextView, "Wookiee: $wookiee")
-        print(beforeInjectionTextView, "Droid: $droid")
-        print(beforeInjectionTextView, "Darth Vader: $darthVader")
-        print(beforeInjectionTextView, "Planet: $planet")
 
         val injector = Lightsaber.createInjector(LightsaberModule())
         injector.injectMembers(this)
 
-        print(afterInjectionTextView, "Wookiee: $wookiee from ${wookiee!!.planet}")
-        val anotherWookiee = wookieeProvider!!.get()
+        print(afterInjectionTextView, "Wookiee: $wookiee from ${wookiee.planet}")
+        val anotherWookiee = wookieeProvider.get()
         print(afterInjectionTextView, "Another wookiee: $anotherWookiee from ${anotherWookiee.planet}")
         print(afterInjectionTextView, "Droid: $droid")
-        val anotherDroid = droidProvider!!.get()
+        val anotherDroid = droidProvider.get()
         print(afterInjectionTextView, "Another droid: $anotherDroid")
         print(afterInjectionTextView, "Darth Vader: $darthVader")
         print(afterInjectionTextView, "Planet: $planet")
