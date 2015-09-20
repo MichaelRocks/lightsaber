@@ -45,20 +45,26 @@ class BackupClassesTask extends DefaultTask {
     }
 
     private Set<Path> copyUpdatedFiles(final Path classesPath, final Path backupPath) {
+        logger.info("Copying updated files...")
+        logger.info("  from [$classesPath]")
+        logger.info("    to [$backupPath]")
+
         final Set<Path> visitedPaths = new HashSet<>()
         Files.walkFileTree(classesPath, new SimpleFileVisitor<Path>() {
             @Override
             FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-                logger.info("visitFile: $file")
+                logger.debug("Checking $file...")
                 super.visitFile(file, attrs)
                 final Path relativePath = classesPath.relativize(file)
                 visitedPaths.add(relativePath)
                 if (WatermarkChecker.isLightsaberClass(file)) {
+                    logger.debug("Watermark found - skipping")
                     return FileVisitResult.CONTINUE
                 }
 
                 final Path backupFile = backupPath.resolve(relativePath)
                 if (!Files.exists(backupFile)) {
+                    logger.debug("Backup file doesn't exist - copying")
                     Files.createDirectories(backupFile.parent)
                     Files.copy(file, backupFile, StandardCopyOption.COPY_ATTRIBUTES)
                     return FileVisitResult.CONTINUE
@@ -69,9 +75,12 @@ class BackupClassesTask extends DefaultTask {
                 final BasicFileAttributes backupFileAttributes =
                         Files.readAttributes(backupFile, BasicFileAttributes.class)
                 if (fileAttributes.lastModifiedTime() != backupFileAttributes.lastModifiedTime()) {
+                    logger.debug("File was updated - copying")
                     Files.createDirectories(backupFile.parent)
                     Files.copy(file, backupFile,
                             StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES)
+                } else {
+                    logger.debug("File wasn't updated - skipping")
                 }
                 return FileVisitResult.CONTINUE
             }
@@ -80,13 +89,20 @@ class BackupClassesTask extends DefaultTask {
     }
 
     private void removeUnvisitedFiles(final Path backupPath, final Set<Path> visitedPaths) {
+        logger.info("Removing abandoned files...")
+        logger.info("  from [$backupPath]")
+
         Files.walkFileTree(backupPath, new SimpleFileVisitor<Path>() {
             @Override
             FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
                 super.visitFile(file, attrs)
+                logger.debug("Checking $file...")
                 final Path relativePath = backupPath.relativize(file)
                 if (!visitedPaths.contains(relativePath)) {
+                    logger.debug("File is abandoned - removing")
                     Files.delete(file)
+                } else {
+                    logger.debug("File isn't abandoned - skipping")
                 }
                 return FileVisitResult.CONTINUE
             }
@@ -100,12 +116,17 @@ class BackupClassesTask extends DefaultTask {
     }
 
     void clean() {
+        logger.info("Restoring patched files...")
+        logger.info("  from [$backupDir]")
+        logger.info("    to [$classesDir]")
+
         final Path classesPath = classesDir.toPath()
         final Path backupPath = backupDir.toPath()
         Files.walkFileTree(backupPath, new SimpleFileVisitor<Path>() {
             @Override
             FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
                 super.visitFile(file, attrs)
+                logger.debug("Reverting $file...")
                 final Path relativePath = backupPath.relativize(file)
                 final Path classesFile = classesPath.resolve(relativePath)
                 Files.createDirectories(classesFile.parent)

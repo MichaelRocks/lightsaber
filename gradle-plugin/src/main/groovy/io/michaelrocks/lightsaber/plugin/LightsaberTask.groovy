@@ -62,13 +62,20 @@ public class LightsaberTask extends DefaultTask {
     }
 
     void clean() {
+        logger.info("Removing patched files...")
+        logger.info("  from [$classesDir]")
+
         final Path classesPath = classesDir.toPath()
         Files.walkFileTree(classesPath, new SimpleFileVisitor<Path>() {
             @Override
             FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
                 super.visitFile(file, attrs)
+                logger.debug("Checking $file...")
                 if (WatermarkChecker.isLightsaberClass(file)) {
+                    logger.debug("File was patched - removing")
                     Files.delete(file)
+                } else {
+                    logger.debug("File wasn't patched - skipping")
                 }
                 return FileVisitResult.CONTINUE
             }
