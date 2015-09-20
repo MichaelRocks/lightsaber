@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.sample
 
-trait Planet {
+interface Planet {
     val name: String
     val sector: String
 }

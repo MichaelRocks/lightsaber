@@ -19,14 +19,14 @@ package io.michaelrocks.lightsaber.sample
 import javax.inject.Inject
 import javax.inject.Singleton
 
-Singleton
-private class Kashyyyk [Inject] private () : Planet {
+@Singleton
+internal class Kashyyyk @Inject private constructor() : Planet {
     override val name = "Kashyyyk"
     override val sector = "Mytaranor"
 
     private var isSettled = false
 
-    Inject
+    @Inject
     fun settle(droid1: Droid, droid2: Droid) {
         if (isSettled) {
             throw IllegalStateException("Already settled")
