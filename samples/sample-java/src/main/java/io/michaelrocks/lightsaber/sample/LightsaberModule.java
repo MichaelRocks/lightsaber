@@ -27,18 +27,18 @@ class LightsaberModule implements Module {
     private final DarthVader darthVader = DarthVader.INSTANCE;
 
     @Provides
-    public Wookiee provideWookie(final Chewbacca chewbacca) {
+    private Wookiee provideWookie(final Chewbacca chewbacca) {
         return chewbacca;
     }
 
     @Provides
-    public Droid provideDroid(final R2D2 r2d2) {
+    private Droid provideDroid(final R2D2 r2d2) {
         return r2d2;
     }
 
     @Provides
     @Singleton
-    public Planet providePlanet(final Provider<Kashyyyk> kashyyykProvider) {
+    private Planet providePlanet(final Provider<Kashyyyk> kashyyykProvider) {
         return kashyyykProvider.get();
     }
 }
