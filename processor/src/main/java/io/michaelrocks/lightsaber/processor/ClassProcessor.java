@@ -22,6 +22,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescripto
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
@@ -84,6 +85,16 @@ public class ClassProcessor {
     private void performAnalysis() throws IOException {
         final Analyzer analyzer = new Analyzer(processorContext);
         analyzer.analyze(classFileReader, libraries);
+
+        for (final InjectionTargetDescriptor injectableTarget : processorContext.getInjectableTargets()) {
+            for (final QualifiedFieldDescriptor field : injectableTarget.getInjectableStaticFields().values()) {
+                processorContext.reportError("Static field injection is not supported yet: " + field);
+            }
+            for (final QualifiedMethodDescriptor method : injectableTarget.getInjectableStaticMethods().values()) {
+                processorContext.reportError("Static method injection is not supported yet: " + method);
+            }
+        }
+
         checkErrors();
     }
 
