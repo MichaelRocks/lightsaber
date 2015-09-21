@@ -27,6 +27,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescripto
 import io.michaelrocks.lightsaber.processor.signature.MethodSignature;
 import io.michaelrocks.lightsaber.processor.signature.MethodSignatureParser;
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import java.util.Map;
 class InjectionMethodAnalyzer extends ProcessorMethodVisitor {
     private final InjectionTargetDescriptor.Builder injectionTargetBuilder;
 
+    private final int access;
     private final String methodName;
     private final String methodDesc;
     private final String signature;
@@ -44,9 +46,10 @@ class InjectionMethodAnalyzer extends ProcessorMethodVisitor {
 
     public InjectionMethodAnalyzer(final ProcessorContext processorContext,
             final InjectionTargetDescriptor.Builder injectionTargetBuilder,
-            final String methodName, final String methodDesc, final String signature) {
+            final int access, final String methodName, final String methodDesc, final String signature) {
         super(processorContext);
         this.injectionTargetBuilder = injectionTargetBuilder;
+        this.access = access;
         this.methodName = methodName;
         this.methodDesc = methodDesc;
         this.signature = signature;
@@ -95,7 +98,11 @@ class InjectionMethodAnalyzer extends ProcessorMethodVisitor {
             if (MethodDescriptor.isConstructor(methodName)) {
                 injectionTargetBuilder.addInjectableConstructor(qualifiedMethod);
             } else {
-                injectionTargetBuilder.addInjectableMethod(qualifiedMethod);
+                if ((access & Opcodes.ACC_STATIC) == 0) {
+                    injectionTargetBuilder.addInjectableMethod(qualifiedMethod);
+                } else {
+                    injectionTargetBuilder.addInjectableStaticMethod(qualifiedMethod);
+                }
             }
         }
     }

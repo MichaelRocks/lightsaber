@@ -27,11 +27,13 @@ import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignatureParser;
 import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 class InjectionFieldAnalyzer extends ProcessorFieldVisitor {
     private final InjectionTargetDescriptor.Builder injectionTargetBuilder;
 
+    private final int access;
     private final String fieldName;
     private final String fieldDesc;
     private final String signature;
@@ -41,9 +43,10 @@ class InjectionFieldAnalyzer extends ProcessorFieldVisitor {
 
     public InjectionFieldAnalyzer(final ProcessorContext processorContext,
             final InjectionTargetDescriptor.Builder injectionTargetBuilder,
-            final String fieldName, final String fieldDesc, final String signature) {
+            final int access, final String fieldName, final String fieldDesc, final String signature) {
         super(processorContext);
         this.injectionTargetBuilder = injectionTargetBuilder;
+        this.access = access;
         this.fieldName = fieldName;
         this.fieldDesc = fieldDesc;
         this.signature = signature;
@@ -82,7 +85,11 @@ class InjectionFieldAnalyzer extends ProcessorFieldVisitor {
                     TypeSignatureParser.parseTypeSignature(getProcessorContext(), signature, fieldType);
             final FieldDescriptor field = new FieldDescriptor(fieldName, typeSignature);
             final QualifiedFieldDescriptor qualifiedField = new QualifiedFieldDescriptor(field, qualifier);
-            injectionTargetBuilder.addInjectableField(qualifiedField);
+            if ((access & Opcodes.ACC_STATIC) == 0) {
+                injectionTargetBuilder.addInjectableField(qualifiedField);
+            } else {
+                injectionTargetBuilder.addInjectableStaticField(qualifiedField);
+            }
         }
     }
 }
