@@ -32,18 +32,15 @@ public class InjectionTargetDescriptor {
     private final Map<MethodDescriptor, QualifiedMethodDescriptor> injectableMethods;
     private final ScopeDescriptor scopeDescriptor;
 
-    private InjectionTargetDescriptor(final Type targetType,
-            final Map<String, QualifiedFieldDescriptor> injectableFields,
-            final Map<MethodDescriptor, QualifiedMethodDescriptor> injectableConstructors,
-            final Map<MethodDescriptor, QualifiedMethodDescriptor> injectableMethods,
-            final ScopeDescriptor scopeDescriptor) {
-        this.targetType = targetType;
-        this.injectableFields = Collections.unmodifiableMap(injectableFields);
-        final Iterator<QualifiedMethodDescriptor> constructorIterator = injectableConstructors.values().iterator();
+    private InjectionTargetDescriptor(final Builder builder) {
+        this.targetType = builder.targetType;
+        this.injectableFields = Collections.unmodifiableMap(builder.injectableFields);
+        final Iterator<QualifiedMethodDescriptor> constructorIterator =
+                builder.injectableConstructors.values().iterator();
         this.injectableConstructor = constructorIterator.hasNext() ? constructorIterator.next() : null;
-        this.injectableConstructors = Collections.unmodifiableMap(injectableConstructors);
-        this.injectableMethods = Collections.unmodifiableMap(injectableMethods);
-        this.scopeDescriptor = scopeDescriptor;
+        this.injectableConstructors = Collections.unmodifiableMap(builder.injectableConstructors);
+        this.injectableMethods = Collections.unmodifiableMap(builder.injectableMethods);
+        this.scopeDescriptor = builder.scopeDescriptor;
     }
 
     public Type getTargetType() {
@@ -128,8 +125,7 @@ public class InjectionTargetDescriptor {
             //     injectableConstructors.add(MethodDescriptor.forConstructor());
             // }
 
-            return new InjectionTargetDescriptor(
-                    targetType, injectableFields, injectableConstructors, injectableMethods, scopeDescriptor);
+            return new InjectionTargetDescriptor(this);
         }
     }
 }
