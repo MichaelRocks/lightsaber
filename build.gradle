@@ -38,8 +38,9 @@ allprojects {
     def major = properties['version.major'] as int
     def minor = properties['version.minor'] as int
     def patch = properties['version.patch'] as int
+    def suffix = properties['version.suffix'].toString().trim() ?: ""
     def snapshot = properties['version.snapshot'].toBoolean()
-    version = "$major.$minor.$patch" + (snapshot ? '-SNAPSHOT' : '')
+    version = "$major.$minor.$patch" + (suffix.isAllWhitespace() ? '' : "-$suffix") + (snapshot ? '-SNAPSHOT' : '')
     group = 'io.michaelrocks'
 
     ext.dryRun = properties['version.dryRun'].toBoolean()
