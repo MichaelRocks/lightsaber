@@ -251,6 +251,10 @@ public class ProviderClassGenerator {
                 provider.getProviderMethod().getDescriptor(),
                 false);
 
+        if (Types.isPrimitive(provider.getProvidableType())) {
+            return;
+        }
+
         final Label resultIsNullLabel = new Label();
         generator.dup();
         generator.visitJumpInsn(IFNONNULL, resultIsNullLabel);
