@@ -22,6 +22,9 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.objectweb.asm.Opcodes.*;
 
 public class GeneratorAdapter extends org.objectweb.asm.commons.GeneratorAdapter {
@@ -100,5 +103,50 @@ public class GeneratorAdapter extends org.objectweb.asm.commons.GeneratorAdapter
 
     public void pushNull() {
         visitInsn(ACONST_NULL);
+    }
+
+    public void visitFrame(final int type, final int nLocal, final Type[] local, final int nStack, final Type[] stack) {
+        final Object[] localObjects = convertTypeArrayToFrameObjectArray(local);
+        final Object[] stackObjects = convertTypeArrayToFrameObjectArray(stack);
+        visitFrame(type, nLocal, localObjects, nStack, stackObjects);
+    }
+
+    private Object[] convertTypeArrayToFrameObjectArray(final Type[] types) {
+        if (types == null) {
+            return null;
+        }
+
+        final List<Object> objects = new ArrayList<>(types.length * 2);
+        for (final Type type : types) {
+            switch (type.getSort()) {
+                case Type.BOOLEAN:
+                case Type.CHAR:
+                case Type.BYTE:
+                case Type.SHORT:
+                case Type.INT:
+                    objects.add(INTEGER);
+                    break;
+                case Type.FLOAT:
+                    objects.add(FLOAT);
+                    break;
+                case Type.LONG:
+                    objects.add(LONG);
+                    objects.add(TOP);
+                    break;
+                case Type.DOUBLE:
+                    objects.add(DOUBLE);
+                    objects.add(TOP);
+                    break;
+                case Type.ARRAY:
+                    objects.add(type.getDescriptor());
+                    break;
+                case Type.OBJECT:
+                    objects.add(type.getInternalName());
+                    break;
+                default:
+                    throw new IllegalArgumentException("Illegal type used in frame: " + type);
+            }
+        }
+        return objects.toArray(new Object[objects.size()]);
     }
 }
