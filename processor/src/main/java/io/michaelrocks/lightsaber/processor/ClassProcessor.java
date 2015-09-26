@@ -18,13 +18,10 @@ package io.michaelrocks.lightsaber.processor;
 
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
-import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier;
-import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
-import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
@@ -40,9 +37,9 @@ import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
 import io.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import io.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import io.michaelrocks.lightsaber.processor.io.ClassFileWriter;
+import io.michaelrocks.lightsaber.processor.validation.SanityChecker;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.io.File;
@@ -88,37 +85,8 @@ public class ClassProcessor {
     private void performAnalysis() throws IOException {
         final Analyzer analyzer = new Analyzer(processorContext);
         analyzer.analyze(classFileReader, libraries);
-
-        for (final InjectionTargetDescriptor injectableTarget : processorContext.getInjectableTargets()) {
-            for (final QualifiedFieldDescriptor field : injectableTarget.getInjectableStaticFields().values()) {
-                processorContext.reportError("Static field injection is not supported yet: " + field);
-            }
-            for (final QualifiedMethodDescriptor method : injectableTarget.getInjectableStaticMethods().values()) {
-                processorContext.reportError("Static method injection is not supported yet: " + method);
-            }
-        }
-
-        for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
-            checkProvidableTargetIsConstructable(providableTarget.getTargetType());
-        }
-
+        new SanityChecker(processorContext).performSanityChecks();
         checkErrors();
-    }
-
-    private void checkProvidableTargetIsConstructable(final Type providableTarget) {
-        final ClassDescriptor targetClass = processorContext.getTypeGraph().findClassDescriptor(providableTarget);
-        checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_INTERFACE);
-        checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ABSTRACT);
-        checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ENUM);
-        checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ANNOTATION);
-    }
-
-    private void checkProvidableTargetAccessFlagNotSet(final ClassDescriptor targetClass, final int flag) {
-        if ((targetClass.getAccess() & flag) != 0) {
-            processorContext.reportError(
-                    "Providable class cannot be " + AccessFlagStringifier.classAccessFlagToString(flag)
-                            + ": " + targetClass.getClassType());
-        }
     }
 
     private void composePackageModules() {
