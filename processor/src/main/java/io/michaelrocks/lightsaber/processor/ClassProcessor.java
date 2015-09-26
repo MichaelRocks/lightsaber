@@ -18,6 +18,8 @@ package io.michaelrocks.lightsaber.processor;
 
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
+import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier;
+import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -40,6 +42,7 @@ import io.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import io.michaelrocks.lightsaber.processor.io.ClassFileWriter;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.io.File;
@@ -95,7 +98,27 @@ public class ClassProcessor {
             }
         }
 
+        for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
+            checkProvidableTargetIsConstructable(providableTarget.getTargetType());
+        }
+
         checkErrors();
+    }
+
+    private void checkProvidableTargetIsConstructable(final Type providableTarget) {
+        final ClassDescriptor targetClass = processorContext.getTypeGraph().findClassDescriptor(providableTarget);
+        checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_INTERFACE);
+        checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ABSTRACT);
+        checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ENUM);
+        checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ANNOTATION);
+    }
+
+    private void checkProvidableTargetAccessFlagNotSet(final ClassDescriptor targetClass, final int flag) {
+        if ((targetClass.getAccess() & flag) != 0) {
+            processorContext.reportError(
+                    "Providable class cannot be " + AccessFlagStringifier.classAccessFlagToString(flag)
+                            + ": " + targetClass.getClassType());
+        }
     }
 
     private void composePackageModules() {
