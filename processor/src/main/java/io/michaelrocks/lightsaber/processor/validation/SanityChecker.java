@@ -20,6 +20,8 @@ import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier;
 import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import org.objectweb.asm.Opcodes;
@@ -35,6 +37,7 @@ public class SanityChecker {
     public void performSanityChecks() {
         checkStaticInjectionPoints();
         checkProvidableTargetsAreConstructable();
+        checkProviderMethodsReturnValues();
     }
 
     private void checkStaticInjectionPoints() {
@@ -51,6 +54,16 @@ public class SanityChecker {
     private void checkProvidableTargetsAreConstructable() {
         for (final InjectionTargetDescriptor providableTarget : processorContext.getProvidableTargets()) {
             checkProvidableTargetIsConstructable(providableTarget.getTargetType());
+        }
+    }
+
+    private void checkProviderMethodsReturnValues() {
+        for (final ModuleDescriptor module : processorContext.getModules()) {
+            for (final ProviderDescriptor provider : module.getProviders()) {
+                if (provider.getProvidableType().equals(Type.VOID_TYPE)) {
+                    processorContext.reportError("Provider method returns void: " + provider.getProviderMethod());
+                }
+            }
         }
     }
 
