@@ -30,7 +30,7 @@ class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
         if (project.hasProperty('android')) {
             if (project.android.respondsTo('registerTransform', Transform, Object[])) {
                 final boolean verbose = logger.isEnabled(LogLevel.DEBUG)
-                project.android.registerTransform(new ProcessorTransform(verbose))
+                project.android.registerTransform(new LightsaberTransform(verbose))
             } else {
                 project.afterEvaluate {
                     if (project.plugins.hasPlugin('com.android.application')) {

@@ -21,10 +21,10 @@ import com.google.common.collect.Iterables
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
 
-public class ProcessorTransform implements AsInputTransform {
+public class LightsaberTransform implements AsInputTransform {
     private final boolean verbose
 
-    ProcessorTransform(final boolean verbose) {
+    LightsaberTransform(final boolean verbose) {
         this.verbose = verbose
     }
 
