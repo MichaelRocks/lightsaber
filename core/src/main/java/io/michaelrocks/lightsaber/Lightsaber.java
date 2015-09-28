@@ -16,40 +16,13 @@
 
 package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.lightsaber.internal.InternalModule;
-import io.michaelrocks.lightsaber.internal.LightsaberInjector;
-
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 
 public class Lightsaber {
     public static Injector createInjector(final Module... modules) {
-        return createChildInjectorInternal(null, modules);
-    }
-
-    public static Injector createChildInjector(final Injector parentInjector, final Module... modules) {
-        if (parentInjector == null) {
-            throw new NullPointerException("Parent injector cannot be null");
-        }
-        return createChildInjectorInternal(parentInjector, modules);
-    }
-
-    private static Injector createChildInjectorInternal(final Injector parentInjector, final Module... modules) {
-        final LightsaberInjector injector = new LightsaberInjector(parentInjector);
-        if (modules != null) {
-            for (final Module module : modules) {
-                if (module == null) {
-                    throw new NullPointerException("Trying to create injector with a null module");
-                }
-
-                if (!(module instanceof InternalModule)) {
-                    throw new ConfigurationException("Module " + module + " hasn't been processed");
-                }
-
-                ((InternalModule) module).configureInjector(injector);
-            }
-        }
-        return injector;
+        throw new IllegalStateException(
+                "This method must not be called. Seems the project hasn't been processed with Lightsaber");
     }
 
     public static <T> T getInstance(final Injector injector, final Class<? extends T> type) {
