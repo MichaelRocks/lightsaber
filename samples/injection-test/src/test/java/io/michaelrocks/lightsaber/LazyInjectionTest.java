@@ -22,7 +22,7 @@ import javax.inject.Inject;
 
 import static org.junit.Assert.*;
 
-public class LazyTest {
+public class LazyInjectionTest {
     @Test
     public void testLazyConstructorInjection() {
         final LazyModule module = new LazyModule();
