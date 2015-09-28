@@ -4,27 +4,12 @@ buildscript {
     }
 }
 
-plugins {
-    id 'com.github.johnrengelman.shadow' version '1.2.1'
-}
-
 apply plugin: 'java'
-apply plugin: 'application'
 apply plugin: 'io.michaelrocks.lightsaber'
 
 sourceCompatibility = 1.6
 
-mainClassName = 'io.michaelrocks.lightsaber.InjectionTestLauncher'
-
 dependencies {
-    compile "io.michaelrocks:lightsaber-core:$version"
-    compile "junit:junit:$junitVersion"
-}
-
-jar {
-    destinationDir = file('build/jar')
-
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+    testCompile "io.michaelrocks:lightsaber-core:$version"
+    testCompile "junit:junit:$junitVersion"
 }
