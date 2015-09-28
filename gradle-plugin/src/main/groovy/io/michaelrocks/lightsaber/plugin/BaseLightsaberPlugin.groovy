@@ -32,10 +32,6 @@ class BaseLightsaberPlugin implements Plugin<Project> {
         this.logger = project.logger
     }
 
-    private boolean trySetupLightsaberForAndroid() {
-
-    }
-
     void createTasks(final File classesDir, final File backupDir, final List<File> classpath,
             final AbstractCompile compileTask, final String nameSuffix = "") {
         final String suffix = nameSuffix.capitalize()
@@ -44,7 +40,6 @@ class BaseLightsaberPlugin implements Plugin<Project> {
         final BackupClassesTask backupTask =
                 createBackupClassFilesTask("lightsaberBackupClasses$suffix", classesDir, backupDir)
         configureTasks(lightsaberTask, backupTask, compileTask)
-
     }
 
     private void configureTasks(final LightsaberTask lightsaberTask, final BackupClassesTask backupTask,
