@@ -25,6 +25,9 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
     void apply(final Project project) {
         super.apply(project)
 
+        addDependencies('compile')
+        addDependencies('testCompile')
+
         project.afterEvaluate {
             if (project.plugins.hasPlugin('java')) {
                 setupLightsaberForJava()

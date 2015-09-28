@@ -32,6 +32,11 @@ class BaseLightsaberPlugin implements Plugin<Project> {
         this.logger = project.logger
     }
 
+    void addDependencies(final String configurationName) {
+        project.dependencies.add(configurationName, "io.michaelrocks:lightsaber-core:$project.version")
+        project.dependencies.add(configurationName, "io.michaelrocks:lightsaber-internal:$project.version")
+    }
+
     void createTasks(final File classesDir, final File backupDir, final List<File> classpath,
             final AbstractCompile compileTask, final String nameSuffix = "") {
         final String suffix = nameSuffix.capitalize()

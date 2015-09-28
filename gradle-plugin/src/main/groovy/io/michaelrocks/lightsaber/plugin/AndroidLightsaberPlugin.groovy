@@ -28,6 +28,7 @@ class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
         super.apply(project)
 
         if (project.hasProperty('android')) {
+            addDependencies('compile')
             if (project.android.respondsTo('registerTransform', Transform, Object[])) {
                 final boolean verbose = logger.isEnabled(LogLevel.DEBUG)
                 project.android.registerTransform(new LightsaberTransform(verbose))
