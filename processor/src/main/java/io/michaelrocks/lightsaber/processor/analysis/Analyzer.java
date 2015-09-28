@@ -58,6 +58,10 @@ public class Analyzer {
 
     private void analyzeLibraries(final List<File> libraries, final ClassVisitor classVisitor) throws IOException {
         for (final File library : libraries) {
+            if (!library.exists()) {
+                continue;
+            }
+
             if (library.isDirectory()) {
                 analyzeClassesFromDirectory(library, classVisitor);
             } else {
