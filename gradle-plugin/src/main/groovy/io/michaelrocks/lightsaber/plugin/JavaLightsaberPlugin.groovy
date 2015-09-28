@@ -28,6 +28,7 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
         project.afterEvaluate {
             if (project.plugins.hasPlugin('java')) {
                 setupLightsaberForJava()
+                setupLightsaberForJavaTest()
             } else {
                 throw new GradleException("Project should use Java plugin")
             }
@@ -41,5 +42,14 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
         final List<File> classpath = project.tasks.compileJava.classpath.toList()
         final AbstractCompile compileTask = project.tasks.compileJava as AbstractCompile
         createTasks(classesDir, backupDir, classpath, compileTask)
+    }
+
+    private void setupLightsaberForJavaTest() {
+        logger.info("Setting up Lightsaber task for Java test project ${project.name}...")
+        final File classesDir = project.sourceSets.test.output.classesDir
+        final File backupDir = new File(project.buildDir, "lightsaberTest")
+        final List<File> classpath = project.tasks.compileTestJava.classpath.toList()
+        final AbstractCompile compileTask = project.tasks.compileTestJava as AbstractCompile
+        createTasks(classesDir, backupDir, classpath, compileTask, "test")
     }
 }
