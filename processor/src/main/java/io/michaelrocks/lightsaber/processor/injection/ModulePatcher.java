@@ -16,8 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.injection;
 
-import io.michaelrocks.lightsaber.CopyableProvider;
 import io.michaelrocks.lightsaber.Injector;
+import io.michaelrocks.lightsaber.internal.CopyableProvider;
 import io.michaelrocks.lightsaber.internal.InternalModule;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;

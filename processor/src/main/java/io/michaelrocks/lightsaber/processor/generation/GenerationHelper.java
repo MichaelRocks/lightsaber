@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.processor.generation;
 
 import io.michaelrocks.lightsaber.Lazy;
-import io.michaelrocks.lightsaber.LazyAdapter;
+import io.michaelrocks.lightsaber.internal.LazyAdapter;
 import io.michaelrocks.lightsaber.processor.commons.Boxer;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;

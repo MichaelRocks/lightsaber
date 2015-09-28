@@ -14,25 +14,16 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber;
+package io.michaelrocks.lightsaber.internal;
 
-public class InstanceProvider<T> implements CopyableProvider<T> {
-    private final T instance;
+public abstract class DelegateProvider<T> implements CopyableProvider<T> {
+    private final CopyableProvider<T> delegate;
 
-    public InstanceProvider(final T instance) {
-        this.instance = instance;
-        if (instance == null) {
-            throw new NullPointerException("Instance cannot be null");
-        }
+    public DelegateProvider(final CopyableProvider<T> delegate) {
+        this.delegate = delegate;
     }
 
-    @Override
-    public T get() {
-        return instance;
-    }
-
-    @Override
-    public CopyableProvider<T> copyWithInjector(final Injector injector) {
-        return new InstanceProvider<T>(instance);
+    public CopyableProvider<T> getDelegate() {
+        return delegate;
     }
 }

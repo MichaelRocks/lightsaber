@@ -16,8 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor;
 
-import io.michaelrocks.lightsaber.SingletonProvider;
 import io.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
+import io.michaelrocks.lightsaber.internal.SingletonProvider;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;

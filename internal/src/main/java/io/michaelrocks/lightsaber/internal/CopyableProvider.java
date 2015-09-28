@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber;
+package io.michaelrocks.lightsaber.internal;
 
-public abstract class DelegateProvider<T> implements CopyableProvider<T> {
-    private final CopyableProvider<T> delegate;
+import io.michaelrocks.lightsaber.Injector;
 
-    public DelegateProvider(final CopyableProvider<T> delegate) {
-        this.delegate = delegate;
-    }
+import javax.inject.Provider;
 
-    public CopyableProvider<T> getDelegate() {
-        return delegate;
-    }
+public interface CopyableProvider<T> extends Provider<T> {
+    CopyableProvider<T> copyWithInjector(Injector injector);
 }

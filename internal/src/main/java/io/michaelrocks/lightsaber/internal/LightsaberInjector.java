@@ -17,9 +17,7 @@
 package io.michaelrocks.lightsaber.internal;
 
 import io.michaelrocks.lightsaber.ConfigurationException;
-import io.michaelrocks.lightsaber.CopyableProvider;
 import io.michaelrocks.lightsaber.Injector;
-import io.michaelrocks.lightsaber.InstanceProvider;
 import io.michaelrocks.lightsaber.Key;
 
 import javax.inject.Provider;

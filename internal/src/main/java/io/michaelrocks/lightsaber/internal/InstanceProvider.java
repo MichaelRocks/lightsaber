@@ -14,28 +14,27 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber;
+package io.michaelrocks.lightsaber.internal;
 
-import javax.inject.Provider;
+import io.michaelrocks.lightsaber.Injector;
 
-public class LazyAdapter<T> implements Lazy<T> {
-    private final Provider<T> provider;
-    private volatile T instance;
-    private final Object instanceLock = new Object();
+public class InstanceProvider<T> implements CopyableProvider<T> {
+    private final T instance;
 
-    public LazyAdapter(final Provider<T> provider) {
-        this.provider = provider;
+    public InstanceProvider(final T instance) {
+        this.instance = instance;
+        if (instance == null) {
+            throw new NullPointerException("Instance cannot be null");
+        }
     }
 
     @Override
     public T get() {
-        if (instance == null) {
-            synchronized (instanceLock) {
-                if (instance == null) {
-                    instance = provider.get();
-                }
-            }
-        }
         return instance;
+    }
+
+    @Override
+    public CopyableProvider<T> copyWithInjector(final Injector injector) {
+        return new InstanceProvider<T>(instance);
     }
 }

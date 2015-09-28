@@ -16,8 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.generation;
 
-import io.michaelrocks.lightsaber.CopyableProvider;
 import io.michaelrocks.lightsaber.Injector;
+import io.michaelrocks.lightsaber.internal.CopyableProvider;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
