@@ -17,8 +17,8 @@
 package io.michaelrocks.lightsaber.processor.injection;
 
 import io.michaelrocks.lightsaber.Injector;
+import io.michaelrocks.lightsaber.internal.ConfigurableModule;
 import io.michaelrocks.lightsaber.internal.CopyableProvider;
-import io.michaelrocks.lightsaber.internal.InternalModule;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
@@ -73,7 +73,7 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
             final String superName, final String[] interfaces) {
         final String[] newInterfaces = new String[interfaces.length + 1];
         System.arraycopy(interfaces, 0, newInterfaces, 0, interfaces.length);
-        newInterfaces[interfaces.length] = Type.getInternalName(InternalModule.class);
+        newInterfaces[interfaces.length] = Type.getInternalName(ConfigurableModule.class);
         super.visit(version, access, name, signature, superName, newInterfaces);
         setDirty(true);
     }

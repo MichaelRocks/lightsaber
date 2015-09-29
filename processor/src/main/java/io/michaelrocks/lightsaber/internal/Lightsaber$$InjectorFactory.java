@@ -67,11 +67,11 @@ public class Lightsaber$$InjectorFactory {
                     throw new NullPointerException("Trying to create injector with a null module");
                 }
 
-                if (!(module instanceof InternalModule)) {
+                if (!(module instanceof ConfigurableModule)) {
                     throw new ConfigurationException("Module " + module + " hasn't been processed");
                 }
 
-                ((InternalModule) module).configureInjector(injector);
+                ((ConfigurableModule) module).configureInjector(injector);
             }
         }
         return injector;

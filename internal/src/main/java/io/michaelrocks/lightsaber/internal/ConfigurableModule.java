@@ -16,6 +16,6 @@
 
 package io.michaelrocks.lightsaber.internal;
 
-public interface InternalModule {
+public interface ConfigurableModule {
     void configureInjector(LightsaberInjector injector);
 }
