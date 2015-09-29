@@ -57,13 +57,15 @@ public class InjectionTargetAnalyzer extends ProcessorClassVisitor {
             injectionTargetBuilder.setHasDefaultConstructor(true);
         }
 
-        return new InjectionMethodAnalyzer(getProcessorContext(), injectionTargetBuilder, name, desc, signature);
+        return new InjectionMethodAnalyzer(
+                getProcessorContext(), injectionTargetBuilder, access, name, desc, signature);
     }
 
     @Override
     public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
             final Object value) {
-        return new InjectionFieldAnalyzer(getProcessorContext(), injectionTargetBuilder, name, desc, signature);
+        return new InjectionFieldAnalyzer(
+                getProcessorContext(), injectionTargetBuilder, access, name, desc, signature);
     }
 
     @Override

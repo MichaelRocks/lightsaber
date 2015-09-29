@@ -16,8 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.generation;
 
-import io.michaelrocks.lightsaber.CopyableProvider;
 import io.michaelrocks.lightsaber.Injector;
+import io.michaelrocks.lightsaber.internal.CopyableProvider;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
@@ -33,7 +33,9 @@ import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import javax.inject.Provider;
@@ -49,6 +51,8 @@ public class ProviderClassGenerator {
     private static final String GET_PROVIDER_METHOD_NAME = "getProvider";
     private static final String INJECT_MEMBERS_METHOD_NAME = "injectMembers";
     private static final String COPY_WITH_INJECTOR_METHOD_NAME = "copyWithInjector";
+
+    private static final Type NULL_POINTER_EXCEPTION_TYPE = Type.getType(NullPointerException.class);
 
     private static final MethodDescriptor KEY_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
@@ -198,26 +202,26 @@ public class ProviderClassGenerator {
     }
 
     private void generateGetMethod(final ClassVisitor classVisitor) {
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
+        final GeneratorAdapter generator = new GeneratorAdapter(
+                classVisitor,
                 ACC_PUBLIC,
-                GET_METHOD_NAME,
-                Type.getMethodDescriptor(Type.getType(Object.class)),
+                MethodDescriptor.forMethod(GET_METHOD_NAME, Type.getType(Object.class)),
                 null,
                 null);
-        methodVisitor.visitCode();
+        generator.visitCode();
 
         if (provider.getProviderMethod().isConstructor()) {
-            generateConstructorInvocation(methodVisitor);
-            generateInjectMembersInvocation(methodVisitor);
+            generateConstructorInvocation(generator);
+            generateInjectMembersInvocation(generator);
         } else {
-            generateProviderMethodInvocation(methodVisitor);
+            generateProviderMethodInvocation(generator);
         }
 
-        Boxer.box(methodVisitor, provider.getProvidableType());
+        Boxer.box(generator, provider.getProvidableType());
 
-        methodVisitor.visitInsn(ARETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        generator.visitInsn(ARETURN);
+        generator.visitMaxs(0, 0);
+        generator.visitEnd();
     }
 
     private void generateConstructorInvocation(final MethodVisitor methodVisitor) {
@@ -232,20 +236,34 @@ public class ProviderClassGenerator {
                 false);
     }
 
-    private void generateProviderMethodInvocation(final MethodVisitor methodVisitor) {
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitFieldInsn(
+    private void generateProviderMethodInvocation(final GeneratorAdapter generator) {
+        generator.visitVarInsn(ALOAD, 0);
+        generator.visitFieldInsn(
                 GETFIELD,
                 provider.getProviderType().getInternalName(),
                 MODULE_FIELD_NAME,
                 provider.getModuleType().getDescriptor());
-        generateProvideMethodArguments(methodVisitor);
-        methodVisitor.visitMethodInsn(
+        generateProvideMethodArguments(generator);
+        generator.visitMethodInsn(
                 INVOKEVIRTUAL,
                 provider.getModuleType().getInternalName(),
                 provider.getProviderMethod().getName(),
                 provider.getProviderMethod().getDescriptor(),
                 false);
+
+        if (Types.isPrimitive(provider.getProvidableType())) {
+            return;
+        }
+
+        final Label resultIsNullLabel = new Label();
+        generator.dup();
+        generator.visitJumpInsn(IFNONNULL, resultIsNullLabel);
+        generator.throwException(NULL_POINTER_EXCEPTION_TYPE, "Provider method returned null");
+
+        generator.visitLabel(resultIsNullLabel);
+        generator.visitFrame(Opcodes.F_NEW,
+                1, new Object[] { provider.getProviderType().getInternalName() },
+                1, new Object[] { provider.getProviderMethod().getType().getReturnType().getInternalName() });
     }
 
     private void generateProvideMethodArguments(final MethodVisitor methodVisitor) {

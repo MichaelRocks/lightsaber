@@ -28,6 +28,11 @@ fun <T : Any> Injector.getInstance(type: KClass<out T>): T =
 fun <T : Any> Injector.getInstance(type: KClass<out T>, annotation: Annotation): T =
         Lightsaber.getInstance(this, type.java, annotation)
 
+inline fun <reified T : Any> Injector.getInstance(): T =
+        getInstance(T::class)
+inline fun <reified T : Any> Injector.getInstance(annotation: Annotation): T =
+        getInstance(T::class, annotation)
+
 fun <T : Any> Injector.getProvider(type: Class<out T>): Provider<T> =
         Lightsaber.getProvider(this, type)
 fun <T : Any> Injector.getProvider(type: Class<out T>, annotation: Annotation): Provider<T> =
@@ -36,3 +41,8 @@ fun <T : Any> Injector.getProvider(type: KClass<out T>): Provider<T> =
         Lightsaber.getProvider(this, type.java)
 fun <T : Any> Injector.getProvider(type: KClass<out T>, annotation: Annotation): Provider<T> =
         Lightsaber.getProvider(this, type.java, annotation)
+
+inline fun <reified T : Any> Injector.getProvider(): Provider<T> =
+        getProvider(T::class)
+inline fun <reified T : Any> Injector.getProvider(annotation: Annotation): Provider<T> =
+        getProvider(T::class, annotation)

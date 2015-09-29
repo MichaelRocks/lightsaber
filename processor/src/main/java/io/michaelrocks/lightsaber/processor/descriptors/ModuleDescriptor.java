@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
-import io.michaelrocks.lightsaber.InstanceProvider;
+import io.michaelrocks.lightsaber.internal.InstanceProvider;
 import org.objectweb.asm.Type;
 
 import java.util.ArrayList;

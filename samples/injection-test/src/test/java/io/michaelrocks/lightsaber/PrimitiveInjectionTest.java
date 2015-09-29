@@ -23,7 +23,7 @@ import javax.inject.Inject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class PrimitiveTest {
+public class PrimitiveInjectionTest {
     @Test
     public void testUnboxedIntoUnboxedInjection() {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();

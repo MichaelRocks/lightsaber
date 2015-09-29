@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber;
+package io.michaelrocks.lightsaber.internal;
+
+import io.michaelrocks.lightsaber.Injector;
 
 public class SingletonProvider<T> extends DelegateProvider<T> {
     private volatile T instance;

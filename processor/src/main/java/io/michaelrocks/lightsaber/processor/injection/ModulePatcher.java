@@ -16,8 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.injection;
 
-import io.michaelrocks.lightsaber.CopyableProvider;
 import io.michaelrocks.lightsaber.Injector;
+import io.michaelrocks.lightsaber.internal.CopyableProvider;
 import io.michaelrocks.lightsaber.internal.InternalModule;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
@@ -31,8 +31,12 @@ import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.objectweb.asm.Opcodes.*;
 
@@ -43,11 +47,25 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
     private final AnnotationCreator annotationCreator;
     private final ModuleDescriptor module;
 
+    private final Set<String> providableFields;
+    private final Set<MethodDescriptor> providableMethods;
+
     public ModulePatcher(final ProcessorContext processorContext, final ClassVisitor classVisitor,
             final AnnotationCreator annotationCreator, final ModuleDescriptor module) {
         super(processorContext, classVisitor);
         this.annotationCreator = annotationCreator;
         this.module = module;
+
+        providableFields = new HashSet<>(module.getProviders().size());
+        providableMethods = new HashSet<>(module.getProviders().size());
+        for (final ProviderDescriptor provider : module.getProviders()) {
+            if (provider.getProviderField() != null) {
+                providableFields.add(provider.getProviderField().getName());
+            }
+            if (provider.getProviderMethod() != null) {
+                providableMethods.add(provider.getProviderMethod().getMethod());
+            }
+        }
     }
 
     @Override
@@ -58,6 +76,29 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
         newInterfaces[interfaces.length] = Type.getInternalName(InternalModule.class);
         super.visit(version, access, name, signature, superName, newInterfaces);
         setDirty(true);
+    }
+
+    @Override
+    public FieldVisitor visitField(final int access, final String name, final String desc, final String signature,
+            final Object value) {
+        if (providableFields.contains(name)) {
+            final int newAccess = access & ~ACC_PRIVATE;
+            return super.visitField(newAccess, name, desc, signature, value);
+        } else {
+            return super.visitField(access, name, desc, signature, value);
+        }
+    }
+
+    @Override
+    public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
+            final String[] exceptions) {
+        final MethodDescriptor method = new MethodDescriptor(name, desc);
+        if (providableMethods.contains(method)) {
+            final int newAccess = access & ~ACC_PRIVATE;
+            return super.visitMethod(newAccess, name, desc, signature, exceptions);
+        } else {
+            return super.visitMethod(access, name, desc, signature, exceptions);
+        }
     }
 
     @Override

@@ -37,6 +37,7 @@ import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
 import io.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor;
 import io.michaelrocks.lightsaber.processor.io.ClassFileReader;
 import io.michaelrocks.lightsaber.processor.io.ClassFileWriter;
+import io.michaelrocks.lightsaber.processor.validation.SanityChecker;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.objectweb.asm.Type;
@@ -84,6 +85,7 @@ public class ClassProcessor {
     private void performAnalysis() throws IOException {
         final Analyzer analyzer = new Analyzer(processorContext);
         analyzer.analyze(classFileReader, libraries);
+        new SanityChecker(processorContext).performSanityChecks();
         checkErrors();
     }
 

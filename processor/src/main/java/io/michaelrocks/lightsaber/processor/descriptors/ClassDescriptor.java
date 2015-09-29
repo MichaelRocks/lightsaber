@@ -24,17 +24,20 @@ import java.util.Collections;
 import java.util.List;
 
 public class ClassDescriptor {
+    private final int access;
     private final Type classType;
     private final Type superType;
     private final Collection<Type> interfaceTypes;
 
-    public ClassDescriptor(final String name, final String superName, final String[] interfaces) {
-        this(Type.getObjectType(name),
+    public ClassDescriptor(final int access, final String name, final String superName, final String[] interfaces) {
+        this(access, Type.getObjectType(name),
                 superName == null ? null : Type.getObjectType(superName),
                 getInterfacesTypes(interfaces));
     }
 
-    public ClassDescriptor(final Type classType, final Type superType, final Collection<Type> interfaceTypes) {
+    public ClassDescriptor(final int access, final Type classType, final Type superType,
+            final Collection<Type> interfaceTypes) {
+        this.access = access;
         this.classType = classType;
         this.superType = superType;
         this.interfaceTypes = Collections.unmodifiableCollection(new ArrayList<>(interfaceTypes));
@@ -46,6 +49,10 @@ public class ClassDescriptor {
             interfacesTypes.add(Type.getObjectType(interfaceName));
         }
         return interfacesTypes;
+    }
+
+    public int getAccess() {
+        return access;
     }
 
     public Type getClassType() {

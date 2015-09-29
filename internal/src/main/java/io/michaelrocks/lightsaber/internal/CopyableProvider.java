@@ -14,24 +14,12 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.sample
+package io.michaelrocks.lightsaber.internal;
 
-import io.michaelrocks.lightsaber.Module
-import io.michaelrocks.lightsaber.Provides
-import javax.inject.Provider
-import javax.inject.Singleton
+import io.michaelrocks.lightsaber.Injector;
 
-internal class LightsaberModule : Module {
-    @Provides
-    private val darthVader = DarthVader
+import javax.inject.Provider;
 
-    @Provides
-    private fun provideWookie(chewbacca: Chewbacca): Wookiee = chewbacca
-
-    @Provides
-    private fun provideDroid(r2d2: R2D2): Droid = r2d2
-
-    @Provides
-    @Singleton
-    private fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet = kashyyykProvider.get()
+public interface CopyableProvider<T> extends Provider<T> {
+    CopyableProvider<T> copyWithInjector(Injector injector);
 }

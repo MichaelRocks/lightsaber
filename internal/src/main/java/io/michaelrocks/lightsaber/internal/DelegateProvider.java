@@ -14,28 +14,16 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber;
+package io.michaelrocks.lightsaber.internal;
 
-import javax.inject.Provider;
+public abstract class DelegateProvider<T> implements CopyableProvider<T> {
+    private final CopyableProvider<T> delegate;
 
-public class LazyAdapter<T> implements Lazy<T> {
-    private final Provider<T> provider;
-    private volatile T instance;
-    private final Object instanceLock = new Object();
-
-    public LazyAdapter(final Provider<T> provider) {
-        this.provider = provider;
+    public DelegateProvider(final CopyableProvider<T> delegate) {
+        this.delegate = delegate;
     }
 
-    @Override
-    public T get() {
-        if (instance == null) {
-            synchronized (instanceLock) {
-                if (instance == null) {
-                    instance = provider.get();
-                }
-            }
-        }
-        return instance;
+    public CopyableProvider<T> getDelegate() {
+        return delegate;
     }
 }

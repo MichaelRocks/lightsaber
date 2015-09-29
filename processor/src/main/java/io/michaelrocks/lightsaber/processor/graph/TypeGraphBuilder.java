@@ -40,7 +40,7 @@ public class TypeGraphBuilder extends ClassVisitor {
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
-        final ClassDescriptor classDescriptor = new ClassDescriptor(name, superName, interfaces);
+        final ClassDescriptor classDescriptor = new ClassDescriptor(access, name, superName, interfaces);
         classDescriptors.put(classDescriptor.getClassType(), classDescriptor);
     }
 }

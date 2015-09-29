@@ -26,12 +26,12 @@ internal class LightsaberModule : Module {
     private val darthVader = DarthVader
 
     @Provides
-    fun provideWookie(chewbacca: Chewbacca): Wookiee = chewbacca
+    private fun provideWookie(chewbacca: Chewbacca): Wookiee = chewbacca
 
     @Provides
-    fun provideDroid(r2d2: R2D2): Droid = r2d2
+    private fun provideDroid(r2d2: R2D2): Droid = r2d2
 
     @Provides
     @Singleton
-    fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet = kashyyykProvider.get()
+    private fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet = kashyyykProvider.get()
 }

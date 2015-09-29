@@ -16,8 +16,8 @@
 
 package io.michaelrocks.lightsaber.internal;
 
+import io.michaelrocks.lightsaber.ConfigurationException;
 import io.michaelrocks.lightsaber.Injector;
-import io.michaelrocks.lightsaber.Lightsaber;
 import io.michaelrocks.lightsaber.Module;
 
 import java.util.HashMap;
@@ -36,7 +36,7 @@ public class Lightsaber$$InjectorFactory {
     }
 
     private static Injector createRootInjector() {
-        return Lightsaber.createInjector(getPackageModules());
+        return createChildInjectorInternal(null, getPackageModules());
     }
 
     private static void registerTypeAgent(final TypeAgent<?> typeAgent) {
@@ -49,7 +49,32 @@ public class Lightsaber$$InjectorFactory {
     }
 
     public static Injector createInjector(final Module... modules) {
-        return Lightsaber.createChildInjector(rootInjector, modules);
+        return createChildInjectorInternal(rootInjector, modules);
+    }
+
+    public static Injector createChildInjector(final Injector parentInjector, final Module... modules) {
+        if (parentInjector == null) {
+            throw new NullPointerException("Parent injector cannot be null");
+        }
+        return createChildInjectorInternal(parentInjector, modules);
+    }
+
+    private static Injector createChildInjectorInternal(final Injector parentInjector, final Module... modules) {
+        final LightsaberInjector injector = new LightsaberInjector(parentInjector);
+        if (modules != null) {
+            for (final Module module : modules) {
+                if (module == null) {
+                    throw new NullPointerException("Trying to create injector with a null module");
+                }
+
+                if (!(module instanceof InternalModule)) {
+                    throw new ConfigurationException("Module " + module + " hasn't been processed");
+                }
+
+                ((InternalModule) module).configureInjector(injector);
+            }
+        }
+        return injector;
     }
 
     public static void injectMembers(final Injector injector, final Object object) {
