@@ -276,7 +276,8 @@ public class PrimitiveInjectionTest {
         }
     }
 
-    private static class UnboxedPrimitiveModule implements Module {
+    @Module
+    private static class UnboxedPrimitiveModule {
         @Provides
         public boolean provideBoolean() {
             return true;
@@ -348,7 +349,8 @@ public class PrimitiveInjectionTest {
         }
     }
 
-    private static class BoxedPrimitiveModule implements Module {
+    @Module
+    private static class BoxedPrimitiveModule {
         @Provides
         public Boolean provideBoolean() {
             return false;

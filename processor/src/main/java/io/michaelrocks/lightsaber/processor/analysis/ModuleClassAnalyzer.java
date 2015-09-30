@@ -18,13 +18,16 @@ package io.michaelrocks.lightsaber.processor.analysis;
 
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 public class ModuleClassAnalyzer extends ProcessorClassVisitor {
     private ModuleDescriptor.Builder moduleBuilder;
+    private boolean isModule;
 
     public ModuleClassAnalyzer(final ProcessorContext processorContext) {
         super(processorContext);
@@ -34,6 +37,15 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
         moduleBuilder = new ModuleDescriptor.Builder(Type.getObjectType(name));
+        isModule = false;
+    }
+
+    @Override
+    public AnnotationVisitor visitAnnotation(final String desc, final boolean visible) {
+        if (Type.getType(desc).equals(Types.MODULE_TYPE)) {
+            isModule = true;
+        }
+        return super.visitAnnotation(desc, visible);
     }
 
     @Override
@@ -50,8 +62,10 @@ public class ModuleClassAnalyzer extends ProcessorClassVisitor {
 
     @Override
     public void visitEnd() {
-        final ModuleDescriptor module = moduleBuilder.build();
-        getProcessorContext().addModule(module);
+        if (isModule) {
+            final ModuleDescriptor module = moduleBuilder.build();
+            getProcessorContext().addModule(module);
+        }
         super.visitEnd();
     }
 }

@@ -59,7 +59,8 @@ public class LazyInjectionTest {
         assertSame(target.getLazyString1().get(), target.getLazyString1().get());
     }
 
-    private static class LazyModule implements Module {
+    @Module
+    private static class LazyModule {
         @Provides
         public String provideString() {
             // noinspection RedundantStringConstructorCall

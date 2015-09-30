@@ -107,7 +107,8 @@ public class QualifiedInjectionTest {
         assertEquals(module.provideAnnotationArrayQualifierExplicit(), container.getAnnotationArrayQualifierExplicit());
     }
 
-    private static class QualifiedModule implements Module {
+    @Module
+    private static class QualifiedModule {
         @Provides
         public String provideNoQualifier() {
             return "NoQualifier";

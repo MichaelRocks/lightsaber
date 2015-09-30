@@ -21,7 +21,8 @@ import io.michaelrocks.lightsaber.Provides
 import javax.inject.Provider
 import javax.inject.Singleton
 
-internal class LightsaberModule : Module {
+@Module
+internal class LightsaberModule {
     @Provides
     private val darthVader = DarthVader
 

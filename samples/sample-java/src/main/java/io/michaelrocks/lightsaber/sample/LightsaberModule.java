@@ -22,7 +22,8 @@ import io.michaelrocks.lightsaber.Provides;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
-class LightsaberModule implements Module {
+@Module
+class LightsaberModule {
     @Provides
     private final DarthVader darthVader = DarthVader.INSTANCE;
 

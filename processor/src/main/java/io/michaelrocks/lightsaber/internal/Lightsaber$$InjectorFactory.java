@@ -18,7 +18,6 @@ package io.michaelrocks.lightsaber.internal;
 
 import io.michaelrocks.lightsaber.ConfigurationException;
 import io.michaelrocks.lightsaber.Injector;
-import io.michaelrocks.lightsaber.Module;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,26 +42,26 @@ public class Lightsaber$$InjectorFactory {
         typeAgents.put(typeAgent.getType(), typeAgent);
     }
 
-    private static Module[] getPackageModules() {
+    private static Object[] getPackageModules() {
         // This method will be generated.
-        return new Module[] {};
+        return new Object[] {};
     }
 
-    public static Injector createInjector(final Module... modules) {
+    public static Injector createInjector(final Object... modules) {
         return createChildInjectorInternal(rootInjector, modules);
     }
 
-    public static Injector createChildInjector(final Injector parentInjector, final Module... modules) {
+    public static Injector createChildInjector(final Injector parentInjector, final Object... modules) {
         if (parentInjector == null) {
             throw new NullPointerException("Parent injector cannot be null");
         }
         return createChildInjectorInternal(parentInjector, modules);
     }
 
-    private static Injector createChildInjectorInternal(final Injector parentInjector, final Module... modules) {
+    private static Injector createChildInjectorInternal(final Injector parentInjector, final Object... modules) {
         final LightsaberInjector injector = new LightsaberInjector(parentInjector);
         if (modules != null) {
-            for (final Module module : modules) {
+            for (final Object module : modules) {
                 if (module == null) {
                     throw new NullPointerException("Trying to create injector with a null module");
                 }

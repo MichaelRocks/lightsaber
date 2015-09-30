@@ -16,12 +16,12 @@
 
 package io.michaelrocks.lightsaber.processor.generation;
 
-import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import io.michaelrocks.lightsaber.internal.TypeAgent;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.JavaVersionChanger;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
+import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -160,7 +160,7 @@ public class InjectorFactoryClassGenerator {
             methodVisitor.visitCode();
             final Collection<ModuleDescriptor> packageModules = processorContext.getPackageModules();
             methodVisitor.visitIntInsn(BIPUSH, packageModules.size());
-            methodVisitor.visitTypeInsn(ANEWARRAY, Type.getInternalName(Module.class));
+            methodVisitor.visitTypeInsn(ANEWARRAY, Types.OBJECT_TYPE.getInternalName());
 
             int index = 0;
             for (final ModuleDescriptor packageModule : packageModules) {

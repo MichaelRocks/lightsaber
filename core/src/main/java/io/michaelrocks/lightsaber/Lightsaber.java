@@ -20,7 +20,7 @@ import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 
 public class Lightsaber {
-    public static Injector createInjector(final Module... modules) {
+    public static Injector createInjector(final Object... modules) {
         throw new IllegalStateException(
                 "This method must not be called. Seems the project hasn't been processed with Lightsaber");
     }
