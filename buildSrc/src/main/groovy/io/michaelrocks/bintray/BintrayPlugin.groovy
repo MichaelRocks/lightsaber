@@ -37,76 +37,80 @@ class BintrayPlugin implements Plugin<Project> {
             project.apply plugin: 'com.jfrog.bintray'
 
             final boolean hasCredentials = project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')
+            if (hasCredentials) {
+                addRepositories()
+                configureBintray()
+            }
+        }
+    }
 
-            project.repositories {
-                mavenLocal()
-                jcenter()
-                mavenCentral()
-                maven {
-                    url 'https://dl.bintray.com/michaelrocks/lightsaber'
-                    if (hasCredentials) {
-                        credentials {
-                            username = project.property('bintrayUser')
-                            password = project.property('bintrayKey')
-                        }
-                    }
+    private void addRepositories() {
+        project.repositories {
+            mavenLocal()
+            jcenter()
+            mavenCentral()
+            maven {
+                url 'https://dl.bintray.com/michaelrocks/lightsaber'
+                credentials {
+                    username = project.property('bintrayUser')
+                    password = project.property('bintrayKey')
                 }
             }
+        }
+    }
 
-            if (hasCredentials) {
-                project.bintray {
-                    user = project.property('bintrayUser')
-                    key = project.property('bintrayKey')
+    private void configureBintray() {
+        project.bintray {
+            user = project.property('bintrayUser')
+            key = project.property('bintrayKey')
 
-                    publications = ['mavenJava']
+            publications = ['mavenJava']
 
-                    dryRun = project.dryRun
-                    publish = project.publish
-                    pkg {
-                        repo = 'lightsaber'
-                        name = project.rootProject.name + '-' + project.name
-                        websiteUrl = 'https://github.com/michaelrocks/lightsaber'
-                        issueTrackerUrl = 'https://github.com/michaelrocks/lightsaber/issues'
-                        vcsUrl = 'https://github.com/michaelrocks/lightsaber'
-                        licenses = ['Apache-2.0']
-                        labels = ['lightsaber']
-                        publicDownloadNumbers = true
+            dryRun = project.dryRun
+            publish = project.publish
+            pkg {
+                repo = 'lightsaber'
+                name = project.rootProject.name + '-' + project.name
+                websiteUrl = 'https://github.com/michaelrocks/lightsaber'
+                issueTrackerUrl = 'https://github.com/michaelrocks/lightsaber/issues'
+                vcsUrl = 'https://github.com/michaelrocks/lightsaber'
+                licenses = ['Apache-2.0']
+                labels = ['lightsaber']
+                publicDownloadNumbers = true
 
-                        version {
-                            released = new Date()
-                            vcsTag = "v${project.version}"
-                        }
+                version {
+                    released = new Date()
+                    vcsTag = "v${project.version}"
+                }
+            }
+        }
+
+        project.task('sourcesJar', type: Jar, dependsOn: project.classes) {
+            classifier = 'sources'
+            from project.sourceSets.main.allSource
+        }
+
+        project.task('javadocJar', type: Jar, dependsOn: project.javadoc) {
+            classifier = 'javadoc'
+            from project.javadoc.destinationDir
+        }
+
+        project.artifacts {
+            archives project.sourcesJar, project.javadocJar
+        }
+
+        project.publishing {
+            publications {
+                mavenJava(MavenPublication) {
+                    artifactId project.bintray.pkg.name
+                    if (project.plugins.hasPlugin('war')) {
+                        from project.components.web
+                    } else {
+                        from project.components.java
                     }
-                }
 
-                project.task('sourcesJar', type: Jar, dependsOn: project.classes) {
-                    classifier = 'sources'
-                    from project.sourceSets.main.allSource
-                }
-
-                project.task('javadocJar', type: Jar, dependsOn: project.javadoc) {
-                    classifier = 'javadoc'
-                    from project.javadoc.destinationDir
-                }
-
-                project.artifacts {
-                    archives project.sourcesJar, project.javadocJar
-                }
-
-                project.publishing {
-                    publications {
-                        mavenJava(MavenPublication) {
-                            artifactId project.bintray.pkg.name
-                            if (project.plugins.hasPlugin('war')) {
-                                from project.components.web
-                            } else {
-                                from project.components.java
-                            }
-
-                            Artifact sourcesJar
-                            Artifact javadocJar
-                        }
-                    }
+                    Artifact sourcesJar
+                    Artifact javadocJar
                 }
             }
         }
