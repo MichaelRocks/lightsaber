@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber.processor.commons;
 
 import io.michaelrocks.lightsaber.Key;
+import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.Provides;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
@@ -31,6 +32,7 @@ public class Types {
     public static final Type STRING_TYPE = Type.getType(String.class);
     public static final Type INJECT_TYPE = Type.getType(Inject.class);
     public static final Type PROVIDES_TYPE = Type.getType(Provides.class);
+    public static final Type MODULE_TYPE = Type.getType(Module.class);
     public static final Type PROVIDER_TYPE = Type.getType(Provider.class);
     public static final Type KEY_TYPE = Type.getType(Key.class);
     public static final Type CLASS_TYPE = Type.getType(Class.class);
