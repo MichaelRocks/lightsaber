@@ -17,7 +17,6 @@
 package io.michaelrocks.lightsaber.processor.generation;
 
 import io.michaelrocks.lightsaber.Injector;
-import io.michaelrocks.lightsaber.internal.CopyableProvider;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
@@ -78,7 +77,7 @@ public class ProviderClassGenerator {
                 provider.getProviderType().getInternalName(),
                 null,
                 Type.getInternalName(Object.class),
-                new String[] { Type.getInternalName(CopyableProvider.class) });
+                new String[] { Type.getInternalName(Provider.class) });
 
         generateFields(classVisitor);
         generateStaticInitializer(classVisitor);
@@ -326,7 +325,7 @@ public class ProviderClassGenerator {
         final MethodVisitor methodVisitor = classVisitor.visitMethod(
                 ACC_PUBLIC,
                 COPY_WITH_INJECTOR_METHOD_NAME,
-                Type.getMethodDescriptor(Type.getType(CopyableProvider.class), Type.getType(Injector.class)),
+                Type.getMethodDescriptor(Types.PROVIDER_TYPE, Type.getType(Injector.class)),
                 null,
                 null);
         methodVisitor.visitCode();

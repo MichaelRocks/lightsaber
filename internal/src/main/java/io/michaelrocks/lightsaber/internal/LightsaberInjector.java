@@ -37,20 +37,6 @@ public class LightsaberInjector implements Injector {
     public LightsaberInjector(final Injector parentInjector) {
         this.parentInjector = parentInjector;
         registerProvider(INJECTOR_KEY, new InstanceProvider<Injector>(this));
-        if (parentInjector != null) {
-            copyParentProviders();
-        }
-    }
-
-    private void copyParentProviders() {
-        for (final Map.Entry<Key<?>, Provider<?>> entry : parentInjector.getAllProviders().entrySet()) {
-            if (!INJECTOR_KEY.equals(entry.getKey()) && entry.getValue() instanceof CopyableProvider) {
-                // noinspection unchecked
-                registerProvider(
-                        (Key<Object>) entry.getKey(),
-                        ((CopyableProvider<Object>) entry.getValue()).copyWithInjector(this));
-            }
-        }
     }
 
     @Override
@@ -83,7 +69,7 @@ public class LightsaberInjector implements Injector {
         return new HashMap<Key<?>, Provider<?>>(providers);
     }
 
-    public <T> void registerProvider(final Key<T> key, final CopyableProvider<T> provider) {
+    public <T> void registerProvider(final Key<T> key, final Provider<T> provider) {
         final Provider<?> oldProvider = providers.put(key, provider);
         if (oldProvider != null) {
             throw new ConfigurationException("Provider for " + key + " already registered");

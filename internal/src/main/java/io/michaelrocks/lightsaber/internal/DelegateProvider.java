@@ -16,14 +16,16 @@
 
 package io.michaelrocks.lightsaber.internal;
 
-public abstract class DelegateProvider<T> implements CopyableProvider<T> {
-    private final CopyableProvider<T> delegate;
+import javax.inject.Provider;
 
-    public DelegateProvider(final CopyableProvider<T> delegate) {
+public abstract class DelegateProvider<T> implements Provider<T> {
+    private final Provider<T> delegate;
+
+    public DelegateProvider(final Provider<T> delegate) {
         this.delegate = delegate;
     }
 
-    public CopyableProvider<T> getDelegate() {
+    public Provider<T> getDelegate() {
         return delegate;
     }
 }

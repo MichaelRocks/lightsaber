@@ -18,7 +18,6 @@ package io.michaelrocks.lightsaber.processor.injection;
 
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.internal.ConfigurableModule;
-import io.michaelrocks.lightsaber.internal.CopyableProvider;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
@@ -135,7 +134,7 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
         methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
                 Type.getInternalName(LightsaberInjector.class),
                 "registerProvider",
-                Type.getMethodDescriptor(Type.VOID_TYPE, Types.KEY_TYPE, Type.getType(CopyableProvider.class)),
+                Type.getMethodDescriptor(Type.VOID_TYPE, Types.KEY_TYPE, Types.PROVIDER_TYPE),
                 false);
     }
 
@@ -191,7 +190,7 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
         methodVisitor.visitInsn(DUP);
         generateProviderConstruction(methodVisitor, provider);
         final MethodDescriptor constructorDescriptor =
-                MethodDescriptor.forConstructor(Type.getType(CopyableProvider.class));
+                MethodDescriptor.forConstructor(Types.PROVIDER_TYPE);
         methodVisitor.visitMethodInsn(INVOKESPECIAL,
                 delegatorType.getInternalName(),
                 constructorDescriptor.getName(),

@@ -16,9 +16,9 @@
 
 package io.michaelrocks.lightsaber.internal;
 
-import io.michaelrocks.lightsaber.Injector;
+import javax.inject.Provider;
 
-public class InstanceProvider<T> implements CopyableProvider<T> {
+public class InstanceProvider<T> implements Provider<T> {
     private final T instance;
 
     public InstanceProvider(final T instance) {
@@ -31,10 +31,5 @@ public class InstanceProvider<T> implements CopyableProvider<T> {
     @Override
     public T get() {
         return instance;
-    }
-
-    @Override
-    public CopyableProvider<T> copyWithInjector(final Injector injector) {
-        return new InstanceProvider<T>(instance);
     }
 }

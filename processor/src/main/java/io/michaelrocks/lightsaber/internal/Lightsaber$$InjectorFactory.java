@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Lightsaber$$InjectorFactory {
-    private static final Injector rootInjector = createRootInjector();
     private static final Map<Class, TypeAgent> typeAgents = new HashMap<>();
 
     static {
@@ -32,10 +31,6 @@ public class Lightsaber$$InjectorFactory {
 
     private static void populateTypeAgents() {
         // This method will be generated.
-    }
-
-    private static Injector createRootInjector() {
-        return createChildInjectorInternal(null, getPackageModules());
     }
 
     private static void registerTypeAgent(final TypeAgent<?> typeAgent) {
@@ -48,7 +43,9 @@ public class Lightsaber$$InjectorFactory {
     }
 
     public static Injector createInjector(final Object... modules) {
-        return createChildInjectorInternal(rootInjector, modules);
+        final LightsaberInjector injector = createChildInjectorInternal(null, modules);
+        configureInjector(injector, getPackageModules());
+        return injector;
     }
 
     public static Injector createChildInjector(final Injector parentInjector, final Object... modules) {
@@ -58,7 +55,8 @@ public class Lightsaber$$InjectorFactory {
         return createChildInjectorInternal(parentInjector, modules);
     }
 
-    private static Injector createChildInjectorInternal(final Injector parentInjector, final Object... modules) {
+    private static LightsaberInjector createChildInjectorInternal(final Injector parentInjector,
+            final Object... modules) {
         final LightsaberInjector injector = new LightsaberInjector(parentInjector);
         configureInjector(injector, modules);
         return injector;
