@@ -60,6 +60,11 @@ public class Lightsaber$$InjectorFactory {
 
     private static Injector createChildInjectorInternal(final Injector parentInjector, final Object... modules) {
         final LightsaberInjector injector = new LightsaberInjector(parentInjector);
+        configureInjector(injector, modules);
+        return injector;
+    }
+
+    private static void configureInjector(final LightsaberInjector injector, final Object[] modules) {
         if (modules != null) {
             for (final Object module : modules) {
                 if (module == null) {
@@ -73,7 +78,6 @@ public class Lightsaber$$InjectorFactory {
                 ((ConfigurableModule) module).configureInjector(injector);
             }
         }
-        return injector;
     }
 
     public static void injectMembers(final Injector injector, final Object object) {
