@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber.processor.annotations.proxy;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
 import io.michaelrocks.lightsaber.processor.commons.Boxer;
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
@@ -28,8 +29,6 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import java.util.Arrays;
@@ -37,15 +36,10 @@ import java.util.Collection;
 import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.commons.GeneratorAdapter.*;
 
 public class AnnotationProxyGenerator {
-    private static final String OBJECT_TYPE_NAME = Type.getInternalName(Object.class);
-    private static final String STRING_TYPE_NAME = Type.getInternalName(String.class);
-    private static final String ARRAYS_TYPE_NAME = Type.getInternalName(Arrays.class);
-    private static final String FLOAT_TYPE_NAME = Type.getInternalName(Float.class);
-    private static final String DOUBLE_TYPE_NAME = Type.getInternalName(Double.class);
-    private static final String STRING_BUILDER_TYPE_NAME = Type.getInternalName(StringBuilder.class);
-
+    private static final Type ARRAYS_TYPE = Type.getType(Arrays.class);
     private static final Type OBJECT_ARRAY_TYPE = Type.getType(Object[].class);
     private static final Type STRING_BUILDER_TYPE = Type.getType(StringBuilder.class);
 
@@ -70,17 +64,13 @@ public class AnnotationProxyGenerator {
 
     private final ProcessorContext processorContext;
     private final AnnotationDescriptor annotation;
-
-    private final String annotationTypeName;
-    private final String proxyTypeName;
+    private final Type proxyType;
 
     public AnnotationProxyGenerator(final ProcessorContext processorContext, final AnnotationDescriptor annotation,
             final Type proxyType) {
         this.processorContext = processorContext;
         this.annotation = annotation;
-
-        this.annotationTypeName = annotation.getType().getInternalName();
-        this.proxyTypeName = proxyType.getInternalName();
+        this.proxyType = proxyType;
     }
 
     public byte[] generate() {
@@ -90,10 +80,10 @@ public class AnnotationProxyGenerator {
         classVisitor.visit(
                 V1_6,
                 ACC_PUBLIC | ACC_SUPER,
-                proxyTypeName,
+                proxyType.getInternalName(),
                 null,
                 Type.getInternalName(Object.class),
-                new String[] { annotationTypeName });
+                new String[] { annotation.getType().getInternalName() });
 
         generateFields(classVisitor);
         generateConstructor(classVisitor);
@@ -142,120 +132,85 @@ public class AnnotationProxyGenerator {
         final Collection<Type> fieldTypes = annotation.getFields().values();
         final Type[] argumentTypes = fieldTypes.toArray(new Type[fieldTypes.size()]);
         final MethodDescriptor method = MethodDescriptor.forConstructor(argumentTypes);
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                method.getName(),
-                method.getDescriptor(),
-                null,
-                null);
-        methodVisitor.visitCode();
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, method);
+        generator.visitCode();
 
         // Call the constructor of the super class.
-        methodVisitor.visitVarInsn(ALOAD, 0);
+        generator.loadThis();
         final MethodDescriptor constructor = MethodDescriptor.forDefaultConstructor();
-        methodVisitor.visitMethodInsn(
-                INVOKESPECIAL,
-                OBJECT_TYPE_NAME,
-                constructor.getName(),
-                constructor.getDescriptor(),
-                false);
+        generator.invokeConstructor(Types.OBJECT_TYPE, constructor);
 
         // Initialize fields with arguments passed to the constructor.
-        int localPosition = 1;
+        int localPosition = 0;
         for (final Map.Entry<String, Type> entry : annotation.getFields().entrySet()) {
             final String fieldName = entry.getKey();
             final Type fieldType = entry.getValue();
-            methodVisitor.visitVarInsn(ALOAD, 0);
-            methodVisitor.visitVarInsn(fieldType.getOpcode(ILOAD), localPosition);
-            methodVisitor.visitFieldInsn(PUTFIELD, proxyTypeName, fieldName, fieldType.getDescriptor());
-            localPosition += fieldType.getSize();
+            generator.loadThis();
+            generator.loadArg(localPosition++);
+            generator.putField(proxyType, fieldName, fieldType);
         }
 
-        methodVisitor.visitInsn(RETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        generator.returnValue();
+        generator.endMethod();
     }
 
     private void generateEqualsMethod(final ClassVisitor classVisitor) {
-        final MethodVisitor methodVisitor;
-        methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                EQUALS_METHOD.getName(),
-                EQUALS_METHOD.getDescriptor(),
-                null,
-                null);
-        methodVisitor.visitCode();
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, EQUALS_METHOD);
+        generator.visitCode();
 
         // if (this == object) return true;
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        final Label referencesNotEqualLabel = new Label();
-        methodVisitor.visitJumpInsn(IF_ACMPNE, referencesNotEqualLabel);
-        methodVisitor.visitInsn(ICONST_1);
-        methodVisitor.visitInsn(IRETURN);
+        generator.loadThis();
+        generator.loadArg(0);
+        final Label referencesNotEqualLabel = generator.newLabel();
+        generator.ifCmp(Types.OBJECT_TYPE, NE, referencesNotEqualLabel);
+        generator.push(true);
+        generator.returnValue();
 
-        methodVisitor.visitLabel(referencesNotEqualLabel);
-        methodVisitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-
+        generator.visitLabel(referencesNotEqualLabel);
         // if (!(object instanceof *AnnotationType*)) return false;
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitTypeInsn(INSTANCEOF, annotationTypeName);
-        final Label objectHasSameTypeLabel = new Label();
-        methodVisitor.visitJumpInsn(IFNE, objectHasSameTypeLabel);
-        methodVisitor.visitInsn(ICONST_0);
-        methodVisitor.visitInsn(IRETURN);
+        generator.loadArg(0);
+        generator.instanceOf(annotation.getType());
+        final Label objectHasSameTypeLabel = generator.newLabel();
+        generator.ifZCmp(NE, objectHasSameTypeLabel);
+        generator.push(false);
+        generator.returnValue();
 
-        methodVisitor.visitLabel(objectHasSameTypeLabel);
-        methodVisitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-
+        generator.visitLabel(objectHasSameTypeLabel);
         // Cast the object to *AnnotationType*.
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitTypeInsn(CHECKCAST, annotationTypeName);
-        methodVisitor.visitVarInsn(ASTORE, 2);
+        final int annotationLocal = generator.newLocal(annotation.getType());
+        generator.loadArg(0);
+        generator.checkCast(annotation.getType());
+        generator.storeLocal(annotationLocal);
 
-        final Label fieldsNotEqualLabel = new Label();
+        final Label fieldsNotEqualLabel = generator.newLabel();
         for (final Map.Entry<String, Type> entry : annotation.getFields().entrySet()) {
-            generateEqualsInvocationForField(methodVisitor, entry.getKey(), entry.getValue(), fieldsNotEqualLabel);
+            generateEqualsInvocationForField(
+                    generator, entry.getKey(), entry.getValue(), annotationLocal, fieldsNotEqualLabel);
         }
-        methodVisitor.visitInsn(ICONST_1);
+        generator.push(true);
 
-        final Label returnLabel = new Label();
-        methodVisitor.visitJumpInsn(GOTO, returnLabel);
+        final Label returnLabel = generator.newLabel();
+        generator.goTo(returnLabel);
 
-        methodVisitor.visitLabel(fieldsNotEqualLabel);
-        methodVisitor.visitFrame(Opcodes.F_APPEND, 1, new Object[] { annotationTypeName }, 0, null);
+        generator.visitLabel(fieldsNotEqualLabel);
+        generator.push(false);
 
-        methodVisitor.visitInsn(ICONST_0);
-
-        methodVisitor.visitLabel(returnLabel);
-        methodVisitor.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[] { Opcodes.INTEGER });
-
-        methodVisitor.visitInsn(IRETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        generator.visitLabel(returnLabel);
+        generator.returnValue();
+        generator.endMethod();
     }
 
-    private void generateEqualsInvocationForField(final MethodVisitor methodVisitor, final String fieldName,
-            final Type fieldType, final Label fieldsNotEqualLabel) {
+    private void generateEqualsInvocationForField(final GeneratorAdapter generator, final String fieldName,
+            final Type fieldType, final int annotationLocal, final Label fieldsNotEqualLabel) {
         final MethodDescriptor fieldAccessor = MethodDescriptor.forMethod(fieldName, fieldType);
 
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitMethodInsn(
-                INVOKEVIRTUAL,
-                proxyTypeName,
-                fieldAccessor.getName(),
-                fieldAccessor.getDescriptor(),
-                false);
-        convertFieldValue(methodVisitor, fieldType);
+        generator.loadThis();
+        generator.invokeVirtual(proxyType, fieldAccessor);
+        convertFieldValue(generator, fieldType);
 
-        methodVisitor.visitVarInsn(ALOAD, 2);
-        methodVisitor.visitMethodInsn(
-                INVOKEINTERFACE,
-                annotationTypeName,
-                fieldAccessor.getName(),
-                fieldAccessor.getDescriptor(),
-                true);
-        convertFieldValue(methodVisitor, fieldType);
+        generator.loadLocal(annotationLocal);
+        generator.invokeInterface(annotation.getType(), fieldAccessor);
+        convertFieldValue(generator, fieldType);
 
         if (fieldType.getSort() == Type.ARRAY) {
             // Call Arrays.equals() with a corresponding signature.
@@ -263,128 +218,80 @@ public class AnnotationProxyGenerator {
             final Type argumentType = Types.isPrimitive(elementType) ? fieldType : OBJECT_ARRAY_TYPE;
             final MethodDescriptor equalsMethod =
                     MethodDescriptor.forMethod(EQUALS_METHOD.getName(), Type.BOOLEAN_TYPE, argumentType, argumentType);
-            methodVisitor.visitMethodInsn(
-                    INVOKESTATIC,
-                    ARRAYS_TYPE_NAME,
-                    equalsMethod.getName(),
-                    equalsMethod.getDescriptor(),
-                    false);
-            methodVisitor.visitJumpInsn(IFEQ, fieldsNotEqualLabel);
+            generator.invokeStatic(ARRAYS_TYPE, equalsMethod);
+            generator.ifZCmp(EQ, fieldsNotEqualLabel);
         } else if (Types.isPrimitive(fieldType)) {
             switch (fieldType.getSort()) {
                 case Type.DOUBLE:
                 case Type.LONG:
-                    methodVisitor.visitInsn(LCMP);
-                    methodVisitor.visitJumpInsn(IFNE, fieldsNotEqualLabel);
+                    generator.ifCmp(Type.LONG_TYPE, NE, fieldsNotEqualLabel);
                     break;
                 default:
-                    methodVisitor.visitJumpInsn(IF_ICMPNE, fieldsNotEqualLabel);
+                    generator.ifICmp(NE, fieldsNotEqualLabel);
                     break;
             }
         } else {
             // Call equals() on the instances on the stack.
-            methodVisitor.visitMethodInsn(
-                    INVOKEVIRTUAL,
-                    OBJECT_TYPE_NAME,
-                    EQUALS_METHOD.getName(),
-                    EQUALS_METHOD.getDescriptor(),
-                    false);
-            methodVisitor.visitJumpInsn(IFEQ, fieldsNotEqualLabel);
+            generator.invokeVirtual(Types.OBJECT_TYPE, EQUALS_METHOD);
+            generator.ifZCmp(EQ, fieldsNotEqualLabel);
         }
     }
 
-    private void convertFieldValue(final MethodVisitor methodVisitor, final Type fieldType) {
+    private void convertFieldValue(final GeneratorAdapter generator, final Type fieldType) {
         switch (fieldType.getSort()) {
             case Type.FLOAT:
-                methodVisitor.visitMethodInsn(
-                        INVOKESTATIC,
-                        FLOAT_TYPE_NAME,
-                        FLOAT_TO_INT_BITS_METHOD.getName(),
-                        FLOAT_TO_INT_BITS_METHOD.getDescriptor(),
-                        false);
+                generator.invokeStatic(Types.BOXED_FLOAT_TYPE, FLOAT_TO_INT_BITS_METHOD);
                 break;
             case Type.DOUBLE:
-                methodVisitor.visitMethodInsn(
-                        INVOKESTATIC,
-                        DOUBLE_TYPE_NAME,
-                        DOUBLE_TO_LONG_BITS_METHOD.getName(),
-                        DOUBLE_TO_LONG_BITS_METHOD.getDescriptor(),
-                        false);
+                generator.invokeStatic(Types.BOXED_DOUBLE_TYPE, DOUBLE_TO_LONG_BITS_METHOD);
                 break;
         }
     }
 
     private void generateHashCodeMethod(final ClassVisitor classVisitor) {
-        final MethodVisitor methodVisitor;
-        methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                HASH_CODE_METHOD.getName(),
-                HASH_CODE_METHOD.getDescriptor(),
-                null,
-                null);
-        methodVisitor.visitCode();
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, HASH_CODE_METHOD);
+        generator.visitCode();
 
-        final Label cacheHashCodeIsNullLabel = new Label();
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitFieldInsn(
-                GETFIELD,
-                proxyTypeName,
-                CACHED_HASH_CODE_FIELD.getName(),
-                CACHED_HASH_CODE_FIELD.getDescriptor());
-        methodVisitor.visitInsn(DUP);
-        methodVisitor.visitJumpInsn(IFNULL, cacheHashCodeIsNullLabel);
-        Boxer.unbox(methodVisitor, Types.BOXED_INT_TYPE);
-        methodVisitor.visitInsn(IRETURN);
+        final Label cacheHashCodeIsNullLabel = generator.newLabel();
+        generator.loadThis();
+        generator.getField(proxyType, CACHED_HASH_CODE_FIELD);
+        generator.dup();
+        generator.ifNull(cacheHashCodeIsNullLabel);
+        Boxer.unbox(generator, Types.BOXED_INT_TYPE);
+        generator.returnValue();
 
-        methodVisitor.visitLabel(cacheHashCodeIsNullLabel);
-        methodVisitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-
-        methodVisitor.visitInsn(ICONST_0);
+        generator.visitLabel(cacheHashCodeIsNullLabel);
+        generator.push(0);
 
         for (final Map.Entry<String, Type> entry : annotation.getFields().entrySet()) {
             // Hash code for annotation is the sum of 127 * fieldName.hashCode() ^ fieldValue.hashCode().
-            generateHashCodeComputationForField(methodVisitor, entry.getKey(), entry.getValue());
-            methodVisitor.visitInsn(IADD);
+            generateHashCodeComputationForField(generator, entry.getKey(), entry.getValue());
+            generator.math(ADD, Type.INT_TYPE);
         }
 
-        methodVisitor.visitInsn(DUP);
-        Boxer.box(methodVisitor, Type.INT_TYPE);
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitInsn(SWAP);
-        methodVisitor.visitFieldInsn(
-                PUTFIELD,
-                proxyTypeName,
-                CACHED_HASH_CODE_FIELD.getName(),
-                CACHED_HASH_CODE_FIELD.getDescriptor());
+        generator.dup();
+        Boxer.box(generator, Type.INT_TYPE);
+        generator.loadThis();
+        generator.swap(Type.INT_TYPE, proxyType);
+        generator.putField(proxyType, CACHED_HASH_CODE_FIELD);
 
-        methodVisitor.visitInsn(IRETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        generator.returnValue();
+        generator.endMethod();
     }
 
-    private void generateHashCodeComputationForField(final MethodVisitor methodVisitor, final String fieldName,
+    private void generateHashCodeComputationForField(final GeneratorAdapter generator, final String fieldName,
             final Type fieldType) {
         // Compute hash code of the field name.
-        methodVisitor.visitLdcInsn(fieldName);
-        methodVisitor.visitMethodInsn(
-                INVOKEVIRTUAL,
-                STRING_TYPE_NAME,
-                HASH_CODE_METHOD.getName(),
-                HASH_CODE_METHOD.getDescriptor(),
-                false);
+        generator.push(fieldName);
+        generator.invokeVirtual(Types.STRING_TYPE, HASH_CODE_METHOD);
         // Multiple it by 127.
-        methodVisitor.visitIntInsn(BIPUSH, 127);
-        methodVisitor.visitInsn(IMUL);
+        generator.push(127);
+        generator.math(MUL, Type.INT_TYPE);
 
         // Load field value on the stack.
-        methodVisitor.visitVarInsn(ALOAD, 0);
+        generator.loadThis();
         final MethodDescriptor fieldAccessor = MethodDescriptor.forMethod(fieldName, fieldType);
-        methodVisitor.visitMethodInsn(
-                INVOKEVIRTUAL,
-                proxyTypeName,
-                fieldAccessor.getName(),
-                fieldAccessor.getDescriptor(),
-                false);
+        generator.invokeVirtual(proxyType, fieldAccessor);
 
         if (fieldType.getSort() == Type.ARRAY) {
             // Call Arrays.hashCode() with a corresponding signature.
@@ -392,150 +299,97 @@ public class AnnotationProxyGenerator {
             final Type argumentType = Types.isPrimitive(elementType) ? fieldType : OBJECT_ARRAY_TYPE;
             final MethodDescriptor hashCodeMethod =
                     MethodDescriptor.forMethod(HASH_CODE_METHOD.getName(), Type.INT_TYPE, argumentType);
-            methodVisitor.visitMethodInsn(
-                    INVOKESTATIC,
-                    ARRAYS_TYPE_NAME,
-                    hashCodeMethod.getName(),
-                    hashCodeMethod.getDescriptor(),
-                    false);
+            generator.invokeStatic(ARRAYS_TYPE, hashCodeMethod);
         } else {
             if (Types.isPrimitive(fieldType)) {
                 // If the field has primitive type then box it.
-                Boxer.box(methodVisitor, fieldType);
+                Boxer.box(generator, fieldType);
             }
             // Call hashCode() on the instance on the stack.
-            methodVisitor.visitMethodInsn(
-                    INVOKEVIRTUAL,
-                    OBJECT_TYPE_NAME,
-                    HASH_CODE_METHOD.getName(),
-                    HASH_CODE_METHOD.getDescriptor(),
-                    false);
+            generator.invokeVirtual(Types.OBJECT_TYPE, HASH_CODE_METHOD);
         }
 
         // Xor the field name and the field value hash codes.
-        methodVisitor.visitInsn(IXOR);
+        generator.math(XOR, Type.INT_TYPE);
     }
 
     private void generateToStringMethod(final ClassVisitor classVisitor) {
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                TO_STRING_METHOD.getName(),
-                TO_STRING_METHOD.getDescriptor(),
-                null,
-                null);
-        methodVisitor.visitCode();
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, TO_STRING_METHOD);
+        generator.visitCode();
 
-        final Label cachedToStringIsNullLabel = new Label();
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitFieldInsn(
-                GETFIELD,
-                proxyTypeName,
-                CACHED_TO_STRING_FIELD.getName(),
-                CACHED_TO_STRING_FIELD.getDescriptor());
-        methodVisitor.visitInsn(DUP);
-        methodVisitor.visitJumpInsn(IFNULL, cachedToStringIsNullLabel);
-        methodVisitor.visitInsn(ARETURN);
+        final Label cachedToStringIsNullLabel = generator.newLabel();
+        generator.loadThis();
+        generator.getField(proxyType, CACHED_TO_STRING_FIELD);
+        generator.dup();
+        generator.ifNull(cachedToStringIsNullLabel);
+        generator.returnValue();
 
-        methodVisitor.visitLabel(cachedToStringIsNullLabel);
-        methodVisitor.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
+        generator.visitLabel(cachedToStringIsNullLabel);
+        generator.newInstance(STRING_BUILDER_TYPE);
+        generator.dup();
+        generator.invokeConstructor(STRING_BUILDER_TYPE, MethodDescriptor.forDefaultConstructor());
 
-        methodVisitor.visitTypeInsn(NEW, STRING_BUILDER_TYPE_NAME);
-        methodVisitor.visitInsn(DUP);
-        final MethodDescriptor constructor = MethodDescriptor.forDefaultConstructor();
-        methodVisitor.visitMethodInsn(
-                INVOKESPECIAL,
-                STRING_BUILDER_TYPE_NAME,
-                constructor.getName(),
-                constructor.getDescriptor(),
-                false);
-
-        methodVisitor.visitLdcInsn("@" + annotation.getType().getClassName() + "(");
-        generateStringBuilderAppendInvocation(methodVisitor, Types.STRING_TYPE);
+        generator.push("@" + annotation.getType().getClassName() + "(");
+        generateStringBuilderAppendInvocation(generator, Types.STRING_TYPE);
 
         boolean addComma = false;
         for (final Map.Entry<String, Type> entry : annotation.getFields().entrySet()) {
             final String fieldName = entry.getKey();
             final Type fieldType = entry.getValue();
-            appendFieldName(methodVisitor, fieldName, addComma);
-            appendFieldValue(methodVisitor, fieldName, fieldType);
+            appendFieldName(generator, fieldName, addComma);
+            appendFieldValue(generator, fieldName, fieldType);
             addComma = true;
         }
 
-        methodVisitor.visitIntInsn(BIPUSH, ')');
-        generateStringBuilderAppendInvocation(methodVisitor, Type.CHAR_TYPE);
-        methodVisitor.visitMethodInsn(
-                INVOKEVIRTUAL,
-                STRING_BUILDER_TYPE_NAME,
-                TO_STRING_METHOD.getName(),
-                TO_STRING_METHOD.getDescriptor(),
-                false);
+        generator.push(')');
+        generateStringBuilderAppendInvocation(generator, Type.CHAR_TYPE);
+        generator.invokeVirtual(STRING_BUILDER_TYPE, TO_STRING_METHOD);
 
-        methodVisitor.visitInsn(DUP);
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitInsn(SWAP);
-        methodVisitor.visitFieldInsn(
-                PUTFIELD,
-                proxyTypeName,
-                CACHED_TO_STRING_FIELD.getName(),
-                CACHED_TO_STRING_FIELD.getDescriptor());
+        generator.dup();
+        generator.loadThis();
+        generator.swap();
+        generator.putField(proxyType, CACHED_TO_STRING_FIELD);
 
-        methodVisitor.visitInsn(ARETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        generator.returnValue();
+        generator.endMethod();
     }
 
-    private void appendFieldName(final MethodVisitor methodVisitor, final String fieldName, final boolean addComma) {
+    private void appendFieldName(final GeneratorAdapter generator, final String fieldName, final boolean addComma) {
         final String prefix = addComma ? ", " : "";
-        methodVisitor.visitLdcInsn(prefix + fieldName + '=');
-        generateStringBuilderAppendInvocation(methodVisitor, Types.STRING_TYPE);
+        generator.push(prefix + fieldName + '=');
+        generateStringBuilderAppendInvocation(generator, Types.STRING_TYPE);
     }
 
-    private void appendFieldValue(final MethodVisitor methodVisitor, final String fieldName, final Type fieldType) {
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitFieldInsn(GETFIELD, proxyTypeName, fieldName, fieldType.getDescriptor());
+    private void appendFieldValue(final GeneratorAdapter generator, final String fieldName, final Type fieldType) {
+        generator.loadThis();
+        generator.getField(proxyType, fieldName, fieldType);
         if (fieldType.getSort() == Type.ARRAY) {
-            generateArraysToStringInvocation(methodVisitor, fieldType);
-            generateStringBuilderAppendInvocation(methodVisitor, Types.STRING_TYPE);
+            generateArraysToStringInvocation(generator, fieldType);
+            generateStringBuilderAppendInvocation(generator, Types.STRING_TYPE);
         } else {
-            generateStringBuilderAppendInvocation(methodVisitor, fieldType);
+            generateStringBuilderAppendInvocation(generator, fieldType);
         }
     }
 
-    private void generateArraysToStringInvocation(final MethodVisitor methodVisitor, final Type fieldType) {
+    private void generateArraysToStringInvocation(final GeneratorAdapter generator, final Type fieldType) {
         final Type elementType = fieldType.getElementType();
         final Type argumentType = Types.isPrimitive(elementType) ? fieldType : OBJECT_ARRAY_TYPE;
         final MethodDescriptor toStringMethod =
                 MethodDescriptor.forMethod(TO_STRING_METHOD.getName(), Types.STRING_TYPE, argumentType);
-        methodVisitor.visitMethodInsn(
-                INVOKESTATIC,
-                ARRAYS_TYPE_NAME,
-                toStringMethod.getName(),
-                toStringMethod.getDescriptor(),
-                false);
+        generator.invokeStatic(ARRAYS_TYPE, toStringMethod);
     }
 
-    private void generateStringBuilderAppendInvocation(final MethodVisitor methodVisitor, final Type parameterType) {
+    private void generateStringBuilderAppendInvocation(final GeneratorAdapter generator, final Type parameterType) {
         final MethodDescriptor appendMethod = stringBuilderAppendMethodResolver.resolveMethod(parameterType);
-        methodVisitor.visitMethodInsn(
-                INVOKEVIRTUAL,
-                STRING_BUILDER_TYPE_NAME,
-                appendMethod.getName(),
-                appendMethod.getDescriptor(),
-                false);
+        generator.invokeVirtual(STRING_BUILDER_TYPE, appendMethod);
     }
 
     private void generateAnnotationTypeMethod(final ClassVisitor classVisitor) {
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                ANNOTATION_TYPE_METHOD.getName(),
-                ANNOTATION_TYPE_METHOD.getDescriptor(),
-                null,
-                null);
-        methodVisitor.visitCode();
-        methodVisitor.visitLdcInsn(annotation.getType());
-        methodVisitor.visitInsn(ARETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, ANNOTATION_TYPE_METHOD);
+        generator.visitCode();
+        generator.push(annotation.getType());
+        generator.returnValue();
+        generator.endMethod();
     }
 
     private void generateGetters(final ClassVisitor classVisitor) {
@@ -544,19 +398,12 @@ public class AnnotationProxyGenerator {
             final Type type = field.getValue();
 
             final MethodDescriptor method = MethodDescriptor.forMethod(name, type);
-            final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                    ACC_PUBLIC,
-                    method.getName(),
-                    method.getDescriptor(),
-                    null,
-                    null);
-            methodVisitor.visitCode();
-            methodVisitor.visitVarInsn(ALOAD, 0);
-            methodVisitor.visitFieldInsn(GETFIELD, proxyTypeName, name, type.getDescriptor());
-
-            methodVisitor.visitInsn(type.getOpcode(IRETURN));
-            methodVisitor.visitMaxs(0, 0);
-            methodVisitor.visitEnd();
+            final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, method);
+            generator.visitCode();
+            generator.loadThis();
+            generator.getField(proxyType, name, type);
+            generator.returnValue();
+            generator.endMethod();
         }
     }
 
