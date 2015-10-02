@@ -36,6 +36,10 @@ public class GeneratorAdapter extends org.objectweb.asm.commons.GeneratorAdapter
         this(methodVisitor, access, method.getName(), method.getDescriptor());
     }
 
+    public GeneratorAdapter(final ClassVisitor classVisitor, final int access, final MethodDescriptor method) {
+        this(visitMethod(classVisitor, access, method, null, null), access, method);
+    }
+
     public GeneratorAdapter(final ClassVisitor classVisitor, final int access, final MethodDescriptor method,
             final String signature, final Type[] exceptions) {
         this(visitMethod(classVisitor, access, method, signature, exceptions), access, method);
