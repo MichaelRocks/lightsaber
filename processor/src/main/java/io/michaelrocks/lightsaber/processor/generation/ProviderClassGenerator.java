@@ -136,8 +136,7 @@ public class ProviderClassGenerator {
         }
 
         final MethodDescriptor staticInitializer = MethodDescriptor.forStaticInitializer();
-        final GeneratorAdapter generator =
-                new GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer, null, null);
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer);
         generator.visitCode();
 
         for (int i = 0, count = argumentTypes.size(); i < count; ++i) {

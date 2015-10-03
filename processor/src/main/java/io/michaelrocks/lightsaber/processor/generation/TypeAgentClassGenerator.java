@@ -125,8 +125,7 @@ public class TypeAgentClassGenerator {
 
     private void generateStaticInitializer(final ClassVisitor classVisitor) {
         final MethodDescriptor staticInitializer = MethodDescriptor.forStaticInitializer();
-        final GeneratorAdapter generator =
-                new GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer, null, null);
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer);
         generator.visitCode();
 
         initializeFieldKeys(generator);
