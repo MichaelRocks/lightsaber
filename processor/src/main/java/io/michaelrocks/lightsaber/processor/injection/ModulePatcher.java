@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.injection;
 
-import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.internal.ConfigurableModule;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
@@ -37,11 +36,23 @@ import org.objectweb.asm.Type;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 
 public class ModulePatcher extends BaseInjectionClassVisitor {
+    private static final Type LIGHTSABER_INJECTOR_TYPE = Type.getType(LightsaberInjector.class);
+
     private static final MethodDescriptor KEY_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
+    private static final MethodDescriptor CONFIGURE_INJECTOR_METHOD =
+            MethodDescriptor.forMethod("configureInjector", Type.VOID_TYPE, LIGHTSABER_INJECTOR_TYPE);
+    private static final MethodDescriptor REGISTER_PROVIDER_METHOD =
+            MethodDescriptor.forMethod("registerProvider", Type.VOID_TYPE, Types.KEY_TYPE, Types.PROVIDER_TYPE);
+
+    private static final MethodDescriptor FIELD_PROVIDER_CONSTRUCTOR =
+            MethodDescriptor.forConstructor(Types.OBJECT_TYPE);
+    private static final MethodDescriptor DELEGATE_PROVIDER_CONSTRUCTOR =
+            MethodDescriptor.forConstructor(Types.PROVIDER_TYPE);
 
     private final AnnotationCreator annotationCreator;
     private final ModuleDescriptor module;
@@ -108,34 +119,27 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
 
     private void generateConfigureInjectorMethod() {
         System.out.println("Generating configureInjector");
-        final MethodDescriptor method =
-                MethodDescriptor.forMethod("configureInjector", Type.VOID_TYPE, Type.getType(LightsaberInjector.class));
-        final GeneratorAdapter methodVisitor = new GeneratorAdapter(this, ACC_PUBLIC, method, null, null);
-        methodVisitor.visitCode();
+        final GeneratorAdapter generator = new GeneratorAdapter(this, ACC_PUBLIC, CONFIGURE_INJECTOR_METHOD);
+        generator.visitCode();
         for (final ProviderDescriptor provider : module.getProviders()) {
-            generateRegisterProviderInvocation(methodVisitor, provider);
+            generateRegisterProviderInvocation(generator, provider);
         }
-        methodVisitor.visitInsn(RETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        generator.returnValue();
+        generator.endMethod();
     }
 
-    private void generateRegisterProviderInvocation(final GeneratorAdapter methodVisitor,
+    private void generateRegisterProviderInvocation(final GeneratorAdapter generator,
             final ProviderDescriptor provider) {
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        generateKeyConstruction(methodVisitor, provider);
+        generator.loadArg(0);
+        generateKeyConstruction(generator, provider);
 
         if (provider.getProviderField() != null) {
-            generateProviderConstructionForField(methodVisitor, provider);
+            generateProviderConstructionForField(generator, provider);
         } else {
-            generateProviderConstructionForMethod(methodVisitor, provider);
+            generateProviderConstructionForMethod(generator, provider);
         }
 
-        methodVisitor.visitMethodInsn(INVOKEVIRTUAL,
-                Type.getInternalName(LightsaberInjector.class),
-                "registerProvider",
-                Type.getMethodDescriptor(Type.VOID_TYPE, Types.KEY_TYPE, Types.PROVIDER_TYPE),
-                false);
+        generator.invokeVirtual(LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD);
     }
 
     private void generateKeyConstruction(final GeneratorAdapter generator, final ProviderDescriptor provider) {
@@ -152,63 +156,44 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
         generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR);
     }
 
-    private void generateProviderConstructionForField(final MethodVisitor methodVisitor,
+    private void generateProviderConstructionForField(final GeneratorAdapter generator,
             final ProviderDescriptor provider) {
         System.out.println("Generating invocation for field " + provider.getProviderField().getName());
 
-        methodVisitor.visitTypeInsn(NEW, provider.getProviderType().getInternalName());
-        methodVisitor.visitInsn(DUP);
-        methodVisitor.visitVarInsn(ALOAD, 0);
+        generator.newInstance(provider.getProviderType());
+        generator.dup();
+        generator.loadThis();
         final QualifiedFieldDescriptor fieldDescriptor = provider.getProviderField();
-        methodVisitor.visitFieldInsn(
-                GETFIELD,
-                module.getModuleType().getInternalName(),
-                fieldDescriptor.getName(),
-                fieldDescriptor.getDescriptor());
-        final MethodDescriptor constructorDescriptor = MethodDescriptor.forConstructor(Type.getType(Object.class));
-        methodVisitor.visitMethodInsn(INVOKESPECIAL,
-                provider.getProviderType().getInternalName(),
-                constructorDescriptor.getName(),
-                constructorDescriptor.getDescriptor(),
-                false);
+        generator.getField(module.getModuleType(), fieldDescriptor.getField());
+        generator.invokeConstructor(provider.getProviderType(), FIELD_PROVIDER_CONSTRUCTOR);
     }
 
-    private void generateProviderConstructionForMethod(final MethodVisitor methodVisitor,
+    private void generateProviderConstructionForMethod(final GeneratorAdapter generator,
             final ProviderDescriptor provider) {
         System.out.println("Generating invocation for method " + provider.getProviderMethod().getName());
 
         if (provider.getDelegatorType() != null) {
-            generateDelegatorConstruction(methodVisitor, provider);
+            generateDelegatorConstruction(generator, provider);
         } else {
-            generateProviderConstruction(methodVisitor, provider);
+            generateProviderConstruction(generator, provider);
         }
     }
 
-    private void generateDelegatorConstruction(final MethodVisitor methodVisitor, final ProviderDescriptor provider) {
+    private void generateDelegatorConstruction(final GeneratorAdapter generator, final ProviderDescriptor provider) {
         final Type delegatorType = provider.getDelegatorType();
-        methodVisitor.visitTypeInsn(NEW, delegatorType.getInternalName());
-        methodVisitor.visitInsn(DUP);
-        generateProviderConstruction(methodVisitor, provider);
-        final MethodDescriptor constructorDescriptor =
-                MethodDescriptor.forConstructor(Types.PROVIDER_TYPE);
-        methodVisitor.visitMethodInsn(INVOKESPECIAL,
-                delegatorType.getInternalName(),
-                constructorDescriptor.getName(),
-                constructorDescriptor.getDescriptor(),
-                false);
+        generator.newInstance(delegatorType);
+        generator.dup();
+        generateProviderConstruction(generator, provider);
+        generator.invokeConstructor(delegatorType, DELEGATE_PROVIDER_CONSTRUCTOR);
     }
 
-    private void generateProviderConstruction(final MethodVisitor methodVisitor, final ProviderDescriptor provider) {
-        methodVisitor.visitTypeInsn(NEW, provider.getProviderType().getInternalName());
-        methodVisitor.visitInsn(DUP);
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        final MethodDescriptor constructorDescriptor =
-                MethodDescriptor.forConstructor(provider.getModuleType(), Type.getType(Injector.class));
-        methodVisitor.visitMethodInsn(INVOKESPECIAL,
-                provider.getProviderType().getInternalName(),
-                constructorDescriptor.getName(),
-                constructorDescriptor.getDescriptor(),
-                false);
+    private void generateProviderConstruction(final GeneratorAdapter generator, final ProviderDescriptor provider) {
+        generator.newInstance(provider.getProviderType());
+        generator.dup();
+        generator.loadThis();
+        generator.loadArg(0);
+        final MethodDescriptor constructor =
+                MethodDescriptor.forConstructor(provider.getModuleType(), Types.INJECTOR_TYPE);
+        generator.invokeConstructor(provider.getProviderType(), constructor);
     }
 }
