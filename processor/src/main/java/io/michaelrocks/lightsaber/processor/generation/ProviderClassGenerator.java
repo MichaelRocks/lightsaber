@@ -20,7 +20,6 @@ import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
-import io.michaelrocks.lightsaber.processor.commons.Boxer;
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
@@ -189,7 +188,7 @@ public class ProviderClassGenerator {
             generateProviderMethodInvocation(generator);
         }
 
-        Boxer.box(generator, provider.getProvidableType());
+        generator.valueOf(provider.getProvidableType());
 
         generator.returnValue();
         generator.endMethod();

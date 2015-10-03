@@ -18,7 +18,6 @@ package io.michaelrocks.lightsaber.processor.generation;
 
 import io.michaelrocks.lightsaber.Lazy;
 import io.michaelrocks.lightsaber.internal.LazyAdapter;
-import io.michaelrocks.lightsaber.processor.commons.Boxer;
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
@@ -44,17 +43,7 @@ class GenerationHelper {
                 generator.invokeConstructor(LAZY_ADAPTER_TYPE, LAZY_ADAPTER_CONSTRUCTOR);
             }
         } else {
-            GenerationHelper.generateTypeCast(generator, type);
-        }
-    }
-
-    private static void generateTypeCast(final GeneratorAdapter generator, final TypeSignature type) {
-        if (!type.isParameterized()) {
-            final Type boxedType = Types.box(type.getRawType());
-            generator.checkCast(boxedType);
-            if (!type.getRawType().equals(boxedType)) {
-                Boxer.unbox(generator, boxedType);
-            }
+            generator.unbox(type.getRawType());
         }
     }
 }

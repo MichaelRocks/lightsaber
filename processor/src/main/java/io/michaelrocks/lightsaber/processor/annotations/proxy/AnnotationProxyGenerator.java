@@ -18,7 +18,6 @@ package io.michaelrocks.lightsaber.processor.annotations.proxy;
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor;
-import io.michaelrocks.lightsaber.processor.commons.Boxer;
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
@@ -257,7 +256,7 @@ public class AnnotationProxyGenerator {
         generator.getField(proxyType, CACHED_HASH_CODE_FIELD);
         generator.dup();
         generator.ifNull(cacheHashCodeIsNullLabel);
-        Boxer.unbox(generator, Types.BOXED_INT_TYPE);
+        generator.unbox(Type.INT_TYPE);
         generator.returnValue();
 
         generator.visitLabel(cacheHashCodeIsNullLabel);
@@ -270,7 +269,7 @@ public class AnnotationProxyGenerator {
         }
 
         generator.dup();
-        Boxer.box(generator, Type.INT_TYPE);
+        generator.valueOf(Type.INT_TYPE);
         generator.loadThis();
         generator.swap(Type.INT_TYPE, proxyType);
         generator.putField(proxyType, CACHED_HASH_CODE_FIELD);
@@ -301,10 +300,8 @@ public class AnnotationProxyGenerator {
                     MethodDescriptor.forMethod(HASH_CODE_METHOD.getName(), Type.INT_TYPE, argumentType);
             generator.invokeStatic(ARRAYS_TYPE, hashCodeMethod);
         } else {
-            if (Types.isPrimitive(fieldType)) {
-                // If the field has primitive type then box it.
-                Boxer.box(generator, fieldType);
-            }
+            // If the field has primitive type then box it.
+            generator.valueOf(fieldType);
             // Call hashCode() on the instance on the stack.
             generator.invokeVirtual(Types.OBJECT_TYPE, HASH_CODE_METHOD);
         }
