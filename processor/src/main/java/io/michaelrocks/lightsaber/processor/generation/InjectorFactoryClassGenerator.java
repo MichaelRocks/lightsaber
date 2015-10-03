@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber.processor.generation;
 import io.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import io.michaelrocks.lightsaber.internal.TypeAgent;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.JavaVersionChanger;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
@@ -46,10 +47,12 @@ import java.util.Collection;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.objectweb.asm.Opcodes.ASM5;
+import static org.objectweb.asm.Opcodes.V1_6;
 
 public class InjectorFactoryClassGenerator {
-    private static final String REGISTER_TYPE_AGENT_METHOD_NAME = "registerTypeAgent";
+    private static final MethodDescriptor REGISTER_TYPE_AGENT_METHOD =
+            MethodDescriptor.forMethod("registerTypeAgent", Type.VOID_TYPE, Type.getType(TypeAgent.class));
 
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
@@ -119,68 +122,46 @@ public class InjectorFactoryClassGenerator {
                 final String[] exceptions) {
             final MethodVisitor methodVisitor = super.visitMethod(access, name, desc, signature, exceptions);
             if ("populateTypeAgents".equals(name)) {
-                patchPopulateTypeAgentsMethod(methodVisitor);
+                patchPopulateTypeAgentsMethod(new GeneratorAdapter(methodVisitor, access, name, desc));
                 return null;
             } else if ("getPackageModules".equals(name)) {
-                patchGetPackageModulesMethod(methodVisitor);
+                patchGetPackageModulesMethod(new GeneratorAdapter(methodVisitor, access, name, desc));
                 return null;
             } else {
                 return methodVisitor;
             }
         }
 
-        private void patchPopulateTypeAgentsMethod(final MethodVisitor methodVisitor) {
-            methodVisitor.visitCode();
-            final MethodDescriptor registerTypeAgentMethodDescriptor =
-                    MethodDescriptor.forMethod(REGISTER_TYPE_AGENT_METHOD_NAME,
-                            Type.VOID_TYPE, Type.getType(TypeAgent.class));
+        private void patchPopulateTypeAgentsMethod(final GeneratorAdapter generator) {
+            generator.visitCode();
             for (final InjectorDescriptor injector : processorContext.getInjectors()) {
-                methodVisitor.visitTypeInsn(NEW, injector.getInjectorType().getInternalName());
-                methodVisitor.visitInsn(DUP);
-                methodVisitor.visitMethodInsn(
-                        INVOKESPECIAL,
-                        injector.getInjectorType().getInternalName(),
-                        MethodDescriptor.forDefaultConstructor().getName(),
-                        MethodDescriptor.forDefaultConstructor().getDescriptor(),
-                        false);
-                methodVisitor.visitMethodInsn(
-                        INVOKESTATIC,
-                        Type.getInternalName(Lightsaber$$InjectorFactory.class),
-                        registerTypeAgentMethodDescriptor.getName(),
-                        registerTypeAgentMethodDescriptor.getDescriptor(),
-                        false);
+                generator.newInstance(injector.getInjectorType());
+                generator.dup();
+                generator.invokeConstructor(injector.getInjectorType(), MethodDescriptor.forDefaultConstructor());
+                generator.invokeStatic(Type.getType(Lightsaber$$InjectorFactory.class), REGISTER_TYPE_AGENT_METHOD);
             }
-
-            methodVisitor.visitInsn(RETURN);
-            methodVisitor.visitMaxs(0, 0);
-            methodVisitor.visitEnd();
+            generator.returnValue();
+            generator.endMethod();
         }
 
-        private void patchGetPackageModulesMethod(final MethodVisitor methodVisitor) {
-            methodVisitor.visitCode();
+        private void patchGetPackageModulesMethod(final GeneratorAdapter generator) {
+            generator.visitCode();
             final Collection<ModuleDescriptor> packageModules = processorContext.getPackageModules();
-            methodVisitor.visitIntInsn(BIPUSH, packageModules.size());
-            methodVisitor.visitTypeInsn(ANEWARRAY, Types.OBJECT_TYPE.getInternalName());
+            generator.newArray(Types.OBJECT_TYPE, packageModules.size());
 
             int index = 0;
             for (final ModuleDescriptor packageModule : packageModules) {
-                methodVisitor.visitInsn(DUP);
-                methodVisitor.visitIntInsn(BIPUSH, index);
-                methodVisitor.visitTypeInsn(NEW, packageModule.getModuleType().getInternalName());
-                methodVisitor.visitInsn(DUP);
-                methodVisitor.visitMethodInsn(
-                        INVOKESPECIAL,
-                        packageModule.getModuleType().getInternalName(),
-                        MethodDescriptor.forDefaultConstructor().getName(),
-                        MethodDescriptor.forDefaultConstructor().getDescriptor(),
-                        false);
-                methodVisitor.visitInsn(AASTORE);
+                generator.dup();
+                generator.push(index);
+                generator.newInstance(packageModule.getModuleType());
+                generator.dup();
+                generator.invokeConstructor(packageModule.getModuleType(), MethodDescriptor.forDefaultConstructor());
+                generator.arrayStore(packageModule.getModuleType());
                 index += 1;
             }
 
-            methodVisitor.visitInsn(ARETURN);
-            methodVisitor.visitMaxs(0, 0);
-            methodVisitor.visitEnd();
+            generator.returnValue();
+            generator.endMethod();
         }
     }
 }
