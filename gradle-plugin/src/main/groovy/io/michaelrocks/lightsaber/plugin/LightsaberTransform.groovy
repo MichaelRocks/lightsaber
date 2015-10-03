@@ -21,7 +21,7 @@ import com.google.common.collect.Iterables
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
 
-public class LightsaberTransform implements AsInputTransform {
+public class LightsaberTransform extends Transform implements AsInputTransform {
     private final boolean verbose
 
     LightsaberTransform(final boolean verbose) {
@@ -29,7 +29,7 @@ public class LightsaberTransform implements AsInputTransform {
     }
 
     @Override
-    void transform(final Map<TransformInput, TransformOutput> inputs,
+    void transform(final Context context, final Map<TransformInput, TransformOutput> inputs,
             final Collection<TransformInput> referencedInputs,
             final boolean isIncremental) throws IOException, TransformException, InterruptedException {
         final def parameters = new LightsaberParameters()
@@ -81,11 +81,6 @@ public class LightsaberTransform implements AsInputTransform {
                 ScopedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
                 ScopedContent.Scope.EXTERNAL_LIBRARIES,
                 ScopedContent.Scope.PROVIDED_ONLY)
-    }
-
-    @Override
-    Transform.Type getTransformType() {
-        return Transform.Type.AS_INPUT
     }
 
     @Override
