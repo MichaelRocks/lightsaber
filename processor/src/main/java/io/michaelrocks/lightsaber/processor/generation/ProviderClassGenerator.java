@@ -33,8 +33,6 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import javax.inject.Provider;
@@ -46,15 +44,17 @@ public class ProviderClassGenerator {
     private static final String KEY_FIELD_NAME_PREFIX = "key";
     private static final String MODULE_FIELD_NAME = "module";
     private static final String INJECTOR_FIELD_NAME = "injector";
-    private static final String GET_METHOD_NAME = "get";
-    private static final String GET_PROVIDER_METHOD_NAME = "getProvider";
-    private static final String INJECT_MEMBERS_METHOD_NAME = "injectMembers";
-    private static final String COPY_WITH_INJECTOR_METHOD_NAME = "copyWithInjector";
 
     private static final Type NULL_POINTER_EXCEPTION_TYPE = Type.getType(NullPointerException.class);
 
     private static final MethodDescriptor KEY_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
+    private static final MethodDescriptor GET_METHOD =
+            MethodDescriptor.forMethod("get", Types.OBJECT_TYPE);
+    private static final MethodDescriptor GET_PROVIDER_METHOD =
+            MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE);
+    private static final MethodDescriptor INJECT_MEMBERS_METHOD =
+            MethodDescriptor.forMethod("injectMembers", Type.VOID_TYPE, Types.INJECTOR_TYPE, Types.OBJECT_TYPE);
 
     private final ProcessorContext processorContext;
     private final AnnotationCreator annotationCreator;
@@ -83,7 +83,6 @@ public class ProviderClassGenerator {
         generateStaticInitializer(classVisitor);
         generateConstructor(classVisitor);
         generateGetMethod(classVisitor);
-        generateCopyWithInjector(classVisitor);
 
         classVisitor.visitEnd();
         return classWriter.toByteArray();
@@ -165,48 +164,22 @@ public class ProviderClassGenerator {
     }
 
     private void generateConstructor(final ClassVisitor classVisitor) {
-        final MethodDescriptor providerConstructor = getProviderConstructor();
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                providerConstructor.getName(),
-                providerConstructor.getDescriptor(),
-                null,
-                null);
-        methodVisitor.visitCode();
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        final MethodDescriptor objectConstructor = MethodDescriptor.forConstructor();
-        methodVisitor.visitMethodInsn(
-                INVOKESPECIAL,
-                Type.getInternalName(Object.class),
-                objectConstructor.getName(),
-                objectConstructor.getDescriptor(),
-                false);
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitFieldInsn(
-                PUTFIELD,
-                provider.getProviderType().getInternalName(),
-                MODULE_FIELD_NAME,
-                provider.getModuleType().getDescriptor());
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitVarInsn(ALOAD, 2);
-        methodVisitor.visitFieldInsn(
-                PUTFIELD,
-                provider.getProviderType().getInternalName(),
-                INJECTOR_FIELD_NAME,
-                Type.getDescriptor(Injector.class));
-        methodVisitor.visitInsn(RETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, getProviderConstructor());
+        generator.visitCode();
+        generator.loadThis();
+        generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forConstructor());
+        generator.loadThis();
+        generator.loadArg(0);
+        generator.putField(provider.getProviderType(), MODULE_FIELD_NAME, provider.getModuleType());
+        generator.loadThis();
+        generator.loadArg(1);
+        generator.putField(provider.getProviderType(), INJECTOR_FIELD_NAME, Types.INJECTOR_TYPE);
+        generator.returnValue();
+        generator.endMethod();
     }
 
     private void generateGetMethod(final ClassVisitor classVisitor) {
-        final GeneratorAdapter generator = new GeneratorAdapter(
-                classVisitor,
-                ACC_PUBLIC,
-                MethodDescriptor.forMethod(GET_METHOD_NAME, Type.getType(Object.class)),
-                null,
-                null);
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, GET_METHOD);
         generator.visitCode();
 
         if (provider.getProviderMethod().isConstructor()) {
@@ -218,136 +191,61 @@ public class ProviderClassGenerator {
 
         Boxer.box(generator, provider.getProvidableType());
 
-        generator.visitInsn(ARETURN);
-        generator.visitMaxs(0, 0);
-        generator.visitEnd();
+        generator.returnValue();
+        generator.endMethod();
     }
 
-    private void generateConstructorInvocation(final MethodVisitor methodVisitor) {
-        methodVisitor.visitTypeInsn(NEW, provider.getProvidableType().getInternalName());
-        methodVisitor.visitInsn(DUP);
-        generateProvideMethodArguments(methodVisitor);
-        methodVisitor.visitMethodInsn(
-                INVOKESPECIAL,
-                provider.getProvidableType().getInternalName(),
-                provider.getProviderMethod().getName(),
-                provider.getProviderMethod().getDescriptor(),
-                false);
+    private void generateConstructorInvocation(final GeneratorAdapter generator) {
+        generator.newInstance(provider.getProvidableType());
+        generator.dup();
+        generateProvideMethodArguments(generator);
+        generator.invokeConstructor(provider.getProvidableType(), provider.getProviderMethod().getMethod());
     }
 
     private void generateProviderMethodInvocation(final GeneratorAdapter generator) {
-        generator.visitVarInsn(ALOAD, 0);
-        generator.visitFieldInsn(
-                GETFIELD,
-                provider.getProviderType().getInternalName(),
-                MODULE_FIELD_NAME,
-                provider.getModuleType().getDescriptor());
+        generator.loadThis();
+        generator.getField(provider.getProviderType(), MODULE_FIELD_NAME, provider.getModuleType());
         generateProvideMethodArguments(generator);
-        generator.visitMethodInsn(
-                INVOKEVIRTUAL,
-                provider.getModuleType().getInternalName(),
-                provider.getProviderMethod().getName(),
-                provider.getProviderMethod().getDescriptor(),
-                false);
+        generator.invokeVirtual(provider.getModuleType(), provider.getProviderMethod().getMethod());
 
         if (Types.isPrimitive(provider.getProvidableType())) {
             return;
         }
 
-        final Label resultIsNullLabel = new Label();
+        final Label resultIsNullLabel = generator.newLabel();
         generator.dup();
-        generator.visitJumpInsn(IFNONNULL, resultIsNullLabel);
+        generator.ifNonNull(resultIsNullLabel);
         generator.throwException(NULL_POINTER_EXCEPTION_TYPE, "Provider method returned null");
 
         generator.visitLabel(resultIsNullLabel);
-        generator.visitFrame(Opcodes.F_NEW,
-                1, new Object[] { provider.getProviderType().getInternalName() },
-                1, new Object[] { provider.getProviderMethod().getType().getReturnType().getInternalName() });
     }
 
-    private void generateProvideMethodArguments(final MethodVisitor methodVisitor) {
+    private void generateProvideMethodArguments(final GeneratorAdapter generator) {
         final List<TypeSignature> argumentTypes = provider.getProviderMethod().getArgumentTypes();
         for (int i = 0, count = argumentTypes.size(); i < count; i++) {
             final TypeSignature argumentType = argumentTypes.get(i);
-            generateProviderMethodArgument(methodVisitor, argumentType, i);
+            generateProviderMethodArgument(generator, argumentType, i);
         }
     }
 
-    private void generateProviderMethodArgument(final MethodVisitor methodVisitor, final TypeSignature argumentType,
+    private void generateProviderMethodArgument(final GeneratorAdapter generator, final TypeSignature argumentType,
             final int argumentIndex) {
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitFieldInsn(
-                GETFIELD,
-                provider.getProviderType().getInternalName(),
-                INJECTOR_FIELD_NAME,
-                Type.getDescriptor(Injector.class));
-        methodVisitor.visitFieldInsn(
-                GETSTATIC,
-                provider.getProviderType().getInternalName(),
-                KEY_FIELD_NAME_PREFIX + argumentIndex,
-                Types.KEY_TYPE.getDescriptor());
-        methodVisitor.visitMethodInsn(
-                INVOKEINTERFACE,
-                Type.getInternalName(Injector.class),
-                GET_PROVIDER_METHOD_NAME,
-                Type.getMethodDescriptor(Type.getType(Provider.class), Types.KEY_TYPE),
-                true);
+        generator.loadThis();
+        generator.getField(provider.getProviderType(), INJECTOR_FIELD_NAME, Types.INJECTOR_TYPE);
+        generator.getStatic(provider.getProviderType(), KEY_FIELD_NAME_PREFIX + argumentIndex, Types.KEY_TYPE);
+        generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD);
         if (argumentType.getParameterType() == null) {
-            methodVisitor.visitMethodInsn(
-                    INVOKEINTERFACE,
-                    Type.getInternalName(Provider.class),
-                    GET_METHOD_NAME,
-                    Type.getMethodDescriptor(Type.getType(Object.class)),
-                    true);
+            generator.invokeInterface(Types.PROVIDER_TYPE, GET_METHOD);
         }
-        GenerationHelper.convertDependencyToTargetType(methodVisitor, argumentType);
+        GenerationHelper.convertDependencyToTargetType(generator, argumentType);
     }
 
-    private void generateInjectMembersInvocation(final MethodVisitor methodVisitor) {
-        methodVisitor.visitInsn(DUP);
-        methodVisitor.visitVarInsn(ASTORE, 1);
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitFieldInsn(
-                GETFIELD,
-                provider.getProviderType().getInternalName(),
-                INJECTOR_FIELD_NAME,
-                Type.getDescriptor(Injector.class));
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitMethodInsn(
-                INVOKESTATIC,
-                processorContext.getInjectorFactoryType().getInternalName(),
-                INJECT_MEMBERS_METHOD_NAME,
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
-                false);
-    }
-
-    private void generateCopyWithInjector(final ClassVisitor classVisitor) {
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                COPY_WITH_INJECTOR_METHOD_NAME,
-                Type.getMethodDescriptor(Types.PROVIDER_TYPE, Type.getType(Injector.class)),
-                null,
-                null);
-        methodVisitor.visitCode();
-        methodVisitor.visitTypeInsn(NEW, provider.getProviderType().getInternalName());
-        methodVisitor.visitInsn(DUP);
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitFieldInsn(
-                GETFIELD,
-                provider.getProviderType().getInternalName(),
-                MODULE_FIELD_NAME,
-                provider.getModuleType().getDescriptor());
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        final MethodDescriptor providerConstructor = getProviderConstructor();
-        methodVisitor.visitMethodInsn(
-                INVOKESPECIAL,
-                provider.getProviderType().getInternalName(),
-                providerConstructor.getName(),
-                providerConstructor.getDescriptor(),
-                false);
-        methodVisitor.visitInsn(ARETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+    private void generateInjectMembersInvocation(final GeneratorAdapter generator) {
+        generator.dup();
+        generator.loadThis();
+        generator.getField(provider.getProviderType(), INJECTOR_FIELD_NAME, Types.INJECTOR_TYPE);
+        generator.swap();
+        generator.invokeStatic(processorContext.getInjectorFactoryType(), INJECT_MEMBERS_METHOD);
     }
 
     private MethodDescriptor getProviderConstructor() {

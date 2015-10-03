@@ -34,7 +34,6 @@ import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
-import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 
 import java.util.Collection;
@@ -44,18 +43,21 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class TypeAgentClassGenerator {
     private static final String KEY_FIELD_NAME_PREFIX = "key";
-    private static final String GET_TYPE_METHOD_NAME = "getType";
-    private static final String INJECT_FIELDS_METHOD_NAME = "injectFields";
-    private static final String INJECT_METHODS_METHOD_NAME = "injectMethods";
-    private static final String GET_INSTANCE_METHOD_NAME = "getInstance";
-    private static final String GET_PROVIDER_METHOD_NAME = "getProvider";
 
     private static final MethodDescriptor KEY_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
+    private static final MethodDescriptor GET_TYPE_METHOD =
+            MethodDescriptor.forMethod("getType", Type.getType(Class.class));
+    private static final MethodDescriptor INJECT_FIELDS_METHOD =
+            MethodDescriptor.forMethod("injectFields",
+                    Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class));
+    private static final MethodDescriptor INJECT_METHODS_METHOD =
+            MethodDescriptor.forMethod("injectMethods",
+                    Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class));
     private static final MethodDescriptor GET_INSTANCE_METHOD =
-            MethodDescriptor.forMethod(GET_INSTANCE_METHOD_NAME, Types.OBJECT_TYPE, Types.KEY_TYPE);
+            MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.KEY_TYPE);
     private static final MethodDescriptor GET_PROVIDER_METHOD =
-            MethodDescriptor.forMethod(GET_PROVIDER_METHOD_NAME, Types.PROVIDER_TYPE, Types.KEY_TYPE);
+            MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE);
 
     private final ProcessorContext processorContext;
     private final AnnotationCreator annotationCreator;
@@ -181,144 +183,92 @@ public class TypeAgentClassGenerator {
     }
 
     private void generateConstructor(final ClassVisitor classVisitor) {
-        final MethodDescriptor defaultConstructor = MethodDescriptor.forConstructor();
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                defaultConstructor.getName(),
-                defaultConstructor.getDescriptor(),
-                null,
-                null);
-        methodVisitor.visitCode();
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitMethodInsn(
-                INVOKESPECIAL,
-                Type.getInternalName(Object.class),
-                defaultConstructor.getName(),
-                defaultConstructor.getDescriptor(),
-                false);
-        methodVisitor.visitInsn(RETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        final GeneratorAdapter generator =
+                new GeneratorAdapter(classVisitor, ACC_PUBLIC, MethodDescriptor.forConstructor());
+        generator.visitCode();
+        generator.loadThis();
+        generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forConstructor());
+        generator.returnValue();
+        generator.endMethod();
     }
 
     private void generateGetTypeMethod(final ClassVisitor classVisitor) {
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                GET_TYPE_METHOD_NAME,
-                Type.getMethodDescriptor(Type.getType(Class.class)),
-                null,
-                null);
-        methodVisitor.visitCode();
-
-        methodVisitor.visitLdcInsn(injector.getInjectableTarget().getTargetType());
-
-        methodVisitor.visitInsn(ARETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, GET_TYPE_METHOD);
+        generator.visitCode();
+        generator.push(injector.getInjectableTarget().getTargetType());
+        generator.returnValue();
+        generator.endMethod();
     }
 
     private void generateInjectFieldsMethod(final ClassVisitor classVisitor) {
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                INJECT_FIELDS_METHOD_NAME,
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
-                null,
-                null);
-        methodVisitor.visitCode();
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, INJECT_FIELDS_METHOD);
+        generator.visitCode();
 
-        methodVisitor.visitVarInsn(ALOAD, 2);
-        methodVisitor.visitTypeInsn(CHECKCAST, injector.getInjectableTarget().getTargetType().getInternalName());
-        methodVisitor.visitVarInsn(ASTORE, 3);
+        if (!injector.getInjectableTarget().getInjectableFields().isEmpty()) {
+            generator.loadArg(1);
+            generator.checkCast(injector.getInjectableTarget().getTargetType());
+            final int injectableTargetLocal = generator.newLocal(injector.getInjectableTarget().getTargetType());
+            generator.storeLocal(injectableTargetLocal);
 
-        int fieldIndex = 0;
-        for (final QualifiedFieldDescriptor injectableField : injector.getInjectableTarget().getInjectableFields()) {
-            generateFieldInitializer(methodVisitor, injectableField, fieldIndex);
-            fieldIndex += 1;
+            int fieldIndex = 0;
+            for (final QualifiedFieldDescriptor injectableField : injector.getInjectableTarget()
+                    .getInjectableFields()) {
+                generateFieldInitializer(generator, injectableTargetLocal, injectableField, fieldIndex);
+                fieldIndex += 1;
+            }
         }
 
-        methodVisitor.visitInsn(RETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        generator.returnValue();
+        generator.endMethod();
     }
 
-    private void generateFieldInitializer(final MethodVisitor methodVisitor,
+    private void generateFieldInitializer(final GeneratorAdapter generator, final int injectableTargetLocal,
             final QualifiedFieldDescriptor qualifiedField, final int fieldIndex) {
-        methodVisitor.visitVarInsn(ALOAD, 3);
-        methodVisitor.visitVarInsn(ALOAD, 1);
+        generator.loadLocal(injectableTargetLocal);
+        generator.loadArg(0);
 
-        methodVisitor.visitFieldInsn(
-                GETSTATIC,
-                injector.getInjectorType().getInternalName(),
-                KEY_FIELD_NAME_PREFIX + fieldIndex,
-                Types.KEY_TYPE.getDescriptor());
+        generator.getStatic(injector.getInjectorType(), KEY_FIELD_NAME_PREFIX + fieldIndex, Types.KEY_TYPE);
 
         final MethodDescriptor method = getInjectorMethodForType(qualifiedField.getSignature());
-        methodVisitor.visitMethodInsn(
-                INVOKEINTERFACE,
-                Type.getInternalName(Injector.class),
-                method.getName(),
-                method.getDescriptor(),
-                true);
-        GenerationHelper.convertDependencyToTargetType(methodVisitor, qualifiedField.getSignature());
-        methodVisitor.visitFieldInsn(
-                PUTFIELD,
-                injector.getInjectableTarget().getTargetType().getInternalName(),
-                qualifiedField.getName(),
-                qualifiedField.getRawType().getDescriptor());
+        generator.invokeInterface(Types.INJECTOR_TYPE, method);
+        GenerationHelper.convertDependencyToTargetType(generator, qualifiedField.getSignature());
+        generator.putField(injector.getInjectableTarget().getTargetType(), qualifiedField.getField());
     }
 
     private void generateInjectMethodsMethod(final ClassVisitor classVisitor) {
-        final MethodVisitor methodVisitor = classVisitor.visitMethod(
-                ACC_PUBLIC,
-                INJECT_METHODS_METHOD_NAME,
-                Type.getMethodDescriptor(Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class)),
-                null,
-                null);
-        methodVisitor.visitCode();
+        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, INJECT_METHODS_METHOD);
+        generator.visitCode();
 
-        methodVisitor.visitVarInsn(ALOAD, 2);
-        methodVisitor.visitTypeInsn(CHECKCAST, injector.getInjectableTarget().getTargetType().getInternalName());
-        methodVisitor.visitVarInsn(ASTORE, 3);
+        generator.loadArg(1);
+        generator.checkCast(injector.getInjectableTarget().getTargetType());
+        final int injectableTargetLocal = generator.newLocal(injector.getInjectableTarget().getTargetType());
+        generator.storeLocal(injectableTargetLocal);
 
         int methodIndex = 0;
         for (final QualifiedMethodDescriptor injectableMethod : injector.getInjectableTarget().getInjectableMethods()) {
-            generateMethodInvocation(methodVisitor, injectableMethod, methodIndex);
+            generateMethodInvocation(generator, injectableTargetLocal, injectableMethod, methodIndex);
             methodIndex += 1;
         }
 
-        methodVisitor.visitInsn(RETURN);
-        methodVisitor.visitMaxs(0, 0);
-        methodVisitor.visitEnd();
+        generator.returnValue();
+        generator.endMethod();
     }
 
-    private void generateMethodInvocation(final MethodVisitor methodVisitor,
+    private void generateMethodInvocation(final GeneratorAdapter generator, final int injectableTargetLocal,
             final QualifiedMethodDescriptor qualifiedMethod, final int methodIndex) {
-        methodVisitor.visitVarInsn(ALOAD, 3);
+        generator.loadLocal(injectableTargetLocal);
 
         final List<TypeSignature> argumentTypes = qualifiedMethod.getArgumentTypes();
         for (int i = 0, count = argumentTypes.size(); i < count; i++) {
             final TypeSignature argumentType = argumentTypes.get(i);
-            methodVisitor.visitVarInsn(ALOAD, 1);
-            methodVisitor.visitFieldInsn(
-                    GETSTATIC,
-                    injector.getInjectorType().getInternalName(),
-                    KEY_FIELD_NAME_PREFIX + methodIndex + '_' + i,
-                    Types.KEY_TYPE.getDescriptor());
+            generator.loadArg(0);
+            generator.getStatic(
+                    injector.getInjectorType(), KEY_FIELD_NAME_PREFIX + methodIndex + '_' + i, Types.KEY_TYPE);
             final MethodDescriptor method = getInjectorMethodForType(argumentType);
-            methodVisitor.visitMethodInsn(
-                    INVOKEINTERFACE,
-                    Type.getInternalName(Injector.class),
-                    method.getName(),
-                    method.getDescriptor(),
-                    true);
-            GenerationHelper.convertDependencyToTargetType(methodVisitor, argumentType);
+            generator.invokeInterface(Types.INJECTOR_TYPE, method);
+            GenerationHelper.convertDependencyToTargetType(generator, argumentType);
         }
-        methodVisitor.visitMethodInsn(
-                INVOKEVIRTUAL,
-                injector.getInjectableTarget().getTargetType().getInternalName(),
-                qualifiedMethod.getName(),
-                qualifiedMethod.getDescriptor(),
-                false);
+        generator.invokeVirtual(injector.getInjectableTarget().getTargetType(), qualifiedMethod.getMethod());
     }
 
     private static Type getDependencyTypeForType(final TypeSignature type) {
