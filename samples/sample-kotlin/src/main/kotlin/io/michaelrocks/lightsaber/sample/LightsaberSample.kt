@@ -42,7 +42,7 @@ public class LightsaberSample {
     private lateinit var darthVader: DarthVader
 
     @Inject
-    private lateinit val planet: Planet
+    private lateinit var planet: Planet
 
     private fun run() {
         val injector = Lightsaber.createInjector(LightsaberModule())
