@@ -39,7 +39,7 @@ public class MainActivity : Activity() {
     private lateinit var darthVader: DarthVader
 
     @Inject
-    private lateinit val planet: Planet
+    private lateinit var planet: Planet
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
