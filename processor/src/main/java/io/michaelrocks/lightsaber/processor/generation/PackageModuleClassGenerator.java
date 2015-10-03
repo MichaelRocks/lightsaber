@@ -19,15 +19,15 @@ package io.michaelrocks.lightsaber.processor.generation;
 import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
+import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.injection.ModulePatcher;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.commons.GeneratorAdapter;
-import org.objectweb.asm.commons.Method;
 
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.V1_6;
@@ -62,12 +62,11 @@ public class PackageModuleClassGenerator {
     }
 
     private void generateConstructor(final ClassVisitor classVisitor) {
-        final MethodDescriptor constructor = MethodDescriptor.forDefaultConstructor();
-        final Method method = new Method(constructor.getName(), constructor.getDescriptor());
-        final GeneratorAdapter methodGenerator = new GeneratorAdapter(ACC_PUBLIC, method, null, null, classVisitor);
-        methodGenerator.loadThis();
-        methodGenerator.invokeConstructor(Type.getType(Object.class), method);
-        methodGenerator.returnValue();
-        methodGenerator.endMethod();
+        final GeneratorAdapter generator =
+                new GeneratorAdapter(classVisitor, ACC_PUBLIC, MethodDescriptor.forDefaultConstructor());
+        generator.loadThis();
+        generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forDefaultConstructor());
+        generator.returnValue();
+        generator.endMethod();
     }
 }
