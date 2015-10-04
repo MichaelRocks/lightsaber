@@ -49,6 +49,4 @@ dependencies {
     // Android support
     compile "com.android.support:support-v13:$supportVersion"
     compile "com.android.support:appcompat-v7:$supportVersion"
-
-    compile "io.michaelrocks:lightsaber-core:$version"
 }

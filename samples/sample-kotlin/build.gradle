@@ -19,7 +19,6 @@ sourceCompatibility = 1.6
 mainClassName = 'io.michaelrocks.lightsaber.sample.LightsaberSample'
 
 dependencies {
-    compile "io.michaelrocks:lightsaber-core:$version"
     compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
     testCompile "junit:junit:$junitVersion"
