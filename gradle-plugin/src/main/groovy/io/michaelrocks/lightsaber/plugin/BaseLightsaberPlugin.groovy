@@ -33,8 +33,18 @@ class BaseLightsaberPlugin implements Plugin<Project> {
     }
 
     void addDependencies(final String configurationName) {
-        project.dependencies.add(configurationName, "io.michaelrocks:lightsaber-core:0.5.0-alpha")
-        project.dependencies.add(configurationName, "io.michaelrocks:lightsaber-internal:0.5.0-alpha")
+        final String version = loadDependencyVersion()
+        project.dependencies.add(configurationName, "io.michaelrocks:lightsaber-core:$version")
+        project.dependencies.add(configurationName, "io.michaelrocks:lightsaber-internal:$version")
+    }
+
+    private String loadDependencyVersion() {
+        final ClassLoader loader = Thread.currentThread().contextClassLoader
+        loader.getResourceAsStream("version.properties").withStream { resourceStream ->
+            final Properties properties = new Properties()
+            properties.load(resourceStream)
+            return properties.getProperty("lightsaber.version")
+        }
     }
 
     void createTasks(final File classesDir, final File backupDir, final List<File> classpath,
