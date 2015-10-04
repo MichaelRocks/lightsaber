@@ -10,3 +10,19 @@ dependencies {
     compile "com.android.tools.build:gradle:$androidToolsVersion"
     compile project(':processor')
 }
+
+def generatedResourcesDir = new File("$buildDir/generated-resources/main")
+
+sourceSets {
+    main {
+        output.dir(generatedResourcesDir, builtBy: 'generateVersionProperties')
+    }
+}
+
+task generateVersionProperties {
+    doLast {
+        generatedResourcesDir.mkdirs()
+        def file = new File(generatedResourcesDir, "version.properties")
+        file.text = "lightsaber.version=$version"
+    }
+}
