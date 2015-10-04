@@ -22,6 +22,7 @@ dependencies {
     compile "org.apache.commons:commons-lang3:$commonsLangVersion"
     compile "commons-io:commons-io:$commonsIoVersion"
     compile "org.apache.commons:commons-collections4:$commonsCollectionsVersion"
+    compile "ch.qos.logback:logback-classic:$logbackVersion"
 
     testCompile "junit:junit:$junitVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"
