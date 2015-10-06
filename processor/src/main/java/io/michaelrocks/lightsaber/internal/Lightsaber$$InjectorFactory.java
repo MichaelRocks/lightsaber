@@ -18,11 +18,16 @@ package io.michaelrocks.lightsaber.internal;
 
 import io.michaelrocks.lightsaber.ConfigurationException;
 import io.michaelrocks.lightsaber.Injector;
+import io.michaelrocks.lightsaber.Key;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Lightsaber$$InjectorFactory {
+    private static final Key<?> INJECTOR_KEY = Key.of(Injector.class);
+
     private static final Map<Class, TypeAgent> typeAgents = new HashMap<>();
 
     static {
@@ -59,6 +64,7 @@ public class Lightsaber$$InjectorFactory {
             final Object... modules) {
         final LightsaberInjector injector = new LightsaberInjector(parentInjector);
         configureInjector(injector, modules);
+        checkProvidersNotOverlap(injector, parentInjector);
         return injector;
     }
 
@@ -76,6 +82,27 @@ public class Lightsaber$$InjectorFactory {
                 ((ConfigurableModule) module).configureInjector(injector);
             }
         }
+    }
+
+    private static void checkProvidersNotOverlap(final LightsaberInjector injector, final Injector parentInjector) {
+        if (parentInjector == null) {
+            return;
+        }
+
+        final Set<Key<?>> overlappingKeys = new HashSet<>(injector.getProviders().keySet());
+        overlappingKeys.retainAll(parentInjector.getAllProviders().keySet());
+        overlappingKeys.remove(INJECTOR_KEY);
+        if (!overlappingKeys.isEmpty()) {
+            throw new ConfigurationException(composeOverlappingKeysMessage(overlappingKeys));
+        }
+    }
+
+    private static String composeOverlappingKeysMessage(final Set<Key<?>> overlappingKeys) {
+        final StringBuilder builder = new StringBuilder("Injector has overlapping keys with its parent:");
+        for (final Key<?> key : overlappingKeys) {
+            builder.append("\n  ").append(key);
+        }
+        return builder.toString();
     }
 
     public static void injectMembers(final Injector injector, final Object object) {
