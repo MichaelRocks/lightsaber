@@ -21,6 +21,7 @@ import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.Key;
 
 import javax.inject.Provider;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -66,7 +67,13 @@ public class LightsaberInjector implements Injector {
 
     @Override
     public Map<Key<?>, Provider<?>> getAllProviders() {
-        return new HashMap<Key<?>, Provider<?>>(providers);
+        final Map<Key<?>, Provider<?>> parentProviders =
+                parentInjector == null ? Collections.<Key<?>, Provider<?>>emptyMap() : parentInjector.getAllProviders();
+        final Map<Key<?>, Provider<?>> allProviders =
+                new HashMap<Key<?>, Provider<?>>(parentProviders.size() + providers.size());
+        allProviders.putAll(parentProviders);
+        allProviders.putAll(providers);
+        return allProviders;
     }
 
     public <T> void registerProvider(final Key<T> key, final Provider<T> provider) {
@@ -74,5 +81,9 @@ public class LightsaberInjector implements Injector {
         if (oldProvider != null) {
             throw new ConfigurationException("Provider for " + key + " already registered");
         }
+    }
+
+    Map<Key<?>, Provider<?>> getProviders() {
+        return providers;
     }
 }
