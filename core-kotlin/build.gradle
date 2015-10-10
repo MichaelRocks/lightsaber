@@ -5,8 +5,8 @@ buildscript {
 }
 
 apply plugin: 'java'
-apply plugin: 'bintray'
 apply plugin: 'kotlin'
+apply plugin: 'bintray'
 
 sourceCompatibility = '1.6'
 
