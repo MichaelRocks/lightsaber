@@ -29,7 +29,7 @@ class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
 
         if (project.hasProperty('android')) {
             addDependencies('compile')
-            if (project.android.respondsTo('registerTransform', Transform, Object[])) {
+            if (isTranformAvailable()) {
                 final boolean verbose = logger.isEnabled(LogLevel.DEBUG)
                 project.android.registerTransform(new LightsaberTransform(verbose))
             } else {
@@ -45,6 +45,15 @@ class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
             }
         } else {
             throw new GradleException("Lightsaber plugin must be applied *AFTER* Android plugin")
+        }
+    }
+
+    private boolean isTranformAvailable() {
+        try {
+            Class.forName("com.android.build.transform.api.Transform")
+            return project.android.respondsTo('registerTransform', Transform, Object[])
+        } catch (final ClassNotFoundException ignored) {
+            return false
         }
     }
 

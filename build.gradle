@@ -12,7 +12,7 @@ buildscript {
 }
 
 allprojects {
-    ext.kotlinVersion = '0.14.449'
+    ext.kotlinVersion = '0.14.451'
 
     buildscript {
         repositories {
@@ -61,6 +61,6 @@ ext {
     junitVersion = '4.12'
     mockitoVersion = '2.0.31-beta'
 
-    androidToolsVersion = '1.4.0-beta4'
+    androidToolsVersion = '1.4.0-beta6'
     supportVersion = '23.0.1'
 }
