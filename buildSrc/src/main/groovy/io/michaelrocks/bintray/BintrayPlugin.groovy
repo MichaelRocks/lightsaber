@@ -122,11 +122,9 @@ class BintrayPlugin implements Plugin<Project> {
             repositories {
                 maven {
                     url 'https://dl.bintray.com/michaelrocks/lightsaber'
-                    if (hasCredentials) {
-                        credentials {
-                            username = project.property('bintrayUser')
-                            password = project.property('bintrayKey')
-                        }
+                    credentials {
+                        username = project.property('bintrayUser')
+                        password = project.property('bintrayKey')
                     }
                 }
             }
@@ -185,7 +183,6 @@ class BintrayPlugin implements Plugin<Project> {
 
                     Artifact sourcesJar
                     Artifact javadocJar
-
                 }
             }
         }
