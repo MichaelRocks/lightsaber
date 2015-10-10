@@ -7,8 +7,9 @@ sourceCompatibility = JavaVersion.VERSION_1_7
 dependencies {
     compile gradleApi()
     compile localGroovy()
-    compile "com.android.tools.build:gradle:$androidToolsVersion"
     compile project(':processor')
+
+    provided "com.android.tools.build:gradle:$androidToolsVersion"
 }
 
 def generatedResourcesDir = new File("$buildDir/generated-resources/main")

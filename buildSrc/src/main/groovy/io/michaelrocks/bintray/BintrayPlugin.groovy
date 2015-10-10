@@ -18,12 +18,20 @@ package io.michaelrocks.bintray
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ConfigurationContainer
+import org.gradle.api.artifacts.DependencySet
+import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.component.Artifact
 import org.gradle.api.logging.Logger
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.tasks.bundling.Jar
+import org.gradle.api.tasks.javadoc.Javadoc
 
 class BintrayPlugin implements Plugin<Project> {
+    private static final PROVIDED_CONFIGURATION_NAME = "provided"
+
     private Project project
     private Logger logger
 
@@ -32,28 +40,94 @@ class BintrayPlugin implements Plugin<Project> {
         this.project = project
         this.logger = project.logger
 
-        project.afterEvaluate {
-            project.apply plugin: 'maven-publish'
-            project.apply plugin: 'com.jfrog.bintray'
+        project.apply plugin: 'java'
+        project.apply plugin: 'maven-publish'
+        project.apply plugin: 'com.jfrog.bintray'
+        project.apply plugin: 'idea'
 
-            final boolean hasCredentials = project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')
-            if (hasCredentials) {
-                addRepositories()
-                configureBintray()
+        addProvidedConfiguration()
+        configureIdeaModule()
+
+        project.afterEvaluate {
+            configureBintrayPublishing()
+            modifyPomDependencyScopes()
+        }
+    }
+
+    private void addProvidedConfiguration() {
+        final Configuration provided = addConfiguration(project.configurations, PROVIDED_CONFIGURATION_NAME)
+        final Javadoc javadoc = project.tasks.getByName(JavaPlugin.JAVADOC_TASK_NAME) as Javadoc
+        javadoc.classpath = javadoc.classpath.plus(provided)
+    }
+
+    private static Configuration addConfiguration(final ConfigurationContainer configurations, final String name) {
+        final Configuration compile = configurations.getByName(JavaPlugin.COMPILE_CONFIGURATION_NAME)
+        final Configuration configuration = configurations.create(name)
+
+        compile.extendsFrom(configuration)
+        configuration.visible = false
+        configuration.transitive = false
+
+        configuration.allDependencies.all { final dependency ->
+            configurations.default.exclude(group: dependency.group, module: dependency.name)
+        }
+
+        return configuration
+    }
+
+    private void configureIdeaModule() {
+        project.idea.module {
+            scopes.PROVIDED.plus += [project.configurations.provided]
+        }
+    }
+
+    private void modifyPomDependencyScopes() {
+        modifyPomDependencyScope(JavaPlugin.COMPILE_CONFIGURATION_NAME)
+        modifyPomDependencyScope(PROVIDED_CONFIGURATION_NAME)
+    }
+
+    private void modifyPomDependencyScope(final String scope) {
+        project.publishing.publications.all {
+            pom.withXml {
+                final DependencySet dependencies = project.configurations.getByName(scope).allDependencies
+                asNode().dependencies.'*'.findAll() { isDependencyInScope(it, dependencies) }
+                        .each { it.scope*.value = scope }
             }
         }
     }
 
-    private void addRepositories() {
-        project.repositories {
-            mavenLocal()
-            jcenter()
-            mavenCentral()
-            maven {
-                url 'https://dl.bintray.com/michaelrocks/lightsaber'
-                credentials {
-                    username = project.property('bintrayUser')
-                    password = project.property('bintrayKey')
+    private boolean isDependencyInScope(final Node node, final DependencySet dependencies) {
+        final String groupId = node.groupId.text()
+        final String artifactId = node.artifactId.text()
+        final String version = node.version.text()
+        return dependencies.find { dependency ->
+            if (dependency instanceof ProjectDependency) {
+                project.rootProject.name + '-' + dependency.name == artifactId
+            } else {
+                dependency.group == groupId && dependency.name == artifactId && dependency.version == version
+            }
+        }
+    }
+
+    private void configureBintrayPublishing() {
+        final boolean hasCredentials = project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')
+        if (hasCredentials) {
+            addBintrayRepository()
+            configureBintray()
+        }
+    }
+
+    private void addBintrayRepository() {
+        project.publishing {
+            repositories {
+                maven {
+                    url 'https://dl.bintray.com/michaelrocks/lightsaber'
+                    if (hasCredentials) {
+                        credentials {
+                            username = project.property('bintrayUser')
+                            password = project.property('bintrayKey')
+                        }
+                    }
                 }
             }
         }
@@ -111,6 +185,7 @@ class BintrayPlugin implements Plugin<Project> {
 
                     Artifact sourcesJar
                     Artifact javadocJar
+
                 }
             }
         }
