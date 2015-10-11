@@ -59,6 +59,8 @@ public class LightsaberProcessor {
             System.exit(1);
         }
 
+        configureLogging(parameters);
+
         final LightsaberProcessor processor = new LightsaberProcessor(parameters);
         try {
             processor.process();
@@ -106,6 +108,12 @@ public class LightsaberProcessor {
                 throw new ParameterException("Library is not a file: " + library);
             }
         }
+    }
+
+    private static void configureLogging(final LightsaberParameters parameters) {
+        final ch.qos.logback.classic.Logger root =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.setLevel(parameters.getLoggingLevel());
     }
 
     public void process() throws Exception {

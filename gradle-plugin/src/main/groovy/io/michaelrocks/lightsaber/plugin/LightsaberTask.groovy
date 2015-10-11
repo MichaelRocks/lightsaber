@@ -51,7 +51,8 @@ public class LightsaberTask extends DefaultTask {
         parameters.classes = backupDir.absolutePath
         parameters.output = classesDir.absolutePath
         parameters.libs = classpath
-        parameters.verbose = logger.isEnabled(LogLevel.DEBUG)
+        parameters.debug = logger.isDebugEnabled()
+        parameters.info = logger.isInfoEnabled()
         logger.info("Starting Lightsaber processor: $parameters")
         final def processor = new LightsaberProcessor(parameters)
         try {
