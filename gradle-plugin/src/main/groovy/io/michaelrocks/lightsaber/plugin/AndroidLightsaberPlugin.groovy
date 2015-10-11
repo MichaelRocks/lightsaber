@@ -29,7 +29,7 @@ class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
 
         if (project.hasProperty('android')) {
             addDependencies('compile')
-            if (isTranformAvailable()) {
+            if (isTransformAvailable()) {
                 final boolean verbose = logger.isEnabled(LogLevel.DEBUG)
                 project.android.registerTransform(new LightsaberTransform(verbose))
             } else {
@@ -48,7 +48,7 @@ class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
         }
     }
 
-    private boolean isTranformAvailable() {
+    private boolean isTransformAvailable() {
         try {
             Class.forName("com.android.build.transform.api.Transform")
             return project.android.respondsTo('registerTransform', Transform, Object[])
