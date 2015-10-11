@@ -32,6 +32,8 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -53,6 +55,8 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
             MethodDescriptor.forConstructor(Types.OBJECT_TYPE);
     private static final MethodDescriptor DELEGATE_PROVIDER_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.PROVIDER_TYPE);
+
+    private static final Logger logger = LoggerFactory.getLogger(ModulePatcher.class);
 
     private final AnnotationCreator annotationCreator;
     private final ModuleDescriptor module;
@@ -118,7 +122,7 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
     }
 
     private void generateConfigureInjectorMethod() {
-        System.out.println("Generating configureInjector");
+        logger.debug("Generating configureInjector for module {}", module.getModuleType().getInternalName());
         final GeneratorAdapter generator = new GeneratorAdapter(this, ACC_PUBLIC, CONFIGURE_INJECTOR_METHOD);
         generator.visitCode();
         for (final ProviderDescriptor provider : module.getProviders()) {
@@ -158,7 +162,7 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
 
     private void generateProviderConstructionForField(final GeneratorAdapter generator,
             final ProviderDescriptor provider) {
-        System.out.println("Generating invocation for field " + provider.getProviderField().getName());
+        logger.debug("Generating invocation for field {}", provider.getProviderField().getName());
 
         generator.newInstance(provider.getProviderType());
         generator.dup();
@@ -170,7 +174,7 @@ public class ModulePatcher extends BaseInjectionClassVisitor {
 
     private void generateProviderConstructionForMethod(final GeneratorAdapter generator,
             final ProviderDescriptor provider) {
-        System.out.println("Generating invocation for method " + provider.getProviderMethod().getName());
+        logger.debug("Generating invocation for method {}", provider.getProviderMethod().getName());
 
         if (provider.getDelegatorType() != null) {
             generateDelegatorConstruction(generator, provider);

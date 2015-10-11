@@ -28,6 +28,8 @@ import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescripto
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.graph.TypeGraph;
 import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -45,6 +47,8 @@ public class ProcessorContext {
     private static final Type INJECTOR_FACTORY_TYPE = Type.getType(Lightsaber$$InjectorFactory.class);
     private static final ScopeDescriptor SINGLETON_SCOPE_DESCRIPTOR =
             new ScopeDescriptor(Type.getType(Singleton.class), Type.getType(SingletonProvider.class));
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessorContext.class);
 
     private String classFilePath;
     private final Map<String, List<Exception>> errorsByPath = new LinkedHashMap<>();
@@ -186,32 +190,32 @@ public class ProcessorContext {
 
     public void dump() {
         for (final ModuleDescriptor module : getModules()) {
-            System.out.println("Module: " + module.getModuleType());
+            logger.debug("Module: {}", module.getModuleType());
             for (final ProviderDescriptor provider : module.getProviders()) {
                 if (provider.getProviderMethod() != null) {
-                    System.out.println("\tProvides: " + provider.getProviderMethod());
+                    logger.debug("\tProvides: {}", provider.getProviderMethod());
                 } else {
-                    System.out.println("\tProvides: " + provider.getProviderField());
+                    logger.debug("\tProvides: {}", provider.getProviderField());
                 }
             }
         }
         for (final InjectionTargetDescriptor injectableTarget : getInjectableTargets()) {
-            System.out.println("Injectable: " + injectableTarget.getTargetType());
+            logger.debug("Injectable: {}", injectableTarget.getTargetType());
             for (final QualifiedFieldDescriptor injectableField : injectableTarget.getInjectableFields()) {
-                System.out.println("\tField: " + injectableField);
+                logger.debug("\tField: {}", injectableField);
             }
             for (final QualifiedMethodDescriptor injectableMethod : injectableTarget.getInjectableMethods()) {
-                System.out.println("\tMethod: " + injectableMethod);
+                logger.debug("\tMethod: {}", injectableMethod);
             }
         }
         for (final InjectionTargetDescriptor providableTarget : getProvidableTargets()) {
-            System.out.println("Providable: " + providableTarget.getTargetType());
+            logger.debug("Providable: {}", providableTarget.getTargetType());
             for (final QualifiedMethodDescriptor injectableConstructor : providableTarget.getInjectableConstructors()) {
-                System.out.println("\tConstructor: " + injectableConstructor);
+                logger.debug("\tConstructor: {}", injectableConstructor);
             }
         }
         for (final Type qualifierType : qualifiers) {
-            System.out.println("\tQualifier: " + qualifierType);
+            logger.debug("\tQualifier: {}", qualifierType);
         }
     }
 }

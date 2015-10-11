@@ -22,11 +22,15 @@ import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.objectweb.asm.Opcodes.ASM5;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 
 class InjectionPatcher extends BaseInjectionClassVisitor {
+    private static final Logger logger = LoggerFactory.getLogger(InjectionPatcher.class);
+
     public InjectionPatcher(final ProcessorContext processorContext, final ClassVisitor classVisitor) {
         super(processorContext, classVisitor);
     }
@@ -34,7 +38,7 @@ class InjectionPatcher extends BaseInjectionClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        System.out.println("Patching injection: " + name);
+        logger.debug("Patching injection: {}", name);
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
@@ -49,7 +53,7 @@ class InjectionPatcher extends BaseInjectionClassVisitor {
             public void visitMethodInsn(final int opcode, final String owner, final String name, final String desc,
                     final boolean itf) {
                 if (Type.getInternalName(Injector.class).equals(owner) && "injectMembers".equals(name)) {
-                    System.out.println("Injecting at: " + methodName + methodDesc);
+                    logger.debug("Injecting at: {}{}", methodName, methodDesc);
                     final String newOwner = getProcessorContext().getInjectorFactoryType().getInternalName();
                     final String newMethodDesc =
                             Type.getMethodDescriptor(

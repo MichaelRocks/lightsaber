@@ -22,6 +22,8 @@ import org.apache.commons.collections4.iterators.IteratorIterable;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,6 +32,8 @@ import java.util.Set;
 
 public class StandaloneClassWriter extends ClassWriter {
     private static final Type OBJECT_TYPE = Type.getType(Object.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(StandaloneClassWriter.class);
 
     private final ProcessorContext processorContext;
 
@@ -53,12 +57,12 @@ public class StandaloneClassWriter extends ClassWriter {
 
         for (final Type type : traverseTypeHierarchy(Type.getObjectType(type2))) {
             if (hierarchy.contains(type)) {
-                System.out.println("[getCommonSuperClass]: " + type1 + " & " + type2 + " = " + type);
+                logger.debug("[getCommonSuperClass]: {} & {} = {}", type1, type2, type);
                 return type.getInternalName();
             }
         }
 
-        System.out.println("[getCommonSuperClass]: " + type1 + " & " + type2 + " = NOT FOUND");
+        logger.warn("[getCommonSuperClass]: {} & {} = NOT FOUND ", type1, type2);
         return OBJECT_TYPE.getInternalName();
     }
 

@@ -20,8 +20,12 @@ import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ProvidersGenerator {
+    private static final Logger logger = LoggerFactory.getLogger(ProvidersGenerator.class);
+
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
     private final AnnotationCreator annotationCreator;
@@ -49,7 +53,7 @@ public class ProvidersGenerator {
     }
 
     private void generateProvider(final ProviderDescriptor provider) {
-        System.out.println("Generating provider " + provider.getProviderType().getInternalName());
+        logger.debug("Generating provider {}", provider.getProviderType().getInternalName());
         final ProviderClassGenerator generator =
                 new ProviderClassGenerator(processorContext, annotationCreator, provider);
         final byte[] providerClassData = generator.generate();
