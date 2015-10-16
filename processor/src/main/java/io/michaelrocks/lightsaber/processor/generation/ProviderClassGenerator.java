@@ -23,6 +23,7 @@ import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature;
@@ -42,9 +43,10 @@ import static org.objectweb.asm.Opcodes.*;
 public class ProviderClassGenerator {
     private static final String KEY_FIELD_NAME_PREFIX = "key";
     private static final String MODULE_FIELD_NAME = "module";
-    private static final String INJECTOR_FIELD_NAME = "injector";
 
     private static final Type NULL_POINTER_EXCEPTION_TYPE = Type.getType(NullPointerException.class);
+
+    private static final FieldDescriptor INJECTOR_FIELD = new FieldDescriptor("injector", Types.INJECTOR_TYPE);
 
     private static final MethodDescriptor KEY_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
@@ -53,7 +55,7 @@ public class ProviderClassGenerator {
     private static final MethodDescriptor GET_PROVIDER_METHOD =
             MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE);
     private static final MethodDescriptor INJECT_MEMBERS_METHOD =
-            MethodDescriptor.forMethod("injectMembers", Type.VOID_TYPE, Types.INJECTOR_TYPE, Types.OBJECT_TYPE);
+            MethodDescriptor.forMethod("injectMembers", Type.VOID_TYPE, Types.OBJECT_TYPE);
 
     private final ProcessorContext processorContext;
     private final AnnotationCreator annotationCreator;
@@ -119,8 +121,8 @@ public class ProviderClassGenerator {
     private void generateInjectorField(final ClassVisitor classVisitor) {
         final FieldVisitor fieldVisitor = classVisitor.visitField(
                 ACC_PRIVATE | ACC_FINAL,
-                INJECTOR_FIELD_NAME,
-                Type.getDescriptor(Injector.class),
+                INJECTOR_FIELD.getName(),
+                INJECTOR_FIELD.getDescriptor(),
                 null,
                 null);
         fieldVisitor.visitEnd();
@@ -171,7 +173,7 @@ public class ProviderClassGenerator {
         generator.putField(provider.getProviderType(), MODULE_FIELD_NAME, provider.getModuleType());
         generator.loadThis();
         generator.loadArg(1);
-        generator.putField(provider.getProviderType(), INJECTOR_FIELD_NAME, Types.INJECTOR_TYPE);
+        generator.putField(provider.getProviderType(), INJECTOR_FIELD);
         generator.returnValue();
         generator.endMethod();
     }
@@ -229,7 +231,7 @@ public class ProviderClassGenerator {
     private void generateProviderMethodArgument(final GeneratorAdapter generator, final TypeSignature argumentType,
             final int argumentIndex) {
         generator.loadThis();
-        generator.getField(provider.getProviderType(), INJECTOR_FIELD_NAME, Types.INJECTOR_TYPE);
+        generator.getField(provider.getProviderType(), INJECTOR_FIELD);
         generator.getStatic(provider.getProviderType(), KEY_FIELD_NAME_PREFIX + argumentIndex, Types.KEY_TYPE);
         generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD);
         if (argumentType.getParameterType() == null) {
@@ -241,9 +243,9 @@ public class ProviderClassGenerator {
     private void generateInjectMembersInvocation(final GeneratorAdapter generator) {
         generator.dup();
         generator.loadThis();
-        generator.getField(provider.getProviderType(), INJECTOR_FIELD_NAME, Types.INJECTOR_TYPE);
+        generator.getField(provider.getProviderType(), INJECTOR_FIELD);
         generator.swap();
-        generator.invokeStatic(processorContext.getInjectorFactoryType(), INJECT_MEMBERS_METHOD);
+        generator.invokeInterface(Types.INJECTOR_TYPE, INJECT_MEMBERS_METHOD);
     }
 
     private MethodDescriptor getProviderConstructor() {
