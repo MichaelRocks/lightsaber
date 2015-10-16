@@ -18,9 +18,12 @@ package io.michaelrocks.lightsaber;
 
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Lightsaber {
+    private static final Key<?> INJECTOR_KEY = Key.of(Injector.class);
     private static final Configurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
 
     private static volatile Lightsaber instance;
@@ -45,9 +48,104 @@ public class Lightsaber {
         return instance;
     }
 
-    public static Injector createInjector(final Object... modules) {
-        throw new IllegalStateException(
-                "This method must not be called. Seems the project hasn't been processed with Lightsaber");
+    public Injector createInjector(final Object... modules) {
+        final LightsaberInjector injector = createChildInjectorInternal(null, modules);
+        configureInjector(injector, packageModules);
+        return injector;
+    }
+
+    public Injector createChildInjector(final Injector parentInjector, final Object... modules) {
+        if (parentInjector == null) {
+            throw new NullPointerException("Parent injector cannot be null");
+        }
+        return createChildInjectorInternal(parentInjector, modules);
+    }
+
+    private LightsaberInjector createChildInjectorInternal(final Injector parentInjector,
+            final Object... modules) {
+        final LightsaberInjector injector = new LightsaberInjector(this, parentInjector);
+        configureInjector(injector, modules);
+        checkProvidersNotOverlap(injector, parentInjector);
+        return injector;
+    }
+
+    private void configureInjector(final LightsaberInjector injector, final Object[] modules) {
+        if (modules != null) {
+            for (final Object module : modules) {
+                if (module == null) {
+                    throw new NullPointerException("Trying to create injector with a null module");
+                }
+
+                configureInjectorWithModule(injector, module, module.getClass());
+            }
+        }
+    }
+
+    private boolean configureInjectorWithModule(final LightsaberInjector injector, final Object module,
+            final Class moduleClass) {
+        if (moduleClass == Object.class) {
+            return false;
+        }
+
+        if (!(module instanceof InjectorConfigurator)) {
+            throw new IllegalArgumentException("Module hasn't been processed with Lightsaber: " + module);
+        }
+
+        final InjectorConfigurator injectorConfigurator = (InjectorConfigurator) module;
+        injectorConfigurator.configureInjector(injector);
+        return true;
+    }
+
+    private static void checkProvidersNotOverlap(final LightsaberInjector injector, final Injector parentInjector) {
+        if (parentInjector == null) {
+            return;
+        }
+
+        final Set<Key<?>> overlappingKeys = new HashSet<Key<?>>(injector.getProviders().keySet());
+        overlappingKeys.retainAll(parentInjector.getAllProviders().keySet());
+        overlappingKeys.remove(INJECTOR_KEY);
+        if (!overlappingKeys.isEmpty()) {
+            throw new ConfigurationException(composeOverlappingKeysMessage(overlappingKeys));
+        }
+    }
+
+    private static String composeOverlappingKeysMessage(final Set<Key<?>> overlappingKeys) {
+        final StringBuilder builder = new StringBuilder("Injector has overlapping keys with its parent:");
+        for (final Key<?> key : overlappingKeys) {
+            builder.append("\n  ").append(key);
+        }
+        return builder.toString();
+    }
+
+    void injectMembers(final Injector injector, final Object object) {
+        injectFieldsIntoObject(injector, object, object.getClass());
+        injectMethodsIntoObject(injector, object, object.getClass());
+    }
+
+    private void injectFieldsIntoObject(final Injector injector, final Object object, final Class type) {
+        if (type == Object.class) {
+            return;
+        }
+
+        injectFieldsIntoObject(injector, object, type.getSuperclass());
+        final MembersInjector membersInjector = membersInjectors.get(type);
+        if (membersInjector != null) {
+            // noinspection unchecked
+            membersInjector.injectFields(injector, object);
+        }
+    }
+
+    private void injectMethodsIntoObject(final Injector injector, final Object object, final Class type) {
+        if (type == Object.class) {
+            return;
+        }
+
+        injectMethodsIntoObject(injector, object, type.getSuperclass());
+        final MembersInjector membersInjector = membersInjectors.get(type);
+        if (membersInjector != null) {
+            // noinspection unchecked
+            membersInjector.injectMethods(injector, object);
+        }
     }
 
     public static <T> T getInstance(final Injector injector, final Class<? extends T> type) {
