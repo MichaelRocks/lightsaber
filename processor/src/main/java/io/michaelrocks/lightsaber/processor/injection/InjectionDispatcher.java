@@ -36,7 +36,6 @@ public class InjectionDispatcher extends ProcessorClassVisitor {
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        cv = new InjectionPatcher(getProcessorContext(), cv);
         final Type type = Type.getObjectType(name);
 
         final ModuleDescriptor module = getProcessorContext().findModuleByType(type);
