@@ -81,4 +81,8 @@ public class Types {
     public static boolean isPrimitive(final Type type) {
         return primitiveToBoxedMap.containsKey(type);
     }
+
+    public static Type getArrayType(final Type type) {
+        return Type.getType("[" + type.getDescriptor());
+    }
 }
