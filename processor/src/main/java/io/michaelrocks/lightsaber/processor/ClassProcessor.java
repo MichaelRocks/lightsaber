@@ -26,7 +26,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescripto
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer;
-import io.michaelrocks.lightsaber.processor.generation.InjectorFactoryClassGenerator;
+import io.michaelrocks.lightsaber.processor.generation.LightsaberRegistryClassGenerator;
 import io.michaelrocks.lightsaber.processor.generation.PackageModuleClassGenerator;
 import io.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.ProvidersGenerator;
@@ -77,7 +77,7 @@ public class ClassProcessor {
         validateDependencyGraph();
         generateGlobalModule();
         generateProviders();
-        generateInjectorFactory();
+        generateLightsaberConfigurator();
         generateInjectors();
         copyAndPatchClasses();
     }
@@ -167,10 +167,10 @@ public class ClassProcessor {
         checkErrors();
     }
 
-    private void generateInjectorFactory() throws ProcessingException {
-        final InjectorFactoryClassGenerator injectorFactoryClassGenerator =
-                new InjectorFactoryClassGenerator(classProducer, processorContext);
-        injectorFactoryClassGenerator.generateInjectorFactory();
+    private void generateLightsaberConfigurator() throws ProcessingException {
+        final LightsaberRegistryClassGenerator lightsaberRegistryClassGenerator =
+                new LightsaberRegistryClassGenerator(classProducer, processorContext);
+        lightsaberRegistryClassGenerator.generateLightsaberRegistry();
         checkErrors();
     }
 
