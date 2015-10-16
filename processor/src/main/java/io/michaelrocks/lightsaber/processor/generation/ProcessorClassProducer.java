@@ -19,10 +19,14 @@ package io.michaelrocks.lightsaber.processor.generation;
 import io.michaelrocks.lightsaber.processor.ProcessingException;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.io.ClassFileVisitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class ProcessorClassProducer implements ClassProducer {
+    private static final Logger logger = LoggerFactory.getLogger(ProcessorClassProducer.class);
+
     private final ClassFileVisitor classFileVisitor;
     private final ProcessorContext processorContext;
 
@@ -33,6 +37,7 @@ public class ProcessorClassProducer implements ClassProducer {
 
     @Override
     public void produceClass(final String internalName, final byte[] classData) {
+        logger.debug("Producing class {}", internalName);
         final String classFileName = internalName + ".class";
         try {
             classFileVisitor.visitClassFile(classFileName, classData);
