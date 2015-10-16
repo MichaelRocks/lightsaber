@@ -38,9 +38,10 @@ class GenerationHelper {
         if (type.isParameterized()) {
             if (LAZY_TYPE.equals(type.getRawType())) {
                 generator.newInstance(LAZY_ADAPTER_TYPE);
-                generator.dupX1();
                 generator.swap();
+                generator.dup2();
                 generator.invokeConstructor(LAZY_ADAPTER_TYPE, LAZY_ADAPTER_CONSTRUCTOR);
+                generator.pop();
             }
         } else {
             generator.unbox(type.getRawType());
