@@ -18,8 +18,33 @@ package io.michaelrocks.lightsaber;
 
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
+import java.util.Map;
 
 public class Lightsaber {
+    private static final Configurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
+
+    private static volatile Lightsaber instance;
+    private static final Object instanceLock = new Object();
+
+    private final Map<Class<?>, MembersInjector<?>> membersInjectors;
+    private final Object[] packageModules;
+
+    Lightsaber(final Configurator configurator) {
+        membersInjectors = configurator.getMembersInjectors();
+        packageModules = configurator.getPackageModules();
+    }
+
+    public static Lightsaber getInstance() {
+        if (instance == null) {
+            synchronized (instanceLock) {
+                if (instance == null) {
+                    instance = new Lightsaber(DEFAULT_CONFIGURATOR);
+                }
+            }
+        }
+        return instance;
+    }
+
     public static Injector createInjector(final Object... modules) {
         throw new IllegalStateException(
                 "This method must not be called. Seems the project hasn't been processed with Lightsaber");
@@ -41,5 +66,23 @@ public class Lightsaber {
     public static <T> Provider<T> getProvider(final Injector injector, final Class<? extends T> type,
             final Annotation annotation) {
         return injector.getProvider(Key.of(type, annotation));
+    }
+
+    interface Configurator {
+        Map<Class<?>, MembersInjector<?>> getMembersInjectors();
+        Object[] getPackageModules();
+    }
+
+    private static class DefaultConfigurator implements Configurator {
+        @Override
+        public Map<Class<?>, MembersInjector<?>> getMembersInjectors() {
+            // noinspection unchecked
+            return LightsaberRegistry.getMembersInjectors();
+        }
+
+        @Override
+        public Object[] getPackageModules() {
+            return LightsaberRegistry.getPackageModules();
+        }
     }
 }
