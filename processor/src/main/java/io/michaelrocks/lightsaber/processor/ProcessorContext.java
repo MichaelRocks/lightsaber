@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor;
 
-import io.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
 import io.michaelrocks.lightsaber.internal.SingletonProvider;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
@@ -44,7 +43,6 @@ import java.util.Set;
 
 public class ProcessorContext {
     private static final String PACKAGE_MODULE_CLASS_NAME = "Lightsaber$$PackageModule";
-    private static final Type INJECTOR_FACTORY_TYPE = Type.getType(Lightsaber$$InjectorFactory.class);
     private static final ScopeDescriptor SINGLETON_SCOPE_DESCRIPTOR =
             new ScopeDescriptor(Type.getType(Singleton.class), Type.getType(SingletonProvider.class));
 
@@ -182,10 +180,6 @@ public class ProcessorContext {
 
     public Type getPackageModuleType(final String packageName) {
         return Type.getObjectType(packageName + PACKAGE_MODULE_CLASS_NAME);
-    }
-
-    public Type getInjectorFactoryType() {
-        return INJECTOR_FACTORY_TYPE;
     }
 
     public void dump() {
