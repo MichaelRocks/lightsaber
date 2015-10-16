@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.processor.generation;
 
 import io.michaelrocks.lightsaber.Injector;
-import io.michaelrocks.lightsaber.internal.TypeAgent;
+import io.michaelrocks.lightsaber.MembersInjector;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
@@ -46,8 +46,6 @@ public class TypeAgentClassGenerator {
 
     private static final MethodDescriptor KEY_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
-    private static final MethodDescriptor GET_TYPE_METHOD =
-            MethodDescriptor.forMethod("getType", Type.getType(Class.class));
     private static final MethodDescriptor INJECT_FIELDS_METHOD =
             MethodDescriptor.forMethod("injectFields",
                     Type.VOID_TYPE, Type.getType(Injector.class), Type.getType(Object.class));
@@ -80,12 +78,11 @@ public class TypeAgentClassGenerator {
                 injector.getInjectorType().getInternalName(),
                 null,
                 Type.getInternalName(Object.class),
-                new String[] { Type.getInternalName(TypeAgent.class) });
+                new String[] { Type.getInternalName(MembersInjector.class) });
 
         generateKeyFields(classVisitor);
         generateStaticInitializer(classVisitor);
         generateConstructor(classVisitor);
-        generateGetTypeMethod(classVisitor);
         generateInjectFieldsMethod(classVisitor);
         generateInjectMethodsMethod(classVisitor);
 
@@ -187,14 +184,6 @@ public class TypeAgentClassGenerator {
         generator.visitCode();
         generator.loadThis();
         generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forConstructor());
-        generator.returnValue();
-        generator.endMethod();
-    }
-
-    private void generateGetTypeMethod(final ClassVisitor classVisitor) {
-        final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, GET_TYPE_METHOD);
-        generator.visitCode();
-        generator.push(injector.getInjectableTarget().getTargetType());
         generator.returnValue();
         generator.endMethod();
     }
