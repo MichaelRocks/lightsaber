@@ -5,6 +5,7 @@ sourceCompatibility = '1.6'
 
 dependencies {
     compile "javax.inject:javax.inject:$javaxInjectVersion"
+    provided project(':core-stub')
 
     testCompile "junit:junit:$junitVersion"
     testCompile "com.google.code.findbugs:jsr305:$jsr305Version"
@@ -12,4 +13,15 @@ dependencies {
 
 jar {
     destinationDir = file('build/jar')
+}
+
+afterEvaluate {
+    publishing.publications.all {
+        pom.withXml {
+            def dependencies = asNode().dependencies
+            dependencies.'*'
+                    .findAll() { it.artifactId.text() == 'core-stub' }
+                    .each { it.parent().remove(it) }
+        }
+    }
 }
