@@ -27,6 +27,7 @@ sourceSets {
 }
 
 task generateBuildClass {
+    inputs.property('version', version)
     outputs.dir generatedDir
 
     doLast {
