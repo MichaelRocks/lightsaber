@@ -29,10 +29,12 @@ public class Lightsaber {
     private static volatile Lightsaber instance;
     private static final Object instanceLock = new Object();
 
+    private final Map<Class<?>, InjectorConfigurator> injectorConfigurators;
     private final Map<Class<?>, MembersInjector<?>> membersInjectors;
     private final Object[] packageModules;
 
     Lightsaber(final Configurator configurator) {
+        injectorConfigurators = configurator.getInjectorConfigurators();
         membersInjectors = configurator.getMembersInjectors();
         packageModules = configurator.getPackageModules();
     }
@@ -76,7 +78,9 @@ public class Lightsaber {
                     throw new NullPointerException("Trying to create injector with a null module");
                 }
 
-                configureInjectorWithModule(injector, module, module.getClass());
+                if (!configureInjectorWithModule(injector, module, module.getClass())) {
+                    throw new IllegalArgumentException("Module hasn't been processed with Lightsaber: " + module);
+                }
             }
         }
     }
@@ -87,12 +91,13 @@ public class Lightsaber {
             return false;
         }
 
-        if (!(module instanceof InjectorConfigurator)) {
-            throw new IllegalArgumentException("Module hasn't been processed with Lightsaber: " + module);
+        final InjectorConfigurator configurator = injectorConfigurators.get(moduleClass);
+        if (configurator == null) {
+            return configureInjectorWithModule(injector, module, moduleClass.getSuperclass());
         }
 
-        final InjectorConfigurator injectorConfigurator = (InjectorConfigurator) module;
-        injectorConfigurator.configureInjector(injector);
+        configurator.configureInjector(injector, module);
+        configureInjectorWithModule(injector, module, moduleClass.getSuperclass());
         return true;
     }
 
@@ -167,11 +172,18 @@ public class Lightsaber {
     }
 
     interface Configurator {
+        Map<Class<?>, InjectorConfigurator> getInjectorConfigurators();
         Map<Class<?>, MembersInjector<?>> getMembersInjectors();
         Object[] getPackageModules();
     }
 
     private static class DefaultConfigurator implements Configurator {
+        @Override
+        public Map<Class<?>, InjectorConfigurator> getInjectorConfigurators() {
+            // noinspection unchecked
+            return LightsaberRegistry.getInjectorConfigurators();
+        }
+
         @Override
         public Map<Class<?>, MembersInjector<?>> getMembersInjectors() {
             // noinspection unchecked
