@@ -96,6 +96,10 @@ public class ProviderClassGenerator {
     }
 
     private void generateKeyFields(final ClassVisitor classVisitor) {
+        if (provider.getProviderMethod() == null) {
+            return;
+        }
+
         final List<TypeSignature> argumentTypes = provider.getProviderMethod().getArgumentTypes();
         for (int i = 0, count = argumentTypes.size(); i < count; ++i) {
             final FieldVisitor fieldVisitor = classVisitor.visitField(
@@ -129,6 +133,10 @@ public class ProviderClassGenerator {
     }
 
     private void generateStaticInitializer(final ClassVisitor classVisitor) {
+        if (provider.getProviderMethod() == null) {
+            return;
+        }
+
         final List<TypeSignature> argumentTypes = provider.getProviderMethod().getArgumentTypes();
         final List<AnnotationData> parameterQualifiers = provider.getProviderMethod().getParameterQualifiers();
         Validate.isTrue(argumentTypes.size() == parameterQualifiers.size());
@@ -182,7 +190,9 @@ public class ProviderClassGenerator {
         final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, GET_METHOD);
         generator.visitCode();
 
-        if (provider.getProviderMethod().isConstructor()) {
+        if (provider.getProviderField() != null) {
+            generateProviderFieldRetrieval(generator);
+        } else if (provider.getProviderMethod().isConstructor()) {
             generateConstructorInvocation(generator);
             generateInjectMembersInvocation(generator);
         } else {
@@ -193,6 +203,12 @@ public class ProviderClassGenerator {
 
         generator.returnValue();
         generator.endMethod();
+    }
+
+    private void generateProviderFieldRetrieval(final GeneratorAdapter generator) {
+        generator.loadThis();
+        generator.getField(provider.getProviderType(), MODULE_FIELD_NAME, provider.getModuleType());
+        generator.getField(provider.getModuleType(), provider.getProviderField().getField());
     }
 
     private void generateConstructorInvocation(final GeneratorAdapter generator) {
