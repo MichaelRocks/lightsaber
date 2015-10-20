@@ -26,6 +26,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescripto
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer;
+import io.michaelrocks.lightsaber.processor.generation.InjectorConfiguratorsGenerator;
 import io.michaelrocks.lightsaber.processor.generation.LightsaberRegistryClassGenerator;
 import io.michaelrocks.lightsaber.processor.generation.PackageModuleClassGenerator;
 import io.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
@@ -78,6 +79,7 @@ public class ClassProcessor {
         generateGlobalModule();
         generateProviders();
         generateLightsaberConfigurator();
+        generateInjectorConfigurators();
         generateInjectors();
         copyAndPatchClasses();
     }
@@ -174,6 +176,13 @@ public class ClassProcessor {
         checkErrors();
     }
 
+    private void generateInjectorConfigurators() throws ProcessingException {
+        final InjectorConfiguratorsGenerator injectorConfiguratorsGenerator =
+                new InjectorConfiguratorsGenerator(classProducer, processorContext, annotationCreator);
+        injectorConfiguratorsGenerator.generateInjectorConfigurators();
+        checkErrors();
+    }
+
     private void generateInjectors() throws ProcessingException {
         final TypeAgentsGenerator typeAgentsGenerator =
                 new TypeAgentsGenerator(classProducer, processorContext, annotationCreator);
@@ -183,8 +192,9 @@ public class ClassProcessor {
 
     private void copyAndPatchClasses() throws IOException {
         final InjectionClassFileVisitor injectionVisitor =
-                new InjectionClassFileVisitor(classFileWriter, processorContext, annotationCreator);
+                new InjectionClassFileVisitor(classFileWriter, processorContext);
         classFileReader.accept(injectionVisitor);
+        checkErrors();
     }
 
     private void checkErrors() throws ProcessingException {
