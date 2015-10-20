@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
-import io.michaelrocks.lightsaber.internal.InstanceProvider;
 import org.objectweb.asm.Type;
 
 import java.util.ArrayList;
@@ -25,15 +24,22 @@ import java.util.List;
 
 public class ModuleDescriptor {
     private final Type moduleType;
+    private final Type configuratorType;
     private final List<ProviderDescriptor> providers;
 
-    public ModuleDescriptor(final Type moduleType, final List<ProviderDescriptor> providers) {
+    public ModuleDescriptor(final Type moduleType, final Type configuratorType,
+            final List<ProviderDescriptor> providers) {
         this.moduleType = moduleType;
+        this.configuratorType = configuratorType;
         this.providers = Collections.unmodifiableList(providers);
     }
 
     public Type getModuleType() {
         return moduleType;
+    }
+
+    public Type getConfiguratorType() {
+        return configuratorType;
     }
 
     public List<ProviderDescriptor> getProviders() {
@@ -42,10 +48,14 @@ public class ModuleDescriptor {
 
     public static class Builder {
         private final Type moduleType;
+        private final Type configuratorType;
         private final List<ProviderDescriptor> providers = new ArrayList<>();
 
         public Builder(final Type moduleType) {
             this.moduleType = moduleType;
+            final String moduleNameWithDollars = moduleType.getInternalName().replace('/', '$');
+            this.configuratorType = Type.getObjectType(
+                    "io/michaelrocks/lightsaber/InjectorConfigurator$" + moduleNameWithDollars);
         }
 
         public Type getModuleType() {
@@ -79,7 +89,7 @@ public class ModuleDescriptor {
         }
 
         public ModuleDescriptor build() {
-            return new ModuleDescriptor(moduleType, providers);
+            return new ModuleDescriptor(moduleType, configuratorType, providers);
         }
     }
 }
