@@ -22,7 +22,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 
-import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.*;
 
 public class ProvidableTargetPatcher extends BaseInjectionClassVisitor {
     private final InjectionTargetDescriptor providableTarget;
@@ -31,6 +31,16 @@ public class ProvidableTargetPatcher extends BaseInjectionClassVisitor {
             final InjectionTargetDescriptor providableTarget) {
         super(processorContext, classVisitor);
         this.providableTarget = providableTarget;
+    }
+
+    @Override
+    public void visit(final int version, final int access, final String name, final String signature,
+            final String superName, final String[] interfaces) {
+        final int newAccess = (access & ~(ACC_PRIVATE | ACC_PROTECTED)) | ACC_PUBLIC;
+        super.visit(version, access, name, signature, superName, interfaces);
+        if (newAccess != access) {
+            setDirty(true);
+        }
     }
 
     @Override
