@@ -44,6 +44,8 @@ public class LightsaberRegistryClassGenerator {
     private static final Type HASH_MAP_TYPE = Type.getType(HashMap.class);
     private static final Type OBJECT_ARRAY_TYPE = Types.getArrayType(Types.OBJECT_TYPE);
 
+    private static final FieldDescriptor INJECTOR_CONFIGURATORS_FIELD =
+            new FieldDescriptor("injectorConfigurators", MAP_TYPE);
     private static final FieldDescriptor MEMBERS_INJECTORS_FIELD =
             new FieldDescriptor("membersInjectors", MAP_TYPE);
     private static final FieldDescriptor PACKAGE_MODULES_FIELD =
@@ -54,6 +56,8 @@ public class LightsaberRegistryClassGenerator {
     private static final MethodDescriptor PUT_METHOD =
             MethodDescriptor.forMethod("put", Types.OBJECT_TYPE, Types.OBJECT_TYPE, Types.OBJECT_TYPE);
 
+    private static final MethodDescriptor GET_INJECTOR_CONFIGURATORS_METHOD =
+            MethodDescriptor.forMethod("getInjectorConfigurators", MAP_TYPE);
     private static final MethodDescriptor GET_MEMBERS_INJECTORS_METHOD =
             MethodDescriptor.forMethod("getMembersInjectors", MAP_TYPE);
     private static final MethodDescriptor GET_PACKAGE_MODULES_METHOD =
@@ -90,8 +94,19 @@ public class LightsaberRegistryClassGenerator {
     }
 
     private void generateFields(final ClassVisitor classVisitor) {
+        generateInjectorConfiguratorsField(classVisitor);
         generateMembersInjectorsField(classVisitor);
         generatePackageModulesField(classVisitor);
+    }
+
+    private void generateInjectorConfiguratorsField(final ClassVisitor classVisitor) {
+        final FieldVisitor fieldVisitor = classVisitor.visitField(
+                ACC_PRIVATE | ACC_STATIC | ACC_FINAL,
+                INJECTOR_CONFIGURATORS_FIELD.getName(),
+                INJECTOR_CONFIGURATORS_FIELD.getDescriptor(),
+                null,
+                null);
+        fieldVisitor.visitEnd();
     }
 
     private void generateMembersInjectorsField(final ClassVisitor classVisitor) {
@@ -119,11 +134,32 @@ public class LightsaberRegistryClassGenerator {
                 new GeneratorAdapter(classVisitor, ACC_STATIC, MethodDescriptor.forStaticInitializer());
         generator.visitCode();
 
+        populateInjectorConfigurators(generator);
         populateMembersInjectors(generator);
         populatePackageModulesMethod(generator);
 
         generator.returnValue();
         generator.endMethod();
+    }
+
+    private void populateInjectorConfigurators(final GeneratorAdapter generator) {
+        final Collection<ModuleDescriptor> modules = processorContext.getModules();
+        generator.newInstance(HASH_MAP_TYPE);
+        generator.dup();
+        generator.push(modules.size());
+        generator.invokeConstructor(HASH_MAP_TYPE, HASH_MAP_CONSTRUCTOR);
+
+        for (final ModuleDescriptor module : modules) {
+            generator.dup();
+            generator.push(module.getModuleType());
+            generator.newInstance(module.getConfiguratorType());
+            generator.dup();
+            generator.invokeConstructor(module.getConfiguratorType(), MethodDescriptor.forDefaultConstructor());
+            generator.invokeInterface(MAP_TYPE, PUT_METHOD);
+            generator.pop();
+        }
+
+        generator.putStatic(LIGHTSABER_REGISTRY_TYPE, INJECTOR_CONFIGURATORS_FIELD);
     }
 
     private void populateMembersInjectors(final GeneratorAdapter generator) {
@@ -165,8 +201,18 @@ public class LightsaberRegistryClassGenerator {
     }
 
     private void generateMethods(final ClassVisitor classVisitor) {
+        generateGetInjectorGonfiguratorsMethod(classVisitor);
         generateGetMembersInjectorsMethod(classVisitor);
         generateGetPackageModulesMethod(classVisitor);
+    }
+
+    private void generateGetInjectorGonfiguratorsMethod(final ClassVisitor classVisitor) {
+        final GeneratorAdapter generator =
+                new GeneratorAdapter(classVisitor, ACC_PUBLIC | ACC_STATIC, GET_INJECTOR_CONFIGURATORS_METHOD);
+        generator.visitCode();
+        generator.getStatic(LIGHTSABER_REGISTRY_TYPE, INJECTOR_CONFIGURATORS_FIELD);
+        generator.returnValue();
+        generator.endMethod();
     }
 
     private void generateGetMembersInjectorsMethod(final ClassVisitor classVisitor) {
