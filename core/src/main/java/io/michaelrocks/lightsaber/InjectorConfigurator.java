@@ -16,6 +16,6 @@
 
 package io.michaelrocks.lightsaber;
 
-public interface InjectorConfigurator {
+interface InjectorConfigurator {
     void configureInjector(LightsaberInjector injector, Object module);
 }

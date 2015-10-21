@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LightsaberInjector implements Injector {
+class LightsaberInjector implements Injector {
     private static final Key<Injector> INJECTOR_KEY = new Key<Injector>(Injector.class);
 
     private final Lightsaber lightsaber;
