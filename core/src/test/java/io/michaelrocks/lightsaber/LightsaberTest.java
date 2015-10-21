@@ -23,30 +23,54 @@ import javax.annotation.Nonnull;
 import javax.inject.Named;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.Map;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 public class LightsaberTest {
-    private static final Object[] EMPTY_ARRAY = new Object[0];
-    private static final Lightsaber.Configurator EMPTY_CONFIGURATOR = new Lightsaber.Configurator() {
-        @Override
-        public Map<Class<?>, MembersInjector<?>> getMembersInjectors() {
-            return Collections.emptyMap();
-        }
-
-        @Override
-        public Object[] getPackageModules() {
-            return EMPTY_ARRAY;
-        }
-    };
-
     private Lightsaber lightsaber;
 
     @Before
     public void createLightsaber() {
-        lightsaber = new Lightsaber(EMPTY_CONFIGURATOR);
+        final Lightsaber.Configurator configurator = mock(Lightsaber.Configurator.class, RETURNS_DEEP_STUBS);
+        when(configurator.getInjectorConfigurators().get(ParentModule.class))
+                .thenReturn(new InjectorConfigurator() {
+                    @Override
+                    public void configureInjector(final LightsaberInjector injector, final Object module) {
+                        injector.registerProvider(Key.of(String.class), new Provider<String>() {
+                            @Override
+                            public String get() {
+                                return "Parent String";
+                            }
+                        });
+                    }
+                });
+        when(configurator.getInjectorConfigurators().get(ChildModule.class))
+                .thenReturn(new InjectorConfigurator() {
+                    @Override
+                    public void configureInjector(final LightsaberInjector injector, final Object module) {
+                        injector.registerProvider(Key.of(Object.class), new Provider<Object>() {
+                            @Override
+                            public Object get() {
+                                return "Child Object";
+                            }
+                        });
+                    }
+                });
+        when(configurator.getInjectorConfigurators().get(ChildAnnotatedModule.class))
+                .thenReturn(new InjectorConfigurator() {
+                    @Override
+                    public void configureInjector(final LightsaberInjector injector, final Object module) {
+                        injector.registerProvider(Key.of(String.class, new NamedProxy("Annotated")),
+                                new Provider<String>() {
+                                    @Override
+                                    public String get() {
+                                        return "Child Annotated String";
+                                    }
+                                });
+                    }
+                });
+        lightsaber = new Lightsaber(configurator);
     }
 
     @Test
@@ -97,40 +121,13 @@ public class LightsaberTest {
         final Injector childInjector = lightsaber.createChildInjector(injector, new ParentModule());
     }
 
-    private static class ParentModule implements InjectorConfigurator {
-        @Override
-        public void configureInjector(final LightsaberInjector injector) {
-            injector.registerProvider(Key.of(String.class), new Provider<String>() {
-                @Override
-                public String get() {
-                    return "Parent String";
-                }
-            });
-        }
+    private static class ParentModule {
     }
 
-    private static class ChildModule implements InjectorConfigurator {
-        @Override
-        public void configureInjector(final LightsaberInjector injector) {
-            injector.registerProvider(Key.of(Object.class), new Provider<Object>() {
-                @Override
-                public Object get() {
-                    return "Child Object";
-                }
-            });
-        }
+    private static class ChildModule {
     }
 
-    private static class ChildAnnotatedModule implements InjectorConfigurator {
-        @Override
-        public void configureInjector(final LightsaberInjector injector) {
-            injector.registerProvider(Key.of(String.class, new NamedProxy("Annotated")), new Provider<String>() {
-                @Override
-                public String get() {
-                    return "Child Annotated String";
-                }
-            });
-        }
+    private static class ChildAnnotatedModule {
     }
 
     @SuppressWarnings("ClassExplicitlyAnnotation")

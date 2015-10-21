@@ -8,6 +8,7 @@ dependencies {
     provided project(':core-stub')
 
     testCompile "junit:junit:$junitVersion"
+    testCompile "org.mockito:mockito-core:$mockitoVersion"
     testCompile "com.google.code.findbugs:jsr305:$jsr305Version"
 }
 
