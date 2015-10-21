@@ -16,8 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.generation;
 
-import io.michaelrocks.lightsaber.InjectorConfigurator;
-import io.michaelrocks.lightsaber.LightsaberInjector;
+import io.michaelrocks.lightsaber.LightsaberTypes;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
@@ -36,13 +35,11 @@ import org.objectweb.asm.Type;
 import static org.objectweb.asm.Opcodes.*;
 
 public class InjectorConfiguratorClassGenerator {
-    private static final Type LIGHTSABER_INJECTOR_TYPE = Type.getType(LightsaberInjector.class);
-
     private static final MethodDescriptor KEY_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE);
     private static final MethodDescriptor CONFIGURE_INJECTOR_METHOD =
             MethodDescriptor.forMethod("configureInjector",
-                    Type.VOID_TYPE, LIGHTSABER_INJECTOR_TYPE, Types.OBJECT_TYPE);
+                    Type.VOID_TYPE, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, Types.OBJECT_TYPE);
     private static final MethodDescriptor REGISTER_PROVIDER_METHOD =
             MethodDescriptor.forMethod("registerProvider", Type.VOID_TYPE, Types.KEY_TYPE, Types.PROVIDER_TYPE);
 
@@ -70,7 +67,7 @@ public class InjectorConfiguratorClassGenerator {
                 module.getConfiguratorType().getInternalName(),
                 null,
                 Type.getInternalName(Object.class),
-                new String[] { Type.getInternalName(InjectorConfigurator.class) });
+                new String[] { LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE.getInternalName() });
 
         generateConstructor(classVisitor);
         generateConfigureInjectorMethod(classVisitor);
@@ -118,7 +115,7 @@ public class InjectorConfiguratorClassGenerator {
             generateProviderConstruction(generator, provider, moduleLocal);
         }
 
-        generator.invokeVirtual(LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD);
+        generator.invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD);
     }
 
     private void generateKeyConstruction(final GeneratorAdapter generator, final ProviderDescriptor provider) {
