@@ -30,6 +30,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.InjectorConfiguratorsGenerator;
 import io.michaelrocks.lightsaber.processor.generation.LightsaberRegistryClassGenerator;
+import io.michaelrocks.lightsaber.processor.generation.PackageInvadersGenerator;
 import io.michaelrocks.lightsaber.processor.generation.PackageModuleClassGenerator;
 import io.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.ProvidersGenerator;
@@ -84,6 +85,7 @@ public class ClassProcessor {
         generateLightsaberConfigurator();
         generateInjectorConfigurators();
         generateInjectors();
+        generatePackageInvaders();
         copyAndPatchClasses();
     }
 
@@ -209,6 +211,13 @@ public class ClassProcessor {
         final TypeAgentsGenerator typeAgentsGenerator =
                 new TypeAgentsGenerator(classProducer, processorContext, annotationCreator);
         typeAgentsGenerator.generateInjectors();
+        checkErrors();
+    }
+
+    private void generatePackageInvaders() throws ProcessingException {
+        final PackageInvadersGenerator packageInvadersGenerator =
+                new PackageInvadersGenerator(classProducer, processorContext);
+        packageInvadersGenerator.generatePackageInvaders();
         checkErrors();
     }
 
