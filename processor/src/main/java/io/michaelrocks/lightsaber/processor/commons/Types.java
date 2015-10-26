@@ -22,6 +22,7 @@ import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.Provides;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 
 import javax.inject.Inject;
@@ -84,5 +85,12 @@ public class Types {
 
     public static Type getArrayType(final Type type) {
         return Type.getType("[" + type.getDescriptor());
+    }
+
+    public static String getPackageName(final Type type) {
+        Validate.isTrue(type.getSort() == Type.OBJECT);
+        final String internalName = type.getInternalName();
+        final int lastSeparatorIndex = internalName.lastIndexOf('/');
+        return lastSeparatorIndex == -1 ? "" : internalName.substring(0, lastSeparatorIndex);
     }
 }

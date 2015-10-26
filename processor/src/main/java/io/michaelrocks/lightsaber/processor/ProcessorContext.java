@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.processor;
 
 import io.michaelrocks.lightsaber.internal.SingletonProvider;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry;
+import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -27,7 +28,6 @@ import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.graph.TypeGraph;
-import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -163,11 +163,7 @@ public class ProcessorContext {
     }
 
     public PackageInvaderDescriptor findPackageInvaderByTargetType(final Type targetType) {
-        Validate.isTrue(targetType.getSort() == Type.OBJECT);
-        final String internalName = targetType.getInternalName();
-        final int lastSeparatorIndex = internalName.lastIndexOf('/');
-        final String packageName = lastSeparatorIndex == -1 ? "" : internalName.substring(0, lastSeparatorIndex);
-        return findPackageInvaderByPackageName(packageName);
+        return findPackageInvaderByPackageName(Types.getPackageName(targetType));
     }
 
     public PackageInvaderDescriptor findPackageInvaderByPackageName(final String packageName) {
