@@ -18,9 +18,11 @@ package io.michaelrocks.lightsaber.processor;
 
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer;
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
+import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.PackageInvaderDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
@@ -74,6 +76,7 @@ public class ClassProcessor {
         performAnalysis();
         composePackageModules();
         composeInjectors();
+        composePackageInvaders();
         processorContext.dump();
         validateDependencyGraph();
         generateGlobalModule();
@@ -128,6 +131,25 @@ public class ClassProcessor {
                     Type.getObjectType(injectableTarget.getTargetType().getInternalName() + "$$Agent");
             final InjectorDescriptor injector = new InjectorDescriptor(injectorType, injectableTarget);
             processorContext.addInjector(injector);
+        }
+    }
+
+    private void composePackageInvaders() {
+        final Map<String, PackageInvaderDescriptor.Builder> builders = new HashMap<>();
+        for (final ModuleDescriptor module : processorContext.getModules()) {
+            for (final ProviderDescriptor provider : module.getProviders()) {
+                final String packageName = Types.getPackageName(provider.getProvidableType());
+                PackageInvaderDescriptor.Builder builder = builders.get(packageName);
+                if (builder == null) {
+                    builder = new PackageInvaderDescriptor.Builder(packageName);
+                    builders.put(packageName, builder);
+                }
+                builder.addClass(provider.getProvidableType());
+            }
+        }
+
+        for (final PackageInvaderDescriptor.Builder builder : builders.values()) {
+            processorContext.addPackageInvader(builder.build());
         }
     }
 
