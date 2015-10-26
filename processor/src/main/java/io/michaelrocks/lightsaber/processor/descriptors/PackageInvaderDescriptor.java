@@ -50,7 +50,7 @@ public class PackageInvaderDescriptor {
         return classFields.get(type);
     }
 
-    public class Builder {
+    public static class Builder {
         private final Type type;
         private final String packageName;
         private final Map<Type, FieldDescriptor> classFields = new HashMap<>();
