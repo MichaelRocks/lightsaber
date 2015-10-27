@@ -94,7 +94,7 @@ public class PackageInvaderClassGenerator {
         generator.visitCode();
 
         for (final Map.Entry<Type, FieldDescriptor> entry : packageInvader.getClassFields().entrySet()) {
-            generator.push(entry.getKey());
+            generator.push(Types.box(entry.getKey()));
             generator.putStatic(packageInvader.getType(), entry.getValue());
         }
 
