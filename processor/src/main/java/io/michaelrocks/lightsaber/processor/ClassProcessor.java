@@ -31,7 +31,6 @@ import io.michaelrocks.lightsaber.processor.generation.ClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.InjectorConfiguratorsGenerator;
 import io.michaelrocks.lightsaber.processor.generation.LightsaberRegistryClassGenerator;
 import io.michaelrocks.lightsaber.processor.generation.PackageInvadersGenerator;
-import io.michaelrocks.lightsaber.processor.generation.PackageModuleClassGenerator;
 import io.michaelrocks.lightsaber.processor.generation.ProcessorClassProducer;
 import io.michaelrocks.lightsaber.processor.generation.ProvidersGenerator;
 import io.michaelrocks.lightsaber.processor.generation.TypeAgentsGenerator;
@@ -80,7 +79,6 @@ public class ClassProcessor {
         composePackageInvaders();
         processorContext.dump();
         validateDependencyGraph();
-        generateGlobalModule();
         generateProviders();
         generateLightsaberConfigurator();
         generateInjectorConfigurators();
@@ -175,15 +173,6 @@ public class ClassProcessor {
                     new ProcessingException("Cycled dependency: " + cycle));
         }
 
-        checkErrors();
-    }
-
-    private void generateGlobalModule() throws ProcessingException {
-        final PackageModuleClassGenerator packageModuleClassGenerator =
-                new PackageModuleClassGenerator(classProducer, processorContext);
-        for (final ModuleDescriptor packageModule : processorContext.getPackageModules()) {
-            packageModuleClassGenerator.generatePackageModule(packageModule);
-        }
         checkErrors();
     }
 
