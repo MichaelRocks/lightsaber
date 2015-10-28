@@ -66,7 +66,7 @@ public class PackageInvaderDescriptor {
 
         public Builder addClass(final Type type) {
             final String fieldName = FIELD_PREFIX + classFields.size();
-            final TypeSignature fieldType = new TypeSignature(Types.OBJECT_TYPE, type);
+            final TypeSignature fieldType = new TypeSignature(Types.CLASS_TYPE, type);
             final FieldDescriptor field = new FieldDescriptor(fieldName, fieldType);
             classFields.put(type, field);
             return this;
