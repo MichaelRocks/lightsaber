@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber.processor;
 import io.michaelrocks.lightsaber.internal.SingletonProvider;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry;
 import io.michaelrocks.lightsaber.processor.commons.Types;
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
@@ -229,6 +230,13 @@ public class ProcessorContext {
         }
         for (final Type qualifierType : qualifiers) {
             logger.debug("\tQualifier: {}", qualifierType);
+        }
+        for (final PackageInvaderDescriptor packageInvader : getPackageInvaders()) {
+            logger.debug("Package invader: {} for package {}",
+                    packageInvader.getType(), packageInvader.getPackageName());
+            for (final Map.Entry<Type, FieldDescriptor> entry : packageInvader.getClassFields().entrySet()) {
+                logger.debug("\tClass field: {} for class {}", entry.getValue().getName(), entry.getKey());
+            }
         }
     }
 }
