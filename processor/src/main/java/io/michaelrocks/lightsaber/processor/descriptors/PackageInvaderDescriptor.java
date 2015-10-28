@@ -22,7 +22,9 @@ import org.objectweb.asm.Type;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class PackageInvaderDescriptor {
     private static final String CLASS_NAME = "Lightsaber$$PackageInvader";
@@ -57,6 +59,7 @@ public class PackageInvaderDescriptor {
     public static class Builder {
         private final Type type;
         private final String packageName;
+        private final Set<Type> classes = new HashSet<>();
         private final Map<Type, FieldDescriptor> classFields = new HashMap<>();
 
         public Builder(final String packageName) {
@@ -65,15 +68,27 @@ public class PackageInvaderDescriptor {
         }
 
         public Builder addClass(final Type type) {
-            final String fieldName = FIELD_PREFIX + classFields.size();
-            final TypeSignature fieldType = new TypeSignature(Types.CLASS_TYPE, type);
-            final FieldDescriptor field = new FieldDescriptor(fieldName, fieldType);
-            classFields.put(type, field);
+            classes.add(type);
             return this;
         }
 
         public PackageInvaderDescriptor build() {
+            addClassFields();
             return new PackageInvaderDescriptor(this);
+        }
+
+        private void addClassFields() {
+            classFields.clear();
+            for (final Type type : classes) {
+                addClassField(type);
+            }
+        }
+
+        private void addClassField(final Type type) {
+            final String fieldName = FIELD_PREFIX + classFields.size();
+            final TypeSignature fieldType = new TypeSignature(Types.CLASS_TYPE, type);
+            final FieldDescriptor field = new FieldDescriptor(fieldName, fieldType);
+            classFields.put(type, field);
         }
     }
 }
