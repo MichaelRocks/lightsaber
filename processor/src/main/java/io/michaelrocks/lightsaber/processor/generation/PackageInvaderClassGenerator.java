@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.generation;
 
-import io.michaelrocks.lightsaber.LightsaberTypes;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
@@ -54,7 +53,7 @@ public class PackageInvaderClassGenerator {
                 packageInvader.getType().getInternalName(),
                 null,
                 Type.getInternalName(Object.class),
-                new String[] { LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE.getInternalName() });
+                null);
 
         generateFields(classVisitor);
         generateStaticInitializer(classVisitor);
