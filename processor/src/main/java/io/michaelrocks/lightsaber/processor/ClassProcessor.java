@@ -140,13 +140,14 @@ public class ClassProcessor {
         final Map<String, PackageInvaderDescriptor.Builder> builders = new HashMap<>();
         for (final ModuleDescriptor module : processorContext.getModules()) {
             for (final ProviderDescriptor provider : module.getProviders()) {
-                final String packageName = Types.getPackageName(provider.getProvidableType());
+                final Type providableType = Types.box(provider.getProvidableType());
+                final String packageName = Types.getPackageName(module.getModuleType());
                 PackageInvaderDescriptor.Builder builder = builders.get(packageName);
                 if (builder == null) {
                     builder = new PackageInvaderDescriptor.Builder(packageName);
                     builders.put(packageName, builder);
                 }
-                builder.addClass(provider.getProvidableType());
+                builder.addClass(providableType);
             }
         }
 
