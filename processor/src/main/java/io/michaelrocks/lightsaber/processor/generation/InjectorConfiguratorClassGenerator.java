@@ -23,11 +23,14 @@ import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.PackageInvaderDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType;
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor;
+import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
@@ -122,7 +125,12 @@ public class InjectorConfiguratorClassGenerator {
         generator.newInstance(Types.KEY_TYPE);
         generator.dup();
         final QualifiedType providableType = provider.getQualifiedProvidableType();
-        generator.push(Types.box(providableType.getType()));
+        final PackageInvaderDescriptor packageInvader =
+                processorContext.findPackageInvaderByTargetType(module.getModuleType());
+        final FieldDescriptor classField = packageInvader.getClassField(Types.box(providableType.getType()));
+        Validate.notNull(classField, "Cannot find class field for type: %s", providableType.getType());
+
+        generator.getStatic(packageInvader.getType(), classField);
         final AnnotationData qualifier = providableType.getQualifier();
         if (qualifier == null) {
             generator.pushNull();
