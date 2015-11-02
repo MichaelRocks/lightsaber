@@ -124,7 +124,6 @@ public class ProcessorContext {
 
     public void addPackageModule(final ModuleDescriptor packageModule) {
         packageModules.put(packageModule.getModuleType(), packageModule);
-        addModule(packageModule);
     }
 
     public InjectionTargetDescriptor findInjectableTargetByType(final Type injectableTargetType) {
