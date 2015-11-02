@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor;
 
-import io.michaelrocks.lightsaber.SingletonProvider;
+import io.michaelrocks.lightsaber.LightsaberTypes;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
@@ -48,7 +48,7 @@ import java.util.Set;
 public class ProcessorContext {
     private static final String PACKAGE_MODULE_CLASS_NAME = "Lightsaber$$PackageModule";
     private static final ScopeDescriptor SINGLETON_SCOPE_DESCRIPTOR =
-            new ScopeDescriptor(Type.getType(Singleton.class), Type.getType(SingletonProvider.class));
+            new ScopeDescriptor(Type.getType(Singleton.class), LightsaberTypes.SINGLETON_PROVIDER_TYPE);
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessorContext.class);
 

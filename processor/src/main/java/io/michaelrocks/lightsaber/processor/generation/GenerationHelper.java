@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.processor.generation;
 
 import io.michaelrocks.lightsaber.Lazy;
-import io.michaelrocks.lightsaber.LazyAdapter;
+import io.michaelrocks.lightsaber.LightsaberTypes;
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor;
@@ -26,7 +26,7 @@ import org.objectweb.asm.Type;
 
 class GenerationHelper {
     private static final Type LAZY_TYPE = Type.getType(Lazy.class);
-    private static final Type LAZY_ADAPTER_TYPE = Type.getType(LazyAdapter.class);
+    private static final Type LAZY_ADAPTER_TYPE = LightsaberTypes.LAZY_ADAPTER_TYPE;
 
     private static final MethodDescriptor LAZY_ADAPTER_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.PROVIDER_TYPE);
