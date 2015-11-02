@@ -27,9 +27,6 @@ public class Lightsaber {
     private static final Key<?> INJECTOR_KEY = Key.of(Injector.class);
     private static final Configurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
 
-    private static volatile Lightsaber instance;
-    private static final Object instanceLock = new Object();
-
     private final List<InjectorConfigurator> packageInjectorConfigurators;
     private final Map<Class<?>, InjectorConfigurator> injectorConfigurators;
     private final Map<Class<?>, MembersInjector<?>> membersInjectors;
@@ -45,14 +42,7 @@ public class Lightsaber {
     }
 
     public static Lightsaber getInstance() {
-        if (instance == null) {
-            synchronized (instanceLock) {
-                if (instance == null) {
-                    instance = new Lightsaber();
-                }
-            }
-        }
-        return instance;
+        return Holder.INSTANCE;
     }
 
     public Injector createInjector(final Object... modules) {
@@ -201,5 +191,9 @@ public class Lightsaber {
             // noinspection unchecked
             return LightsaberRegistry.getMembersInjectors();
         }
+    }
+
+    private static final class Holder {
+        static final Lightsaber INSTANCE = new Lightsaber();
     }
 }
