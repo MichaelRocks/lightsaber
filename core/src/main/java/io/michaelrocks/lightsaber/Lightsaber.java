@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,14 +30,14 @@ public class Lightsaber {
     private static volatile Lightsaber instance;
     private static final Object instanceLock = new Object();
 
+    private final List<InjectorConfigurator> packageInjectorConfigurators;
     private final Map<Class<?>, InjectorConfigurator> injectorConfigurators;
     private final Map<Class<?>, MembersInjector<?>> membersInjectors;
-    private final Object[] packageModules;
 
     Lightsaber(final Configurator configurator) {
+        packageInjectorConfigurators = configurator.getPackageInjectorConfigurators();
         injectorConfigurators = configurator.getInjectorConfigurators();
         membersInjectors = configurator.getMembersInjectors();
-        packageModules = configurator.getPackageModules();
     }
 
     public static Lightsaber getInstance() {
@@ -52,7 +53,9 @@ public class Lightsaber {
 
     public Injector createInjector(final Object... modules) {
         final LightsaberInjector injector = createChildInjectorInternal(null, modules);
-        configureInjector(injector, packageModules);
+        for (final InjectorConfigurator injectorConfigurator : packageInjectorConfigurators) {
+            injectorConfigurator.configureInjector(injector, null);
+        }
         return injector;
     }
 
@@ -63,8 +66,7 @@ public class Lightsaber {
         return createChildInjectorInternal(parentInjector, modules);
     }
 
-    private LightsaberInjector createChildInjectorInternal(final Injector parentInjector,
-            final Object... modules) {
+    private LightsaberInjector createChildInjectorInternal(final Injector parentInjector, final Object... modules) {
         final LightsaberInjector injector = new LightsaberInjector(this, parentInjector);
         configureInjector(injector, modules);
         checkProvidersNotOverlap(injector, parentInjector);
@@ -172,12 +174,18 @@ public class Lightsaber {
     }
 
     interface Configurator {
+        List<InjectorConfigurator> getPackageInjectorConfigurators();
         Map<Class<?>, InjectorConfigurator> getInjectorConfigurators();
         Map<Class<?>, MembersInjector<?>> getMembersInjectors();
-        Object[] getPackageModules();
     }
 
     private static class DefaultConfigurator implements Configurator {
+        @Override
+        public List<InjectorConfigurator> getPackageInjectorConfigurators() {
+            // noinspection unchecked
+            return LightsaberRegistry.getPackageInjectorConfigurators();
+        }
+
         @Override
         public Map<Class<?>, InjectorConfigurator> getInjectorConfigurators() {
             // noinspection unchecked
@@ -188,11 +196,6 @@ public class Lightsaber {
         public Map<Class<?>, MembersInjector<?>> getMembersInjectors() {
             // noinspection unchecked
             return LightsaberRegistry.getMembersInjectors();
-        }
-
-        @Override
-        public Object[] getPackageModules() {
-            return LightsaberRegistry.getPackageModules();
         }
     }
 }
