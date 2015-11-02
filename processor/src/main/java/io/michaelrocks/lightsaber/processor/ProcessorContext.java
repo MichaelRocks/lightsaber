@@ -29,6 +29,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.graph.TypeGraph;
+import org.apache.commons.collections4.CollectionUtils;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,6 +125,10 @@ public class ProcessorContext {
 
     public void addPackageModule(final ModuleDescriptor packageModule) {
         packageModules.put(packageModule.getModuleType(), packageModule);
+    }
+
+    public Collection<ModuleDescriptor> getAllModules() {
+        return CollectionUtils.union(modules.values(), packageModules.values());
     }
 
     public InjectionTargetDescriptor findInjectableTargetByType(final Type injectableTargetType) {
