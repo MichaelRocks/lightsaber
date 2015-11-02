@@ -31,8 +31,10 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Type;
 
 import javax.inject.Provider;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.objectweb.asm.Opcodes.*;
@@ -40,28 +42,33 @@ import static org.objectweb.asm.Opcodes.*;
 public class LightsaberRegistryClassGenerator {
     private static final Type LIGHTSABER_REGISTRY_TYPE =
             Type.getObjectType("io/michaelrocks/lightsaber/LightsaberRegistry");
+    private static final Type LIST_TYPE = Type.getType(List.class);
+    private static final Type ARRAY_LIST_TYPE = Type.getType(ArrayList.class);
     private static final Type MAP_TYPE = Type.getType(Map.class);
     private static final Type HASH_MAP_TYPE = Type.getType(HashMap.class);
-    private static final Type OBJECT_ARRAY_TYPE = Types.getArrayType(Types.OBJECT_TYPE);
 
+    private static final FieldDescriptor PACKAGE_INJECTOR_CONFIGURATORS_FIELD =
+            new FieldDescriptor("packageInjectorConfigurators", LIST_TYPE);
     private static final FieldDescriptor INJECTOR_CONFIGURATORS_FIELD =
             new FieldDescriptor("injectorConfigurators", MAP_TYPE);
     private static final FieldDescriptor MEMBERS_INJECTORS_FIELD =
             new FieldDescriptor("membersInjectors", MAP_TYPE);
-    private static final FieldDescriptor PACKAGE_MODULES_FIELD =
-            new FieldDescriptor("packageModules", OBJECT_ARRAY_TYPE);
 
+    private static final MethodDescriptor ARRAY_LIST_CONSTRUCTOR =
+            MethodDescriptor.forConstructor(Type.INT_TYPE);
+    private static final MethodDescriptor ADD_METHOD =
+            MethodDescriptor.forMethod("add", Type.BOOLEAN_TYPE, Types.OBJECT_TYPE);
     private static final MethodDescriptor HASH_MAP_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Type.INT_TYPE);
     private static final MethodDescriptor PUT_METHOD =
             MethodDescriptor.forMethod("put", Types.OBJECT_TYPE, Types.OBJECT_TYPE, Types.OBJECT_TYPE);
 
+    private static final MethodDescriptor GET_PACKAGE_INJECTOR_CONFIGURATORS_METHOD =
+            MethodDescriptor.forMethod("getPackageInjectorConfigurators", LIST_TYPE);
     private static final MethodDescriptor GET_INJECTOR_CONFIGURATORS_METHOD =
             MethodDescriptor.forMethod("getInjectorConfigurators", MAP_TYPE);
     private static final MethodDescriptor GET_MEMBERS_INJECTORS_METHOD =
             MethodDescriptor.forMethod("getMembersInjectors", MAP_TYPE);
-    private static final MethodDescriptor GET_PACKAGE_MODULES_METHOD =
-            MethodDescriptor.forMethod("getPackageModules", OBJECT_ARRAY_TYPE);
 
     private final ClassProducer classProducer;
     private final ProcessorContext processorContext;
@@ -122,8 +129,8 @@ public class LightsaberRegistryClassGenerator {
     private void generatePackageModulesField(final ClassVisitor classVisitor) {
         final FieldVisitor fieldVisitor = classVisitor.visitField(
                 ACC_PRIVATE | ACC_STATIC | ACC_FINAL,
-                PACKAGE_MODULES_FIELD.getName(),
-                PACKAGE_MODULES_FIELD.getDescriptor(),
+                PACKAGE_INJECTOR_CONFIGURATORS_FIELD.getName(),
+                PACKAGE_INJECTOR_CONFIGURATORS_FIELD.getDescriptor(),
                 null,
                 null);
         fieldVisitor.visitEnd();
@@ -134,12 +141,31 @@ public class LightsaberRegistryClassGenerator {
                 new GeneratorAdapter(classVisitor, ACC_STATIC, MethodDescriptor.forStaticInitializer());
         generator.visitCode();
 
+        populatePackageInjectorConfiguratorsMethod(generator);
         populateInjectorConfigurators(generator);
         populateMembersInjectors(generator);
-        populatePackageModulesMethod(generator);
 
         generator.returnValue();
         generator.endMethod();
+    }
+
+    private void populatePackageInjectorConfiguratorsMethod(final GeneratorAdapter generator) {
+        final Collection<ModuleDescriptor> packageModules = processorContext.getPackageModules();
+        generator.newInstance(ARRAY_LIST_TYPE);
+        generator.dup();
+        generator.push(packageModules.size());
+        generator.invokeConstructor(ARRAY_LIST_TYPE, ARRAY_LIST_CONSTRUCTOR);
+
+        for (final ModuleDescriptor packageModule : packageModules) {
+            generator.dup();
+            generator.newInstance(packageModule.getConfiguratorType());
+            generator.dup();
+            generator.invokeConstructor(packageModule.getConfiguratorType(), MethodDescriptor.forDefaultConstructor());
+            generator.invokeInterface(LIST_TYPE, ADD_METHOD);
+            generator.pop();
+        }
+
+        generator.putStatic(LIGHTSABER_REGISTRY_TYPE, PACKAGE_INJECTOR_CONFIGURATORS_FIELD);
     }
 
     private void populateInjectorConfigurators(final GeneratorAdapter generator) {
@@ -182,24 +208,6 @@ public class LightsaberRegistryClassGenerator {
         generator.putStatic(LIGHTSABER_REGISTRY_TYPE, MEMBERS_INJECTORS_FIELD);
     }
 
-    private void populatePackageModulesMethod(final GeneratorAdapter generator) {
-        final Collection<ModuleDescriptor> packageModules = processorContext.getPackageModules();
-        generator.newArray(Types.OBJECT_TYPE, packageModules.size());
-
-        int index = 0;
-        for (final ModuleDescriptor packageModule : packageModules) {
-            generator.dup();
-            generator.push(index);
-            generator.newInstance(packageModule.getModuleType());
-            generator.dup();
-            generator.invokeConstructor(packageModule.getModuleType(), MethodDescriptor.forDefaultConstructor());
-            generator.arrayStore(packageModule.getModuleType());
-            index += 1;
-        }
-
-        generator.putStatic(LIGHTSABER_REGISTRY_TYPE, PACKAGE_MODULES_FIELD);
-    }
-
     private void generateMethods(final ClassVisitor classVisitor) {
         generateGetInjectorGonfiguratorsMethod(classVisitor);
         generateGetMembersInjectorsMethod(classVisitor);
@@ -226,9 +234,9 @@ public class LightsaberRegistryClassGenerator {
 
     private void generateGetPackageModulesMethod(final ClassVisitor classVisitor) {
         final GeneratorAdapter generator =
-                new GeneratorAdapter(classVisitor, ACC_PUBLIC | ACC_STATIC, GET_PACKAGE_MODULES_METHOD);
+                new GeneratorAdapter(classVisitor, ACC_PUBLIC | ACC_STATIC, GET_PACKAGE_INJECTOR_CONFIGURATORS_METHOD);
         generator.visitCode();
-        generator.getStatic(LIGHTSABER_REGISTRY_TYPE, PACKAGE_MODULES_FIELD);
+        generator.getStatic(LIGHTSABER_REGISTRY_TYPE, PACKAGE_INJECTOR_CONFIGURATORS_FIELD);
         generator.returnValue();
         generator.endMethod();
     }
