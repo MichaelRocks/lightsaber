@@ -212,6 +212,16 @@ public class ProcessorContext {
                 }
             }
         }
+        for (final ModuleDescriptor module : getPackageModules()) {
+            logger.debug("Package module: {}", module.getModuleType());
+            for (final ProviderDescriptor provider : module.getProviders()) {
+                if (provider.getProviderMethod() != null) {
+                    logger.debug("\tProvides: {}", provider.getProviderMethod());
+                } else {
+                    logger.debug("\tProvides: {}", provider.getProviderField());
+                }
+            }
+        }
         for (final InjectionTargetDescriptor injectableTarget : getInjectableTargets()) {
             logger.debug("Injectable: {}", injectableTarget.getTargetType());
             for (final QualifiedFieldDescriptor injectableField : injectableTarget.getInjectableFields()) {
