@@ -38,7 +38,7 @@ public class ProvidersGenerator {
     }
 
     public void generateProviders() {
-        for (final ModuleDescriptor module : processorContext.getModules()) {
+        for (final ModuleDescriptor module : processorContext.getAllModules()) {
             generateModuleProviders(module);
         }
     }

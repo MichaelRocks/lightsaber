@@ -136,7 +136,7 @@ public class ClassProcessor {
 
     private void composePackageInvaders() {
         final Map<String, PackageInvaderDescriptor.Builder> builders = new HashMap<>();
-        for (final ModuleDescriptor module : processorContext.getModules()) {
+        for (final ModuleDescriptor module : processorContext.getAllModules()) {
             for (final ProviderDescriptor provider : module.getProviders()) {
                 final Type providableType = Types.box(provider.getProvidableType());
                 final String packageName = Types.getPackageName(module.getModuleType());
@@ -155,7 +155,7 @@ public class ClassProcessor {
     }
 
     private void validateDependencyGraph() throws ProcessingException {
-        final DependencyGraph dependencyGraph = new DependencyGraph(processorContext, processorContext.getModules());
+        final DependencyGraph dependencyGraph = new DependencyGraph(processorContext, processorContext.getAllModules());
 
         final UnresolvedDependenciesSearcher unresolvedDependenciesSearcher =
                 new UnresolvedDependenciesSearcher(dependencyGraph);

@@ -37,7 +37,7 @@ public class InjectorConfiguratorsGenerator {
     }
 
     public void generateInjectorConfigurators() {
-        for (final ModuleDescriptor module : processorContext.getModules()) {
+        for (final ModuleDescriptor module : processorContext.getAllModules()) {
             generateInjectorConfigurator(module);
         }
     }
