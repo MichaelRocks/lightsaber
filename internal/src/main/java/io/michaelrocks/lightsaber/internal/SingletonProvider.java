@@ -18,12 +18,13 @@ package io.michaelrocks.lightsaber.internal;
 
 import javax.inject.Provider;
 
-public class SingletonProvider<T> extends DelegateProvider<T> {
+public class SingletonProvider<T> implements Provider<T> {
+    private final Provider<T> provider;
     private volatile T instance;
     private final Object instanceLock = new Object();
 
     public SingletonProvider(final Provider<T> provider) {
-        super(provider);
+        this.provider = provider;
     }
 
     @Override
@@ -31,7 +32,7 @@ public class SingletonProvider<T> extends DelegateProvider<T> {
         if (instance == null) {
             synchronized (instanceLock) {
                 if (instance == null) {
-                    instance = getDelegate().get();
+                    instance = provider.get();
                 }
             }
         }
