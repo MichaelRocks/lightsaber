@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor;
 
-import io.michaelrocks.lightsaber.internal.SingletonProvider;
+import io.michaelrocks.lightsaber.SingletonProvider;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry;
 import io.michaelrocks.lightsaber.processor.commons.Types;
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;

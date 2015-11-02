@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.internal;
+package io.michaelrocks.lightsaber;
 
 import javax.inject.Provider;
 
-public class SingletonProvider<T> implements Provider<T> {
+public class LazyAdapter<T> implements Lazy<T> {
     private final Provider<T> provider;
     private volatile T instance;
     private final Object instanceLock = new Object();
 
-    public SingletonProvider(final Provider<T> provider) {
+    public LazyAdapter(final Provider<T> provider) {
         this.provider = provider;
     }
 
