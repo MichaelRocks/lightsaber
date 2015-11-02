@@ -34,6 +34,10 @@ public class Lightsaber {
     private final Map<Class<?>, InjectorConfigurator> injectorConfigurators;
     private final Map<Class<?>, MembersInjector<?>> membersInjectors;
 
+    Lightsaber() {
+        this(DEFAULT_CONFIGURATOR);
+    }
+
     Lightsaber(final Configurator configurator) {
         packageInjectorConfigurators = configurator.getPackageInjectorConfigurators();
         injectorConfigurators = configurator.getInjectorConfigurators();
@@ -44,7 +48,7 @@ public class Lightsaber {
         if (instance == null) {
             synchronized (instanceLock) {
                 if (instance == null) {
-                    instance = new Lightsaber(DEFAULT_CONFIGURATOR);
+                    instance = new Lightsaber();
                 }
             }
         }
