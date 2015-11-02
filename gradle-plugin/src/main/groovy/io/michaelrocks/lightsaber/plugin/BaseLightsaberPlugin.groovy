@@ -35,7 +35,6 @@ class BaseLightsaberPlugin implements Plugin<Project> {
     void addDependencies(final String configurationName) {
         final String version = Build.VERSION
         project.dependencies.add(configurationName, "io.michaelrocks:lightsaber-core:$version")
-        project.dependencies.add(configurationName, "io.michaelrocks:lightsaber-internal:$version")
     }
 
     void createTasks(final File classesDir, final File backupDir, final List<File> classpath,
