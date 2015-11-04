@@ -45,7 +45,7 @@ public class LightsaberSample {
     private lateinit var planet: Planet
 
     private fun run() {
-        val injector = Lightsaber.getInstance().createInjector(LightsaberModule())
+        val injector = Lightsaber.get().createInjector(LightsaberModule())
         injector.injectMembers(this)
         System.out.println("After injection")
         System.out.println("Wookiee: $wookiee from ${wookiee.planet}")

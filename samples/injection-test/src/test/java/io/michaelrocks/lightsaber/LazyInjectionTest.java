@@ -26,7 +26,7 @@ public class LazyInjectionTest {
     @Test
     public void testLazyConstructorInjection() {
         final LazyModule module = new LazyModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final Target target = injector.getInstance(Key.of(ConstructorInjectionTarget.class));
         validateTarget(module, target);
     }
@@ -34,7 +34,7 @@ public class LazyInjectionTest {
     @Test
     public void testLazyFieldInjection() {
         final LazyModule module = new LazyModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final Target target = new FieldInjectionTarget();
         injector.injectMembers(target);
         validateTarget(module, target);
@@ -43,7 +43,7 @@ public class LazyInjectionTest {
     @Test
     public void testLazyMethodInjection() {
         final LazyModule module = new LazyModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final Target target = new MethodInjectionTarget();
         injector.injectMembers(target);
         validateTarget(module, target);

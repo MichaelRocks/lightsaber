@@ -47,7 +47,7 @@ public class MainActivity : Activity() {
 
         val afterInjectionTextView = findViewById(R.id.afterInjectionTextView) as TextView
 
-        val injector = Lightsaber.getInstance().createInjector(LightsaberModule())
+        val injector = Lightsaber.get().createInjector(LightsaberModule())
         injector.injectMembers(this)
 
         print(afterInjectionTextView, "Wookiee: $wookiee from ${wookiee.planet}")

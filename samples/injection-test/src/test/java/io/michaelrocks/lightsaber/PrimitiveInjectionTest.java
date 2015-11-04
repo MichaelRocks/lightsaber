@@ -27,7 +27,7 @@ public class PrimitiveInjectionTest {
     @Test
     public void testUnboxedIntoUnboxedInjection() {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final UnboxedInjectableContainer container = new UnboxedInjectableContainer();
         injector.injectMembers(container);
 
@@ -44,7 +44,7 @@ public class PrimitiveInjectionTest {
     @Test
     public void testUnboxedIntoBoxedInjection() {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final BoxedInjectableContainer container = new BoxedInjectableContainer();
         injector.injectMembers(container);
 
@@ -61,7 +61,7 @@ public class PrimitiveInjectionTest {
     @Test
     public void testBoxedIntoUnboxedInjection() {
         final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final UnboxedInjectableContainer container = new UnboxedInjectableContainer();
         injector.injectMembers(container);
 
@@ -78,7 +78,7 @@ public class PrimitiveInjectionTest {
     @Test
     public void testBoxedIntoBoxedInjection() {
         final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final BoxedInjectableContainer container = new BoxedInjectableContainer();
         injector.injectMembers(container);
 
@@ -95,7 +95,7 @@ public class PrimitiveInjectionTest {
     @Test
     public void testUnboxedForUnboxedConstruction() {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final UnboxedConstructableContainer container =
                 injector.getInstance(Key.of(UnboxedConstructableContainer.class));
 
@@ -112,7 +112,7 @@ public class PrimitiveInjectionTest {
     @Test
     public void testUnboxedForBoxedConstruction() {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final BoxedConstructableContainer container =
                 injector.getInstance(Key.of(BoxedConstructableContainer.class));
 
@@ -129,7 +129,7 @@ public class PrimitiveInjectionTest {
     @Test
     public void testBoxedForUnboxedConstruction() {
         final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final UnboxedConstructableContainer container =
                 injector.getInstance(Key.of(UnboxedConstructableContainer.class));
 
@@ -146,7 +146,7 @@ public class PrimitiveInjectionTest {
     @Test
     public void testBoxedForBoxedConstruction() {
         final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final BoxedConstructableContainer container =
                 injector.getInstance(Key.of(BoxedConstructableContainer.class));
 
@@ -163,7 +163,7 @@ public class PrimitiveInjectionTest {
     @Test
     public void testUnboxedProvision() {
         final UnboxedPrimitiveModule module = new UnboxedPrimitiveModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
 
         final UnboxedResult unboxedResult = injector.getInstance(Key.of(UnboxedResult.class));
         final BoxedResult boxedResult = injector.getInstance(Key.of(BoxedResult.class));
@@ -175,7 +175,7 @@ public class PrimitiveInjectionTest {
     @Test
     public void testBoxedProvision() {
         final BoxedPrimitiveModule module = new BoxedPrimitiveModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
 
         final UnboxedResult unboxedResult = injector.getInstance(Key.of(UnboxedResult.class));
         final BoxedResult boxedResult = injector.getInstance(Key.of(BoxedResult.class));

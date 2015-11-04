@@ -41,7 +41,7 @@ public class Lightsaber {
         membersInjectors = configurator.getMembersInjectors();
     }
 
-    public static Lightsaber getInstance() {
+    public static Lightsaber get() {
         return Holder.INSTANCE;
     }
 

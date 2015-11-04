@@ -26,7 +26,7 @@ public class AccessTest {
     @Test
     public void testInjectionAccess() {
         final AccessModule module = new AccessModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final InternalDependency target = injector.getInstance(Key.of(InternalDependency.class));
         target.action();
     }
@@ -34,7 +34,7 @@ public class AccessTest {
     @Test
     public void testInjectionAccessWithQualifier() {
         final AccessModule module = new AccessModule();
-        final Injector injector = Lightsaber.getInstance().createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final InternalQualifier qualifier = getClass().getAnnotation(InternalQualifier.class);
         final InternalDependency target = injector.getInstance(Key.of(InternalDependency.class, qualifier));
         target.action();
