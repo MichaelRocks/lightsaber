@@ -27,11 +27,10 @@ public class ModuleDescriptor {
     private final Type configuratorType;
     private final List<ProviderDescriptor> providers;
 
-    public ModuleDescriptor(final Type moduleType, final Type configuratorType,
-            final List<ProviderDescriptor> providers) {
-        this.moduleType = moduleType;
-        this.configuratorType = configuratorType;
-        this.providers = Collections.unmodifiableList(providers);
+    private ModuleDescriptor(final Builder builder) {
+        this.moduleType = builder.moduleType;
+        this.configuratorType = builder.configuratorType;
+        this.providers = Collections.unmodifiableList(builder.providers);
     }
 
     public Type getModuleType() {
@@ -89,7 +88,7 @@ public class ModuleDescriptor {
         }
 
         public ModuleDescriptor build() {
-            return new ModuleDescriptor(moduleType, configuratorType, providers);
+            return new ModuleDescriptor(this);
         }
     }
 }
