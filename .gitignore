@@ -28,3 +28,6 @@ proguard/
 # IntelliJ IDEA and Android Studio files
 .idea/
 *.iml
+
+# Gradle Wrapper
+!gradle/
