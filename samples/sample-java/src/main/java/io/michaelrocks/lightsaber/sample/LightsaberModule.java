@@ -28,7 +28,7 @@ class LightsaberModule {
     private final DarthVader darthVader = DarthVader.INSTANCE;
 
     @Provides
-    private Wookiee provideWookie(final Chewbacca chewbacca) {
+    private Wookiee provideWookiee(final Chewbacca chewbacca) {
         return chewbacca;
     }
 
