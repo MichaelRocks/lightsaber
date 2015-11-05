@@ -91,7 +91,9 @@ public class ProviderClassGenerator {
 
     private void generateFields(final ClassVisitor classVisitor) {
         generateKeyFields(classVisitor);
-        generateModuleField(classVisitor);
+        if (!provider.isConstructorProvider()) {
+            generateModuleField(classVisitor);
+        }
         generateInjectorField(classVisitor);
     }
 
@@ -176,12 +178,20 @@ public class ProviderClassGenerator {
         generator.visitCode();
         generator.loadThis();
         generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forConstructor());
-        generator.loadThis();
-        generator.loadArg(0);
-        generator.putField(provider.getProviderType(), MODULE_FIELD_NAME, provider.getModuleType());
-        generator.loadThis();
-        generator.loadArg(1);
-        generator.putField(provider.getProviderType(), INJECTOR_FIELD);
+
+        if (provider.isConstructorProvider()) {
+            generator.loadThis();
+            generator.loadArg(0);
+            generator.putField(provider.getProviderType(), INJECTOR_FIELD);
+        } else {
+            generator.loadThis();
+            generator.loadArg(0);
+            generator.putField(provider.getProviderType(), MODULE_FIELD_NAME, provider.getModuleType());
+            generator.loadThis();
+            generator.loadArg(1);
+            generator.putField(provider.getProviderType(), INJECTOR_FIELD);
+        }
+
         generator.returnValue();
         generator.endMethod();
     }
@@ -265,6 +275,10 @@ public class ProviderClassGenerator {
     }
 
     private MethodDescriptor getProviderConstructor() {
-        return MethodDescriptor.forConstructor(provider.getModuleType(), Type.getType(Injector.class));
+        if (provider.isConstructorProvider()) {
+            return MethodDescriptor.forConstructor(Type.getType(Injector.class));
+        } else {
+            return MethodDescriptor.forConstructor(provider.getModuleType(), Type.getType(Injector.class));
+        }
     }
 }

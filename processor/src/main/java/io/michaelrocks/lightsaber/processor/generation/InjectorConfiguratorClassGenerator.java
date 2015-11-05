@@ -49,6 +49,8 @@ public class InjectorConfiguratorClassGenerator {
     private static final MethodDescriptor DELEGATE_PROVIDER_CONSTRUCTOR =
             MethodDescriptor.forConstructor(Types.PROVIDER_TYPE);
 
+    private static final int INVALID_LOCAL = -1;
+
     private final ProcessorContext processorContext;
     private final AnnotationCreator annotationCreator;
     private final ModuleDescriptor module;
@@ -94,10 +96,15 @@ public class InjectorConfiguratorClassGenerator {
         final GeneratorAdapter generator = new GeneratorAdapter(classVisitor, ACC_PUBLIC, CONFIGURE_INJECTOR_METHOD);
         generator.visitCode();
 
-        generator.loadArg(1);
-        generator.checkCast(module.getModuleType());
-        final int moduleLocal = generator.newLocal(module.getModuleType());
-        generator.storeLocal(moduleLocal);
+        final int moduleLocal;
+        if (isModuleArgumentUsed()) {
+            generator.loadArg(1);
+            generator.checkCast(module.getModuleType());
+            moduleLocal = generator.newLocal(module.getModuleType());
+            generator.storeLocal(moduleLocal);
+        } else {
+            moduleLocal = INVALID_LOCAL;
+        }
 
         for (final ProviderDescriptor provider : module.getProviders()) {
             generateRegisterProviderInvocation(generator, provider, moduleLocal);
@@ -105,6 +112,15 @@ public class InjectorConfiguratorClassGenerator {
 
         generator.returnValue();
         generator.endMethod();
+    }
+
+    private boolean isModuleArgumentUsed() {
+        for (final ProviderDescriptor provider : module.getProviders()) {
+            if (!provider.isConstructorProvider()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void generateRegisterProviderInvocation(final GeneratorAdapter generator,
@@ -153,10 +169,16 @@ public class InjectorConfiguratorClassGenerator {
             final int moduleLocal) {
         generator.newInstance(provider.getProviderType());
         generator.dup();
-        generator.loadLocal(moduleLocal);
-        generator.loadArg(0);
-        final MethodDescriptor constructor =
-                MethodDescriptor.forConstructor(provider.getModuleType(), Types.INJECTOR_TYPE);
-        generator.invokeConstructor(provider.getProviderType(), constructor);
+        if (moduleLocal == INVALID_LOCAL) {
+            generator.loadArg(0);
+            final MethodDescriptor constructor = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE);
+            generator.invokeConstructor(provider.getProviderType(), constructor);
+        } else {
+            generator.loadLocal(moduleLocal);
+            generator.loadArg(0);
+            final MethodDescriptor constructor =
+                    MethodDescriptor.forConstructor(provider.getModuleType(), Types.INJECTOR_TYPE);
+            generator.invokeConstructor(provider.getProviderType(), constructor);
+        }
     }
 }
