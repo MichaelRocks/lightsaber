@@ -12,7 +12,7 @@ apply plugin: 'io.michaelrocks.lightsaber.android'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion '23.0.1'
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         applicationId 'io.michaelrocks.lightsaber.sample'
