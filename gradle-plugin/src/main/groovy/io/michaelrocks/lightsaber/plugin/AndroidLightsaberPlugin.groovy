@@ -20,7 +20,6 @@ import com.android.build.gradle.api.BaseVariant
 import com.android.build.transform.api.Transform
 import org.gradle.api.GradleException
 import org.gradle.api.Project
-import org.gradle.api.logging.LogLevel
 
 class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
     @Override
@@ -29,9 +28,8 @@ class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
 
         if (project.hasProperty('android')) {
             addDependencies('compile')
-            if (isTranformAvailable()) {
-                final boolean verbose = logger.isEnabled(LogLevel.DEBUG)
-                project.android.registerTransform(new LightsaberTransform(verbose))
+            if (isTransformAvailable()) {
+                project.android.registerTransform(new LightsaberTransform())
             } else {
                 project.afterEvaluate {
                     if (project.plugins.hasPlugin('com.android.application')) {
@@ -48,7 +46,7 @@ class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
         }
     }
 
-    private boolean isTranformAvailable() {
+    private boolean isTransformAvailable() {
         try {
             Class.forName("com.android.build.transform.api.Transform")
             return project.android.respondsTo('registerTransform', Transform, Object[])

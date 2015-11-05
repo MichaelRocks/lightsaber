@@ -14,12 +14,32 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.internal;
+package io.michaelrocks.lightsaber.access;
 
-import io.michaelrocks.lightsaber.Injector;
+import javax.inject.Inject;
 
-public interface TypeAgent<T> {
-    Class<T> getType();
-    void injectFields(Injector injector, T target);
-    void injectMethods(Injector injector, T target);
+class InternalDependencyImpl implements InternalDependency {
+    @Inject
+    private InternalDependencyImpl() {
+    }
+
+    @Override
+    public void action() {
+    }
+
+    @Inject
+    private void privateMethod() {
+    }
+
+    @Inject
+    void internalMethod() {
+    }
+
+    @Inject
+    protected void protectedMethod() {
+    }
+
+    @Inject
+    public void publicMethod() {
+    }
 }

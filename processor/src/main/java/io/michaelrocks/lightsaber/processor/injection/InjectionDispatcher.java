@@ -18,30 +18,24 @@ package io.michaelrocks.lightsaber.processor.injection;
 
 import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor;
 import io.michaelrocks.lightsaber.processor.ProcessorContext;
-import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Type;
 
 public class InjectionDispatcher extends ProcessorClassVisitor {
-    private final AnnotationCreator annotationCreator;
-
-    public InjectionDispatcher(final ClassVisitor classVisitor, final ProcessorContext processorContext,
-            final AnnotationCreator annotationCreator) {
+    public InjectionDispatcher(final ClassVisitor classVisitor, final ProcessorContext processorContext) {
         super(processorContext, classVisitor);
-        this.annotationCreator = annotationCreator;
     }
 
     @Override
     public void visit(final int version, final int access, final String name, final String signature,
             final String superName, final String[] interfaces) {
-        cv = new InjectionPatcher(getProcessorContext(), cv);
         final Type type = Type.getObjectType(name);
 
         final ModuleDescriptor module = getProcessorContext().findModuleByType(type);
         if (module != null) {
-            cv = new ModulePatcher(getProcessorContext(), cv, annotationCreator, module);
+            cv = new ModulePatcher(getProcessorContext(), cv, module);
         }
 
         final InjectionTargetDescriptor injectableTarget = getProcessorContext().findInjectableTargetByType(type);

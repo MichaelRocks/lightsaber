@@ -14,49 +14,38 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.internal;
-
-import io.michaelrocks.lightsaber.ConfigurationException;
-import io.michaelrocks.lightsaber.Injector;
-import io.michaelrocks.lightsaber.Key;
+package io.michaelrocks.lightsaber;
 
 import javax.inject.Provider;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LightsaberInjector implements Injector {
+class LightsaberInjector implements Injector {
     private static final Key<Injector> INJECTOR_KEY = new Key<Injector>(Injector.class);
 
+    private final Lightsaber lightsaber;
     private final Injector parentInjector;
     private final Map<Key<?>, Provider<?>> providers = new HashMap<Key<?>, Provider<?>>();
 
-    public LightsaberInjector() {
-        this(null);
+    public LightsaberInjector(final Lightsaber lightsaber) {
+        this(lightsaber, null);
     }
 
-    public LightsaberInjector(final Injector parentInjector) {
+    public LightsaberInjector(final Lightsaber lightsaber, final Injector parentInjector) {
+        this.lightsaber = lightsaber;
         this.parentInjector = parentInjector;
-        registerProvider(INJECTOR_KEY, new InstanceProvider<Injector>(this));
-        if (parentInjector != null) {
-            copyParentProviders();
-        }
-    }
-
-    private void copyParentProviders() {
-        for (final Map.Entry<Key<?>, Provider<?>> entry : parentInjector.getAllProviders().entrySet()) {
-            if (!INJECTOR_KEY.equals(entry.getKey()) && entry.getValue() instanceof CopyableProvider) {
-                // noinspection unchecked
-                registerProvider(
-                        (Key<Object>) entry.getKey(),
-                        ((CopyableProvider<Object>) entry.getValue()).copyWithInjector(this));
+        registerProvider(INJECTOR_KEY, new Provider<Injector>() {
+            @Override
+            public Injector get() {
+                return LightsaberInjector.this;
             }
-        }
+        });
     }
 
     @Override
     public void injectMembers(final Object target) {
-        throw new IllegalStateException(
-                "This method must not be called. It must be substituted with a valid injector instead.");
+        lightsaber.injectMembers(this, target);
     }
 
     @Override
@@ -80,13 +69,23 @@ public class LightsaberInjector implements Injector {
 
     @Override
     public Map<Key<?>, Provider<?>> getAllProviders() {
-        return new HashMap<Key<?>, Provider<?>>(providers);
+        final Map<Key<?>, Provider<?>> parentProviders =
+                parentInjector == null ? Collections.<Key<?>, Provider<?>>emptyMap() : parentInjector.getAllProviders();
+        final Map<Key<?>, Provider<?>> allProviders =
+                new HashMap<Key<?>, Provider<?>>(parentProviders.size() + providers.size());
+        allProviders.putAll(parentProviders);
+        allProviders.putAll(providers);
+        return allProviders;
     }
 
-    public <T> void registerProvider(final Key<T> key, final CopyableProvider<T> provider) {
+    public <T> void registerProvider(final Key<T> key, final Provider<T> provider) {
         final Provider<?> oldProvider = providers.put(key, provider);
         if (oldProvider != null) {
             throw new ConfigurationException("Provider for " + key + " already registered");
         }
+    }
+
+    Map<Key<?>, Provider<?>> getProviders() {
+        return providers;
     }
 }

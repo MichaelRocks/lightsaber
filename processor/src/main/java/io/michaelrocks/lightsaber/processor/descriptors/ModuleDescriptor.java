@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors;
 
-import io.michaelrocks.lightsaber.internal.InstanceProvider;
 import org.objectweb.asm.Type;
 
 import java.util.ArrayList;
@@ -25,15 +24,21 @@ import java.util.List;
 
 public class ModuleDescriptor {
     private final Type moduleType;
+    private final Type configuratorType;
     private final List<ProviderDescriptor> providers;
 
-    public ModuleDescriptor(final Type moduleType, final List<ProviderDescriptor> providers) {
-        this.moduleType = moduleType;
-        this.providers = Collections.unmodifiableList(providers);
+    private ModuleDescriptor(final Builder builder) {
+        this.moduleType = builder.moduleType;
+        this.configuratorType = builder.configuratorType;
+        this.providers = Collections.unmodifiableList(builder.providers);
     }
 
     public Type getModuleType() {
         return moduleType;
+    }
+
+    public Type getConfiguratorType() {
+        return configuratorType;
     }
 
     public List<ProviderDescriptor> getProviders() {
@@ -42,11 +47,14 @@ public class ModuleDescriptor {
 
     public static class Builder {
         private final Type moduleType;
+        private final Type configuratorType;
         private final List<ProviderDescriptor> providers = new ArrayList<>();
-        private int providerIndex;
 
         public Builder(final Type moduleType) {
             this.moduleType = moduleType;
+            final String moduleNameWithDollars = moduleType.getInternalName().replace('/', '$');
+            this.configuratorType = Type.getObjectType(
+                    "io/michaelrocks/lightsaber/InjectorConfigurator$" + moduleNameWithDollars);
         }
 
         public Type getModuleType() {
@@ -54,7 +62,8 @@ public class ModuleDescriptor {
         }
 
         public Builder addProviderField(final QualifiedFieldDescriptor providerField) {
-            final Type providerType = Type.getType(InstanceProvider.class);
+            final Type providerType =
+                    Type.getObjectType(moduleType.getInternalName() + "$$Provider$$" + providers.size());
             final QualifiedType providableType =
                     new QualifiedType(providerField.getRawType(), providerField.getQualifier());
             final ProviderDescriptor provider =
@@ -63,9 +72,8 @@ public class ModuleDescriptor {
         }
 
         public Builder addProviderMethod(final QualifiedMethodDescriptor providerMethod, final ScopeDescriptor scope) {
-            providerIndex += 1;
             final Type providerType =
-                    Type.getObjectType(moduleType.getInternalName() + "$$Provider$$" + providerIndex);
+                    Type.getObjectType(moduleType.getInternalName() + "$$Provider$$" + providers.size());
             final QualifiedType providableType =
                     new QualifiedType(providerMethod.getReturnType().getRawType(), providerMethod.getResultQualifier());
             final Type delegatorType = scope != null ? scope.getProviderType() : null;
@@ -80,7 +88,7 @@ public class ModuleDescriptor {
         }
 
         public ModuleDescriptor build() {
-            return new ModuleDescriptor(moduleType, providers);
+            return new ModuleDescriptor(this);
         }
     }
 }

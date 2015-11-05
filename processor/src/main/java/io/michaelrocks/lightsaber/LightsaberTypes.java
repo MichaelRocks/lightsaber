@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.internal;
+package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.lightsaber.Injector;
+import org.objectweb.asm.Type;
 
-import javax.inject.Provider;
+public class LightsaberTypes {
+    public static final Type INJECTOR_CONFIGURATOR_TYPE = Type.getType(InjectorConfigurator.class);
+    public static final Type LIGHTSABER_INJECTOR_TYPE = Type.getType(LightsaberInjector.class);
+    public static final Type SINGLETON_PROVIDER_TYPE = Type.getType(SingletonProvider.class);
+    public static final Type LAZY_ADAPTER_TYPE = Type.getType(LazyAdapter.class);
 
-public interface CopyableProvider<T> extends Provider<T> {
-    CopyableProvider<T> copyWithInjector(Injector injector);
+    private LightsaberTypes() {
+    }
 }

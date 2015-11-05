@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor;
 
+import ch.qos.logback.classic.Level;
 import com.beust.jcommander.Parameter;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
@@ -36,11 +37,24 @@ public class LightsaberParameters {
     @Parameter(names = "--output", description = "Output jar file or classes directory")
     public String output;
 
-    @Parameter(names = { "-v", "--verbose" }, description = "Use verbose output")
-    public boolean verbose = false;
+    @Parameter(names = { "-i", "--info" }, description = "Use verbose output")
+    public boolean info = false;
+
+    @Parameter(names = { "-d", "--debug" }, description = "Use verbose output")
+    public boolean debug = false;
 
     @Parameter(names = "--stacktrace", description = "Print stack traces")
     public boolean printStacktrace = false;
+
+    public Level getLoggingLevel() {
+        if (debug) {
+            return Level.DEBUG;
+        } else if (info) {
+            return Level.INFO;
+        } else {
+            return Level.WARN;
+        }
+    }
 
     @Override
     public String toString() {
@@ -49,7 +63,8 @@ public class LightsaberParameters {
                 .append("classes", classes)
                 .append("libs", libs)
                 .append("output", output)
-                .append("verbose", verbose)
+                .append("info", info)
+                .append("debug", debug)
                 .append("printStacktrace", printStacktrace)
                 .toString();
     }

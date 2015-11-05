@@ -23,8 +23,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 
-import static org.objectweb.asm.Opcodes.ACC_FINAL;
-import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.*;
 
 public class InjectableTargetPatcher extends BaseInjectionClassVisitor {
     private final InjectionTargetDescriptor injectableTarget;
@@ -33,6 +32,16 @@ public class InjectableTargetPatcher extends BaseInjectionClassVisitor {
             final InjectionTargetDescriptor injectableTarget) {
         super(processorContext, classVisitor);
         this.injectableTarget = injectableTarget;
+    }
+
+    @Override
+    public void visit(final int version, final int access, final String name, final String signature,
+            final String superName, final String[] interfaces) {
+        final int newAccess = (access & ~(ACC_PRIVATE | ACC_PROTECTED)) | ACC_PUBLIC;
+        super.visit(version, newAccess, name, signature, superName, interfaces);
+        if (newAccess != access) {
+            setDirty(true);
+        }
     }
 
     @Override

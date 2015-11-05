@@ -53,7 +53,10 @@ public class Analyzer {
     }
 
     private void analyzeInjectionTargets(final ClassFileReader classFileReader) throws IOException {
-        analyzeClassesFromReader(classFileReader, new InjectionAnalysisDispatcher(processorContext));
+        final CompositeClassVisitor compositeClassVisitor = new CompositeClassVisitor();
+        compositeClassVisitor.addVisitor(new ModuleClassAnalyzer(processorContext));
+        compositeClassVisitor.addVisitor(new InjectionTargetAnalyzer(processorContext));
+        analyzeClassesFromReader(classFileReader, compositeClassVisitor);
     }
 
     private void analyzeLibraries(final List<File> libraries, final ClassVisitor classVisitor) throws IOException {

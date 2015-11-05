@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.internal;
+package io.michaelrocks.lightsaber.access;
 
-public interface InternalModule {
-    void configureInjector(LightsaberInjector injector);
+import javax.inject.Qualifier;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@Target({ TYPE, METHOD })
+@Retention(RUNTIME)
+@Qualifier
+public @interface InternalQualifier {
 }

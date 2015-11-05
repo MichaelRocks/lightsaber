@@ -31,7 +31,7 @@ public class QualifiedInjectionTest {
     @Test
     public void testConstructionInjection() {
         final QualifiedModule module = new QualifiedModule();
-        final Injector injector = Lightsaber.createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final Container container = injector.getInstance(Key.of(ConstructorInjectionContainer.class));
         validateContainer(module, container);
     }
@@ -39,7 +39,7 @@ public class QualifiedInjectionTest {
     @Test
     public void testFieldInjection() {
         final QualifiedModule module = new QualifiedModule();
-        final Injector injector = Lightsaber.createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final Container container = new FieldInjectionContainer();
         injector.injectMembers(container);
         validateContainer(module, container);
@@ -48,7 +48,7 @@ public class QualifiedInjectionTest {
     @Test
     public void testMethodInjection() {
         final QualifiedModule module = new QualifiedModule();
-        final Injector injector = Lightsaber.createInjector(module);
+        final Injector injector = Lightsaber.get().createInjector(module);
         final Container container = new MethodInjectionContainer();
         injector.injectMembers(container);
         validateContainer(module, container);
@@ -107,7 +107,8 @@ public class QualifiedInjectionTest {
         assertEquals(module.provideAnnotationArrayQualifierExplicit(), container.getAnnotationArrayQualifierExplicit());
     }
 
-    private static class QualifiedModule implements Module {
+    @Module
+    private static class QualifiedModule {
         @Provides
         public String provideNoQualifier() {
             return "NoQualifier";

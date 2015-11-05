@@ -13,7 +13,6 @@ mainClassName = 'io.michaelrocks.lightsaber.processor.LightsaberProcessor'
 
 dependencies {
     compile project(':core')
-    compile project(':internal')
 
     compile "com.google.code.findbugs:jsr305:$jsr305Version"
     compile "com.beust:jcommander:$jcommanderVersion"
@@ -22,6 +21,7 @@ dependencies {
     compile "org.apache.commons:commons-lang3:$commonsLangVersion"
     compile "commons-io:commons-io:$commonsIoVersion"
     compile "org.apache.commons:commons-collections4:$commonsCollectionsVersion"
+    compile "ch.qos.logback:logback-classic:$logbackVersion"
 
     testCompile "junit:junit:$junitVersion"
     testCompile "org.mockito:mockito-core:$mockitoVersion"

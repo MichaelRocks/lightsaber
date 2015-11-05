@@ -26,6 +26,8 @@ import io.michaelrocks.lightsaber.processor.io.JarClassFileTraverser;
 import io.michaelrocks.lightsaber.processor.io.JarClassFileWriter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +35,8 @@ import java.util.List;
 
 public class LightsaberProcessor {
     private static final String DEFAULT_SUFFIX = "-lightsaber";
+
+    private static final Logger logger = LoggerFactory.getLogger(LightsaberProcessor.class);
 
     private final LightsaberParameters parameters;
 
@@ -48,18 +52,20 @@ public class LightsaberProcessor {
             parser.parse(args);
             validateParameters(parameters);
         } catch (final ParameterException exception) {
-            System.err.println(exception.getMessage());
+            logger.error(exception.getMessage());
             final StringBuilder builder = new StringBuilder();
             parser.usage(builder);
-            System.err.println(builder.toString());
+            logger.error(builder.toString());
             System.exit(1);
         }
+
+        configureLogging(parameters);
 
         final LightsaberProcessor processor = new LightsaberProcessor(parameters);
         try {
             processor.process();
         } catch (final Exception exception) {
-            System.err.println(exception.getMessage());
+            logger.error(exception.getMessage());
             if (parameters.printStacktrace) {
                 exception.printStackTrace();
             }
@@ -104,6 +110,12 @@ public class LightsaberProcessor {
         }
     }
 
+    private static void configureLogging(final LightsaberParameters parameters) {
+        final ch.qos.logback.classic.Logger root =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        root.setLevel(parameters.getLoggingLevel());
+    }
+
     public void process() throws Exception {
         if (parameters.jar != null) {
             final File jarFile = new File(parameters.jar);
@@ -112,7 +124,7 @@ public class LightsaberProcessor {
             final File classesDirectory = new File(parameters.classes);
             processClasses(classesDirectory);
         }
-        System.out.println("DONE");
+        logger.info("DONE");
     }
 
     private void processJarFile(final File file) throws Exception {

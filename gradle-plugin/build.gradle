@@ -1,5 +1,6 @@
 apply plugin: 'groovy'
 apply plugin: 'bintray'
+apply plugin: 'idea'
 
 targetCompatibility = JavaVersion.VERSION_1_7
 sourceCompatibility = JavaVersion.VERSION_1_7
@@ -10,4 +11,38 @@ dependencies {
     compile project(':processor')
 
     provided "com.android.tools.build:gradle:$androidToolsVersion"
+}
+
+ext {
+    generatedDir = new File(projectDir, "generated")
+    generatedJavaSourcesDir = new File(generatedDir, "main/groovy")
+    buildClassFile = new File(generatedJavaSourcesDir, "io/michaelrocks/lightsaber/plugin/Build.groovy")
+}
+
+sourceSets {
+    main {
+        output.dir(generatedJavaSourcesDir, builtBy: 'generateBuildClass')
+        groovy.srcDir generatedJavaSourcesDir
+    }
+}
+
+task generateBuildClass {
+    inputs.property('version', version)
+    outputs.dir generatedDir
+
+    doLast {
+        buildClassFile.parentFile.mkdirs()
+        buildClassFile.text = "" +
+                "package io.michaelrocks.lightsaber.plugin\n" +
+                "\n" +
+                "public class Build {\n" +
+                "    public static final String VERSION = \"$version\"\n" +
+                "}\n"
+    }
+}
+
+idea {
+    module {
+        generatedSourceDirs += generatedJavaSourcesDir
+    }
 }

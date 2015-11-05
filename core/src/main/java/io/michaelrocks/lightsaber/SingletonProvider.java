@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.internal;
+package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.lightsaber.Injector;
+import javax.inject.Provider;
 
-public class SingletonProvider<T> extends DelegateProvider<T> {
+class SingletonProvider<T> implements Provider<T> {
+    private final Provider<T> provider;
     private volatile T instance;
     private final Object instanceLock = new Object();
 
-    public SingletonProvider(final CopyableProvider<T> provider) {
-        super(provider);
+    public SingletonProvider(final Provider<T> provider) {
+        this.provider = provider;
     }
 
     @Override
@@ -31,15 +32,10 @@ public class SingletonProvider<T> extends DelegateProvider<T> {
         if (instance == null) {
             synchronized (instanceLock) {
                 if (instance == null) {
-                    instance = getDelegate().get();
+                    instance = provider.get();
                 }
             }
         }
         return instance;
-    }
-
-    @Override
-    public CopyableProvider<T> copyWithInjector(final Injector injector) {
-        return new SingletonProvider<T>(getDelegate().copyWithInjector(injector));
     }
 }

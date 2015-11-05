@@ -16,10 +16,13 @@
 
 package io.michaelrocks.lightsaber.processor.commons;
 
+import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.Key;
+import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.Provides;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
 
 import javax.inject.Inject;
@@ -31,6 +34,8 @@ public class Types {
     public static final Type STRING_TYPE = Type.getType(String.class);
     public static final Type INJECT_TYPE = Type.getType(Inject.class);
     public static final Type PROVIDES_TYPE = Type.getType(Provides.class);
+    public static final Type MODULE_TYPE = Type.getType(Module.class);
+    public static final Type INJECTOR_TYPE = Type.getType(Injector.class);
     public static final Type PROVIDER_TYPE = Type.getType(Provider.class);
     public static final Type KEY_TYPE = Type.getType(Key.class);
     public static final Type CLASS_TYPE = Type.getType(Class.class);
@@ -76,5 +81,16 @@ public class Types {
 
     public static boolean isPrimitive(final Type type) {
         return primitiveToBoxedMap.containsKey(type);
+    }
+
+    public static Type getArrayType(final Type type) {
+        return Type.getType("[" + type.getDescriptor());
+    }
+
+    public static String getPackageName(final Type type) {
+        Validate.isTrue(type.getSort() == Type.OBJECT);
+        final String internalName = type.getInternalName();
+        final int lastSeparatorIndex = internalName.lastIndexOf('/');
+        return lastSeparatorIndex == -1 ? "" : internalName.substring(0, lastSeparatorIndex);
     }
 }

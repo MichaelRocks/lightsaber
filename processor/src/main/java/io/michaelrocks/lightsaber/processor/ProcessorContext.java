@@ -16,18 +16,23 @@
 
 package io.michaelrocks.lightsaber.processor;
 
-import io.michaelrocks.lightsaber.internal.Lightsaber$$InjectorFactory;
-import io.michaelrocks.lightsaber.internal.SingletonProvider;
+import io.michaelrocks.lightsaber.LightsaberTypes;
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry;
+import io.michaelrocks.lightsaber.processor.commons.Types;
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor;
+import io.michaelrocks.lightsaber.processor.descriptors.PackageInvaderDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedFieldDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.QualifiedMethodDescriptor;
 import io.michaelrocks.lightsaber.processor.descriptors.ScopeDescriptor;
 import io.michaelrocks.lightsaber.processor.graph.TypeGraph;
+import org.apache.commons.collections4.CollectionUtils;
 import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Singleton;
 import java.util.ArrayList;
@@ -42,9 +47,10 @@ import java.util.Set;
 
 public class ProcessorContext {
     private static final String PACKAGE_MODULE_CLASS_NAME = "Lightsaber$$PackageModule";
-    private static final Type INJECTOR_FACTORY_TYPE = Type.getType(Lightsaber$$InjectorFactory.class);
     private static final ScopeDescriptor SINGLETON_SCOPE_DESCRIPTOR =
-            new ScopeDescriptor(Type.getType(Singleton.class), Type.getType(SingletonProvider.class));
+            new ScopeDescriptor(Type.getType(Singleton.class), LightsaberTypes.SINGLETON_PROVIDER_TYPE);
+
+    private static final Logger logger = LoggerFactory.getLogger(ProcessorContext.class);
 
     private String classFilePath;
     private final Map<String, List<Exception>> errorsByPath = new LinkedHashMap<>();
@@ -57,6 +63,7 @@ public class ProcessorContext {
     private final Map<Type, InjectionTargetDescriptor> injectableTargets = new HashMap<>();
     private final Map<Type, InjectionTargetDescriptor> providableTargets = new HashMap<>();
     private final Map<Type, InjectorDescriptor> injectors = new HashMap<>();
+    private final Map<String, PackageInvaderDescriptor> packageInvaders = new HashMap<>();
     private final Set<Type> qualifiers = new HashSet<>();
 
     public String getClassFilePath() {
@@ -118,7 +125,10 @@ public class ProcessorContext {
 
     public void addPackageModule(final ModuleDescriptor packageModule) {
         packageModules.put(packageModule.getModuleType(), packageModule);
-        addModule(packageModule);
+    }
+
+    public Collection<ModuleDescriptor> getAllModules() {
+        return CollectionUtils.union(modules.values(), packageModules.values());
     }
 
     public InjectionTargetDescriptor findInjectableTargetByType(final Type injectableTargetType) {
@@ -157,6 +167,22 @@ public class ProcessorContext {
         injectors.put(injector.getInjectableTarget().getTargetType(), injector);
     }
 
+    public PackageInvaderDescriptor findPackageInvaderByTargetType(final Type targetType) {
+        return findPackageInvaderByPackageName(Types.getPackageName(targetType));
+    }
+
+    public PackageInvaderDescriptor findPackageInvaderByPackageName(final String packageName) {
+        return packageInvaders.get(packageName);
+    }
+
+    public Collection<PackageInvaderDescriptor> getPackageInvaders() {
+        return Collections.unmodifiableCollection(packageInvaders.values());
+    }
+
+    public void addPackageInvader(final PackageInvaderDescriptor packageInvader) {
+        packageInvaders.put(packageInvader.getPackageName(), packageInvader);
+    }
+
     public ScopeDescriptor findScopeByAnnotationType(final Type annotationType) {
         if (SINGLETON_SCOPE_DESCRIPTOR.getScopeAnnotationType().equals(annotationType)) {
             return SINGLETON_SCOPE_DESCRIPTOR;
@@ -180,38 +206,51 @@ public class ProcessorContext {
         return Type.getObjectType(packageName + PACKAGE_MODULE_CLASS_NAME);
     }
 
-    public Type getInjectorFactoryType() {
-        return INJECTOR_FACTORY_TYPE;
-    }
-
     public void dump() {
         for (final ModuleDescriptor module : getModules()) {
-            System.out.println("Module: " + module.getModuleType());
+            logger.debug("Module: {}", module.getModuleType());
             for (final ProviderDescriptor provider : module.getProviders()) {
                 if (provider.getProviderMethod() != null) {
-                    System.out.println("\tProvides: " + provider.getProviderMethod());
+                    logger.debug("\tProvides: {}", provider.getProviderMethod());
                 } else {
-                    System.out.println("\tProvides: " + provider.getProviderField());
+                    logger.debug("\tProvides: {}", provider.getProviderField());
+                }
+            }
+        }
+        for (final ModuleDescriptor module : getPackageModules()) {
+            logger.debug("Package module: {}", module.getModuleType());
+            for (final ProviderDescriptor provider : module.getProviders()) {
+                if (provider.getProviderMethod() != null) {
+                    logger.debug("\tProvides: {}", provider.getProviderMethod());
+                } else {
+                    logger.debug("\tProvides: {}", provider.getProviderField());
                 }
             }
         }
         for (final InjectionTargetDescriptor injectableTarget : getInjectableTargets()) {
-            System.out.println("Injectable: " + injectableTarget.getTargetType());
+            logger.debug("Injectable: {}", injectableTarget.getTargetType());
             for (final QualifiedFieldDescriptor injectableField : injectableTarget.getInjectableFields()) {
-                System.out.println("\tField: " + injectableField);
+                logger.debug("\tField: {}", injectableField);
             }
             for (final QualifiedMethodDescriptor injectableMethod : injectableTarget.getInjectableMethods()) {
-                System.out.println("\tMethod: " + injectableMethod);
+                logger.debug("\tMethod: {}", injectableMethod);
             }
         }
         for (final InjectionTargetDescriptor providableTarget : getProvidableTargets()) {
-            System.out.println("Providable: " + providableTarget.getTargetType());
+            logger.debug("Providable: {}", providableTarget.getTargetType());
             for (final QualifiedMethodDescriptor injectableConstructor : providableTarget.getInjectableConstructors()) {
-                System.out.println("\tConstructor: " + injectableConstructor);
+                logger.debug("\tConstructor: {}", injectableConstructor);
             }
         }
         for (final Type qualifierType : qualifiers) {
-            System.out.println("\tQualifier: " + qualifierType);
+            logger.debug("\tQualifier: {}", qualifierType);
+        }
+        for (final PackageInvaderDescriptor packageInvader : getPackageInvaders()) {
+            logger.debug("Package invader: {} for package {}",
+                    packageInvader.getType(), packageInvader.getPackageName());
+            for (final Map.Entry<Type, FieldDescriptor> entry : packageInvader.getClassFields().entrySet()) {
+                logger.debug("\tClass field: {} for class {}", entry.getValue().getName(), entry.getKey());
+            }
         }
     }
 }

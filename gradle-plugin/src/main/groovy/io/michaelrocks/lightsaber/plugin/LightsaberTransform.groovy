@@ -20,13 +20,11 @@ import com.android.build.transform.api.*
 import com.google.common.collect.Iterables
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
+import org.gradle.api.logging.Logger
+import org.gradle.api.logging.Logging
 
 public class LightsaberTransform extends Transform implements AsInputTransform {
-    private final boolean verbose
-
-    LightsaberTransform(final boolean verbose) {
-        this.verbose = verbose
-    }
+    private final Logger logger = Logging.getLogger(LightsaberTransform)
 
     @Override
     void transform(final Context context, final Map<TransformInput, TransformOutput> inputs,
@@ -38,17 +36,18 @@ public class LightsaberTransform extends Transform implements AsInputTransform {
         parameters.classes = Iterables.getOnlyElement(input.files)
         parameters.output = output.getOutFile()
         parameters.libs = referencedInputs.collect { it.files }.flatten()
-        parameters.verbose = verbose
-        System.out.println("Starting Lightsaber processor: $parameters")
+        parameters.debug = logger.isDebugEnabled()
+        parameters.info = logger.isInfoEnabled()
+        logger.info("Starting Lightsaber processor: $parameters")
         final def processor = new LightsaberProcessor(parameters)
         try {
             processor.process()
-            System.out.println("Lightsaber finished processing")
+            logger.info("Lightsaber finished processing")
         } catch (final IOException exception) {
-            System.out.println("Lightsaber failed: $exception")
+            logger.error("Lightsaber failed", exception)
             throw exception
         } catch (final Exception exception) {
-            System.out.println("Lightsaber failed: $exception")
+            logger.error("Lightsaber failed", exception)
             throw new TransformException(exception)
         }
     }

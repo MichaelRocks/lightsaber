@@ -18,6 +18,8 @@ package io.michaelrocks.lightsaber.processor.annotations;
 
 import org.apache.commons.lang3.Validate;
 import org.objectweb.asm.Type;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 public class AnnotationRegistry {
+    private static final Logger logger = LoggerFactory.getLogger(AnnotationRegistry.class);
+
     private final Map<Type, AnnotationDescriptor> annotationsByType = new HashMap<>();
     private final Map<Type, AnnotationData> unresolvedDefaultsByType = new HashMap<>();
     private final Map<Type, AnnotationData> resolvedDefaultsByType = new HashMap<>();
@@ -34,7 +38,7 @@ public class AnnotationRegistry {
         Validate.isTrue(annotation.getType().equals(defaults.getType()));
 
         if (annotationsByType.containsKey(annotation.getType())) {
-            System.out.println("Annotation already registered: " + annotation.getType());
+            logger.warn("Annotation already registered: {}", annotation.getType());
             return;
         }
 

@@ -14,27 +14,8 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.internal;
+package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.lightsaber.Injector;
-
-public class InstanceProvider<T> implements CopyableProvider<T> {
-    private final T instance;
-
-    public InstanceProvider(final T instance) {
-        this.instance = instance;
-        if (instance == null) {
-            throw new NullPointerException("Instance cannot be null");
-        }
-    }
-
-    @Override
-    public T get() {
-        return instance;
-    }
-
-    @Override
-    public CopyableProvider<T> copyWithInjector(final Injector injector) {
-        return new InstanceProvider<T>(instance);
-    }
+interface InjectorConfigurator {
+    void configureInjector(LightsaberInjector injector, Object module);
 }

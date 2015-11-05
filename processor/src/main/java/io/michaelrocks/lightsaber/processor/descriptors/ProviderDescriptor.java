@@ -98,4 +98,8 @@ public class ProviderDescriptor {
         }
         return dependencies;
     }
+
+    public boolean isConstructorProvider() {
+        return providerMethod != null && providerMethod.isConstructor();
+    }
 }
