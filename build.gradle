@@ -8,7 +8,7 @@ buildscript {
 }
 
 allprojects {
-    ext.kotlinVersion = '0.14.451'
+    ext.kotlinVersion = '1.0.0-beta-1103'
 
     buildscript {
         repositories {
