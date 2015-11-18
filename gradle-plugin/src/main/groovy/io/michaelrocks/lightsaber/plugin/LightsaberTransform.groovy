@@ -16,26 +16,28 @@
 
 package io.michaelrocks.lightsaber.plugin
 
-import com.android.build.transform.api.*
+import com.android.build.api.transform.*
 import com.google.common.collect.Iterables
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
-public class LightsaberTransform extends Transform implements AsInputTransform {
+public class LightsaberTransform extends Transform {
     private final Logger logger = Logging.getLogger(LightsaberTransform)
 
     @Override
-    void transform(final Context context, final Map<TransformInput, TransformOutput> inputs,
-            final Collection<TransformInput> referencedInputs,
+    void transform(final Context context, final Collection<TransformInput> inputs,
+            final Collection<TransformInput> referencedInputs, final TransformOutputProvider outputProvider,
             final boolean isIncremental) throws IOException, TransformException, InterruptedException {
         final def parameters = new LightsaberParameters()
-        final TransformInput input = Iterables.getOnlyElement(inputs.keySet())
-        final TransformOutput output = Iterables.getOnlyElement(inputs.values())
-        parameters.classes = Iterables.getOnlyElement(input.files)
-        parameters.output = output.getOutFile()
-        parameters.libs = referencedInputs.collect { it.files }.flatten()
+        final TransformInput input = Iterables.getOnlyElement(inputs)
+        final DirectoryInput directoryInput = Iterables.getOnlyElement(input.directoryInputs)
+        final File output = outputProvider.getContentLocation(
+                directoryInput.name, EnumSet.of(QualifiedContent.DefaultContentType.CLASSES), EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
+        parameters.classes = directoryInput.file.absolutePath
+        parameters.output = output.absolutePath
+        parameters.libs = referencedInputs.collect { it.directoryInputs }.flatten().collect { it.file }.flatten()
         parameters.debug = logger.isDebugEnabled()
         parameters.info = logger.isInfoEnabled()
         logger.info("Starting Lightsaber processor: $parameters")
@@ -58,33 +60,28 @@ public class LightsaberTransform extends Transform implements AsInputTransform {
     }
 
     @Override
-    Set<ScopedContent.ContentType> getInputTypes() {
-        return Collections.singleton(ScopedContent.ContentType.CLASSES)
+    Set<QualifiedContent.ContentType> getInputTypes() {
+        return Collections.singleton(QualifiedContent.DefaultContentType.CLASSES)
     }
 
     @Override
-    Set<ScopedContent.ContentType> getOutputTypes() {
-        return EnumSet.of(ScopedContent.ContentType.CLASSES)
+    Set<QualifiedContent.ContentType> getOutputTypes() {
+        return EnumSet.of(QualifiedContent.DefaultContentType.CLASSES)
     }
 
     @Override
-    Set<ScopedContent.Scope> getScopes() {
-        return EnumSet.of(ScopedContent.Scope.PROJECT)
+    Set<QualifiedContent.Scope> getScopes() {
+        return EnumSet.of(QualifiedContent.Scope.PROJECT)
     }
 
     @Override
-    Set<ScopedContent.Scope> getReferencedScopes() {
+    Set<QualifiedContent.Scope> getReferencedScopes() {
         return EnumSet.of(
-                ScopedContent.Scope.PROJECT_LOCAL_DEPS,
-                ScopedContent.Scope.SUB_PROJECTS,
-                ScopedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
-                ScopedContent.Scope.EXTERNAL_LIBRARIES,
-                ScopedContent.Scope.PROVIDED_ONLY)
-    }
-
-    @Override
-    ScopedContent.Format getOutputFormat() {
-        return ScopedContent.Format.SINGLE_FOLDER
+                QualifiedContent.Scope.PROJECT_LOCAL_DEPS,
+                QualifiedContent.Scope.SUB_PROJECTS,
+                QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
+                QualifiedContent.Scope.EXTERNAL_LIBRARIES,
+                QualifiedContent.Scope.PROVIDED_ONLY)
     }
 
     @Override
@@ -98,8 +95,8 @@ public class LightsaberTransform extends Transform implements AsInputTransform {
     }
 
     @Override
-    Collection<File> getSecondaryFolderOutputs() {
-        return Collections.emptyList()
+    Collection<File> getSecondaryDirectoryOutputs() {
+        return super.getSecondaryDirectoryOutputs()
     }
 
     @Override

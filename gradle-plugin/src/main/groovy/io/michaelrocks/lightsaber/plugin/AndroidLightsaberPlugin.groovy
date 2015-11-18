@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.plugin
 
 import com.android.build.gradle.api.BaseVariant
-import com.android.build.transform.api.Transform
+import com.android.build.api.transform.Transform
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
