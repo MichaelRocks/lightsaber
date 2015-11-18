@@ -4,6 +4,8 @@ buildscript {
     }
     dependencies {
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+        // XXX: Workaround for https://code.google.com/p/android/issues/detail?id=192875.
+        classpath 'org.jacoco:org.jacoco.core:0.7.4.201502262128'
     }
 }
 
