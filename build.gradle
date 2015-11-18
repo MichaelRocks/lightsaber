@@ -3,12 +3,14 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+        // XXX: Workaround for https://code.google.com/p/android/issues/detail?id=192875.
+        classpath 'org.jacoco:org.jacoco.core:0.7.4.201502262128'
     }
 }
 
 allprojects {
-    ext.kotlinVersion = '1.0.0-beta-1103'
+    ext.kotlinVersion = '1.0.0-beta-2423'
 
     buildscript {
         repositories {
@@ -58,6 +60,6 @@ ext {
     junitVersion = '4.12'
     mockitoVersion = '2.0.31-beta'
 
-    androidToolsVersion = '1.4.0-beta6'
+    androidToolsVersion = '1.5.0'
     supportVersion = '23.0.1'
 }
