@@ -16,8 +16,6 @@
 
 package io.michaelrocks.lightsaber.plugin
 
-import com.android.build.gradle.api.BaseVariant
-import com.android.build.api.transform.Transform
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 
@@ -28,43 +26,9 @@ class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
 
         if (project.hasProperty('android')) {
             addDependencies('compile')
-            if (isTransformAvailable()) {
-                project.android.registerTransform(new LightsaberTransform())
-            } else {
-                project.afterEvaluate {
-                    if (project.plugins.hasPlugin('com.android.application')) {
-                        setupLightsaberForLegacyAndroid(project.android.applicationVariants)
-                    } else if (project.plugins.hasPlugin('com.android.library')) {
-                        setupLightsaberForLegacyAndroid(project.android.libraryVariants)
-                    } else {
-                        throw new GradleException("Only application and library Android projects are supported")
-                    }
-                }
-            }
+            project.android.registerTransform(new LightsaberTransform())
         } else {
             throw new GradleException("Lightsaber plugin must be applied *AFTER* Android plugin")
-        }
-    }
-
-    private boolean isTransformAvailable() {
-        try {
-            Class.forName("com.android.build.transform.api.Transform")
-            return project.android.respondsTo('registerTransform', Transform, Object[])
-        } catch (final ClassNotFoundException ignored) {
-            return false
-        }
-    }
-
-    private void setupLightsaberForLegacyAndroid(final Collection<BaseVariant> variants) {
-        logger.info("Setting up Lightsaber task for Android project ${project.name}...")
-        variants.all { final BaseVariant variant ->
-            logger.trace("Creating Lightsaber tasks for variant ${variant.name}")
-            final String variantName = variant.name.capitalize()
-            final File classesDir = variant.javaCompiler.destinationDir
-            final File backupDir = new File(project.buildDir, "lightsaber/${variant.name}")
-            final List<File> classpath =
-                    project.android.bootClasspath.toList() + variant.javaCompiler.classpath.toList()
-            createTasks(classesDir, backupDir, classpath, variant.javaCompiler, variantName)
         }
     }
 }
