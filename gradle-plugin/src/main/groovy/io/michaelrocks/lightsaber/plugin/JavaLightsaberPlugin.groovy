@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.plugin
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.tasks.compile.AbstractCompile
 
 class JavaLightsaberPlugin extends BaseLightsaberPlugin {
@@ -54,5 +55,60 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
         final List<File> classpath = project.tasks.compileTestJava.classpath.toList()
         final AbstractCompile compileTask = project.tasks.compileTestJava as AbstractCompile
         createTasks(classesDir, backupDir, classpath, compileTask, "test")
+    }
+
+    private void createTasks(final File classesDir, final File backupDir, final List<File> classpath,
+        final AbstractCompile compileTask, final String nameSuffix = "") {
+        final String suffix = nameSuffix.capitalize()
+        final LightsaberTask lightsaberTask =
+            createLightsaberProcessTask("lightsaberProcess$suffix", classesDir, backupDir, classpath)
+        final BackupClassesTask backupTask =
+            createBackupClassFilesTask("lightsaberBackupClasses$suffix", classesDir, backupDir)
+        configureTasks(lightsaberTask, backupTask, compileTask)
+    }
+
+    private void configureTasks(final LightsaberTask lightsaberTask, final BackupClassesTask backupTask,
+        final Task compileTask) {
+        lightsaberTask.mustRunAfter compileTask
+        lightsaberTask.dependsOn compileTask
+        lightsaberTask.dependsOn backupTask
+        compileTask.finalizedBy lightsaberTask
+
+        final Task cleanBackupTask = project.tasks["clean${backupTask.name.capitalize()}"]
+        final Task cleanLightsaberTask = project.tasks["clean${lightsaberTask.name.capitalize()}"]
+
+        cleanBackupTask.doFirst {
+            backupTask.clean()
+        }
+
+        cleanLightsaberTask.deleteAllActions()
+        cleanLightsaberTask.doFirst {
+            lightsaberTask.clean()
+        }
+
+        cleanLightsaberTask.dependsOn cleanBackupTask
+    }
+
+    private LightsaberTask createLightsaberProcessTask(final String taskName, final File classesDir,
+        final File backupDir, final List<File> libraries) {
+        logger.info("Creating Lighsaber task $taskName...")
+        logger.info("  Source classes directory [$backupDir]")
+        logger.info("  Processed classes directory [$classesDir]")
+
+        return project.task(taskName, type: LightsaberTask) {
+            description 'Processes .class files with Lightsaber Processor.'
+            setBackupDir(backupDir)
+            setClassesDir(classesDir)
+            setClasspath(libraries)
+        } as LightsaberTask
+    }
+
+    private BackupClassesTask createBackupClassFilesTask(final String taskName, final File classesDir,
+        final File backupDir) {
+        return project.task(taskName, type: BackupClassesTask) {
+            description 'Back up original .class files.'
+            setClassesDir(classesDir)
+            setBackupDir(backupDir)
+        } as BackupClassesTask
     }
 }
