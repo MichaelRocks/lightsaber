@@ -49,3 +49,5 @@ inline fun <reified T : Any> Injector.getProvider(): Provider<T> =
         getProvider(T::class)
 inline fun <reified T : Any> Injector.getProvider(annotation: Annotation): Provider<T> =
         getProvider(T::class, annotation)
+
+inline fun <reified T> inject(): T = null as T
