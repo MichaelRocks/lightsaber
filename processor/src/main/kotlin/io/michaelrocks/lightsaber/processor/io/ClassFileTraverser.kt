@@ -16,9 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.io
 
+import java.io.Closeable
 import java.io.IOException
 
-abstract class ClassFileTraverser<T> : AutoCloseable {
+abstract class ClassFileTraverser<T> : Closeable {
   @Throws(IOException::class)
   fun processFiles(visitor: ClassFileVisitor) {
     for (file in iterateFiles()) {

@@ -14,28 +14,15 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.io
+package io.michaelrocks.lightsaber.processor.commons
 
-import java.io.File
+import java.io.Closeable
 import java.io.IOException
 
-class DirectoryClassFileWriter @Throws(IOException::class)
-constructor(private val classesDirectory: File) : ClassFileWriter() {
-
-  @Throws(IOException::class)
-  override fun writeFile(path: String, fileData: ByteArray) {
-    val file = File(classesDirectory, path)
-    file.parentFile?.mkdirs()
-    file.writeBytes(fileData)
-  }
-
-  @Throws(IOException::class)
-  override fun createDirectory(path: String) {
-    val file = File(classesDirectory, path)
-    // noinspection ResultOfMethodCallIgnored
-    file.mkdirs()
-  }
-
-  override fun close() {
+fun Closeable.closeQuitely() {
+  try {
+    close()
+  } catch (exception: IOException) {
+    // Ignore the exception.
   }
 }

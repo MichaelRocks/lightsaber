@@ -29,7 +29,6 @@ import io.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor
 import io.michaelrocks.lightsaber.processor.io.ClassFileReader
 import io.michaelrocks.lightsaber.processor.io.ClassFileWriter
 import io.michaelrocks.lightsaber.processor.validation.SanityChecker
-import org.apache.commons.io.FilenameUtils
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.objectweb.asm.Type
 import java.io.File
@@ -77,7 +76,7 @@ class ClassProcessor(
       val providableTargetType = providableTarget.targetType
       val providableTargetConstructor = providableTarget.injectableConstructor!!
 
-      val packageName = FilenameUtils.getPath(providableTargetType.internalName)
+      val packageName = providableTargetType.internalName.substringBeforeLast('/', "")
       val moduleBuilder = moduleBuilders[packageName] ?:
           ModuleDescriptor.Builder(processorContext.getPackageModuleType(packageName)).apply {
             moduleBuilders.put(packageName, this)

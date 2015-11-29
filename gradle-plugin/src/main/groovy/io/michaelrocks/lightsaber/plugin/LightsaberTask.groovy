@@ -48,8 +48,8 @@ public class LightsaberTask extends DefaultTask {
   @TaskAction
   void process() {
     final def parameters = new LightsaberParameters()
-    parameters.classes = backupDir.absolutePath
-    parameters.output = classesDir.absolutePath
+    parameters.classes = backupDir
+    parameters.output = classesDir
     parameters.libs = classpath
     parameters.debug = logger.isDebugEnabled()
     parameters.info = logger.isInfoEnabled()

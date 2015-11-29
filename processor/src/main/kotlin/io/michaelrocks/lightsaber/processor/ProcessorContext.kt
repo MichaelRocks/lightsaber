@@ -154,7 +154,7 @@ class ProcessorContext {
   }
 
   val scopes: Collection<ScopeDescriptor>
-    get() = setOf<ScopeDescriptor>(SINGLETON_SCOPE_DESCRIPTOR)
+    get() = setOf(SINGLETON_SCOPE_DESCRIPTOR)
 
   fun addQualifier(type: Type) {
     qualifiers.add(type)
@@ -165,7 +165,8 @@ class ProcessorContext {
   }
 
   fun getPackageModuleType(packageName: String): Type {
-    return Type.getObjectType(packageName + PACKAGE_MODULE_CLASS_NAME)
+    val name = if (packageName.isEmpty()) PACKAGE_MODULE_CLASS_NAME else "$packageName/$PACKAGE_MODULE_CLASS_NAME"
+    return Type.getObjectType(name)
   }
 
   fun dump() {

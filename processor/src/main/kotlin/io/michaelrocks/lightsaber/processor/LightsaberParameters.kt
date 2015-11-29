@@ -23,16 +23,16 @@ import java.io.File
 
 class LightsaberParameters {
   @Parameter(names = arrayOf("--jar"), description = "Jar file to process")
-  var jar: String? = null
+  var jar: File? = null
 
   @Parameter(names = arrayOf("--classes"), description = "Classes directory to process")
-  var classes: String? = null
+  var classes: File? = null
 
   @Parameter(names = arrayOf("--libs"), description = "Project dependencies", variableArity = true)
   var libs = emptyList<File>()
 
   @Parameter(names = arrayOf("--output"), description = "Output jar file or classes directory")
-  var output: String? = null
+  var output: File? = null
 
   @Parameter(names = arrayOf("-i", "--info"), description = "Use verbose output")
   var info = false

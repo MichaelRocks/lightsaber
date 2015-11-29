@@ -20,32 +20,28 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.ParameterException
 import io.michaelrocks.lightsaber.processor.commons.using
 import io.michaelrocks.lightsaber.processor.io.*
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FilenameUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.IOException
 
 class LightsaberProcessor(private val parameters: LightsaberParameters) {
-
   @Throws(Exception::class)
   fun process() {
-    if (parameters.jar != null) {
-      val jarFile = File(parameters.jar)
-      processJarFile(jarFile)
-    } else if (parameters.classes != null) {
-      val classesDirectory = File(parameters.classes)
-      processClasses(classesDirectory)
+    val jar = parameters.jar
+    val classes = parameters.classes
+    if (jar != null) {
+      processJarFile(jar)
+    } else if (classes != null) {
+      processClasses(classes)
     }
     logger.info("DONE")
   }
 
   @Throws(Exception::class)
   private fun processJarFile(file: File) {
-    val processedFile = File(parameters.output)
     ClassFileReader(JarClassFileTraverser(file)).use { classFileReader ->
-      using(JarClassFileWriter(processedFile)) { classFileWriter ->
+      using(JarClassFileWriter(parameters.output!!)) { classFileWriter ->
         processClassFiles(classFileReader, classFileWriter)
       }
     }
@@ -53,15 +49,16 @@ class LightsaberProcessor(private val parameters: LightsaberParameters) {
 
   @Throws(Exception::class)
   private fun processClasses(directory: File) {
-    val processedDirectory = File(parameters.output)
-    FileUtils.deleteQuietly(processedDirectory)
-    if (!processedDirectory.mkdirs()) {
-      throw ProcessingException("Failed to create output directory " + processedDirectory)
-    }
+    parameters.output!!.let { output ->
+      output.deleteRecursively()
+      if (!output.mkdirs()) {
+        throw ProcessingException("Failed to create output directory $output")
+      }
 
-    ClassFileReader(DirectoryClassFileTraverser(directory)).use { classFileReader ->
-      using(DirectoryClassFileWriter(processedDirectory)) { classFileWriter ->
-        processClassFiles(classFileReader, classFileWriter)
+      ClassFileReader(DirectoryClassFileTraverser(directory)).use { classFileReader ->
+        using(DirectoryClassFileWriter(output)) { classFileWriter ->
+          processClassFiles(classFileReader, classFileWriter)
+        }
       }
     }
   }
@@ -108,19 +105,20 @@ class LightsaberProcessor(private val parameters: LightsaberParameters) {
     }
 
     private fun validateParameters(parameters: LightsaberParameters) {
-      if (parameters.jar == null && parameters.classes == null) {
+      val jar = parameters.jar?.absoluteFile
+      val classes = parameters.classes?.absoluteFile
+      if (jar == null && classes == null) {
         throw ParameterException("Either --jar or --classes must be specified")
       }
-      if (parameters.jar != null && parameters.classes != null) {
+      if (jar != null && classes != null) {
         throw ParameterException("Either --jar or --classes can be specified but not both")
       }
 
       if (parameters.output == null) {
-        if (parameters.jar != null) {
-          parameters.output = FilenameUtils.removeExtension(
-              parameters.jar) + DEFAULT_SUFFIX + FilenameUtils.getExtension(parameters.jar)
+        if (jar != null) {
+          parameters.output = File("${jar.nameWithoutExtension}$DEFAULT_SUFFIX.${jar.extension}")
         } else {
-          parameters.output = parameters.classes + DEFAULT_SUFFIX
+          parameters.output = File("$classes$DEFAULT_SUFFIX")
         }
       }
 

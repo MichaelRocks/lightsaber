@@ -75,9 +75,7 @@ object Types {
 
   fun getPackageName(type: Type): String {
     check(type.sort == Type.OBJECT)
-    val internalName = type.internalName
-    val lastSeparatorIndex = internalName.lastIndexOf('/')
-    return if (lastSeparatorIndex == -1) "" else internalName.substring(0, lastSeparatorIndex)
+    return type.internalName.substringBeforeLast('/', "")
   }
 }
 

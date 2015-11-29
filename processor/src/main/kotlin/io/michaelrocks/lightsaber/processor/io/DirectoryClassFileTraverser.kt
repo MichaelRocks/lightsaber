@@ -17,10 +17,6 @@
 package io.michaelrocks.lightsaber.processor.io
 
 import io.michaelrocks.lightsaber.processor.ProcessingException
-import org.apache.commons.collections4.iterators.IteratorIterable
-import org.apache.commons.io.FileUtils
-import org.apache.commons.io.filefilter.TrueFileFilter
-
 import java.io.File
 import java.io.IOException
 
@@ -34,17 +30,15 @@ class DirectoryClassFileTraverser @Throws(IOException::class) constructor(
       throw ProcessingException("Invalid classes directory", classesDirectory.absolutePath)
     }
 
-    val filesIterator =
-        FileUtils.iterateFilesAndDirs(classesDirectory, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE)
-    return IteratorIterable(filesIterator)
+    return classesDirectory.walkTopDown().asIterable()
   }
 
   override fun isDirectory(file: File): Boolean = file.isDirectory
 
-  override fun getFilePath(file: File): String = classesDirectory.toPath().relativize(file.toPath()).toString()
+  override fun getFilePath(file: File): String = file.relativeTo(classesDirectory)
 
   @Throws(IOException::class)
-  override fun readAsByteArray(file: File): ByteArray = FileUtils.readFileToByteArray(file)
+  override fun readAsByteArray(file: File): ByteArray = file.readBytes()
 
   override fun close() {
   }

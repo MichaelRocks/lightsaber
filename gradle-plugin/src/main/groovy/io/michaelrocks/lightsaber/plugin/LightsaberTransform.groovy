@@ -36,8 +36,8 @@ public class LightsaberTransform extends Transform {
     final File output = outputProvider.getContentLocation(
         directoryInput.name, EnumSet.of(QualifiedContent.DefaultContentType.CLASSES),
         EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
-    parameters.classes = directoryInput.file.absolutePath
-    parameters.output = output.absolutePath
+    parameters.classes = directoryInput.file
+    parameters.output = output
     parameters.libs = referencedInputs.collect { it.directoryInputs }.flatten().collect { it.file }.flatten()
     parameters.debug = logger.isDebugEnabled()
     parameters.info = logger.isInfoEnabled()

@@ -16,8 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.io
 
-import org.apache.commons.io.IOUtils
-
+import io.michaelrocks.lightsaber.processor.commons.closeQuitely
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -42,13 +41,13 @@ constructor(targetFile: File) : ClassFileWriter() {
 
   @Throws(IOException::class)
   override fun createDirectory(path: String) {
-    val directoryPath = if (path.endsWith("/")) path else path + '/'
+    val directoryPath = if (path.endsWith("/")) path else "$path/"
     val entry = JarEntry(directoryPath)
     stream.putNextEntry(entry)
     stream.closeEntry()
   }
 
   override fun close() {
-    IOUtils.closeQuietly(stream)
+    stream.closeQuitely()
   }
 }
