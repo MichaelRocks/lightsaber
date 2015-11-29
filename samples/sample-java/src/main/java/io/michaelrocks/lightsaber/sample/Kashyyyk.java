@@ -21,28 +21,28 @@ import javax.inject.Singleton;
 
 @Singleton
 class Kashyyyk implements Planet {
-    private boolean isSettled = false;
+  private boolean isSettled = false;
 
-    @Inject
-    private Kashyyyk() {
-    }
+  @Inject
+  private Kashyyyk() {
+  }
 
-    @Inject
-    public void settle(final Droid droid1, final Droid droid2) {
-        if (isSettled) {
-            throw new IllegalStateException("Already settled");
-        }
-        System.out.println("Settling Kashyyyk with " + droid1 + " and " + droid2);
-        isSettled = true;
+  @Inject
+  public void settle(final Droid droid1, final Droid droid2) {
+    if (isSettled) {
+      throw new IllegalStateException("Already settled");
     }
+    System.out.println("Settling Kashyyyk with " + droid1 + " and " + droid2);
+    isSettled = true;
+  }
 
-    @Override
-    public String getName() {
-        return "Kashyyyk";
-    }
+  @Override
+  public String getName() {
+    return "Kashyyyk";
+  }
 
-    @Override
-    public String getSector() {
-        return "Mytaranor";
-    }
+  @Override
+  public String getSector() {
+    return "Mytaranor";
+  }
 }

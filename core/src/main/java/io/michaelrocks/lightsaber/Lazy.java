@@ -17,5 +17,5 @@
 package io.michaelrocks.lightsaber;
 
 public interface Lazy<T> {
-    T get();
+  T get();
 }

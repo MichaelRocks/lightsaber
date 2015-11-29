@@ -22,20 +22,20 @@ import javax.inject.Singleton;
 
 @Singleton
 class Chewbacca implements Wookiee {
-    private final Planet planet;
+  private final Planet planet;
 
-    @Inject
-    private Chewbacca(final Provider<Planet> planetProvider) {
-        this.planet = planetProvider.get();
-    }
+  @Inject
+  private Chewbacca(final Provider<Planet> planetProvider) {
+    this.planet = planetProvider.get();
+  }
 
-    @Override
-    public void roar() {
-        System.out.println("AULRGHHHGR");
-    }
+  @Override
+  public void roar() {
+    System.out.println("AULRGHHHGR");
+  }
 
-    @Override
-    public Planet getPlanet() {
-        return planet;
-    }
+  @Override
+  public Planet getPlanet() {
+    return planet;
+  }
 }

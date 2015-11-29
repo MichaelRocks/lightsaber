@@ -17,8 +17,8 @@
 package io.michaelrocks.lightsaber.sample;
 
 public class DarthVader {
-    public static final DarthVader INSTANCE = new DarthVader();
+  public static final DarthVader INSTANCE = new DarthVader();
 
-    private DarthVader() {
-    }
+  private DarthVader() {
+  }
 }

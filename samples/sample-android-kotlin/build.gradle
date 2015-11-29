@@ -1,9 +1,9 @@
 buildscript {
-    dependencies {
-        classpath "com.android.tools.build:gradle:$androidToolsVersion"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
-        classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
-    }
+  dependencies {
+    classpath "com.android.tools.build:gradle:$androidToolsVersion"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
+  }
 }
 
 apply plugin: 'com.android.application'
@@ -11,42 +11,42 @@ apply plugin: 'kotlin-android'
 apply plugin: 'io.michaelrocks.lightsaber.android'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+  compileSdkVersion 23
+  buildToolsVersion '23.0.2'
 
-    defaultConfig {
-        applicationId 'io.michaelrocks.lightsaber.sample'
-        minSdkVersion 16
-        targetSdkVersion 23
-        versionCode 1
-        versionName version
+  defaultConfig {
+    applicationId 'io.michaelrocks.lightsaber.sample'
+    minSdkVersion 16
+    targetSdkVersion 23
+    versionCode 1
+    versionName version
+  }
+
+  buildTypes {
+    debug {
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.pro'
     }
 
-    buildTypes {
-        debug {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.pro'
-        }
-
-        release {
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.pro'
-        }
+    release {
+      minifyEnabled true
+      proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard.pro'
     }
+  }
 
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-        androidTest.java.srcDirs += 'src/androidTest/kotlin'
-    }
+  sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+    androidTest.java.srcDirs += 'src/androidTest/kotlin'
+  }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+  compile fileTree(dir: 'libs', include: ['*.jar'])
 
-    // Kotlin
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+  // Kotlin
+  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
-    // Android support
-    compile "com.android.support:support-v13:$supportVersion"
-    compile "com.android.support:appcompat-v7:$supportVersion"
+  // Android support
+  compile "com.android.support:support-v13:$supportVersion"
+  compile "com.android.support:appcompat-v7:$supportVersion"
 }

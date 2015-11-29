@@ -18,22 +18,20 @@ package io.michaelrocks.lightsaber.plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.logging.Logger
-import org.gradle.api.tasks.compile.AbstractCompile
 
 class BaseLightsaberPlugin implements Plugin<Project> {
-    Project project
-    Logger logger
+  Project project
+  Logger logger
 
-    @Override
-    void apply(final Project project) {
-        this.project = project
-        this.logger = project.logger
-    }
+  @Override
+  void apply(final Project project) {
+    this.project = project
+    this.logger = project.logger
+  }
 
-    void addDependencies(final String configurationName) {
-        final String version = Build.VERSION
-        project.dependencies.add(configurationName, "io.michaelrocks:lightsaber-core:$version")
-    }
+  void addDependencies(final String configurationName) {
+    final String version = Build.VERSION
+    project.dependencies.add(configurationName, "io.michaelrocks:lightsaber-core:$version")
+  }
 }

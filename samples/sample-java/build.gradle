@@ -1,11 +1,11 @@
 buildscript {
-    dependencies {
-        classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
-    }
+  dependencies {
+    classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
+  }
 }
 
 plugins {
-    id 'com.github.johnrengelman.shadow' version '1.2.1'
+  id 'com.github.johnrengelman.shadow' version '1.2.1'
 }
 
 apply plugin: 'java'
@@ -17,13 +17,13 @@ sourceCompatibility = 1.6
 mainClassName = 'io.michaelrocks.lightsaber.sample.LightsaberSample'
 
 dependencies {
-    testCompile "junit:junit:$junitVersion"
+  testCompile "junit:junit:$junitVersion"
 }
 
 jar {
-    destinationDir = file('build/jar')
+  destinationDir = file('build/jar')
 
-    from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-    }
+  from {
+    configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+  }
 }

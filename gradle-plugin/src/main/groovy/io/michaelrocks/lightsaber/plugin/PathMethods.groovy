@@ -20,13 +20,13 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 public class PathMethods {
-    public static void deleteDirectoryIfEmpty(final Path dir) {
-        if (Files.isDirectory(dir)) {
-            try {
-                Files.delete(dir)
-            } catch (final IOException ignored) {
-                // Ignore the exception.
-            }
-        }
+  public static void deleteDirectoryIfEmpty(final Path dir) {
+    if (Files.isDirectory(dir)) {
+      try {
+        Files.delete(dir)
+      } catch (final IOException ignored) {
+        // Ignore the exception.
+      }
     }
+  }
 }

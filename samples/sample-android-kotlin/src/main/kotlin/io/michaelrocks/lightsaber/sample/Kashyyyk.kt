@@ -21,17 +21,17 @@ import javax.inject.Singleton
 
 @Singleton
 internal class Kashyyyk @Inject private constructor() : Planet {
-    override val name = "Kashyyyk"
-    override val sector = "Mytaranor"
+  override val name = "Kashyyyk"
+  override val sector = "Mytaranor"
 
-    private var isSettled = false
+  private var isSettled = false
 
-    @Inject
-    fun settle(droid1: Droid, droid2: Droid) {
-        if (isSettled) {
-            throw IllegalStateException("Already settled")
-        }
-        System.out.println("Settling Kashyyyk with $droid1 and $droid2")
-        isSettled = true
+  @Inject
+  fun settle(droid1: Droid, droid2: Droid) {
+    if (isSettled) {
+      throw IllegalStateException("Already settled")
     }
+    System.out.println("Settling Kashyyyk with $droid1 and $droid2")
+    isSettled = true
+  }
 }

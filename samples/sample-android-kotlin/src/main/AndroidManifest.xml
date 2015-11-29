@@ -2,20 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="io.michaelrocks.lightsaber.kotlin">
 
-    <application
+  <application
+      android:label="@string/app_name">
+
+    <activity
+        android:name="io.michaelrocks.lightsaber.sample.MainActivity"
         android:label="@string/app_name">
 
-        <activity
-            android:name="io.michaelrocks.lightsaber.sample.MainActivity"
-            android:label="@string/app_name">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
 
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+    </activity>
 
-        </activity>
-
-    </application>
+  </application>
 
 </manifest>

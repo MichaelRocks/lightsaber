@@ -3,5 +3,5 @@ apply plugin: 'java'
 sourceCompatibility = '1.6'
 
 jar {
-    destinationDir = file('build/jar')
+  destinationDir = file('build/jar')
 }

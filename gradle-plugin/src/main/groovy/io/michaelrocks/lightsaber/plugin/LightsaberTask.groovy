@@ -34,58 +34,58 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 
 public class LightsaberTask extends DefaultTask {
-    @InputDirectory
-    File backupDir
-    @OutputDirectory
-    File classesDir
-    @InputFiles
-    List<File> classpath
+  @InputDirectory
+  File backupDir
+  @OutputDirectory
+  File classesDir
+  @InputFiles
+  List<File> classpath
 
-    LightsaberTask() {
-        logging.captureStandardOutput LogLevel.INFO
+  LightsaberTask() {
+    logging.captureStandardOutput LogLevel.INFO
+  }
+
+  @TaskAction
+  void process() {
+    final def parameters = new LightsaberParameters()
+    parameters.classes = backupDir.absolutePath
+    parameters.output = classesDir.absolutePath
+    parameters.libs = classpath
+    parameters.debug = logger.isDebugEnabled()
+    parameters.info = logger.isInfoEnabled()
+    logger.info("Starting Lightsaber processor: $parameters")
+    final def processor = new LightsaberProcessor(parameters)
+    try {
+      processor.process()
+    } catch (final Exception exception) {
+      throw new GradleScriptException('Lightsaber processor failed to process files', exception)
     }
+  }
 
-    @TaskAction
-    void process() {
-        final def parameters = new LightsaberParameters()
-        parameters.classes = backupDir.absolutePath
-        parameters.output = classesDir.absolutePath
-        parameters.libs = classpath
-        parameters.debug = logger.isDebugEnabled()
-        parameters.info = logger.isInfoEnabled()
-        logger.info("Starting Lightsaber processor: $parameters")
-        final def processor = new LightsaberProcessor(parameters)
-        try {
-            processor.process()
-        } catch (final Exception exception) {
-            throw new GradleScriptException('Lightsaber processor failed to process files', exception)
+  void clean() {
+    logger.info("Removing patched files...")
+    logger.info("  from [$classesDir]")
+
+    final Path classesPath = classesDir.toPath()
+    Files.walkFileTree(classesPath, new SimpleFileVisitor<Path>() {
+      @Override
+      FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
+        super.visitFile(file, attrs)
+        logger.debug("Checking $file...")
+        if (WatermarkChecker.isLightsaberClass(file)) {
+          logger.debug("File was patched - removing")
+          Files.delete(file)
+        } else {
+          logger.debug("File wasn't patched - skipping")
         }
-    }
+        return FileVisitResult.CONTINUE
+      }
 
-    void clean() {
-        logger.info("Removing patched files...")
-        logger.info("  from [$classesDir]")
-
-        final Path classesPath = classesDir.toPath()
-        Files.walkFileTree(classesPath, new SimpleFileVisitor<Path>() {
-            @Override
-            FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-                super.visitFile(file, attrs)
-                logger.debug("Checking $file...")
-                if (WatermarkChecker.isLightsaberClass(file)) {
-                    logger.debug("File was patched - removing")
-                    Files.delete(file)
-                } else {
-                    logger.debug("File wasn't patched - skipping")
-                }
-                return FileVisitResult.CONTINUE
-            }
-
-            @Override
-            FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
-                PathMethods.deleteDirectoryIfEmpty(dir)
-                return super.postVisitDirectory(dir, exc)
-            }
-        })
-    }
+      @Override
+      FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
+        PathMethods.deleteDirectoryIfEmpty(dir)
+        return super.postVisitDirectory(dir, exc)
+      }
+    })
+  }
 }

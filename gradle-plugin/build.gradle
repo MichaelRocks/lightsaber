@@ -6,44 +6,44 @@ targetCompatibility = JavaVersion.VERSION_1_7
 sourceCompatibility = JavaVersion.VERSION_1_7
 
 dependencies {
-    compile gradleApi()
-    compile localGroovy()
-    compile project(':processor')
-    compile "com.android.tools.build:transform-api:$androidToolsVersion"
+  compile gradleApi()
+  compile localGroovy()
+  compile project(':processor')
+  compile "com.android.tools.build:transform-api:$androidToolsVersion"
 
-    provided "com.android.tools.build:gradle:$androidToolsVersion"
+  provided "com.android.tools.build:gradle:$androidToolsVersion"
 }
 
 ext {
-    generatedDir = new File(projectDir, "generated")
-    generatedJavaSourcesDir = new File(generatedDir, "main/groovy")
-    buildClassFile = new File(generatedJavaSourcesDir, "io/michaelrocks/lightsaber/plugin/Build.groovy")
+  generatedDir = new File(projectDir, "generated")
+  generatedJavaSourcesDir = new File(generatedDir, "main/groovy")
+  buildClassFile = new File(generatedJavaSourcesDir, "io/michaelrocks/lightsaber/plugin/Build.groovy")
 }
 
 sourceSets {
-    main {
-        output.dir(generatedJavaSourcesDir, builtBy: 'generateBuildClass')
-        groovy.srcDir generatedJavaSourcesDir
-    }
+  main {
+    output.dir(generatedJavaSourcesDir, builtBy: 'generateBuildClass')
+    groovy.srcDir generatedJavaSourcesDir
+  }
 }
 
 task generateBuildClass {
-    inputs.property('version', version)
-    outputs.dir generatedDir
+  inputs.property('version', version)
+  outputs.dir generatedDir
 
-    doLast {
-        buildClassFile.parentFile.mkdirs()
-        buildClassFile.text = "" +
-                "package io.michaelrocks.lightsaber.plugin\n" +
-                "\n" +
-                "public class Build {\n" +
-                "    public static final String VERSION = \"$version\"\n" +
-                "}\n"
-    }
+  doLast {
+    buildClassFile.parentFile.mkdirs()
+    buildClassFile.text = "" +
+        "package io.michaelrocks.lightsaber.plugin\n" +
+        "\n" +
+        "public class Build {\n" +
+        "    public static final String VERSION = \"$version\"\n" +
+        "}\n"
+  }
 }
 
 idea {
-    module {
-        generatedSourceDirs += generatedJavaSourcesDir
-    }
+  module {
+    generatedSourceDirs += generatedJavaSourcesDir
+  }
 }

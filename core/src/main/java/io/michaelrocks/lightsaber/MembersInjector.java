@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber;
 
 public interface MembersInjector<T> {
-    void injectFields(Injector injector, T target);
-    void injectMethods(Injector injector, T target);
+  void injectFields(Injector injector, T target);
+
+  void injectMethods(Injector injector, T target);
 }

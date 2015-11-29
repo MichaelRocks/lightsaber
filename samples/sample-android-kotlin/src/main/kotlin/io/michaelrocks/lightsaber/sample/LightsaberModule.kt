@@ -23,16 +23,16 @@ import javax.inject.Singleton
 
 @Module
 internal class LightsaberModule {
-    @Provides
-    private val darthVader = DarthVader
+  @Provides
+  private val darthVader = DarthVader
 
-    @Provides
-    private fun provideWookiee(chewbacca: Chewbacca): Wookiee = chewbacca
+  @Provides
+  private fun provideWookiee(chewbacca: Chewbacca): Wookiee = chewbacca
 
-    @Provides
-    private fun provideDroid(r2d2: R2D2): Droid = r2d2
+  @Provides
+  private fun provideDroid(r2d2: R2D2): Droid = r2d2
 
-    @Provides
-    @Singleton
-    private fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet = kashyyykProvider.get()
+  @Provides
+  @Singleton
+  private fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet = kashyyykProvider.get()
 }
