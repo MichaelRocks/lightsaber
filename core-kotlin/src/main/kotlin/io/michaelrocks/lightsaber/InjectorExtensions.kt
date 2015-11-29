@@ -19,6 +19,9 @@ package io.michaelrocks.lightsaber
 import javax.inject.Provider
 import kotlin.reflect.KClass
 
+val lightsaber: Lightsaber
+    get() = Lightsaber.get()
+
 fun <T : Any> Injector.getInstance(type: Class<out T>): T =
         Lightsaber.getInstance(this, type)
 fun <T : Any> Injector.getInstance(type: Class<out T>, annotation: Annotation): T =
