@@ -14,25 +14,18 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.graph
+package io.michaelrocks.lightsaber.processor.analysis
 
 import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor
+import io.michaelrocks.lightsaber.processor.graph.TypeGraph
 import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.Opcodes.ASM5
-import org.objectweb.asm.Type
-import java.util.*
+import org.objectweb.asm.Opcodes
 
-class TypeGraphBuilder : ClassVisitor(ASM5) {
-  private val classDescriptors = HashMap<Type, ClassDescriptor>()
-
-  fun build(): TypeGraph {
-    return TypeGraph(classDescriptors)
-  }
-
+class TypeGraphComposer(private val typeGraphBuilder: TypeGraph.Builder) : ClassVisitor(Opcodes.ASM5) {
   override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
       interfaces: Array<String>?) {
     super.visit(version, access, name, signature, superName, interfaces)
-    val classDescriptor = ClassDescriptor(access, name, superName, interfaces)
-    classDescriptors.put(classDescriptor.classType, classDescriptor)
+    val descriptor = ClassDescriptor(access, name, superName, interfaces)
+    typeGraphBuilder.addClass(descriptor)
   }
 }

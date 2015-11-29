@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.processor.analysis
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.CompositeClassVisitor
 import io.michaelrocks.lightsaber.processor.commons.using
-import io.michaelrocks.lightsaber.processor.graph.TypeGraphBuilder
+import io.michaelrocks.lightsaber.processor.graph.TypeGraph
 import io.michaelrocks.lightsaber.processor.io.ClassFileReader
 import io.michaelrocks.lightsaber.processor.io.ClassFileVisitor
 import io.michaelrocks.lightsaber.processor.io.DirectoryClassFileTraverser
@@ -31,7 +31,7 @@ import java.io.File
 import java.io.IOException
 
 class Analyzer(private val processorContext: ProcessorContext) {
-  private val typeGraphBuilder = TypeGraphBuilder()
+  private val typeGraphBuilder = TypeGraph.Builder()
 
   @Throws(IOException::class)
   fun analyze(classFileReader: ClassFileReader, libraries: List<File>) {
@@ -42,7 +42,7 @@ class Analyzer(private val processorContext: ProcessorContext) {
   @Throws(IOException::class)
   private fun analyzeTypes(classFileReader: ClassFileReader, libraries: List<File>) {
     val compositeClassVisitor = CompositeClassVisitor()
-    compositeClassVisitor.addVisitor(typeGraphBuilder)
+    compositeClassVisitor.addVisitor(TypeGraphComposer(typeGraphBuilder))
     compositeClassVisitor.addVisitor(AnnotationAnalysisDispatcher(processorContext))
     analyzeLibraries(libraries, compositeClassVisitor)
     analyzeClassesFromReader(classFileReader, compositeClassVisitor)

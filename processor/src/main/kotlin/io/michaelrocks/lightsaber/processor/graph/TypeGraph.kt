@@ -17,13 +17,38 @@
 package io.michaelrocks.lightsaber.processor.graph
 
 import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import java.util.*
 
-class TypeGraph internal constructor(private val typeGraph: Map<Type, ClassDescriptor>) {
+class TypeGraph {
+  val typeGraph: Map<Type, ClassDescriptor>
   val types: Set<Type>
-    get() = Collections.unmodifiableSet(typeGraph.keys)
+    get() = typeGraph.keys
+
+  private constructor(builder: TypeGraph.Builder) : this(builder.typeGraph)
+
+  internal constructor(typeGraph: Map<Type, ClassDescriptor>) {
+    this.typeGraph = Collections.unmodifiableMap(typeGraph)
+  }
 
   fun findClassDescriptor(type: Type): ClassDescriptor? = typeGraph[type]
   fun findSuperType(type: Type): Type? = typeGraph[type]?.superType
+
+  class Builder : ClassVisitor(Opcodes.ASM5) {
+    internal val typeGraph = HashMap<Type, ClassDescriptor>()
+
+    fun build(): TypeGraph = TypeGraph(this)
+
+    fun addClass(descriptor: ClassDescriptor) {
+      typeGraph.put(descriptor.classType, descriptor)
+    }
+    override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
+        interfaces: Array<String>?) {
+      super.visit(version, access, name, signature, superName, interfaces)
+      val classDescriptor = ClassDescriptor(access, name, superName, interfaces)
+      typeGraph.put(classDescriptor.classType, classDescriptor)
+    }
+  }
 }
