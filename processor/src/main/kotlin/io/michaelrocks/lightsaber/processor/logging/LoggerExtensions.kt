@@ -18,4 +18,5 @@ package io.michaelrocks.lightsaber.processor.logging
 
 import org.slf4j.LoggerFactory
 
-public fun <T : Any> T.getLogger() = LoggerFactory.getLogger(javaClass)
+fun <T : Any> T.getLogger() = LoggerFactory.getLogger(javaClass)
+fun getLogger(name: String) = LoggerFactory.getLogger(name)
