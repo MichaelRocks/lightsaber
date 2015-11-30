@@ -17,7 +17,6 @@
 package io.michaelrocks.lightsaber.processor.io
 
 import io.michaelrocks.lightsaber.processor.ProcessingException
-import io.michaelrocks.lightsaber.processor.commons.closeQuitely
 import io.michaelrocks.lightsaber.processor.commons.using
 import org.apache.commons.collections4.iterators.EnumerationIterator
 import org.apache.commons.collections4.iterators.IteratorIterable
@@ -50,5 +49,11 @@ class JarClassFileTraverser @Throws(IOException::class) constructor(
   override fun readAsByteArray(file: JarEntry): ByteArray =
       using(jarFile.getInputStream(file)) { stream -> stream.readBytes() }
 
-  override fun close() = jarFile.closeQuitely()
+  override fun close() {
+    try {
+      jarFile.close()
+    } catch (exception: IOException) {
+      // Ignore the exception.
+    }
+  }
 }

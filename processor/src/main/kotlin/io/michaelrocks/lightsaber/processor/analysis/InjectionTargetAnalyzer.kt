@@ -59,9 +59,9 @@ class InjectionTargetAnalyzer(processorContext: ProcessorContext) : ProcessorCla
       processorContext.addInjectableTarget(injectionTarget)
     }
     if (injectionTarget.injectableConstructors.size > 1) {
-      val separator = System.lineSeparator() + "  "
+      val separator = "\n  "
       val constructors = StringUtils.join(injectionTarget.injectableConstructors, separator)
-      reportError("Class has multiple injectable constructors:" + separator + constructors)
+      reportError("Class has multiple injectable constructors:$separator$constructors")
     } else if (!injectionTarget.injectableConstructors.isEmpty()) {
       processorContext.addProvidableTarget(injectionTarget)
     }

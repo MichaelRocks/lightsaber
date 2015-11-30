@@ -20,23 +20,21 @@ import org.objectweb.asm.Attribute
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
+import java.io.File
 import java.io.IOException
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Path
 
 class WatermarkChecker : ClassVisitor(Opcodes.ASM5) {
   companion object {
-    private val CLASS_MATCHER = FileSystems.getDefault().getPathMatcher("glob:**.class")
+    private val CLASS_EXTENSION = "class"
 
     @Throws(IOException::class)
     @JvmStatic
-    fun isLightsaberClass(file: Path): Boolean {
-      if (!CLASS_MATCHER.matches(file)) {
+    fun isLightsaberClass(file: File): Boolean {
+      if (file.extension != CLASS_EXTENSION) {
         return false
       }
 
-      val classReader = ClassReader(Files.readAllBytes(file))
+      val classReader = ClassReader(file.readBytes())
       val checker = WatermarkChecker()
       classReader.accept(checker, arrayOf<Attribute>(LightsaberAttribute()),
           ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)

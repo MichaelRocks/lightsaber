@@ -200,11 +200,11 @@ class ClassProcessor(
       for (entry in processorContext.errors.entries) {
         val path = entry.key
         for (error in entry.value) {
-          append(System.lineSeparator())
+          append('\n')
           append(path)
           append(": ")
           append(error.message)
-          append(System.lineSeparator())
+          append('\n')
           append(ExceptionUtils.getStackTrace(error))
         }
       }
