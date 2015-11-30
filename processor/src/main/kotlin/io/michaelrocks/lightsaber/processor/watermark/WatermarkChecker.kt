@@ -30,7 +30,7 @@ class WatermarkChecker : ClassVisitor(Opcodes.ASM5) {
     @Throws(IOException::class)
     @JvmStatic
     fun isLightsaberClass(file: File): Boolean {
-      if (file.extension != CLASS_EXTENSION) {
+      if (file.extension.toLowerCase() != CLASS_EXTENSION) {
         return false
       }
 
