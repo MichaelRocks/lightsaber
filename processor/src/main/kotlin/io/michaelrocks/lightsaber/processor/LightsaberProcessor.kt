@@ -16,16 +16,14 @@
 
 package io.michaelrocks.lightsaber.processor
 
-import com.beust.jcommander.JCommander
-import com.beust.jcommander.ParameterException
 import io.michaelrocks.lightsaber.processor.commons.using
 import io.michaelrocks.lightsaber.processor.io.*
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import io.michaelrocks.lightsaber.processor.logging.getLogger
 import java.io.File
-import java.io.IOException
 
 class LightsaberProcessor(private val parameters: LightsaberParameters) {
+  private val logger = getLogger()
+
   @Throws(Exception::class)
   fun process() {
     val jar = parameters.jar
@@ -38,7 +36,6 @@ class LightsaberProcessor(private val parameters: LightsaberParameters) {
     logger.info("DONE")
   }
 
-  @Throws(Exception::class)
   private fun processJarFile(file: File) {
     ClassFileReader(JarClassFileTraverser(file)).use { classFileReader ->
       using(JarClassFileWriter(parameters.output!!)) { classFileWriter ->
@@ -47,7 +44,6 @@ class LightsaberProcessor(private val parameters: LightsaberParameters) {
     }
   }
 
-  @Throws(Exception::class)
   private fun processClasses(directory: File) {
     parameters.output!!.let { output ->
       output.deleteRecursively()
@@ -63,86 +59,8 @@ class LightsaberProcessor(private val parameters: LightsaberParameters) {
     }
   }
 
-  @Throws(IOException::class)
   private fun processClassFiles(classFileReader: ClassFileReader, classFileWriter: ClassFileWriter) {
     val classProcessor = ClassProcessor(classFileReader, classFileWriter, parameters.libs)
     classProcessor.processClasses()
-  }
-
-  companion object {
-    private val DEFAULT_SUFFIX = "-lightsaber"
-
-    private val logger = LoggerFactory.getLogger(LightsaberProcessor::class.java)
-
-    @JvmStatic fun main(args: Array<String>) {
-      val parameters = LightsaberParameters()
-      val parser = JCommander(parameters)
-
-      try {
-        parser.parse(*args)
-        validateParameters(parameters)
-      } catch (exception: ParameterException) {
-        logger.error(exception.message)
-        val builder = StringBuilder()
-        parser.usage(builder)
-        logger.error(builder.toString())
-        System.exit(1)
-      }
-
-      configureLogging(parameters)
-
-      val processor = LightsaberProcessor(parameters)
-      try {
-        processor.process()
-      } catch (exception: Exception) {
-        logger.error(exception.message)
-        if (parameters.printStacktrace) {
-          exception.printStackTrace()
-        }
-        System.exit(2)
-      }
-
-    }
-
-    private fun validateParameters(parameters: LightsaberParameters) {
-      val jar = parameters.jar?.absoluteFile
-      val classes = parameters.classes?.absoluteFile
-      if (jar == null && classes == null) {
-        throw ParameterException("Either --jar or --classes must be specified")
-      }
-      if (jar != null && classes != null) {
-        throw ParameterException("Either --jar or --classes can be specified but not both")
-      }
-
-      if (parameters.output == null) {
-        if (jar != null) {
-          parameters.output = File("${jar.nameWithoutExtension}$DEFAULT_SUFFIX.${jar.extension}")
-        } else {
-          parameters.output = File("$classes$DEFAULT_SUFFIX")
-        }
-      }
-
-      validateLibraries(parameters.libs)
-    }
-
-    private fun validateLibraries(libraries: List<File>?) {
-      if (libraries == null || libraries.isEmpty()) {
-        return
-      }
-
-      for (library in libraries) {
-        if (!library.exists()) {
-          throw ParameterException("Library doesn't exist: " + library)
-        }
-        if (!library.isFile) {
-          throw ParameterException("Library is not a file: " + library)
-        }
-      }
-    }
-
-    private fun configureLogging(parameters: LightsaberParameters) {
-      val root = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as ch.qos.logback.classic.Logger
-      root.level = parameters.loggingLevel
-    }
   }
 }
