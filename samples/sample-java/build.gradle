@@ -12,8 +12,6 @@ apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'io.michaelrocks.lightsaber'
 
-sourceCompatibility = 1.6
-
 mainClassName = 'io.michaelrocks.lightsaber.sample.LightsaberSample'
 
 dependencies {

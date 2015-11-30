@@ -1,8 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'bintray'
 
-sourceCompatibility = '1.6'
-
 dependencies {
   compile "javax.inject:javax.inject:$javaxInjectVersion"
   provided project(':core-stub')
