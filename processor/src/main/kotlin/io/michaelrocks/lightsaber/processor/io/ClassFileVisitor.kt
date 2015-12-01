@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.io
 
 import java.io.IOException
 
-open class ClassFileVisitor(protected var classFileVisitor: ClassFileVisitor?) {
+open class ClassFileVisitor(protected var classFileVisitor: ClassFileVisitor? = null) {
   @Throws(IOException::class)
   open fun visitClassFile(path: String, classData: ByteArray) {
     classFileVisitor?.visitClassFile(path, classData)
