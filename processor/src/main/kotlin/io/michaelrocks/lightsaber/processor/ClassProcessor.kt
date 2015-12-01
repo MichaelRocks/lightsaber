@@ -26,8 +26,8 @@ import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
 import io.michaelrocks.lightsaber.processor.graph.DependencyGraph
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
 import io.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor
-import io.michaelrocks.lightsaber.processor.io.ClassFileReader
-import io.michaelrocks.lightsaber.processor.io.ClassFileWriter
+import io.michaelrocks.lightsaber.processor.io.classFileReader
+import io.michaelrocks.lightsaber.processor.io.classFileWriter
 import io.michaelrocks.lightsaber.processor.validation.SanityChecker
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.objectweb.asm.Type
@@ -36,11 +36,14 @@ import java.io.IOException
 import java.util.*
 
 class ClassProcessor(
-    private val classFileReader: ClassFileReader,
-    private val classFileWriter: ClassFileWriter,
+    private val inputFile: File,
+    private val outputFile: File,
     libraries: List<File>
 ) {
-  private val libraries = ArrayList(libraries)
+  private val classFileReader = inputFile.classFileReader()
+  private val classFileWriter = outputFile.classFileWriter(inputFile)
+
+  private val libraries = libraries.toArrayList()
 
   private val processorContext = ProcessorContext()
   private val classProducer = ProcessorClassProducer(classFileWriter, processorContext)
