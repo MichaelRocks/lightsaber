@@ -19,8 +19,9 @@ package io.michaelrocks.lightsaber.processor.io
 import java.io.File
 import java.io.IOException
 
-class DirectoryClassFileWriter @Throws(IOException::class)
-constructor(private val classesDirectory: File) : ClassFileWriter() {
+class DirectoryClassFileWriter(
+    private val classesDirectory: File
+) : ClassFileWriter() {
 
   @Throws(IOException::class)
   override fun writeFile(path: String, fileData: ByteArray) {

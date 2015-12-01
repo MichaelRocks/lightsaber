@@ -23,13 +23,10 @@ import java.io.IOException
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
-class JarClassFileWriter @Throws(IOException::class)
-constructor(targetFile: File) : ClassFileWriter() {
-  private val stream: JarOutputStream
-
-  init {
-    stream = JarOutputStream(FileOutputStream(targetFile))
-  }
+class JarClassFileWriter @Throws(IOException::class) constructor(
+    targetFile: File
+) : ClassFileWriter() {
+  private val stream: JarOutputStream = JarOutputStream(FileOutputStream(targetFile))
 
   @Throws(IOException::class)
   override fun writeFile(path: String, fileData: ByteArray) {
