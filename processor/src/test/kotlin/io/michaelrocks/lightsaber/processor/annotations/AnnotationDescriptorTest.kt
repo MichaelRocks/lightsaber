@@ -75,7 +75,7 @@ class AnnotationDescriptorTest {
   @Throws(Exception::class)
   fun testNotEqualsToNull() {
     val annotation = AnnotationHelper.createAnnotationDescriptor("NotEqualsToNull")
-    // noinspection ObjectEqualsNull
+    @Suppress("SENSELESS_COMPARISON")
     assertFalse(annotation == null)
   }
 
