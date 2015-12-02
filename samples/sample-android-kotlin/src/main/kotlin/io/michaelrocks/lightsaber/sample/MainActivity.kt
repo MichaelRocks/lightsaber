@@ -20,6 +20,7 @@ import android.app.Activity
 import android.os.Bundle
 import android.widget.TextView
 import io.michaelrocks.lightsaber.Lightsaber
+import io.michaelrocks.lightsaber.kotlin.R
 import javax.inject.Inject
 import javax.inject.Provider
 
