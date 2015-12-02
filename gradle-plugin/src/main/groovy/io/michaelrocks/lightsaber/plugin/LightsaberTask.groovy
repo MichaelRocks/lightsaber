@@ -72,7 +72,7 @@ public class LightsaberTask extends DefaultTask {
       FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
         super.visitFile(file, attrs)
         logger.debug("Checking $file...")
-        if (WatermarkChecker.isLightsaberClass(file)) {
+        if (WatermarkChecker.isLightsaberClass(file.toFile())) {
           logger.debug("File was patched - removing")
           Files.delete(file)
         } else {

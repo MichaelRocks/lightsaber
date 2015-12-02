@@ -57,7 +57,7 @@ class BackupClassesTask extends DefaultTask {
         super.visitFile(file, attrs)
         final Path relativePath = classesPath.relativize(file)
         visitedPaths.add(relativePath)
-        if (WatermarkChecker.isLightsaberClass(file)) {
+        if (WatermarkChecker.isLightsaberClass(file.toFile())) {
           logger.debug("Watermark found - skipping")
           return FileVisitResult.CONTINUE
         }
