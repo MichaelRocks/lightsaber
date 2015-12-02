@@ -18,12 +18,12 @@ package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.lightsaber.processor.ProcessingException
 import io.michaelrocks.lightsaber.processor.ProcessorContext
-import io.michaelrocks.lightsaber.processor.io.ClassFileVisitor
+import io.michaelrocks.lightsaber.processor.io.FileSink
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import java.io.IOException
 
 class ProcessorClassProducer(
-    private val classFileVisitor: ClassFileVisitor,
+    private val fileSink: FileSink,
     private val processorContext: ProcessorContext
 ) : ClassProducer {
   private val logger = getLogger()
@@ -32,7 +32,7 @@ class ProcessorClassProducer(
     logger.debug("Producing class {}", internalName)
     val classFileName = internalName + ".class"
     try {
-      classFileVisitor.visitClassFile(classFileName, classData)
+      fileSink.createFile(classFileName, classData)
     } catch (exception: IOException) {
       val message = "Failed to produce class with %d bytes".format(classData.size)
       processorContext.reportError(ProcessingException(message, exception, classFileName))

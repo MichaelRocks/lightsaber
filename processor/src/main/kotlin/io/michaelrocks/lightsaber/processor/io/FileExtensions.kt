@@ -27,14 +27,14 @@ private val File.fileType: FileType
     else -> error("Unknown file type for file $this")
   }
 
-fun File.classFileReader(): ClassFileReader =
+fun File.fileSource(): FileSource =
     when (fileType) {
-      FileType.DIRECTORY -> ClassFileReader(DirectoryClassFileTraverser(this))
-      FileType.JAR -> ClassFileReader(JarClassFileTraverser(this))
+      FileType.DIRECTORY -> DirectoryFileSource(this)
+      FileType.JAR -> JarFileSource(this)
     }
 
-fun File.classFileWriter(intputFile: File): ClassFileWriter =
+fun File.fileSink(intputFile: File): FileSink =
     when (intputFile.fileType) {
-      FileType.DIRECTORY -> DirectoryClassFileWriter(this)
-      FileType.JAR -> JarClassFileWriter(this)
+      FileType.DIRECTORY -> DirectoryFileSink(this)
+      FileType.JAR -> JarFileSink(this)
     }

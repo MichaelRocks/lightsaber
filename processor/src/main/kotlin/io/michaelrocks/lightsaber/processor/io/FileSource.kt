@@ -17,27 +17,10 @@
 package io.michaelrocks.lightsaber.processor.io
 
 import java.io.Closeable
-import java.io.IOException
 
-abstract class ClassFileWriter : ClassFileVisitor(null), Closeable {
-  @Throws(IOException::class)
-  override fun visitClassFile(path: String, classData: ByteArray) {
-    writeFile(path, classData)
-  }
+interface FileSource : Closeable {
+  fun listFiles(callback: (name: String, type: EntryType) -> Unit)
+  fun readFile(path: String): ByteArray
 
-  @Throws(IOException::class)
-  override fun visitOtherFile(path: String, fileData: ByteArray) {
-    writeFile(path, fileData)
-  }
-
-  @Throws(IOException::class)
-  override fun visitDirectory(path: String) {
-    createDirectory(path)
-  }
-
-  @Throws(IOException::class)
-  protected abstract fun writeFile(path: String, fileData: ByteArray)
-
-  @Throws(IOException::class)
-  protected abstract fun createDirectory(path: String)
+  enum class EntryType { CLASS, FILE, DIRECTORY }
 }

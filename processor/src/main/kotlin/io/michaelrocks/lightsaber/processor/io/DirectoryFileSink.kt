@@ -16,17 +16,19 @@
 
 package io.michaelrocks.lightsaber.processor.io
 
-import java.io.Closeable
-import java.io.IOException
+import java.io.File
 
-class ClassFileReader(private val traverser: ClassFileTraverser<*>) : Closeable {
-  @Throws(IOException::class)
-  fun accept(visitor: ClassFileVisitor) {
-    traverser.processFiles(visitor)
+class DirectoryFileSink(private val directory: File) : FileSink {
+  override fun createFile(path: String, data: ByteArray) {
+    val file = File(directory, path)
+    file.parentFile?.mkdirs()
+    file.writeBytes(data)
   }
 
-  @Throws(Exception::class)
+  override fun createDirectory(path: String) {
+    File(directory, path).mkdirs()
+  }
+
   override fun close() {
-    traverser.close()
   }
 }

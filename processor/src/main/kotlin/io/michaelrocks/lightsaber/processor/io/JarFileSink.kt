@@ -18,25 +18,19 @@ package io.michaelrocks.lightsaber.processor.io
 
 import io.michaelrocks.lightsaber.processor.commons.closeQuitely
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
-class JarClassFileWriter @Throws(IOException::class) constructor(
-    targetFile: File
-) : ClassFileWriter() {
-  private val stream: JarOutputStream = JarOutputStream(FileOutputStream(targetFile))
+internal class JarFileSink(jarFile: File) : FileSink {
+  private val stream = JarOutputStream(jarFile.outputStream().buffered())
 
-  @Throws(IOException::class)
-  override fun writeFile(path: String, fileData: ByteArray) {
+  override fun createFile(path: String, data: ByteArray) {
     val entry = JarEntry(path)
     stream.putNextEntry(entry)
-    stream.write(fileData)
+    stream.write(data)
     stream.closeEntry()
   }
 
-  @Throws(IOException::class)
   override fun createDirectory(path: String) {
     val directoryPath = if (path.endsWith("/")) path else "$path/"
     val entry = JarEntry(directoryPath)

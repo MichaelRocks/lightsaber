@@ -20,13 +20,10 @@ import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.CompositeClassVisitor
 import io.michaelrocks.lightsaber.processor.commons.using
 import io.michaelrocks.lightsaber.processor.graph.TypeGraph
-import io.michaelrocks.lightsaber.processor.io.ClassFileReader
-import io.michaelrocks.lightsaber.processor.io.ClassFileVisitor
-import io.michaelrocks.lightsaber.processor.io.DirectoryClassFileTraverser
-import io.michaelrocks.lightsaber.processor.io.JarClassFileTraverser
+import io.michaelrocks.lightsaber.processor.io.FileSource
+import io.michaelrocks.lightsaber.processor.io.fileSource
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
-
 import java.io.File
 import java.io.IOException
 
@@ -34,27 +31,27 @@ class Analyzer(private val processorContext: ProcessorContext) {
   private val typeGraphBuilder = TypeGraph.Builder()
 
   @Throws(IOException::class)
-  fun analyze(classFileReader: ClassFileReader, libraries: List<File>) {
-    analyzeTypes(classFileReader, libraries)
-    analyzeInjectionTargets(classFileReader)
+  fun analyze(fileSource: FileSource, libraries: List<File>) {
+    analyzeTypes(fileSource, libraries)
+    analyzeInjectionTargets(fileSource)
   }
 
   @Throws(IOException::class)
-  private fun analyzeTypes(classFileReader: ClassFileReader, libraries: List<File>) {
+  private fun analyzeTypes(fileSource: FileSource, libraries: List<File>) {
     val compositeClassVisitor = CompositeClassVisitor()
     compositeClassVisitor.addVisitor(TypeGraphComposer(typeGraphBuilder))
     compositeClassVisitor.addVisitor(AnnotationAnalysisDispatcher(processorContext))
     analyzeLibraries(libraries, compositeClassVisitor)
-    analyzeClassesFromReader(classFileReader, compositeClassVisitor)
+    analyzeClasses(fileSource, compositeClassVisitor)
     processorContext.typeGraph = typeGraphBuilder.build()
   }
 
   @Throws(IOException::class)
-  private fun analyzeInjectionTargets(classFileReader: ClassFileReader) {
+  private fun analyzeInjectionTargets(fileSource: FileSource) {
     val compositeClassVisitor = CompositeClassVisitor()
     compositeClassVisitor.addVisitor(ModuleClassAnalyzer(processorContext))
     compositeClassVisitor.addVisitor(InjectionTargetAnalyzer(processorContext))
-    analyzeClassesFromReader(classFileReader, compositeClassVisitor)
+    analyzeClasses(fileSource, compositeClassVisitor)
   }
 
   @Throws(IOException::class)
@@ -64,51 +61,24 @@ class Analyzer(private val processorContext: ProcessorContext) {
         continue
       }
 
-      if (library.isDirectory) {
-        analyzeClassesFromDirectory(library, classVisitor)
-      } else {
-        analyzeClassesFromJar(library, classVisitor)
+      using(library.fileSource()) { fileSource ->
+        analyzeClasses(fileSource, classVisitor)
       }
     }
   }
 
   @Throws(IOException::class)
-  private fun analyzeClassesFromJar(jarFile: File, classVisitor: ClassVisitor) {
-    try {
-      using(ClassFileReader(JarClassFileTraverser(jarFile))) { classFileReader ->
-        analyzeClassesFromReader(classFileReader, classVisitor)
-      }
-    } catch (exception: Exception) {
-      throw IOException(exception)
-    }
-  }
-
-  @Throws(IOException::class)
-  private fun analyzeClassesFromDirectory(classesDir: File, classVisitor: ClassVisitor) {
-    try {
-      using(ClassFileReader(DirectoryClassFileTraverser(classesDir))) { classFileReader ->
-        analyzeClassesFromReader(classFileReader, classVisitor)
-      }
-    } catch (exception: Exception) {
-      throw IOException(exception)
-    }
-
-  }
-
-  @Throws(IOException::class)
-  private fun analyzeClassesFromReader(classFileReader: ClassFileReader, classVisitor: ClassVisitor) {
-    classFileReader.accept(object : ClassFileVisitor(null) {
-      @Throws(IOException::class)
-      override fun visitClassFile(path: String, classData: ByteArray) {
+  private fun analyzeClasses(fileSource: FileSource, classVisitor: ClassVisitor) {
+    fileSource.listFiles { path, type ->
+      if (type == FileSource.EntryType.CLASS) {
         processorContext.classFilePath = path
         try {
-          val classReader = ClassReader(classData)
+          val classReader = ClassReader(fileSource.readFile(path))
           classReader.accept(classVisitor, ClassReader.SKIP_FRAMES or ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG)
-          super.visitClassFile(path, classData)
         } finally {
           processorContext.classFilePath = null
         }
       }
-    })
+    }
   }
 }

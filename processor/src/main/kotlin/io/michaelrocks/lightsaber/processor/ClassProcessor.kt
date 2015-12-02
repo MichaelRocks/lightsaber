@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.processor
 
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
+import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.box
 import io.michaelrocks.lightsaber.processor.descriptors.*
@@ -25,11 +26,14 @@ import io.michaelrocks.lightsaber.processor.generation.*
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
 import io.michaelrocks.lightsaber.processor.graph.DependencyGraph
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
-import io.michaelrocks.lightsaber.processor.injection.InjectionClassFileVisitor
-import io.michaelrocks.lightsaber.processor.io.classFileReader
-import io.michaelrocks.lightsaber.processor.io.classFileWriter
+import io.michaelrocks.lightsaber.processor.injection.InjectionDispatcher
+import io.michaelrocks.lightsaber.processor.io.FileSource
+import io.michaelrocks.lightsaber.processor.io.fileSink
+import io.michaelrocks.lightsaber.processor.io.fileSource
 import io.michaelrocks.lightsaber.processor.validation.SanityChecker
 import org.apache.commons.lang3.exception.ExceptionUtils
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Type
 import java.io.File
 import java.io.IOException
@@ -40,13 +44,13 @@ class ClassProcessor(
     private val outputFile: File,
     libraries: List<File>
 ) {
-  private val classFileReader = inputFile.classFileReader()
-  private val classFileWriter = outputFile.classFileWriter(inputFile)
+  private val fileSource = inputFile.fileSource()
+  private val fileSink = outputFile.fileSink(inputFile)
 
   private val libraries = libraries.toArrayList()
 
   private val processorContext = ProcessorContext()
-  private val classProducer = ProcessorClassProducer(classFileWriter, processorContext)
+  private val classProducer = ProcessorClassProducer(fileSink, processorContext)
   private val annotationCreator = AnnotationCreator(processorContext, classProducer)
 
   @Throws(IOException::class)
@@ -68,7 +72,7 @@ class ClassProcessor(
   @Throws(IOException::class)
   private fun performAnalysis() {
     val analyzer = Analyzer(processorContext)
-    analyzer.analyze(classFileReader, libraries)
+    analyzer.analyze(fileSource, libraries)
     SanityChecker(processorContext).performSanityChecks()
     checkErrors()
   }
@@ -186,8 +190,21 @@ class ClassProcessor(
 
   @Throws(IOException::class)
   private fun copyAndPatchClasses() {
-    val injectionVisitor = InjectionClassFileVisitor(classFileWriter, processorContext)
-    classFileReader.accept(injectionVisitor)
+    fileSource.listFiles { path, type ->
+      when (type) {
+        FileSource.EntryType.CLASS -> {
+          val classReader = ClassReader(fileSource.readFile(path))
+          val classWriter = StandaloneClassWriter(
+              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, processorContext.typeGraph)
+          val classVisitor = InjectionDispatcher(classWriter, processorContext)
+          classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
+          fileSink.createFile(path, classWriter.toByteArray())
+        }
+        FileSource.EntryType.FILE -> fileSink.createFile(path, fileSource.readFile(path))
+        FileSource.EntryType.DIRECTORY -> fileSink.createDirectory(path)
+      }
+    }
+
     checkErrors()
   }
 

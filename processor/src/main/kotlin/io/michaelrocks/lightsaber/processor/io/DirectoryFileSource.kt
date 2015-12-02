@@ -16,26 +16,23 @@
 
 package io.michaelrocks.lightsaber.processor.io
 
-import java.io.IOException
+import java.io.File
 
-open class ClassFileVisitor(protected var classFileVisitor: ClassFileVisitor? = null) {
-  @Throws(IOException::class)
-  open fun visitClassFile(path: String, classData: ByteArray) {
-    classFileVisitor?.visitClassFile(path, classData)
+internal class DirectoryFileSource(private val directory: File) : FileSource {
+  override fun listFiles(callback: (String, FileSource.EntryType) -> Unit) {
+    fun File.toEntryType() = when {
+      isDirectory -> FileSource.EntryType.DIRECTORY
+      name.endsWith(".class", ignoreCase = true) -> FileSource.EntryType.CLASS
+      else -> FileSource.EntryType.FILE
+    }
+
+    for (file in directory.walkTopDown()) {
+      callback(file.relativeTo(directory), file.toEntryType())
+    }
   }
 
-  @Throws(IOException::class)
-  open fun visitOtherFile(path: String, fileData: ByteArray) {
-    classFileVisitor?.visitOtherFile(path, fileData)
-  }
+  override fun readFile(path: String): ByteArray = File(directory, path).readBytes()
 
-  @Throws(IOException::class)
-  open fun visitDirectory(path: String) {
-    classFileVisitor?.visitDirectory(path)
-  }
-
-  @Throws(IOException::class)
-  fun visitEnd() {
-    classFileVisitor?.visitEnd()
+  override fun close() {
   }
 }
