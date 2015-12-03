@@ -55,6 +55,7 @@ class ClassProcessor(
 
   @Throws(IOException::class)
   fun processClasses() {
+    buildFileRegistry()
     performAnalysis()
     composePackageModules()
     composeInjectors()
@@ -67,6 +68,14 @@ class ClassProcessor(
     generateInjectors()
     generatePackageInvaders()
     copyAndPatchClasses()
+  }
+
+  private fun buildFileRegistry() {
+    with(processorContext.fileRegistry) {
+      add(inputFile)
+      add(libraries)
+    }
+    checkErrors()
   }
 
   @Throws(IOException::class)
@@ -195,7 +204,7 @@ class ClassProcessor(
         FileSource.EntryType.CLASS -> {
           val classReader = ClassReader(fileSource.readFile(path))
           val classWriter = StandaloneClassWriter(
-              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, processorContext.typeGraph)
+              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, processorContext.classRegistry)
           val classVisitor = InjectionDispatcher(classWriter, processorContext)
           classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
           fileSink.createFile(path, classWriter.toByteArray())

@@ -49,7 +49,7 @@ class AnnotationCreator(
   private fun generateAnnotationProxyClassIfNecessary(annotation: AnnotationDescriptor,
       annotationProxyType: Type) {
     if (generatedAnnotationProxies.add(annotationProxyType)) {
-      val generator = AnnotationProxyGenerator(processorContext.typeGraph, annotation, annotationProxyType)
+      val generator = AnnotationProxyGenerator(processorContext.classRegistry, annotation, annotationProxyType)
       val annotationProxyClassData = generator.generate()
       classProducer.produceClass(annotationProxyType.internalName, annotationProxyClassData)
     }

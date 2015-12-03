@@ -58,7 +58,7 @@ class SanityChecker(private val processorContext: ProcessorContext) {
   }
 
   private fun checkProvidableTargetIsConstructable(providableTarget: Type) {
-    val targetClass = processorContext.typeGraph.findClassDescriptor(providableTarget)!!
+    val targetClass = processorContext.classRegistry.findClass(providableTarget)
     checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_INTERFACE)
     checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ABSTRACT)
     checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ENUM)

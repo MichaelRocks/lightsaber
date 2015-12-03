@@ -23,18 +23,18 @@ import io.michaelrocks.lightsaber.processor.commons.box
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.PackageInvaderDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
-import io.michaelrocks.lightsaber.processor.graph.TypeGraph
+import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes.*
 
 class PackageInvaderClassGenerator(
-    private val typeGraph: TypeGraph,
+    private val classRegistry: ClassRegistry,
     private val packageInvader: PackageInvaderDescriptor
 ) {
   fun generate(): ByteArray {
-    val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, typeGraph)
+    val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
         V1_6,

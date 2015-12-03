@@ -21,7 +21,10 @@ import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.*
-import io.michaelrocks.lightsaber.processor.graph.TypeGraph
+import io.michaelrocks.lightsaber.processor.files.ClassRegistry
+import io.michaelrocks.lightsaber.processor.files.ClassRegistryImpl
+import io.michaelrocks.lightsaber.processor.files.FileRegistry
+import io.michaelrocks.lightsaber.processor.files.FileRegistryImpl
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import org.apache.commons.collections4.CollectionUtils
 import org.objectweb.asm.Type
@@ -40,9 +43,10 @@ class ProcessorContext {
   var classFilePath: String? = null
   private val errorsByPath = LinkedHashMap<String, MutableList<Exception>>()
 
+  val fileRegistry: FileRegistry = FileRegistryImpl()
+  val classRegistry: ClassRegistry = ClassRegistryImpl(fileRegistry)
   val annotationRegistry = AnnotationRegistry()
 
-  lateinit var typeGraph: TypeGraph
   private val modules = HashMap<Type, ModuleDescriptor>()
   private val packageModules = HashMap<Type, ModuleDescriptor>()
   private val injectableTargets = HashMap<Type, InjectionTargetDescriptor>()

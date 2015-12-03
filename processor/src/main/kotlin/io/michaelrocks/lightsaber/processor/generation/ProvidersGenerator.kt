@@ -35,7 +35,7 @@ class ProvidersGenerator(
 
   private fun generateProvider(provider: ProviderDescriptor) {
     logger.debug("Generating provider {}", provider.providerType.internalName)
-    val generator = ProviderClassGenerator(processorContext.typeGraph, annotationCreator, provider)
+    val generator = ProviderClassGenerator(processorContext.classRegistry, annotationCreator, provider)
     val providerClassData = generator.generate()
     classProducer.produceClass(provider.providerType.internalName, providerClassData)
   }

@@ -32,7 +32,7 @@ class PackageInvadersGenerator(
 
   private fun generatePackageInvaders(packageInvader: PackageInvaderDescriptor) {
     logger.debug("Generating package invader {}", packageInvader.type)
-    val generator = PackageInvaderClassGenerator(processorContext.typeGraph, packageInvader)
+    val generator = PackageInvaderClassGenerator(processorContext.classRegistry, packageInvader)
     val classData = generator.generate()
     classProducer.produceClass(packageInvader.type.internalName, classData)
   }

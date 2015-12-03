@@ -33,7 +33,7 @@ class TypeAgentsGenerator(
   }
 
   private fun generateTypeAgent(injectorDescriptor: InjectorDescriptor) {
-    val generator = TypeAgentClassGenerator(processorContext.typeGraph, annotationCreator, injectorDescriptor)
+    val generator = TypeAgentClassGenerator(processorContext.classRegistry, annotationCreator, injectorDescriptor)
     val injectorClassData = generator.generate()
     classProducer.produceClass(injectorDescriptor.injectorType.internalName, injectorClassData)
   }

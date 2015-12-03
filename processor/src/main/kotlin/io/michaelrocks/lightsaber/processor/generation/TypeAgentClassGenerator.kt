@@ -20,7 +20,7 @@ import io.michaelrocks.lightsaber.MembersInjector
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.*
-import io.michaelrocks.lightsaber.processor.graph.TypeGraph
+import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.apache.commons.lang3.Validate
@@ -30,7 +30,7 @@ import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 
 class TypeAgentClassGenerator(
-    private val typeGraph: TypeGraph,
+    private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator,
     private val injector: InjectorDescriptor
 ) {
@@ -53,7 +53,7 @@ class TypeAgentClassGenerator(
   }
 
   fun generate(): ByteArray {
-    val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, typeGraph)
+    val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
         V1_6,

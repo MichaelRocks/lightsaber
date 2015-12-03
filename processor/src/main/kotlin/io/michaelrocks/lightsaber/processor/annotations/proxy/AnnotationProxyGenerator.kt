@@ -24,7 +24,7 @@ import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
-import io.michaelrocks.lightsaber.processor.graph.TypeGraph
+import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -35,7 +35,7 @@ import org.objectweb.asm.commons.GeneratorAdapter.*
 import java.util.*
 
 class AnnotationProxyGenerator(
-    private val typeGraph: TypeGraph,
+    private val classRegistry: ClassRegistry,
     private val annotation: AnnotationDescriptor,
     private val proxyType: Type
 ) {
@@ -59,7 +59,7 @@ class AnnotationProxyGenerator(
   }
 
   fun generate(): ByteArray {
-    val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, typeGraph)
+    val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
         V1_6,

@@ -16,9 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
-import io.michaelrocks.lightsaber.processor.graph.TypeGraph
+import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import io.michaelrocks.lightsaber.processor.logging.getLogger
-import org.apache.commons.collections4.iterators.IteratorIterable
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Type
@@ -26,44 +25,30 @@ import java.util.*
 
 class StandaloneClassWriter : ClassWriter {
   private val logger = getLogger()
-  private val typeGraph: TypeGraph
+  private val classRegistry: ClassRegistry
 
-  constructor(flags: Int, typeGraph: TypeGraph) : super(flags) {
-    this.typeGraph = typeGraph
+  constructor(flags: Int, classRegistry: ClassRegistry) : super(flags) {
+    this.classRegistry = classRegistry
   }
 
-  constructor(classReader: ClassReader, flags: Int, typeGraph: TypeGraph) : super(classReader, flags) {
-    this.typeGraph = typeGraph
+  constructor(classReader: ClassReader, flags: Int, classRegistry: ClassRegistry) : super(classReader, flags) {
+    this.classRegistry = classRegistry
   }
 
   override fun getCommonSuperClass(type1: String, type2: String): String {
     val hierarchy = HashSet<Type>()
-    for (type in traverseTypeHierarchy(Type.getObjectType(type1))) {
-      hierarchy.add(type)
+    for (descriptor in classRegistry.findClassHierarchy(Type.getObjectType(type1))) {
+      hierarchy.add(descriptor.classType)
     }
 
-    for (type in traverseTypeHierarchy(Type.getObjectType(type2))) {
-      if (hierarchy.containsRaw(type)) {
-        logger.debug("[getCommonSuperClass]: {} & {} = {}", type1, type2, type)
-        return type.internalName
+    for (descriptor in classRegistry.findClassHierarchy(Type.getObjectType(type2))) {
+      if (descriptor.classType in hierarchy) {
+        logger.debug("[getCommonSuperClass]: {} & {} = {}", type1, type2, descriptor.access)
+        return descriptor.classType.internalName
       }
     }
 
     logger.warn("[getCommonSuperClass]: {} & {} = NOT FOUND ", type1, type2)
     return Types.OBJECT_TYPE.internalName
-  }
-
-  private fun traverseTypeHierarchy(type: Type): Iterable<Type> {
-    return IteratorIterable(TypeHierarchyIterator(typeGraph, type))
-  }
-
-  private class TypeHierarchyIterator(private val typeGraph: TypeGraph, private var type: Type?) : Iterator<Type> {
-    override fun hasNext(): Boolean = type != null
-
-    override fun next(): Type {
-      val result = type ?: throw NoSuchElementException()
-      type = if (Types.OBJECT_TYPE == type) null else typeGraph.findSuperType(result)
-      return result
-    }
   }
 }

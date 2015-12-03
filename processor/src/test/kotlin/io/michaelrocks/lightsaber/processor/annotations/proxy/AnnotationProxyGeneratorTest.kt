@@ -19,11 +19,14 @@ package io.michaelrocks.lightsaber.processor.annotations.proxy
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptorBuilder
 import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.*
-import io.michaelrocks.lightsaber.processor.graph.TypeGraph
+import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor
+import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.*
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import java.lang.annotation.RetentionPolicy
 import java.lang.reflect.Constructor
@@ -426,10 +429,13 @@ class AnnotationProxyGeneratorTest {
   }
 
   private fun addAnnotationProxy(annotationClass: Class<out Annotation>) {
-    val typeGraph = TypeGraph(emptyMap())
+    val classRegistry = mock(ClassRegistry::class.java)
+    `when`(classRegistry.findClass(any())).thenAnswer { invocation ->
+      ClassDescriptor(Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER, invocation.arguments[0] as Type, Types.OBJECT_TYPE, null)
+    }
     val annotationDescriptor = getAnnotationDescriptor(annotationClass)
     val annotationProxyType = Type.getObjectType(getAnnotationProxyClassName(annotationClass))
-    val annotationProxyGenerator = AnnotationProxyGenerator(typeGraph, annotationDescriptor, annotationProxyType)
+    val annotationProxyGenerator = AnnotationProxyGenerator(classRegistry, annotationDescriptor, annotationProxyType)
     classLoader.addClass(annotationProxyType.internalName, annotationProxyGenerator.generate())
   }
 

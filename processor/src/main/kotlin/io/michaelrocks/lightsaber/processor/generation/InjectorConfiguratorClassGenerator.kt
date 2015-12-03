@@ -53,7 +53,7 @@ class InjectorConfiguratorClassGenerator(
 
   fun generate(): ByteArray {
     val classWriter =
-        StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, processorContext.typeGraph)
+        StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, processorContext.classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
         V1_6,

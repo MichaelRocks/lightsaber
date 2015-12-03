@@ -22,7 +22,7 @@ import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.*
-import io.michaelrocks.lightsaber.processor.graph.TypeGraph
+import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
@@ -31,7 +31,7 @@ import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 
 class ProviderClassGenerator(
-    private val typeGraph: TypeGraph,
+    private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator,
     private val provider: ProviderDescriptor
 ) {
@@ -59,7 +59,7 @@ class ProviderClassGenerator(
     }
 
   fun generate(): ByteArray {
-    val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, typeGraph)
+    val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
         V1_6,
