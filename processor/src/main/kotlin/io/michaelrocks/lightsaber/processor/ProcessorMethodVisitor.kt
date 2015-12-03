@@ -18,9 +18,7 @@ package io.michaelrocks.lightsaber.processor
 
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes.ASM5
-import javax.annotation.ParametersAreNonnullByDefault
 
-@ParametersAreNonnullByDefault
 open class ProcessorMethodVisitor @JvmOverloads constructor(
     val processorContext: ProcessorContext,
     methodVisitor: MethodVisitor? = null

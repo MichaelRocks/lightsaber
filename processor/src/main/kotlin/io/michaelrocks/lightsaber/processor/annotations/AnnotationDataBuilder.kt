@@ -19,9 +19,7 @@ package io.michaelrocks.lightsaber.processor.annotations
 import org.apache.commons.lang3.Validate
 import org.objectweb.asm.Type
 import java.util.*
-import javax.annotation.ParametersAreNonnullByDefault
 
-@ParametersAreNonnullByDefault
 class AnnotationDataBuilder(private val annotationType: Type) {
   private var values: MutableMap<String, Any>? = null
   private var isResolved = false
