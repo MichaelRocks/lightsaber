@@ -13,13 +13,15 @@ apply plugin: 'kotlin'
 apply plugin: 'application'
 apply plugin: 'bintray'
 
+sourceCompatibility = JavaVersion.VERSION_1_6
+targetCompatibility = JavaVersion.VERSION_1_6
+
 mainClassName = 'io.michaelrocks.lightsaber.processor.LightsaberProcessor'
 
 dependencies {
   compile project(':core')
   compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
-  compile "com.google.code.findbugs:jsr305:$jsr305Version"
   compile "com.beust:jcommander:$jcommanderVersion"
   compile "org.ow2.asm:asm:$asmVersion"
   compile "org.ow2.asm:asm-commons:$asmVersion"
