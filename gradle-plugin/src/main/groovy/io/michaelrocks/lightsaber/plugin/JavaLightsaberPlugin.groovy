@@ -94,7 +94,7 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
 
   private LightsaberTask createLightsaberProcessTask(final String taskName, final File classesDir,
       final File backupDir, final List<File> libraries) {
-    logger.info("Creating Lighsaber task $taskName...")
+    logger.info("Creating Lightsaber task $taskName...")
     logger.info("  Source classes directory [$backupDir]")
     logger.info("  Processed classes directory [$classesDir]")
 
