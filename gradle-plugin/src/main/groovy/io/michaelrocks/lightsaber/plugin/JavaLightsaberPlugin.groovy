@@ -19,7 +19,9 @@ package io.michaelrocks.lightsaber.plugin
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.tasks.compile.AbstractCompile
+import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.compile.JavaCompile
+import org.gradle.internal.jvm.Jvm
 
 class JavaLightsaberPlugin extends BaseLightsaberPlugin {
   @Override
@@ -41,25 +43,26 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
 
   private void setupLightsaberForJava() {
     logger.info("Setting up Lightsaber task for Java project ${project.name}...")
-    final File classesDir = project.sourceSets.main.output.classesDir
-    final File backupDir = new File(project.buildDir, "lightsaber")
-    final List<File> classpath = project.tasks.compileJava.classpath.toList()
-    final AbstractCompile compileTask = project.tasks.compileJava as AbstractCompile
-    createTasks(classesDir, backupDir, classpath, compileTask)
+    final SourceSet sourceSet = project.sourceSets.main
+    final JavaCompile compileTask = project.tasks.compileJava as JavaCompile
+    createTasks(sourceSet, compileTask)
   }
 
   private void setupLightsaberForJavaTest() {
     logger.info("Setting up Lightsaber task for Java test project ${project.name}...")
-    final File classesDir = project.sourceSets.test.output.classesDir
-    final File backupDir = new File(project.buildDir, "lightsaberTest")
-    final List<File> classpath = project.tasks.compileTestJava.classpath.toList()
-    final AbstractCompile compileTask = project.tasks.compileTestJava as AbstractCompile
-    createTasks(classesDir, backupDir, classpath, compileTask, "test")
+    final SourceSet sourceSet = project.sourceSets.test
+    final JavaCompile compileTask = project.tasks.compileTestJava as JavaCompile
+    createTasks(sourceSet, compileTask, "test")
   }
 
-  private void createTasks(final File classesDir, final File backupDir, final List<File> classpath,
-      final AbstractCompile compileTask, final String nameSuffix = "") {
+  private void createTasks(final SourceSet sourceSet, final JavaCompile compileTask, final String nameSuffix = "") {
     final String suffix = nameSuffix.capitalize()
+    final File classesDir = sourceSet.output.classesDir
+    final File backupDir = new File(project.buildDir, "lightsaber$suffix")
+    final List<File> classpath = compileTask.classpath.toList();
+    if (Jvm.current().runtimeJar != null) {
+      classpath.add(Jvm.current().runtimeJar)
+    }
     final LightsaberTask lightsaberTask =
         createLightsaberProcessTask("lightsaberProcess$suffix", classesDir, backupDir, classpath)
     final BackupClassesTask backupTask =

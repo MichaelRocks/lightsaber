@@ -26,7 +26,7 @@ class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
 
     if (project.hasProperty('android')) {
       addDependencies('compile')
-      project.android.registerTransform(new LightsaberTransform())
+      project.android.registerTransform(new LightsaberTransform(project))
     } else {
       throw new GradleException("Lightsaber plugin must be applied *AFTER* Android plugin")
     }
