@@ -20,11 +20,17 @@ import com.android.build.api.transform.*
 import com.google.common.collect.Iterables
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
+import org.gradle.api.Project
 import org.gradle.api.logging.Logger
 import org.gradle.api.logging.Logging
 
 public class LightsaberTransform extends Transform {
+    private final Project project
     private final Logger logger = Logging.getLogger(LightsaberTransform)
+
+    LightsaberTransform(final Project project) {
+        this.project = project
+    }
 
     @Override
     void transform(final Context context, final Collection<TransformInput> inputs,
@@ -34,10 +40,12 @@ public class LightsaberTransform extends Transform {
         final TransformInput input = Iterables.getOnlyElement(inputs)
         final DirectoryInput directoryInput = Iterables.getOnlyElement(input.directoryInputs)
         final File output = outputProvider.getContentLocation(
-                directoryInput.name, EnumSet.of(QualifiedContent.DefaultContentType.CLASSES), EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
+                directoryInput.name, EnumSet.of(QualifiedContent.DefaultContentType.CLASSES),
+                EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
         parameters.classes = directoryInput.file.absolutePath
         parameters.output = output.absolutePath
-        parameters.libs = referencedInputs.collect { it.directoryInputs }.flatten().collect { it.file }.flatten()
+        parameters.libs = project.android.bootClasspath.toList() +
+                referencedInputs.collect { it.directoryInputs }.flatten().collect { it.file }.flatten()
         parameters.debug = logger.isDebugEnabled()
         parameters.info = logger.isInfoEnabled()
         logger.info("Starting Lightsaber processor: $parameters")
