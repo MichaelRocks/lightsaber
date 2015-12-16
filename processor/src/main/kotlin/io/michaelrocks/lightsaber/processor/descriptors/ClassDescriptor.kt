@@ -16,20 +16,52 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
-import io.michaelrocks.lightsaber.processor.commons.mapToArray
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationData
 import org.objectweb.asm.Type
+import java.util.*
 
-fun ClassDescriptor(access: Int, name: String, superName: String?, interfaces: Array<String>?): ClassDescriptor =
+fun ClassDescriptor(
+    access: Int,
+    name: String,
+    superName: String?,
+    interfaces: Array<String>? = null,
+    annotations: Array<AnnotationData>? = null
+) =
     ClassDescriptor(
         access,
         Type.getObjectType(name),
         superName?.let { Type.getObjectType(it) },
-        interfaces?.mapToArray { Type.getObjectType(it) }
+        interfaces?.map { Type.getObjectType(it) }.orEmpty(),
+        annotations?.toList().orEmpty()
     )
 
 data class ClassDescriptor(
     val access: Int,
     val classType: Type,
     val superType: Type?,
-    val interfaceTypes: Array<Type>?
-)
+    val interfaceTypes: List<Type> = emptyList(),
+    val annotations: List<AnnotationData> = emptyList()
+) {
+  constructor(builder: ClassDescriptor.Builder) : this(
+      builder.access,
+      Type.getObjectType(builder.className),
+      builder.superName?.let { Type.getObjectType(it) },
+      builder.interfaces?.map { Type.getObjectType(it) }.orEmpty(),
+      Collections.unmodifiableList(builder.annotations)
+  )
+
+  class Builder(val access: Int, val className: String, val superName: String?, val interfaces: Array<String>?) {
+    var annotations: List<AnnotationData> = emptyList()
+      private set
+
+    fun addAnnotation(annotation: AnnotationData): Builder {
+      if (annotations.isEmpty()) {
+        annotations = ArrayList()
+      }
+      annotations += annotation
+      return this
+    }
+
+    fun build() = ClassDescriptor(this)
+  }
+}
