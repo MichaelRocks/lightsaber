@@ -25,6 +25,7 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap
 import org.objectweb.asm.Type
 import javax.inject.Inject
 import javax.inject.Provider
+import javax.inject.Qualifier
 import kotlin.reflect.KClass
 
 object Types {
@@ -33,6 +34,7 @@ object Types {
   val INJECT_TYPE = getType<Inject>()
   val PROVIDES_TYPE = getType<Provides>()
   val MODULE_TYPE = getType<Module>()
+  val QUALIFIER_TYPE = getType<Qualifier>()
   val INJECTOR_TYPE = getType<Injector>()
   val PROVIDER_TYPE = getType<Provider<Any>>()
   val KEY_TYPE = getType<Key<Any>>()
