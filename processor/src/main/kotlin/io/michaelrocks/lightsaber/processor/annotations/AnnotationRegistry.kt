@@ -16,106 +16,30 @@
 
 package io.michaelrocks.lightsaber.processor.annotations
 
-import io.michaelrocks.lightsaber.processor.logging.getLogger
+import io.michaelrocks.lightsaber.processor.files.FileRegistry
 import org.objectweb.asm.Type
 import java.util.*
 
-class AnnotationRegistry {
-  private val logger = getLogger()
+interface AnnotationRegistry {
+  fun findAnnotation(annotationType: Type): AnnotationDescriptor
+  fun findAnnotationDefaults(annotationType: Type): AnnotationData
+}
 
-  private val annotationsByType = HashMap<Type, AnnotationDescriptor>()
-  private val unresolvedDefaultsByType = HashMap<Type, AnnotationData>()
-  private val resolvedDefaultsByType = HashMap<Type, AnnotationData>()
+class AnnotationRegistryImpl(
+    private val fileRegistry: FileRegistry,
+    private val annotationReader: AnnotationReader = AnnotationReaderImpl()) : AnnotationRegistry {
+  private val annotationsByType = HashMap<Type, AnnotationReader.Annotation>()
 
-  fun addAnnotationDefaults(annotation: AnnotationDescriptor, defaults: AnnotationData) {
-    check(annotation.type == defaults.type)
+  override fun findAnnotation(annotationType: Type): AnnotationDescriptor =
+      findAnnotationByType(annotationType).descriptor
 
-    if (annotationsByType.containsKey(annotation.type)) {
-      logger.warn("Annotation already registered: {}", annotation.type)
-      return
+  override fun findAnnotationDefaults(annotationType: Type): AnnotationData =
+      findAnnotationByType(annotationType).defaults
+
+  private fun findAnnotationByType(annotationType: Type): AnnotationReader.Annotation {
+    return annotationsByType.getOrPut(annotationType) {
+      val data = fileRegistry.readClass(annotationType)
+      annotationReader.readAnnotation(data, this)
     }
-
-    annotationsByType.put(annotation.type, annotation)
-
-    if (defaults.resolved) {
-      check(!unresolvedDefaultsByType.containsKey(annotation.type))
-      resolvedDefaultsByType.put(annotation.type, defaults)
-    } else {
-      check(!resolvedDefaultsByType.containsKey(annotation.type))
-      unresolvedDefaultsByType.put(annotation.type, defaults)
-    }
-  }
-
-  fun findAnnotationByType(annotationType: Type): AnnotationDescriptor? {
-    return annotationsByType[annotationType]
-  }
-
-  fun resolveAnnotation(data: AnnotationData): AnnotationData {
-    if (data.resolved) {
-      return data
-    }
-
-    return AnnotationResolver().resolve(data)
-  }
-
-  internal fun hasUnresolvedDefaults(annotationType: Type): Boolean {
-    return unresolvedDefaultsByType.containsKey(annotationType)
-  }
-
-  internal fun hasResolvedDefaults(annotationType: Type): Boolean {
-    return resolvedDefaultsByType.containsKey(annotationType)
-  }
-
-  private inner class AnnotationResolver {
-    private val values = HashMap<String, Any>()
-    private var resolved = true
-
-    internal fun resolve(data: AnnotationData): AnnotationData {
-      return resolve(data, true)
-    }
-
-    private fun resolve(data: AnnotationData, applyDefaults: Boolean): AnnotationData {
-      if (applyDefaults) {
-        applyDefaults(data)
-      }
-
-      data.values.mapValuesTo(values) { entry -> resolveObject(entry.value) }
-      return AnnotationData(data.type, Collections.unmodifiableMap(values), resolved)
-    }
-
-    private fun applyDefaults(data: AnnotationData) {
-      val defaults = resolveDefaults(data.type)
-      if (defaults == null) {
-        resolved = false
-        return
-      }
-
-      resolved = resolved and defaults.resolved
-      values.putAll(defaults.values)
-    }
-
-    private fun resolveDefaults(annotationType: Type): AnnotationData? {
-      return resolvedDefaultsByType[annotationType] ?:
-          unresolvedDefaultsByType.remove(annotationType)?.let { unresolvedDefaults ->
-            val resolvedDefaults =
-                if (unresolvedDefaults.resolved) unresolvedDefaults
-                else AnnotationResolver().resolve(unresolvedDefaults, false)
-            resolvedDefaultsByType.put(annotationType, resolvedDefaults)
-            resolvedDefaults
-          }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun resolveObject(value: Any): Any =
-        when (value) {
-          is AnnotationData -> resolveAnnotation(value).let { data ->
-            resolved = resolved and data.resolved
-            data
-          }
-          is List<*> -> resolveArray(value as List<Any>)
-          else -> value
-        }
-
-    private fun resolveArray(array: List<Any>): List<Any> = array.map { resolveObject(it) }
   }
 }

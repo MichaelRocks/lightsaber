@@ -32,8 +32,11 @@ internal object AnnotationHelper {
   fun createAnnotationDescriptor(annotationName: String, vararg values: Pair<String, Type>): AnnotationDescriptor =
       AnnotationDescriptor(getAnnotationType(annotationName), hashMapOf(*values))
 
+  fun createAnnotationDescriptor(annotationName: String, fields: Map<String, Type>): AnnotationDescriptor =
+      AnnotationDescriptor(getAnnotationType(annotationName), fields)
+
   fun createAnnotationData(annotationName: String): AnnotationData =
-      AnnotationData(getAnnotationType(annotationName), emptyMap<String, Any>(), false)
+      AnnotationData(getAnnotationType(annotationName), emptyMap<String, Any>())
 
   fun createAnnotationData(annotationName: String, defaultValue: Any): AnnotationData =
       createAnnotationData(annotationName, "value", defaultValue)
@@ -41,29 +44,11 @@ internal object AnnotationHelper {
   fun createAnnotationData(annotationName: String, methodName: String, defaultValue: Any): AnnotationData =
       createAnnotationData(annotationName, Collections.singletonMap(methodName, defaultValue))
 
-  fun createAnnotationDescriptor(annotationName: String, fields: Map<String, Type>): AnnotationDescriptor =
-      AnnotationDescriptor(getAnnotationType(annotationName), fields)
-
   fun createAnnotationData(annotationName: String, vararg values: Pair<String, Any>): AnnotationData =
-      AnnotationData(getAnnotationType(annotationName), hashMapOf(*values), false)
+      AnnotationData(getAnnotationType(annotationName), hashMapOf(*values))
 
   fun createAnnotationData(annotationName: String, values: Map<String, Any>): AnnotationData =
-      AnnotationData(getAnnotationType(annotationName), values, false)
-
-  fun createResolvedAnnotationData(annotationName: String): AnnotationData =
-      AnnotationData(getAnnotationType(annotationName), emptyMap<String, Any>(), true)
-
-  fun createResolvedAnnotationData(annotationName: String, defaultValue: Any): AnnotationData =
-      createResolvedAnnotationData(annotationName, "value", defaultValue)
-
-  fun createResolvedAnnotationData(annotationName: String, methodName: String, defaultValue: Any): AnnotationData =
-      createResolvedAnnotationData(annotationName, Collections.singletonMap(methodName, defaultValue))
-
-  fun createResolvedAnnotationData(annotationName: String, vararg values: Pair<String, Any>): AnnotationData =
-      AnnotationData(getAnnotationType(annotationName), hashMapOf(*values), false)
-
-  fun createResolvedAnnotationData(annotationName: String, values: Map<String, Any>): AnnotationData =
-      AnnotationData(getAnnotationType(annotationName), values, true)
+      AnnotationData(getAnnotationType(annotationName), values)
 
   fun getAnnotationType(annotationName: String): Type =
       Type.getObjectType(annotationName)

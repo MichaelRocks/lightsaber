@@ -16,7 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.annotations
 
-internal open class AnnotationValueParser : AbstractAnnotationParser() {
+internal open class AnnotationValueParser(
+    annotationRegistry: AnnotationRegistry
+) : AbstractAnnotationParser(annotationRegistry) {
+
   var value: Any? = null
     private set
 

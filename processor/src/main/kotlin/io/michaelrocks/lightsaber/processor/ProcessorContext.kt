@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.processor
 
 import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistryImpl
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.*
@@ -44,8 +44,8 @@ class ProcessorContext {
   private val errorsByPath = LinkedHashMap<String, MutableList<Exception>>()
 
   val fileRegistry: FileRegistry = FileRegistryImpl()
-  val classRegistry: ClassRegistry = ClassRegistryImpl(fileRegistry)
-  val annotationRegistry = AnnotationRegistry()
+  val annotationRegistry = AnnotationRegistryImpl(fileRegistry)
+  val classRegistry: ClassRegistry = ClassRegistryImpl(fileRegistry, annotationRegistry)
 
   private val modules = HashMap<Type, ModuleDescriptor>()
   private val packageModules = HashMap<Type, ModuleDescriptor>()
@@ -53,7 +53,6 @@ class ProcessorContext {
   private val providableTargets = HashMap<Type, InjectionTargetDescriptor>()
   private val injectors = HashMap<Type, InjectorDescriptor>()
   private val packageInvaders = HashMap<String, PackageInvaderDescriptor>()
-  private val qualifiers = HashSet<Type>()
 
   fun hasErrors(): Boolean {
     return !errorsByPath.isEmpty()
@@ -160,12 +159,8 @@ class ProcessorContext {
   val scopes: Collection<ScopeDescriptor>
     get() = setOf(SINGLETON_SCOPE_DESCRIPTOR)
 
-  fun addQualifier(type: Type) {
-    qualifiers.add(type)
-  }
-
-  fun isQualifier(type: Type): Boolean {
-    return qualifiers.contains(type)
+  fun isQualifier(annotationType: Type): Boolean {
+    return classRegistry.findClass(annotationType).annotations.any { it.type == Types.QUALIFIER_TYPE }
   }
 
   fun getPackageModuleType(packageName: String): Type {
@@ -208,9 +203,6 @@ class ProcessorContext {
       for (injectableConstructor in providableTarget.injectableConstructors) {
         logger.debug("\tConstructor: {}", injectableConstructor)
       }
-    }
-    for (qualifierType in qualifiers) {
-      logger.debug("\tQualifier: {}", qualifierType)
     }
     for (packageInvader in getPackageInvaders()) {
       logger.debug("Package invader: {} for package {}",

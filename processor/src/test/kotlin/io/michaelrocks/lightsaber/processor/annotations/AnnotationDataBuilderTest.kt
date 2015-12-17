@@ -27,7 +27,6 @@ class AnnotationDataBuilderTest {
     val annotation = newAnnotationBuilder("EmptyAnnotation").build()
     assertEquals("EmptyAnnotation", annotation.type.internalName)
     assertTrue(annotation.values.isEmpty())
-    assertFalse(annotation.resolved)
   }
 
   @Test
@@ -37,7 +36,6 @@ class AnnotationDataBuilderTest {
     assertEquals("DefaultValueAnnotation", annotation.type.internalName)
     assertEquals(1, annotation.values.size.toLong())
     assertEquals("DefaultValue", annotation.values["value"])
-    assertFalse(annotation.resolved)
   }
 
   @Test
@@ -47,7 +45,6 @@ class AnnotationDataBuilderTest {
     assertEquals("NamedValueAnnotation", annotation.type.internalName)
     assertEquals(1, annotation.values.size.toLong())
     assertEquals("NamedValue", annotation.values["namedValue"])
-    assertFalse(annotation.resolved)
   }
 
   @Test
@@ -100,16 +97,14 @@ class AnnotationDataBuilderTest {
     assertArrayEquals(arrayOf("x"), annotation.values["stringArrayValue"] as Array<String>)
     @Suppress("UNCHECKED_CAST")
     assertArrayEquals(arrayOf(innerAnnotation), annotation.values["annotationArrayValue"] as Array<Any>)
-    assertFalse(annotation.resolved)
   }
 
   @Test
   @Throws(Exception::class)
   fun testResolvedAnnotation() {
-    val annotation = newAnnotationBuilder("ResolvedAnnotation").setResolved(true).build()
+    val annotation = newAnnotationBuilder("ResolvedAnnotation").build()
     assertEquals("ResolvedAnnotation", annotation.type.internalName)
     assertTrue(annotation.values.isEmpty())
-    assertTrue(annotation.resolved)
   }
 
   @Test

@@ -20,7 +20,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import org.objectweb.asm.Type
 
-data class AnnotationData internal constructor(val type: Type, val values: Map<String, Any>, val resolved: Boolean) {
+data class AnnotationData internal constructor(val type: Type, val values: Map<String, Any> = emptyMap()) {
   override fun equals(other: Any?): Boolean {
     if (this === other) {
       return true

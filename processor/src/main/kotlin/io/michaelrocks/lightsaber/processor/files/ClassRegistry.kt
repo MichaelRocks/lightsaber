@@ -16,11 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.files
 
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationInstanceParser
+import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistry
 import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
+import org.objectweb.asm.*
 import java.util.*
 
 interface ClassRegistry {
@@ -28,7 +27,10 @@ interface ClassRegistry {
   fun findClassHierarchy(type: Type): Sequence<ClassDescriptor>
 }
 
-class ClassRegistryImpl(private val fileRegistry: FileRegistry) : ClassRegistry {
+class ClassRegistryImpl(
+    private val fileRegistry: FileRegistry,
+    private val annotationRegistry: AnnotationRegistry
+) : ClassRegistry {
   private val resolvedClasses = HashMap<Type, ClassDescriptor>()
 
   override fun findClass(type: Type): ClassDescriptor {
@@ -37,7 +39,7 @@ class ClassRegistryImpl(private val fileRegistry: FileRegistry) : ClassRegistry 
       val reader = ClassReader(data)
       val visitor = ClassDescriptorReader()
       reader.accept(visitor, ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
-      visitor.descriptor
+      visitor.builder.build()
     }
   }
 
@@ -47,12 +49,19 @@ class ClassRegistryImpl(private val fileRegistry: FileRegistry) : ClassRegistry 
     }
   }
 
-  private class ClassDescriptorReader : ClassVisitor(Opcodes.ASM5) {
-    lateinit var descriptor: ClassDescriptor
+  private inner class ClassDescriptorReader : ClassVisitor(Opcodes.ASM5) {
+    lateinit var builder: ClassDescriptor.Builder
 
     override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
         interfaces: Array<String>?) {
-      descriptor = ClassDescriptor(access, name, superName, interfaces)
+      builder = ClassDescriptor.Builder(access, name, superName, interfaces)
+    }
+
+    override fun visitAnnotation(desc: String, visible: Boolean): AnnotationVisitor {
+      val annotationType = Type.getType(desc)
+      return AnnotationInstanceParser(annotationRegistry, annotationType) { data ->
+        builder.addAnnotation(data)
+      }
     }
   }
 }

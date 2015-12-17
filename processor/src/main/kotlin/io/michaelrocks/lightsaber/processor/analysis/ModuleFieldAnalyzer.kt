@@ -43,8 +43,8 @@ internal class ModuleFieldAnalyzer(
       isProviderField = true
     } else if (processorContext.isQualifier(annotationType)) {
       if (qualifier == null) {
-        return AnnotationInstanceParser(annotationType) { annotation ->
-          qualifier = processorContext.annotationRegistry.resolveAnnotation(annotation)
+        return AnnotationInstanceParser(processorContext.annotationRegistry, annotationType) { annotation ->
+          qualifier = annotation
         }
       } else {
         reportError("Field has multiple qualifier annotations: ${moduleBuilder.moduleType}.$fieldName: $fieldDesc")

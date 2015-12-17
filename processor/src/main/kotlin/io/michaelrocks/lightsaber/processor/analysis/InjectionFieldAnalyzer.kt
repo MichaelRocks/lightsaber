@@ -46,10 +46,9 @@ internal class InjectionFieldAnalyzer(
     if (Types.INJECT_TYPE == annotationType) {
       isInjectableField = true
     } else if (processorContext.isQualifier(annotationType)) {
-      return AnnotationInstanceParser(annotationType) { annotation ->
-        val resolvedAnnotation = processorContext.annotationRegistry.resolveAnnotation(annotation)
+      return AnnotationInstanceParser(processorContext.annotationRegistry, annotationType) { annotation ->
         if (qualifier == null) {
-          qualifier = resolvedAnnotation
+          qualifier = annotation
         } else {
           reportError("Field has multiple qualifiers: ${injectionTargetBuilder.targetType}.$fieldName: $fieldDesc")
         }

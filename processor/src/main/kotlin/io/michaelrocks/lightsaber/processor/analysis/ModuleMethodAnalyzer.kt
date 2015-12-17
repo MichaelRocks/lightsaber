@@ -49,8 +49,8 @@ internal class ModuleMethodAnalyzer(
       isProviderMethod = true
     } else if (processorContext.isQualifier(annotationType)) {
       if (resultQualifier == null) {
-        return AnnotationInstanceParser(annotationType) { annotation ->
-          resultQualifier = processorContext.annotationRegistry.resolveAnnotation(annotation)
+        return AnnotationInstanceParser(processorContext.annotationRegistry, annotationType) { annotation ->
+          resultQualifier = annotation
         }
       } else {
         reportError("Method has multiple qualifier annotations: ${moduleBuilder.moduleType}.$methodName$methodDesc")
@@ -68,8 +68,8 @@ internal class ModuleMethodAnalyzer(
     if (isProviderMethod) {
       val annotationType = Type.getType(desc)
       if (processorContext.isQualifier(annotationType)) {
-        return AnnotationInstanceParser(annotationType) { annotation ->
-          val resolvedAnnotation = processorContext.annotationRegistry.resolveAnnotation(annotation)
+        return AnnotationInstanceParser(processorContext.annotationRegistry, annotationType) { annotation ->
+          val resolvedAnnotation = annotation
           if (parameterQualifiers.put(parameter, resolvedAnnotation) != null) {
             reportError(
                 "Method parameter $parameter has multiple qualifiers: " +

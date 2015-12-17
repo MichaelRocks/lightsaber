@@ -20,9 +20,18 @@ import org.apache.commons.lang3.Validate
 import org.objectweb.asm.Type
 import java.util.*
 
-class AnnotationDataBuilder(private val annotationType: Type) {
+class AnnotationDataBuilder {
+  private val annotationType: Type
   private var values: MutableMap<String, Any>? = null
-  private var isResolved = false
+
+  constructor(annotationType: Type) {
+    this.annotationType = annotationType
+  }
+
+  constructor(annotationType: Type, defaults: AnnotationData) {
+    this.annotationType = annotationType
+    values = HashMap(defaults.values)
+  }
 
   fun addDefaultValue(defaultValue: Any): AnnotationDataBuilder {
     return addDefaultValue("value", defaultValue)
@@ -38,13 +47,8 @@ class AnnotationDataBuilder(private val annotationType: Type) {
     return this
   }
 
-  fun setResolved(resolved: Boolean): AnnotationDataBuilder {
-    isResolved = resolved
-    return this
-  }
-
   fun build(): AnnotationData {
     val unmodifiableValues = if (values == null) emptyMap<String, Any>() else Collections.unmodifiableMap(values)
-    return AnnotationData(annotationType, unmodifiableValues, isResolved)
+    return AnnotationData(annotationType, unmodifiableValues)
   }
 }

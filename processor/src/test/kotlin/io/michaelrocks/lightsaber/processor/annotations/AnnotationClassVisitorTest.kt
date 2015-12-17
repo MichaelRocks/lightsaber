@@ -20,25 +20,26 @@ import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.EnumValueDescriptor
 import org.junit.Assert.*
 import org.junit.Test
+import org.mockito.Mockito.`when`
+import org.mockito.Mockito.mock
 import org.objectweb.asm.Type
 
 class AnnotationClassVisitorTest {
   @Test
-  @Throws(Exception::class)
   fun testEmptyAnnotation() {
-    val visitor = AnnotationClassVisitor()
+    val annotationRegistry = mock(AnnotationRegistry::class.java)
+    val visitor = AnnotationClassVisitor(annotationRegistry)
     val annotationType = Type.getObjectType("EmptyAnnotation")
     AnnotationClassGenerator.create(visitor, annotationType).generate()
     val actualAnnotation = visitor.toAnnotationData()
     assertEquals(annotationType, actualAnnotation.type)
     assertTrue(actualAnnotation.values.isEmpty())
-    assertFalse(actualAnnotation.resolved)
   }
 
   @Test
-  @Throws(Exception::class)
   fun testExplicitValueAnnotation() {
-    val visitor = AnnotationClassVisitor()
+    val annotationRegistry = mock(AnnotationRegistry::class.java)
+    val visitor = AnnotationClassVisitor(annotationRegistry)
     val annotationType = Type.getObjectType("ExplicitValueAnnotation")
     AnnotationClassGenerator.create(visitor, annotationType).apply {
       addMethod("explicitValue", getType<String>())
@@ -47,13 +48,12 @@ class AnnotationClassVisitorTest {
     val actualAnnotation = visitor.toAnnotationData()
     assertEquals(annotationType, actualAnnotation.type)
     assertTrue(actualAnnotation.values.isEmpty())
-    assertFalse(actualAnnotation.resolved)
   }
 
   @Test
-  @Throws(Exception::class)
   fun testImplicitValueAnnotation() {
-    val visitor = AnnotationClassVisitor()
+    val annotationRegistry = mock(AnnotationRegistry::class.java)
+    val visitor = AnnotationClassVisitor(annotationRegistry)
     val annotationType = Type.getObjectType("ImplicitValueAnnotation")
     AnnotationClassGenerator.create(visitor, annotationType).apply {
       addMethod("implicitValue", getType<String>(), "defaultImplicitValue")
@@ -63,13 +63,12 @@ class AnnotationClassVisitorTest {
     assertEquals(annotationType, actualAnnotation.type)
     assertEquals("defaultImplicitValue", actualAnnotation.values["implicitValue"])
     assertEquals(1, actualAnnotation.values.size.toLong())
-    assertFalse(actualAnnotation.resolved)
   }
 
   @Test
-  @Throws(Exception::class)
   fun testExplicitAndImplicitValuesAnnotation() {
-    val visitor = AnnotationClassVisitor()
+    val annotationRegistry = mock(AnnotationRegistry::class.java)
+    val visitor = AnnotationClassVisitor(annotationRegistry)
     val annotationType = Type.getObjectType("ExplicitAndImplicitValuesAnnotation")
     AnnotationClassGenerator.create(visitor, annotationType).apply {
       addMethod("explicitValue", getType<String>())
@@ -80,13 +79,12 @@ class AnnotationClassVisitorTest {
     assertEquals(annotationType, actualAnnotation.type)
     assertEquals("defaultImplicitValue", actualAnnotation.values["implicitValue"])
     assertEquals(1, actualAnnotation.values.size.toLong())
-    assertFalse(actualAnnotation.resolved)
   }
 
   @Test
-  @Throws(Exception::class)
   fun testSimpleValuesAnnotation() {
-    val visitor = AnnotationClassVisitor()
+    val annotationRegistry = mock(AnnotationRegistry::class.java)
+    val visitor = AnnotationClassVisitor(annotationRegistry)
     val annotationType = Type.getObjectType("PrimitiveValuesAnnotation")
     AnnotationClassGenerator.create(visitor, annotationType).apply {
       addMethod("booleanValue", Type.BOOLEAN_TYPE, true)
@@ -112,13 +110,12 @@ class AnnotationClassVisitorTest {
     assertEquals(42.toShort(), actualAnnotation.values["shortValue"])
     assertEquals("x", actualAnnotation.values["stringValue"])
     assertEquals(9, actualAnnotation.values.size.toLong())
-    assertFalse(actualAnnotation.resolved)
   }
 
   @Test
-  @Throws(Exception::class)
   fun testArrayValuesAnnotation() {
-    val visitor = AnnotationClassVisitor()
+    val annotationRegistry = mock(AnnotationRegistry::class.java)
+    val visitor = AnnotationClassVisitor(annotationRegistry)
     val annotationType = Type.getObjectType("ArrayValuesAnnotation")
     AnnotationClassGenerator.create(visitor, annotationType).apply {
       addMethod("booleanArrayValue", getType<BooleanArray>(), booleanArrayOf(true, false, true))
@@ -145,15 +142,14 @@ class AnnotationClassVisitorTest {
     @Suppress("UNCHECKED_CAST")
     assertArrayEquals(arrayOf("x", "y", "z"), actualAnnotation.values["stringArrayValue"] as Array<String>)
     assertEquals(9, actualAnnotation.values.size.toLong())
-    assertFalse(actualAnnotation.resolved)
   }
 
   @Test
-  @Throws(Exception::class)
   fun testEnumAnnotation() {
     val enumType = Type.getObjectType("TestEnum")
     val enumValue = EnumValueDescriptor(enumType, "TEST")
-    val visitor = AnnotationClassVisitor()
+    val annotationRegistry = mock(AnnotationRegistry::class.java)
+    val visitor = AnnotationClassVisitor(annotationRegistry)
     val annotationType = Type.getObjectType("EnumAnnotation")
     AnnotationClassGenerator.create(visitor, annotationType).run {
       addMethod("enumValue", enumType, enumValue)
@@ -163,11 +159,9 @@ class AnnotationClassVisitorTest {
     assertEquals(annotationType, actualAnnotation.type)
     assertEquals(enumValue, actualAnnotation.values["enumValue"])
     assertEquals(1, actualAnnotation.values.size.toLong())
-    assertFalse(actualAnnotation.resolved)
   }
 
   @Test
-  @Throws(Exception::class)
   fun testEnumArrayAnnotation() {
     val enumType = Type.getObjectType("TestEnum")
     val enumArrayType = Type.getType("[${enumType.descriptor}")
@@ -176,7 +170,8 @@ class AnnotationClassVisitorTest {
         EnumValueDescriptor(enumType, "TEST2"),
         EnumValueDescriptor(enumType, "TEST3")
     )
-    val visitor = AnnotationClassVisitor()
+    val annotationRegistry = mock(AnnotationRegistry::class.java)
+    val visitor = AnnotationClassVisitor(annotationRegistry)
     val annotationType = Type.getObjectType("testEnumArrayAnnotation")
     AnnotationClassGenerator.create(visitor, annotationType).run {
       addMethod("enumArrayValue", enumArrayType, enumValues)
@@ -186,14 +181,15 @@ class AnnotationClassVisitorTest {
     assertEquals(annotationType, actualAnnotation.type)
     assertEquals(listOf(*enumValues), actualAnnotation.values["enumArrayValue"])
     assertEquals(1, actualAnnotation.values.size.toLong())
-    assertFalse(actualAnnotation.resolved)
   }
 
   @Test
-  @Throws(Exception::class)
   fun testNestedAnnotationAnnotation() {
     val nestedAnnotation = AnnotationHelper.createAnnotationData("NestedAnnotation", "Nested")
-    val visitor = AnnotationClassVisitor()
+    val annotationRegistry = mock(AnnotationRegistry::class.java)
+    `when`(annotationRegistry.findAnnotationDefaults(nestedAnnotation.type))
+        .thenReturn(AnnotationData(nestedAnnotation.type, emptyMap()))
+    val visitor = AnnotationClassVisitor(annotationRegistry)
     val annotationType = Type.getObjectType("NestedAnnotationAnnotation")
     AnnotationClassGenerator.create(visitor, annotationType).run {
       addMethod("annotationValue", nestedAnnotation.type, nestedAnnotation)
@@ -203,11 +199,9 @@ class AnnotationClassVisitorTest {
     assertEquals(annotationType, actualAnnotation.type)
     assertEquals(nestedAnnotation, actualAnnotation.values["annotationValue"])
     assertEquals(1, actualAnnotation.values.size.toLong())
-    assertFalse(actualAnnotation.resolved)
   }
 
   @Test
-  @Throws(Exception::class)
   fun testNestedAnnotationArrayAnnotation() {
     val nestedAnnotations = arrayOf(
         AnnotationHelper.createAnnotationData("NestedAnnotation", "Nested1"),
@@ -215,7 +209,12 @@ class AnnotationClassVisitorTest {
         AnnotationHelper.createAnnotationData("NestedAnnotation", "Nested3")
     )
     val annotationArrayType = Type.getType("[${nestedAnnotations[0].type.descriptor}")
-    val visitor = AnnotationClassVisitor()
+    val annotationRegistry = mock(AnnotationRegistry::class.java)
+    for (nestedAnnotation in nestedAnnotations) {
+      `when`(annotationRegistry.findAnnotationDefaults(nestedAnnotation.type))
+          .thenReturn(AnnotationData(nestedAnnotation.type, emptyMap()))
+    }
+    val visitor = AnnotationClassVisitor(annotationRegistry)
     val annotationType = Type.getObjectType("NestedAnnotationArrayAnnotation")
     AnnotationClassGenerator.create(visitor, annotationType).run {
       addMethod("annotationArrayValue", annotationArrayType, nestedAnnotations)
@@ -225,6 +224,5 @@ class AnnotationClassVisitorTest {
     assertEquals(annotationType, actualAnnotation.type)
     assertEquals(listOf(*nestedAnnotations), actualAnnotation.values["annotationArrayValue"])
     assertEquals(1, actualAnnotation.values.size.toLong())
-    assertFalse(actualAnnotation.resolved)
   }
 }

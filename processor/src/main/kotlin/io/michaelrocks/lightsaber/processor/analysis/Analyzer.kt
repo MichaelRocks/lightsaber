@@ -18,27 +18,15 @@ package io.michaelrocks.lightsaber.processor.analysis
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.CompositeClassVisitor
-import io.michaelrocks.lightsaber.processor.commons.using
 import io.michaelrocks.lightsaber.processor.io.FileSource
-import io.michaelrocks.lightsaber.processor.io.fileSource
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
-import java.io.File
 import java.io.IOException
 
 class Analyzer(private val processorContext: ProcessorContext) {
   @Throws(IOException::class)
-  fun analyze(fileSource: FileSource, libraries: List<File>) {
-    analyzeTypes(fileSource, libraries)
+  fun analyze(fileSource: FileSource) {
     analyzeInjectionTargets(fileSource)
-  }
-
-  @Throws(IOException::class)
-  private fun analyzeTypes(fileSource: FileSource, libraries: List<File>) {
-    val compositeClassVisitor = CompositeClassVisitor()
-    compositeClassVisitor.addVisitor(AnnotationAnalysisDispatcher(processorContext))
-    analyzeLibraries(libraries, compositeClassVisitor)
-    analyzeClasses(fileSource, compositeClassVisitor)
   }
 
   @Throws(IOException::class)
@@ -47,19 +35,6 @@ class Analyzer(private val processorContext: ProcessorContext) {
     compositeClassVisitor.addVisitor(ModuleClassAnalyzer(processorContext))
     compositeClassVisitor.addVisitor(InjectionTargetAnalyzer(processorContext))
     analyzeClasses(fileSource, compositeClassVisitor)
-  }
-
-  @Throws(IOException::class)
-  private fun analyzeLibraries(libraries: List<File>, classVisitor: ClassVisitor) {
-    for (library in libraries) {
-      if (!library.exists()) {
-        continue
-      }
-
-      using(library.fileSource()) { fileSource ->
-        analyzeClasses(fileSource, classVisitor)
-      }
-    }
   }
 
   @Throws(IOException::class)

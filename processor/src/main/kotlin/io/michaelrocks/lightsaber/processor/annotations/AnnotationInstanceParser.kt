@@ -19,15 +19,25 @@ package io.michaelrocks.lightsaber.processor.annotations
 import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.Type
 
-fun AnnotationInstanceParser(annotationType: Type, callback: (annotation: AnnotationData) -> Unit): AnnotationVisitor =
-    object : AnnotationInstanceParser(annotationType) {
-      override fun visitEnd() {
-        callback(toAnnotation())
-      }
+fun AnnotationInstanceParser(
+    annotationRegistry: AnnotationRegistry,
+    annotationType: Type,
+    callback: (annotation: AnnotationData) -> Unit
+): AnnotationVisitor {
+  return object : AnnotationInstanceParser(annotationRegistry, annotationType) {
+    override fun visitEnd() {
+      callback(toAnnotation())
     }
+  }
+}
 
-open class AnnotationInstanceParser(annotationType: Type) : AbstractAnnotationParser() {
-  private val annotationBuilder = AnnotationDataBuilder(annotationType)
+open class AnnotationInstanceParser(
+    annotationRegistry: AnnotationRegistry,
+    annotationType: Type
+) : AbstractAnnotationParser(annotationRegistry) {
+
+  private val annotationBuilder =
+      AnnotationDataBuilder(annotationType, annotationRegistry.findAnnotationDefaults(annotationType))
 
   fun toAnnotation(): AnnotationData {
     return annotationBuilder.build()

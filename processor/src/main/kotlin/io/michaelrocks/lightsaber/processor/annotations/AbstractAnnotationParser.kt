@@ -21,7 +21,10 @@ import org.objectweb.asm.AnnotationVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
-abstract class AbstractAnnotationParser protected constructor() : AnnotationVisitor(Opcodes.ASM5) {
+abstract class AbstractAnnotationParser protected constructor(
+    protected val annotationRegistry: AnnotationRegistry
+) : AnnotationVisitor(Opcodes.ASM5) {
+
   override fun visit(name: String?, value: Any) {
     addValue(name, value)
   }
@@ -32,7 +35,7 @@ abstract class AbstractAnnotationParser protected constructor() : AnnotationVisi
 
   override fun visitAnnotation(name: String?, desc: String): AnnotationVisitor {
     val parent = this
-    return object : AnnotationInstanceParser(Type.getType(desc)) {
+    return object : AnnotationInstanceParser(annotationRegistry, Type.getType(desc)) {
       override fun visitEnd() {
         parent.addValue(name, toAnnotation())
       }
@@ -41,7 +44,7 @@ abstract class AbstractAnnotationParser protected constructor() : AnnotationVisi
 
   override fun visitArray(name: String?): AnnotationVisitor {
     val parent = this
-    return object : AnnotationArrayParser() {
+    return object : AnnotationArrayParser(annotationRegistry) {
       override fun visitEnd() {
         parent.addValue(name, values)
       }

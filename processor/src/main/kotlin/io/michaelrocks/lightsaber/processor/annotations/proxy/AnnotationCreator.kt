@@ -23,7 +23,6 @@ import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.descriptors.EnumValueDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer
-import io.michaelrocks.lightsaber.processor.logging.getLogger
 import org.apache.commons.collections4.IteratorUtils
 import org.objectweb.asm.Type
 import java.lang.reflect.Array
@@ -37,7 +36,7 @@ class AnnotationCreator(
 
   fun newAnnotation(generator: GeneratorAdapter, data: AnnotationData) {
     val annotationProxyType = composeAnnotationProxyType(data.type)
-    processorContext.annotationRegistry.findAnnotationByType(data.type)!!.let { annotation ->
+    processorContext.annotationRegistry.findAnnotation(data.type).let { annotation ->
       generateAnnotationProxyClassIfNecessary(annotation, annotationProxyType)
       constructAnnotationProxy(generator, annotation, data, annotationProxyType)
     }
@@ -60,9 +59,6 @@ class AnnotationCreator(
     generator.newInstance(annotationProxyType)
     generator.dup()
 
-    val logger = getLogger()
-    logger.error("annotation = $annotation")
-    logger.error("data = $data")
     for ((fieldName, fieldType) in annotation.fields.entries) {
       createValue(generator, fieldType, data.values[fieldName]!!)
     }

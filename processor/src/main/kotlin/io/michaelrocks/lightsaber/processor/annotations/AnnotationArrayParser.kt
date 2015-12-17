@@ -19,7 +19,10 @@ package io.michaelrocks.lightsaber.processor.annotations
 import org.apache.commons.lang3.Validate
 import java.util.*
 
-internal open class AnnotationArrayParser : AbstractAnnotationParser() {
+internal open class AnnotationArrayParser(
+    annotationRegistry: AnnotationRegistry
+) : AbstractAnnotationParser(annotationRegistry) {
+
   private var mutableValues: MutableList<Any>? = null
   val values: List<Any>
     get() = if (mutableValues == null) emptyList<Any>() else Collections.unmodifiableList(mutableValues)

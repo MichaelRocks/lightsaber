@@ -54,9 +54,8 @@ internal class InjectionMethodAnalyzer(
     if (isInjectableMethod) {
       val annotationType = Type.getType(desc)
       if (processorContext.isQualifier(annotationType)) {
-        return AnnotationInstanceParser(annotationType) { annotation ->
-          val resolvedAnnotation = processorContext.annotationRegistry.resolveAnnotation(annotation)
-          if (parameterQualifiers.put(parameter, resolvedAnnotation) != null) {
+        return AnnotationInstanceParser(processorContext.annotationRegistry, annotationType) { annotation ->
+          if (parameterQualifiers.put(parameter, annotation) != null) {
             reportError(
                 "Method parameter $parameter has multiple qualifiers: " +
                     "${injectionTargetBuilder.targetType}.$methodName$methodDesc"

@@ -81,7 +81,7 @@ class ClassProcessor(
   @Throws(IOException::class)
   private fun performAnalysis() {
     val analyzer = Analyzer(processorContext)
-    analyzer.analyze(fileSource, libraries)
+    analyzer.analyze(fileSource)
     SanityChecker(processorContext).performSanityChecks()
     checkErrors()
   }

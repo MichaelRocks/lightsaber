@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.annotations
 
 import org.objectweb.asm.*
 
-class AnnotationClassVisitor : ClassVisitor(Opcodes.ASM5) {
+class AnnotationClassVisitor(private val annotationRegistry: AnnotationRegistry) : ClassVisitor(Opcodes.ASM5) {
   private var annotationDescriptorBuilder: AnnotationDescriptorBuilder? = null
   private var annotationDataBuilder: AnnotationDataBuilder? = null
 
@@ -42,7 +42,7 @@ class AnnotationClassVisitor : ClassVisitor(Opcodes.ASM5) {
     annotationDescriptorBuilder!!.addField(name, Type.getReturnType(desc))
     return object : MethodVisitor(Opcodes.ASM5) {
       override fun visitAnnotationDefault(): AnnotationVisitor {
-        return object : AnnotationValueParser() {
+        return object : AnnotationValueParser(annotationRegistry) {
           override fun visitEnd() {
             annotationDataBuilder!!.addDefaultValue(name, value!!)
           }

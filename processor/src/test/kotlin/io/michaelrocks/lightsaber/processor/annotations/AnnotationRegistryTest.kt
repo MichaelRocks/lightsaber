@@ -16,274 +16,90 @@
 
 package io.michaelrocks.lightsaber.processor.annotations
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import io.michaelrocks.lightsaber.mockito.any
+import io.michaelrocks.lightsaber.mockito.given
+import io.michaelrocks.lightsaber.mockito.mock
+import io.michaelrocks.lightsaber.mockito.same
+import io.michaelrocks.lightsaber.processor.files.FileRegistry
+import org.junit.Assert.assertSame
 import org.junit.Test
-import org.objectweb.asm.Type
-import java.util.*
 
 class AnnotationRegistryTest {
-  @Test
-  @Throws(Exception::class)
-  fun testEmptyAnnotationRegistry() {
+  @Test(expected = IllegalArgumentException::class)
+  fun testFindNonExistentAnnotation() {
     val annotationType = AnnotationHelper.getAnnotationType("NonExistentAnnotation")
-    val registry = AnnotationRegistry()
-    assertTrue(!registry.hasResolvedDefaults(annotationType))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationType))
+    val fileRegistry = mock<FileRegistry>()
+    given(fileRegistry.readClass(annotationType)).thenThrow(IllegalArgumentException())
+    val annotationRegistry = AnnotationRegistryImpl(fileRegistry)
+    annotationRegistry.findAnnotation(annotationType)
+  }
+
+  @Test(expected = IllegalArgumentException::class)
+  fun testFindNonExistentAnnotationDefaults() {
+    val annotationType = AnnotationHelper.getAnnotationType("NonExistentAnnotation")
+    val fileRegistry = mock<FileRegistry>()
+    given(fileRegistry.readClass(annotationType)).thenThrow(IllegalArgumentException())
+    val annotationRegistry = AnnotationRegistryImpl(fileRegistry)
+    annotationRegistry.findAnnotationDefaults(annotationType)
   }
 
   @Test
-  @Throws(Exception::class)
-  fun testAddResolvedEmptyDefaults() {
-    val annotationDefaults = AnnotationHelper.createResolvedAnnotationData("ResolvedEmptyAnnotation")
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, annotationDefaults)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
+  fun testFindAnnotation() {
+    val descriptor = AnnotationHelper.createAnnotationDescriptor("Annotation")
+    val defaults = AnnotationHelper.createAnnotationData("Annotation")
+    val annotation = AnnotationReader.Annotation(descriptor, defaults)
+
+    val classData = ByteArray(0)
+    val fileRegistry = mock<FileRegistry>()
+    given(fileRegistry.readClass(defaults.type)).thenReturn(classData)
+
+    val annotationReader = mock<AnnotationReader>()
+    given(annotationReader.readAnnotation(same(classData), any()))
+        .thenReturn(annotation)
+        .thenThrow(IllegalStateException())
+
+    val registry = AnnotationRegistryImpl(fileRegistry, annotationReader)
+    val actualDescriptor = registry.findAnnotation(descriptor.type)
+    val actualDefaults = registry.findAnnotationDefaults(defaults.type)
+
+    assertSame(descriptor, actualDescriptor)
+    assertSame(defaults, actualDefaults)
   }
 
   @Test
-  @Throws(Exception::class)
-  fun testAddUnresolvedEmptyDefaults() {
-    val annotationDefaults = AnnotationHelper.createAnnotationData("UnresolvedEmptyAnnotation")
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, annotationDefaults)
-    assertTrue(!registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(registry.hasUnresolvedDefaults(annotationDefaults.type))
-  }
+  fun testFindNestedAnnotation() {
+    val nestedDescriptor = AnnotationHelper.createAnnotationDescriptor("NestedAnnotation")
+    val nestedDefaults = AnnotationHelper.createAnnotationData("NestedAnnotation")
+    val nestedAnnotation = AnnotationReader.Annotation(nestedDescriptor, nestedDefaults)
 
-  @Test
-  @Throws(Exception::class)
-  fun testResolveEmptyAnnotationWithResolvedEmptyDefaults() {
-    val annotationDefaults = AnnotationHelper.createResolvedAnnotationData("ResolvedEmptyAnnotation")
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, annotationDefaults)
-    val resolvedAnnotation = registry.resolveAnnotation(annotationDefaults)
-    assertTrue(annotationDefaults === resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-  }
+    val descriptor = AnnotationHelper.createAnnotationDescriptor("Annotation", nestedAnnotation.descriptor.type)
+    val defaults = AnnotationHelper.createAnnotationData("Annotation", nestedAnnotation.defaults)
+    val annotation = AnnotationReader.Annotation(descriptor, defaults)
 
-  @Test
-  @Throws(Exception::class)
-  fun testResolveEmptyAnnotationWithUnresolvedEmptyDefaults() {
-    val annotationDefaults = AnnotationHelper.createAnnotationData("UnresolvedEmptyAnnotation")
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, annotationDefaults)
-    val resolvedAnnotation = registry.resolveAnnotation(annotationDefaults)
-    assertTrue(annotationDefaults !== resolvedAnnotation)
-    assertEquals(annotationDefaults, resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-  }
+    val nestedClassData = ByteArray(0)
+    val classData = ByteArray(0)
+    val fileRegistry = mock<FileRegistry>()
+    given(fileRegistry.readClass(nestedDefaults.type)).thenReturn(nestedClassData)
+    given(fileRegistry.readClass(defaults.type)).thenReturn(classData)
 
-  @Test
-  @Throws(Exception::class)
-  fun testResolveEmptyAnnotationWithResolvedSimpleDefaults() {
-    val annotationDefaults = AnnotationHelper.createResolvedAnnotationData("ResolvedSimpleAnnotation", "DefaultValue")
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, annotationDefaults)
-    val resolvedAnnotation = registry.resolveAnnotation(
-        AnnotationHelper.createAnnotationData("ResolvedSimpleAnnotation"))
-    assertEquals(annotationDefaults, resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-  }
+    val annotationReader = mock<AnnotationReader>()
+    given(annotationReader.readAnnotation(same(nestedClassData), any()))
+        .thenReturn(nestedAnnotation)
+        .thenThrow(IllegalStateException())
+    given(annotationReader.readAnnotation(same(classData), any()))
+        .thenReturn(annotation)
+        .thenThrow(IllegalStateException())
 
-  @Test
-  @Throws(Exception::class)
-  fun testResolveEmptyAnnotationWithUnresolvedSimpleDefaults() {
-    val annotationDefaults = AnnotationHelper.createAnnotationData("UnresolvedSimpleAnnotation", "DefaultValue")
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, annotationDefaults)
-    val resolvedAnnotation = registry.resolveAnnotation(
-        AnnotationHelper.createAnnotationData("UnresolvedSimpleAnnotation"))
-    assertEquals(annotationDefaults, resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-  }
+    val registry = AnnotationRegistryImpl(fileRegistry, annotationReader)
+    val actualNestedDescriptor = registry.findAnnotation(nestedDescriptor.type)
+    val actualNestedDefaults = registry.findAnnotationDefaults(nestedDefaults.type)
+    val actualDescriptor = registry.findAnnotation(descriptor.type)
+    val actualDefaults = registry.findAnnotationDefaults(defaults.type)
 
-  @Test
-  @Throws(Exception::class)
-  fun testResolveAnnotationWithOverriddenField() {
-    val annotationDefaults = AnnotationHelper.createResolvedAnnotationData("OverriddenFieldAnnotation", "DefaultValue")
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, annotationDefaults)
-    val unresolvedAnnotation = AnnotationHelper.createAnnotationData("OverriddenFieldAnnotation", "DefaultValue")
-    val resolvedAnnotation = registry.resolveAnnotation(unresolvedAnnotation)
-    val expectedAnnotation = AnnotationHelper.createResolvedAnnotationData("OverriddenFieldAnnotation", "DefaultValue")
-    assertEquals(expectedAnnotation, resolvedAnnotation)
-  }
-
-  @Test
-  @Throws(Exception::class)
-  fun testResolveAnnotationWithExtraField() {
-    val annotationDefaults = AnnotationHelper.createResolvedAnnotationData("ExtraFieldAnnotation", "DefaultValue")
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, annotationDefaults)
-    val unresolvedAnnotation = AnnotationHelper.createAnnotationData("ExtraFieldAnnotation", "extraValue", "ExtraValue")
-    val resolvedAnnotation = registry.resolveAnnotation(unresolvedAnnotation)
-    val expectedValues = HashMap<String, Any>()
-    expectedValues.put("value", "DefaultValue")
-    expectedValues.put("extraValue", "ExtraValue")
-    val expectedAnnotation = AnnotationHelper.createResolvedAnnotationData("ExtraFieldAnnotation", expectedValues)
-    assertEquals(expectedAnnotation, resolvedAnnotation)
-  }
-
-  @Test
-  @Throws(Exception::class)
-  fun testResolveResolvedAnnotationWithEmptyInnerResolvedAnnotation() {
-    val innerAnnotation = AnnotationHelper.createResolvedAnnotationData("InnerAnnotation")
-    val annotationDefaults = AnnotationHelper.createResolvedAnnotationData("OuterAnnotation", innerAnnotation)
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, innerAnnotation)
-    registerDefaults(registry, annotationDefaults)
-    val resolvedAnnotation = registry.resolveAnnotation(AnnotationHelper.createAnnotationData("OuterAnnotation"))
-    assertEquals(annotationDefaults, resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-    assertTrue(registry.hasResolvedDefaults(innerAnnotation.type))
-    assertTrue(!registry.hasUnresolvedDefaults(innerAnnotation.type))
-  }
-
-  @Test
-  @Throws(Exception::class)
-  fun testResolveUnresolvedAnnotationWithEmptyInnerResolvedAnnotation() {
-    val innerAnnotation = AnnotationHelper.createResolvedAnnotationData("InnerAnnotation")
-    val annotationDefaults = AnnotationHelper.createAnnotationData("OuterAnnotation", innerAnnotation)
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, innerAnnotation)
-    registerDefaults(registry, annotationDefaults)
-    val resolvedAnnotation = registry.resolveAnnotation(AnnotationHelper.createAnnotationData("OuterAnnotation"))
-    val expectedAnnotation = AnnotationHelper.createResolvedAnnotationData("OuterAnnotation", innerAnnotation)
-    assertEquals(expectedAnnotation, resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-    assertTrue(registry.hasResolvedDefaults(innerAnnotation.type))
-    assertTrue(!registry.hasUnresolvedDefaults(innerAnnotation.type))
-  }
-
-  @Test
-  @Throws(Exception::class)
-  fun testResolveUnresolvedAnnotationWithEmptyInnerUnresolvedAnnotation() {
-    val innerAnnotation = AnnotationHelper.createAnnotationData("InnerAnnotation")
-    val annotationDefaults = AnnotationHelper.createAnnotationData("OuterAnnotation", innerAnnotation)
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, innerAnnotation)
-    registerDefaults(registry, annotationDefaults)
-    val resolvedAnnotation = registry.resolveAnnotation(AnnotationHelper.createAnnotationData("OuterAnnotation"))
-    val resolvedInnerAnnotation = AnnotationHelper.createResolvedAnnotationData("InnerAnnotation")
-    val expectedAnnotation = AnnotationHelper.createResolvedAnnotationData("OuterAnnotation", resolvedInnerAnnotation)
-    assertEquals(expectedAnnotation, resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-    assertTrue(registry.hasResolvedDefaults(innerAnnotation.type))
-    assertTrue(!registry.hasUnresolvedDefaults(innerAnnotation.type))
-  }
-
-  @Test
-  @Throws(Exception::class)
-  fun testResolveUnresolvedAnnotationWithInnerUnresolvableAnnotation() {
-    val unresolvableAnnotation = AnnotationHelper.createAnnotationData("UnresolvableAnnotation")
-    val annotationDefaults = AnnotationHelper.createAnnotationData("OuterAnnotation", unresolvableAnnotation)
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, annotationDefaults)
-    val resolvedAnnotation = registry.resolveAnnotation(AnnotationHelper.createAnnotationData("OuterAnnotation"))
-    assertEquals(annotationDefaults, resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasResolvedDefaults(unresolvableAnnotation.type))
-    assertTrue(!registry.hasUnresolvedDefaults(unresolvableAnnotation.type))
-  }
-
-  @Test
-  @Throws(Exception::class)
-  fun testResolveUnresolvedAnnotationWithNestedInnerUnresolvableAnnotation() {
-    val unresolvableAnnotation = AnnotationHelper.createAnnotationData("UnresolvableAnnotation")
-    val innerAnnotation = AnnotationHelper.createAnnotationData("InnerAnnotation", unresolvableAnnotation)
-    val annotationDefaults = AnnotationHelper.createAnnotationData("OuterAnnotation", innerAnnotation)
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, innerAnnotation)
-    registerDefaults(registry, annotationDefaults)
-    val resolvedAnnotation = registry.resolveAnnotation(AnnotationHelper.createAnnotationData("OuterAnnotation"))
-    assertEquals(annotationDefaults, resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-    assertTrue(registry.hasResolvedDefaults(innerAnnotation.type))
-    assertTrue(!registry.hasUnresolvedDefaults(innerAnnotation.type))
-    assertTrue(!registry.hasResolvedDefaults(unresolvableAnnotation.type))
-    assertTrue(!registry.hasUnresolvedDefaults(unresolvableAnnotation.type))
-  }
-
-  @Test
-  @Throws(Exception::class)
-  fun testResolveUnresolvedAnnotationWithNestedInnerAnnotation() {
-    val innerInnerAnnotation = AnnotationHelper.createAnnotationData("InnerInnerAnnotation", "InnerInnerDefaultValue")
-    val innerAnnotation = AnnotationHelper.createAnnotationData("InnerAnnotation", innerInnerAnnotation)
-    val annotationDefaults = AnnotationHelper.createAnnotationData("OuterAnnotation", innerAnnotation)
-    val registry = AnnotationRegistry()
-    registerDefaults(registry, innerInnerAnnotation)
-    registerDefaults(registry, innerAnnotation)
-    registerDefaults(registry, annotationDefaults)
-
-    val unresolvedInnerInnerAnnotation = AnnotationHelper.createAnnotationData("InnerInnerAnnotation",
-        "innerInnerStringValue", "InnerInnerStringValue")
-    val unresolvedInnerAnnotation = AnnotationHelper.createAnnotationData("InnerAnnotation",
-        Pair("value", unresolvedInnerInnerAnnotation),
-        Pair("innerStringValue", "InnerStringValue"))
-    val unresolvedAnnotation = AnnotationHelper.createAnnotationData("OuterAnnotation",
-        Pair("value", unresolvedInnerAnnotation),
-        Pair("outerStringValue", "OuterStringValue"))
-    val resolvedAnnotation = registry.resolveAnnotation(unresolvedAnnotation)
-
-    val expectedInnerInnerAnnotation = AnnotationHelper.createAnnotationData("InnerInnerAnnotation",
-        Pair("value", "InnerInnerDefaultValue"),
-        Pair("innerInnerStringValue", "InnerInnerStringValue"))
-    val expectedInnerAnnotation = AnnotationHelper.createAnnotationData("InnerAnnotation",
-        Pair("value", expectedInnerInnerAnnotation),
-        Pair("innerStringValue", "InnerStringValue"))
-    val expectedAnnotation = AnnotationHelper.createAnnotationData("OuterAnnotation",
-        Pair("value", expectedInnerAnnotation),
-        Pair("outerStringValue", "OuterStringValue"))
-    assertEquals(expectedAnnotation, resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-    assertTrue(registry.hasResolvedDefaults(innerAnnotation.type))
-    assertTrue(!registry.hasUnresolvedDefaults(innerAnnotation.type))
-    assertTrue(registry.hasResolvedDefaults(innerInnerAnnotation.type))
-    assertTrue(!registry.hasUnresolvedDefaults(innerInnerAnnotation.type))
-  }
-
-  @Test
-  @Throws(Exception::class)
-  fun testResolveUnresolvedAnnotationWithNestedUnresolvedAnnotationArray() {
-    val innerAnnotation = AnnotationHelper.createAnnotationData("InnerAnnotation", "DefaultValue")
-    val innerAnnotations = listOf(
-        AnnotationHelper.createAnnotationData("InnerAnnotation", "ExplicitValue"),
-        AnnotationHelper.createAnnotationData("InnerAnnotation", "stringValue", "StringValue"))
-    val annotationDefaults = AnnotationHelper.createAnnotationData("OuterAnnotation", innerAnnotations)
-    val registry = AnnotationRegistry()
-
-    registerDefaults(registry, innerAnnotation)
-    registerDefaults(registry, annotationDefaults)
-    val resolvedAnnotation = registry.resolveAnnotation(AnnotationHelper.createAnnotationData("OuterAnnotation"))
-
-    val expectedInnerAnnotations = listOf(
-        AnnotationHelper.createResolvedAnnotationData("InnerAnnotation", "ExplicitValue"),
-        AnnotationHelper.createResolvedAnnotationData("InnerAnnotation",
-            Pair("stringValue", "StringValue"),
-            Pair("value", "DefaultValue")))
-    val expectedAnnotation = AnnotationHelper.createResolvedAnnotationData("OuterAnnotation", expectedInnerAnnotations)
-
-    assertEquals(expectedAnnotation, resolvedAnnotation)
-    assertTrue(registry.hasResolvedDefaults(annotationDefaults.type))
-    assertTrue(!registry.hasUnresolvedDefaults(annotationDefaults.type))
-    assertTrue(registry.hasResolvedDefaults(innerAnnotation.type))
-    assertTrue(!registry.hasUnresolvedDefaults(innerAnnotation.type))
-  }
-
-  private fun registerDefaults(registry: AnnotationRegistry, defaults: AnnotationData) {
-    val descriptor = AnnotationDescriptor(defaults.type, emptyMap<String, Type>())
-    registry.addAnnotationDefaults(descriptor, defaults)
+    assertSame(nestedDescriptor, actualNestedDescriptor)
+    assertSame(nestedDefaults, actualNestedDefaults)
+    assertSame(descriptor, actualDescriptor)
+    assertSame(defaults, actualDefaults)
+    assertSame(defaults.values["value"], actualDefaults.values["value"])
   }
 }

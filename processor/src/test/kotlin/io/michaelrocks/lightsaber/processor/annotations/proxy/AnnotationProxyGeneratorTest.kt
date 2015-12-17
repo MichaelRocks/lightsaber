@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.annotations.proxy
 
+import io.michaelrocks.lightsaber.mockito.*
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptorBuilder
 import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.*
@@ -25,7 +26,6 @@ import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
-import org.mockito.Mockito.*
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import java.lang.annotation.RetentionPolicy
@@ -370,10 +370,10 @@ class AnnotationProxyGeneratorTest {
 
   @Test
   fun testHashCodeCaching() {
-    val handler = mock(InvocationHandler::class.java)
+    val handler = mock<InvocationHandler>()
     val intAnnotation = newProxyInstance<IntAnnotation>(handler)
     val hashCodeMethod = Any::class.java.getDeclaredMethod("hashCode")
-    `when`(handler.invoke(intAnnotation, hashCodeMethod, null)).thenReturn(0)
+    given(handler.invoke(intAnnotation, hashCodeMethod, null)).thenReturn(0)
 
     val annotation = createAnnotationProxy<AnnotationAnnotation>(intAnnotation)
     annotation.hashCode()
@@ -384,10 +384,10 @@ class AnnotationProxyGeneratorTest {
 
   @Test
   fun testToStringCaching() {
-    val handler = mock(InvocationHandler::class.java)
+    val handler = mock<InvocationHandler>()
     val intAnnotation = newProxyInstance<IntAnnotation>(handler)
     val toStringMethod = Any::class.java.getDeclaredMethod("toString")
-    `when`(handler.invoke(intAnnotation, toStringMethod, null)).thenReturn("ToString")
+    given(handler.invoke(intAnnotation, toStringMethod, null)).thenReturn("ToString")
 
     val annotation = createAnnotationProxy<AnnotationAnnotation>(intAnnotation)
     annotation.toString()
@@ -429,9 +429,9 @@ class AnnotationProxyGeneratorTest {
   }
 
   private fun addAnnotationProxy(annotationClass: Class<out Annotation>) {
-    val classRegistry = mock(ClassRegistry::class.java)
-    `when`(classRegistry.findClass(any())).thenAnswer { invocation ->
-      ClassDescriptor(Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER, invocation.arguments[0] as Type, Types.OBJECT_TYPE, null)
+    val classRegistry = mock<ClassRegistry>()
+    given(classRegistry.findClass(notNull())).thenAnswer { invocation ->
+      ClassDescriptor(Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER, invocation.arguments[0] as Type, Types.OBJECT_TYPE)
     }
     val annotationDescriptor = getAnnotationDescriptor(annotationClass)
     val annotationProxyType = Type.getObjectType(getAnnotationProxyClassName(annotationClass))
