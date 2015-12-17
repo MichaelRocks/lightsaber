@@ -18,10 +18,11 @@ package io.michaelrocks.lightsaber.processor.io
 
 import java.io.File
 
-private enum class FileType { DIRECTORY, JAR }
+private enum class FileType { EMPTY, DIRECTORY, JAR }
 
 private val File.fileType: FileType
   get() = when {
+    !exists() -> FileType.EMPTY
     isDirectory -> FileType.DIRECTORY
     extension.endsWith("jar", ignoreCase = true) -> FileType.JAR
     else -> error("Unknown file type for file $this")
@@ -29,12 +30,14 @@ private val File.fileType: FileType
 
 fun File.fileSource(): FileSource =
     when (fileType) {
+      FileType.EMPTY -> EmptyFileSource
       FileType.DIRECTORY -> DirectoryFileSource(this)
       FileType.JAR -> JarFileSource(this)
     }
 
 fun File.fileSink(intputFile: File): FileSink =
     when (intputFile.fileType) {
+      FileType.EMPTY -> EmptyFileSink
       FileType.DIRECTORY -> DirectoryFileSink(this)
       FileType.JAR -> JarFileSink(this)
     }
