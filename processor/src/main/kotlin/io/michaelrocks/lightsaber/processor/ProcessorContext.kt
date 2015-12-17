@@ -156,9 +156,6 @@ class ProcessorContext {
     return null
   }
 
-  val scopes: Collection<ScopeDescriptor>
-    get() = setOf(SINGLETON_SCOPE_DESCRIPTOR)
-
   fun isQualifier(annotationType: Type): Boolean {
     return classRegistry.findClass(annotationType).annotations.any { it.type == Types.QUALIFIER_TYPE }
   }
