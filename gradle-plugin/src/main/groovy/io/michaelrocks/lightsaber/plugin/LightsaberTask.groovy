@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.plugin
 
+import groovy.io.FileVisitResult
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkChecker
@@ -26,12 +27,6 @@ import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
-
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
 
 public class LightsaberTask extends DefaultTask {
   @InputDirectory
@@ -66,26 +61,21 @@ public class LightsaberTask extends DefaultTask {
     logger.info("Removing patched files...")
     logger.info("  from [$classesDir]")
 
-    final Path classesPath = classesDir.toPath()
-    Files.walkFileTree(classesPath, new SimpleFileVisitor<Path>() {
-      @Override
-      FileVisitResult visitFile(final Path file, final BasicFileAttributes attrs) throws IOException {
-        super.visitFile(file, attrs)
-        logger.debug("Checking $file...")
-        if (WatermarkChecker.isLightsaberClass(file.toFile())) {
-          logger.debug("File was patched - removing")
-          Files.delete(file)
-        } else {
-          logger.debug("File wasn't patched - skipping")
-        }
+    classesDir.traverse(
+        postDir: { final File dir -> FileMethods.deleteDirectoryIfEmpty(dir) }
+    ) { final file ->
+      if (file.isDirectory()) {
         return FileVisitResult.CONTINUE
       }
 
-      @Override
-      FileVisitResult postVisitDirectory(final Path dir, final IOException exc) throws IOException {
-        PathMethods.deleteDirectoryIfEmpty(dir)
-        return super.postVisitDirectory(dir, exc)
+      logger.debug("Checking $file...")
+      if (WatermarkChecker.isLightsaberClass(file)) {
+        logger.debug("File was patched - removing")
+        file.delete()
+      } else {
+        logger.debug("File wasn't patched - skipping")
       }
-    })
+      return FileVisitResult.CONTINUE
+    }
   }
 }
