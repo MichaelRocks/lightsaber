@@ -68,8 +68,7 @@ class SanityChecker(private val processorContext: ProcessorContext) {
   private fun checkProvidableTargetAccessFlagNotSet(targetClass: ClassDescriptor, flag: Int) {
     if ((targetClass.access and flag) != 0) {
       processorContext.reportError(
-          "Providable class cannot be " + AccessFlagStringifier.classAccessFlagToString(
-              flag) + ": " + targetClass.classType)
+          "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${targetClass.classType}")
     }
   }
 }
