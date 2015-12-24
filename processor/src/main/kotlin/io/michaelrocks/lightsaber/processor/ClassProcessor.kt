@@ -28,8 +28,6 @@ import io.michaelrocks.lightsaber.processor.graph.DependencyGraph
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
 import io.michaelrocks.lightsaber.processor.injection.InjectionDispatcher
 import io.michaelrocks.lightsaber.processor.io.FileSource
-import io.michaelrocks.lightsaber.processor.io.fileSink
-import io.michaelrocks.lightsaber.processor.io.fileSource
 import io.michaelrocks.lightsaber.processor.validation.SanityChecker
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.objectweb.asm.ClassReader
@@ -44,12 +42,13 @@ class ClassProcessor(
     private val outputFile: File,
     libraries: List<File>
 ) {
-  private val fileSource = inputFile.fileSource()
-  private val fileSink = outputFile.fileSink(inputFile)
+  private val processorContext = ProcessorContext()
+
+  private val fileSource = processorContext.fileSourceFactory.createFileSource(inputFile)
+  private val fileSink = processorContext.fileSinkFactory.createFileSink(inputFile, outputFile)
 
   private val libraries = libraries.toArrayList()
 
-  private val processorContext = ProcessorContext()
   private val classProducer = ProcessorClassProducer(fileSink, processorContext)
   private val annotationCreator = AnnotationCreator(processorContext, classProducer)
 

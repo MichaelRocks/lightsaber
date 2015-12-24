@@ -18,7 +18,6 @@ package io.michaelrocks.lightsaber.processor.files
 
 import io.michaelrocks.lightsaber.processor.commons.closeQuitely
 import io.michaelrocks.lightsaber.processor.io.FileSource
-import io.michaelrocks.lightsaber.processor.io.fileSource
 import org.objectweb.asm.Type
 import java.io.Closeable
 import java.io.File
@@ -30,7 +29,7 @@ interface FileRegistry : Closeable {
   fun readClass(type: Type): ByteArray
 }
 
-class FileRegistryImpl : FileRegistry {
+class FileRegistryImpl(private val fileSourceFactory: FileSource.Factory) : FileRegistry {
   private val sources = HashMap<File, FileSource>()
   private val filesByTypes = HashMap<Type, File>()
 
@@ -41,7 +40,7 @@ class FileRegistryImpl : FileRegistry {
 
   override fun add(file: File) {
     require(file !in sources) { "File $file already added to registry" }
-    val fileSource = file.fileSource()
+    val fileSource = fileSourceFactory.createFileSource(file)
     sources.put(file, fileSource)
     fileSource.listFiles { path, type ->
       if (type == FileSource.EntryType.CLASS) {

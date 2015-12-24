@@ -25,6 +25,9 @@ import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import io.michaelrocks.lightsaber.processor.files.ClassRegistryImpl
 import io.michaelrocks.lightsaber.processor.files.FileRegistry
 import io.michaelrocks.lightsaber.processor.files.FileRegistryImpl
+import io.michaelrocks.lightsaber.processor.io.FileSink
+import io.michaelrocks.lightsaber.processor.io.FileSource
+import io.michaelrocks.lightsaber.processor.io.IoFactory
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import org.apache.commons.collections4.CollectionUtils
 import org.objectweb.asm.Type
@@ -43,7 +46,9 @@ class ProcessorContext {
   var classFilePath: String? = null
   private val errorsByPath = LinkedHashMap<String, MutableList<Exception>>()
 
-  val fileRegistry: FileRegistry = FileRegistryImpl()
+  val fileSourceFactory: FileSource.Factory = IoFactory
+  val fileSinkFactory: FileSink.Factory = IoFactory
+  val fileRegistry: FileRegistry = FileRegistryImpl(fileSourceFactory)
   val annotationRegistry = AnnotationRegistryImpl(fileRegistry)
   val classRegistry: ClassRegistry = ClassRegistryImpl(fileRegistry, annotationRegistry)
 
