@@ -27,11 +27,13 @@ interface FileRegistry : Closeable {
   fun add(files: Iterable<File>)
   fun add(file: File)
   fun readClass(type: Type): ByteArray
+  fun findTypesForFile(file: File): Collection<Type>
 }
 
 class FileRegistryImpl(private val fileSourceFactory: FileSource.Factory) : FileRegistry {
   private val sources = HashMap<File, FileSource>()
   private val filesByTypes = HashMap<Type, File>()
+  private val typesByFiles = HashMap<File, MutableCollection<Type>>()
 
   override fun add(files: Iterable<File>) {
     require(files.all { it !in sources }) { "Some files already added to registry" }
@@ -42,9 +44,11 @@ class FileRegistryImpl(private val fileSourceFactory: FileSource.Factory) : File
     require(file !in sources) { "File $file already added to registry" }
     val fileSource = fileSourceFactory.createFileSource(file)
     sources.put(file, fileSource)
-    fileSource.listFiles { path, type ->
-      if (type == FileSource.EntryType.CLASS) {
-        filesByTypes.put(Type.getObjectType(path.substringBeforeLast(".class")), file)
+    fileSource.listFiles { path, fileType ->
+      if (fileType == FileSource.EntryType.CLASS) {
+        val type = Type.getObjectType(path.substringBeforeLast(".class"))
+        filesByTypes.put(type, file)
+        typesByFiles.getOrPut(file) { ArrayList() } += type
       }
     }
   }
@@ -54,6 +58,11 @@ class FileRegistryImpl(private val fileSourceFactory: FileSource.Factory) : File
     val fileSource = sources[file]!!
     return fileSource.readFile("${type.internalName}.class")
   }
+
+  override fun findTypesForFile(file: File): Collection<Type> =
+      typesByFiles.getOrElse(file) { error("File $file is not added to the registry") }.let {
+        Collections.unmodifiableCollection(it)
+      }
 
   override fun close() {
     sources.values.forEach { it.closeQuitely() }
