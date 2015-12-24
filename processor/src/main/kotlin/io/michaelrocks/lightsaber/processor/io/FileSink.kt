@@ -17,8 +17,13 @@
 package io.michaelrocks.lightsaber.processor.io
 
 import java.io.Closeable
+import java.io.File
 
 interface FileSink : Closeable {
   fun createFile(path: String, data: ByteArray)
   fun createDirectory(path: String)
+
+  interface Factory {
+    fun createFileSink(inputFile: File, outputFile: File): FileSink
+  }
 }
