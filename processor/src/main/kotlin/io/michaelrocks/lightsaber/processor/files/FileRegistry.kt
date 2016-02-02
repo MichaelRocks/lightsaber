@@ -26,6 +26,8 @@ import java.util.*
 interface FileRegistry : Closeable {
   fun add(files: Iterable<File>)
   fun add(file: File)
+  fun isAdded(file: File): Boolean
+
   fun readClass(type: Type): ByteArray
   fun findTypesForFile(file: File): Collection<Type>
 }
@@ -54,6 +56,8 @@ class FileRegistryImpl(private val fileSourceFactory: FileSource.Factory) : File
       }
     }
   }
+
+  override fun isAdded(file: File): Boolean = file.canonicalFile in sources
 
   override fun readClass(type: Type): ByteArray {
     val file = filesByTypes[type]!!
