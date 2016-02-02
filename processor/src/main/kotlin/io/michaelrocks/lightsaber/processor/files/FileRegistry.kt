@@ -41,14 +41,16 @@ class FileRegistryImpl(private val fileSourceFactory: FileSource.Factory) : File
   }
 
   override fun add(file: File) {
-    require(file !in sources) { "File $file already added to registry" }
-    val fileSource = fileSourceFactory.createFileSource(file)
-    sources.put(file, fileSource)
-    fileSource.listFiles { path, fileType ->
-      if (fileType == FileSource.EntryType.CLASS) {
-        val type = Type.getObjectType(path.substringBeforeLast(".class"))
-        filesByTypes.put(type, file)
-        typesByFiles.getOrPut(file) { ArrayList() } += type
+    file.canonicalFile.let { file ->
+      require(file !in sources) { "File $file already added to registry" }
+      val fileSource = fileSourceFactory.createFileSource(file)
+      sources.put(file, fileSource)
+      fileSource.listFiles { path, fileType ->
+        if (fileType == FileSource.EntryType.CLASS) {
+          val type = Type.getObjectType(path.substringBeforeLast(".class"))
+          filesByTypes.put(type, file)
+          typesByFiles.getOrPut(file) { ArrayList() } += type
+        }
       }
     }
   }
@@ -60,7 +62,7 @@ class FileRegistryImpl(private val fileSourceFactory: FileSource.Factory) : File
   }
 
   override fun findTypesForFile(file: File): Collection<Type> =
-      typesByFiles.getOrElse(file) { error("File $file is not added to the registry") }.let {
+      typesByFiles.getOrElse(file.canonicalFile) { error("File $file is not added to the registry") }.let {
         Collections.unmodifiableCollection(it)
       }
 
