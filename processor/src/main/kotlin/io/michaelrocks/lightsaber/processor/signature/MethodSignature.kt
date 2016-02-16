@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.signature
 
+import io.michaelrocks.lightsaber.processor.commons.immutable
 import io.michaelrocks.lightsaber.processor.commons.mapToArray
 import org.objectweb.asm.Type
 import java.util.*
@@ -28,13 +29,13 @@ class MethodSignature {
   constructor(methodType: Type) {
     this.methodType = methodType
     this.returnType = TypeSignature(methodType.returnType)
-    this.argumentTypes = Collections.unmodifiableList(methodType.argumentTypes.map { TypeSignature(it) })
+    this.argumentTypes = methodType.argumentTypes.map { TypeSignature(it) }.immutable()
   }
 
   constructor(returnType: TypeSignature, argumentTypes: List<TypeSignature>) {
     this.methodType = createRawType(returnType, argumentTypes)
     this.returnType = returnType
-    this.argumentTypes = Collections.unmodifiableList(ArrayList(argumentTypes))
+    this.argumentTypes = ArrayList(argumentTypes).immutable()
   }
 
   private fun createRawType(returnTypeSignature: TypeSignature, argumentTypesSignatures: List<TypeSignature>): Type {
