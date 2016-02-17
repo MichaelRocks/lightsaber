@@ -61,7 +61,7 @@ public class LightsaberTask extends DefaultTask {
     logger.info("Removing patched files...")
     logger.info("  from [$classesDir]")
 
-§    if (!classesDir.exists()) {
+    if (!classesDir.exists()) {
       return
     }
 
