@@ -47,7 +47,7 @@ class ClassProcessor(
   private val fileSource = processorContext.fileSourceFactory.createFileSource(inputFile)
   private val fileSink = processorContext.fileSinkFactory.createFileSink(inputFile, outputFile)
 
-  private val libraries = libraries.toArrayList()
+  private val libraries = libraries.toMutableList()
 
   private val classProducer = ProcessorClassProducer(fileSink, processorContext)
   private val annotationCreator = AnnotationCreator(processorContext, classProducer)

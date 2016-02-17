@@ -88,7 +88,7 @@ class AnnotationProxyGeneratorTest {
 
     private fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T {
       for (annotation in AnnotationProxyGeneratorTest::class.java.getDeclaredField("ANNOTATION_HOLDER").annotations) {
-        if (annotation.annotationType() == annotationClass) {
+        if (annotation.annotationClass.java == annotationClass) {
           return annotationClass.cast(annotation)
         }
       }
@@ -402,7 +402,7 @@ class AnnotationProxyGeneratorTest {
     val actualAnnotation = createAnnotationProxy<T>(*values)
     assertEquals(expectedAnnotation, actualAnnotation)
     assertEquals(expectedAnnotation.hashCode().toLong(), actualAnnotation.hashCode().toLong())
-    assertEquals(expectedAnnotation.annotationType(), actualAnnotation.annotationType())
+    assertEquals(expectedAnnotation.annotationClass.java, actualAnnotation.annotationClass.java)
   }
 
   private inline fun <reified T : Annotation> assertAnnotationNotEquals(vararg values: Any) {
@@ -410,7 +410,7 @@ class AnnotationProxyGeneratorTest {
     val expectedAnnotation = getAnnotation(annotationClass)
     val actualAnnotation = createAnnotationProxy<T>(*values)
     assertNotEquals(expectedAnnotation, actualAnnotation)
-    assertEquals(expectedAnnotation.annotationType(), actualAnnotation.annotationType())
+    assertEquals(expectedAnnotation.annotationClass.java, actualAnnotation.annotationClass.java)
   }
 
   private inline fun <reified T : Annotation> createAnnotationProxy(vararg values: Any): T {

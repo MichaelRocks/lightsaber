@@ -27,7 +27,7 @@ internal class DirectoryFileSource(private val directory: File) : FileSource {
     }
 
     for (file in directory.walkTopDown()) {
-      callback(file.relativeTo(directory), file.toEntryType())
+      callback(file.relativeTo(directory).path, file.toEntryType())
     }
   }
 

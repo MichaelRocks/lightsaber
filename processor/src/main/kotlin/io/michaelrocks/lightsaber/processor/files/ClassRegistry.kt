@@ -44,7 +44,7 @@ class ClassRegistryImpl(
   }
 
   override fun findClassHierarchy(type: Type): Sequence<ClassDescriptor> {
-    return sequence(findClass(type)) {
+    return generateSequence(findClass(type)) {
       it.superType?.let { findClass(it) }
     }
   }

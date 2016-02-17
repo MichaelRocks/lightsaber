@@ -40,30 +40,31 @@ private val EMPTIES_PERMUTATIONS = arrayOf(
 )
 
 fun <T, V> verifyMethodInvocations(compositeVisitorClass: KClass<T>, action: V.() -> Any?)
-    where T : V, T : CompositeVisitor<V>, V : Any {
+    where T : CompositeVisitor<V>, V : Any {
   for (i in 0..MAX_VISITOR_COUNT) {
     verifyMethodInvocation(compositeVisitorClass.java.newInstance(), action, i)
   }
 }
 
 fun <T, V> verifyMethodInvocations(compositeVisitorClass: Class<T>, action: V.() -> Any?)
-    where T : V, T : CompositeVisitor<V>, V : Any {
+    where T : CompositeVisitor<V>, V : Any {
   for (i in 0..MAX_VISITOR_COUNT) {
     verifyMethodInvocation(compositeVisitorClass.newInstance(), action, i)
   }
 }
 
 private fun <T, V> verifyMethodInvocation(compositeVisitor: T, action: V.() -> Any?, visitorCount: Int)
-    where T : V, T : CompositeVisitor<V>, V : Any {
+    where T : CompositeVisitor<V>, V : Any {
   val visitors = ArrayList<V>(visitorCount)
   for (i in 0 until visitorCount) {
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("CAST_NEVER_SUCCEEDS")
     val visitor = mock(compositeVisitor.javaClass.superclass as Class<V>)
     visitors.add(visitor)
     compositeVisitor.addVisitor(visitor)
   }
 
-  compositeVisitor.action()
+  @Suppress("UNCHECKED_CAST")
+  (compositeVisitor as V).action()
 
   for (visitor in visitors) {
     verify(visitor, only()).action()
@@ -72,38 +73,38 @@ private fun <T, V> verifyMethodInvocation(compositeVisitor: T, action: V.() -> A
 
 inline fun <reified T, R, V> verifyCompositeMethodInvocations(
     noinline action: V.() -> R, noinline innerAction: R.() -> Any?)
-    where T : Any, T : V, T : CompositeVisitor<V>, V : Any {
+    where T : CompositeVisitor<V>, V : Any {
   verifyCompositeMethodInvocations(T::class.java, action, innerAction)
 }
 
 fun <T, R, V> verifyCompositeMethodInvocations(compositeVisitorClass: KClass<T>, action: V.() -> R,
     innerAction: R.() -> Any?)
-    where T : Any, T : V, T : CompositeVisitor<V>, V : Any {
+    where T : CompositeVisitor<V>, V : Any {
   verifyCompositeMethodInvocations(compositeVisitorClass.java, action, innerAction)
 }
 
 fun <T, R, V> verifyCompositeMethodInvocations(compositeVisitorClass: Class<T>, action: V.() -> R,
     innerAction: R.() -> Any?)
-    where T : Any, T : V, T : CompositeVisitor<V>, V : Any {
+    where T : CompositeVisitor<V>, V : Any {
   for (empties in EMPTIES_PERMUTATIONS) {
     verifyCompositeMethodInvocation(compositeVisitorClass.newInstance(), action, innerAction, empties)
   }
 }
 
-@Suppress("CAST_NEVER_SUCCEEDS")
 private fun <T, R, V> verifyCompositeMethodInvocation(compositeVisitor: T,
     action: V.() -> R, innerAction: R.() -> Any?, empties: BooleanArray)
-    where T : V, T : CompositeVisitor<V>, V : Any {
+    where T : CompositeVisitor<V>, V : Any {
   val visitors = ArrayList<V>(empties.size)
   for (empty in empties) {
     val answer = if (empty) RETURNS_DEFAULTS else RETURNS_DEEP_STUBS
-    @Suppress("UNCHECKED_CAST")
+    @Suppress("CAST_NEVER_SUCCEEDS")
     val visitor = mock(compositeVisitor.javaClass.superclass as Class<V>, answer)
     visitors.add(visitor)
     compositeVisitor.addVisitor(visitor)
   }
 
-  val result = compositeVisitor.action()
+  @Suppress("UNCHECKED_CAST")
+  val result = (compositeVisitor as V).action()
 
   for (visitor in visitors) {
     visitor.action()
