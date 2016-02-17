@@ -21,42 +21,42 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 public class LightsaberSample {
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            LightsaberSample().run()
-        }
+  companion object {
+    @JvmStatic
+    fun main(args: Array<String>) {
+      LightsaberSample().run()
     }
+  }
 
-    @Inject
-    private lateinit var wookiee: Wookiee
-    @Inject
-    private lateinit var wookieeProvider: Provider<Wookiee>
+  @Inject
+  private lateinit var wookiee: Wookiee
+  @Inject
+  private lateinit var wookieeProvider: Provider<Wookiee>
 
-    @Inject
-    private lateinit var droid: Droid
-    @Inject
-    private lateinit var droidProvider: Provider<Droid>
+  @Inject
+  private lateinit var droid: Droid
+  @Inject
+  private lateinit var droidProvider: Provider<Droid>
 
-    @Inject
-    private lateinit var darthVader: DarthVader
+  @Inject
+  private lateinit var darthVader: DarthVader
 
-    @Inject
-    private lateinit var planet: Planet
+  @Inject
+  private lateinit var planet: Planet
 
-    private fun run() {
-        val injector = Lightsaber.get().createInjector(LightsaberModule())
-        injector.injectMembers(this)
-        System.out.println("After injection")
-        System.out.println("Wookiee: $wookiee from ${wookiee.planet}")
-        val anotherWookiee = wookieeProvider.get()
-        System.out.println("Another wookiee: $anotherWookiee from ${anotherWookiee.planet}")
-        System.out.println("Droid: $droid")
-        val anotherDroid = droidProvider.get()
-        System.out.println("Another droid: $anotherDroid")
-        System.out.println("Darth Vader: " + darthVader)
-        System.out.println("Planet: " + planet)
-        wookiee.roar()
-        droid.repair()
-    }
+  private fun run() {
+    val injector = Lightsaber.get().createInjector(LightsaberModule())
+    injector.injectMembers(this)
+    System.out.println("After injection")
+    System.out.println("Wookiee: $wookiee from ${wookiee.planet}")
+    val anotherWookiee = wookieeProvider.get()
+    System.out.println("Another wookiee: $anotherWookiee from ${anotherWookiee.planet}")
+    System.out.println("Droid: $droid")
+    val anotherDroid = droidProvider.get()
+    System.out.println("Another droid: $anotherDroid")
+    System.out.println("Darth Vader: " + darthVader)
+    System.out.println("Planet: " + planet)
+    wookiee.roar()
+    droid.repair()
+  }
 }

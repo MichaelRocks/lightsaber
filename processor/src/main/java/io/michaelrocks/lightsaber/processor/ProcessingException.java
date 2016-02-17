@@ -19,41 +19,41 @@ package io.michaelrocks.lightsaber.processor;
 import java.io.IOException;
 
 public class ProcessingException extends IOException {
-    private final String path;
+  private final String path;
 
-    public ProcessingException(final String message) {
-        this(message, (String) null);
-    }
+  public ProcessingException(final String message) {
+    this(message, (String) null);
+  }
 
-    public ProcessingException(final String message, final String path) {
-        super(message);
-        this.path = path;
-    }
+  public ProcessingException(final String message, final String path) {
+    super(message);
+    this.path = path;
+  }
 
-    public ProcessingException(final Throwable cause) {
-        this(cause, null);
-    }
+  public ProcessingException(final Throwable cause) {
+    this(cause, null);
+  }
 
-    public ProcessingException(final Throwable cause, final String path) {
-        super(cause);
-        this.path = path;
-    }
+  public ProcessingException(final Throwable cause, final String path) {
+    super(cause);
+    this.path = path;
+  }
 
-    public ProcessingException(final String message, final Throwable cause) {
-        this(message, cause, null);
-    }
+  public ProcessingException(final String message, final Throwable cause) {
+    this(message, cause, null);
+  }
 
-    public ProcessingException(final String message, final Throwable cause, final String path) {
-        super(message, cause);
-        this.path = path;
-    }
+  public ProcessingException(final String message, final Throwable cause, final String path) {
+    super(message, cause);
+    this.path = path;
+  }
 
-    public String getPath() {
-        return path;
-    }
+  public String getPath() {
+    return path;
+  }
 
-    @Override
-    public String getMessage() {
-        return path == null ? super.getMessage() : "[" + path + "] " + super.getMessage();
-    }
+  @Override
+  public String getMessage() {
+    return path == null ? super.getMessage() : "[" + path + "] " + super.getMessage();
+  }
 }

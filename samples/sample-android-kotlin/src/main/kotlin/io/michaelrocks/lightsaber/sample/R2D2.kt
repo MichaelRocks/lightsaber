@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.sample
 import javax.inject.Inject
 
 internal class R2D2 @Inject private constructor() : Droid {
-    override fun repair() {
-        System.out.println("BEEP BEEP BEEEEEP")
-    }
+  override fun repair() {
+    System.out.println("BEEP BEEP BEEEEEP")
+  }
 }

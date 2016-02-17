@@ -17,5 +17,5 @@
 package io.michaelrocks.lightsaber.sample;
 
 public interface Droid {
-    void repair();
+  void repair();
 }

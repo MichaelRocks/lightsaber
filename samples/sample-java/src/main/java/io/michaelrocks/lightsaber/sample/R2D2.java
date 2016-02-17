@@ -19,12 +19,12 @@ package io.michaelrocks.lightsaber.sample;
 import javax.inject.Inject;
 
 public class R2D2 implements Droid {
-    @Inject
-    public R2D2() {
-    }
+  @Inject
+  public R2D2() {
+  }
 
-    @Override
-    public void repair() {
-        System.out.println("BEEP BEEP BEEEEEP");
-    }
+  @Override
+  public void repair() {
+    System.out.println("BEEP BEEP BEEEEEP");
+  }
 }

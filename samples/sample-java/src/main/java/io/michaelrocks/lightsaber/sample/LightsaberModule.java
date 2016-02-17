@@ -24,22 +24,22 @@ import javax.inject.Singleton;
 
 @Module
 class LightsaberModule {
-    @Provides
-    private final DarthVader darthVader = DarthVader.INSTANCE;
+  @Provides
+  private final DarthVader darthVader = DarthVader.INSTANCE;
 
-    @Provides
-    private Wookiee provideWookiee(final Chewbacca chewbacca) {
-        return chewbacca;
-    }
+  @Provides
+  private Wookiee provideWookiee(final Chewbacca chewbacca) {
+    return chewbacca;
+  }
 
-    @Provides
-    private Droid provideDroid(final R2D2 r2d2) {
-        return r2d2;
-    }
+  @Provides
+  private Droid provideDroid(final R2D2 r2d2) {
+    return r2d2;
+  }
 
-    @Provides
-    @Singleton
-    private Planet providePlanet(final Provider<Kashyyyk> kashyyykProvider) {
-        return kashyyykProvider.get();
-    }
+  @Provides
+  @Singleton
+  private Planet providePlanet(final Provider<Kashyyyk> kashyyykProvider) {
+    return kashyyykProvider.get();
+  }
 }

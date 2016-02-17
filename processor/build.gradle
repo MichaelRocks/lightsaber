@@ -1,32 +1,38 @@
+buildscript {
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+  }
+}
+
 plugins {
-    id 'com.github.johnrengelman.shadow' version '1.2.1'
+  id 'com.github.johnrengelman.shadow' version '1.2.1'
 }
 
 apply plugin: 'java'
+apply plugin: 'kotlin'
 apply plugin: 'application'
 apply plugin: 'bintray'
 
-sourceCompatibility = '1.7'
-targetCompatibility = '1.7'
+sourceCompatibility = JavaVersion.VERSION_1_6
+targetCompatibility = JavaVersion.VERSION_1_6
 
 mainClassName = 'io.michaelrocks.lightsaber.processor.LightsaberProcessor'
 
 dependencies {
-    compile project(':core')
+  compile project(':core')
+  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
-    compile "com.google.code.findbugs:jsr305:$jsr305Version"
-    compile "com.beust:jcommander:$jcommanderVersion"
-    compile "org.ow2.asm:asm:$asmVersion"
-    compile "org.ow2.asm:asm-commons:$asmVersion"
-    compile "org.apache.commons:commons-lang3:$commonsLangVersion"
-    compile "commons-io:commons-io:$commonsIoVersion"
-    compile "org.apache.commons:commons-collections4:$commonsCollectionsVersion"
-    compile "ch.qos.logback:logback-classic:$logbackVersion"
+  compile "com.beust:jcommander:$jcommanderVersion"
+  compile "org.ow2.asm:asm:$asmVersion"
+  compile "org.ow2.asm:asm-commons:$asmVersion"
+  compile "org.apache.commons:commons-lang3:$commonsLangVersion"
+  compile "org.apache.commons:commons-collections4:$commonsCollectionsVersion"
+  compile "ch.qos.logback:logback-classic:$logbackVersion"
 
-    testCompile "junit:junit:$junitVersion"
-    testCompile "org.mockito:mockito-core:$mockitoVersion"
+  testCompile "junit:junit:$junitVersion"
+  testCompile "org.mockito:mockito-core:$mockitoVersion"
 }
 
 jar {
-    destinationDir = file('build/jar')
+  destinationDir = file('build/jar')
 }

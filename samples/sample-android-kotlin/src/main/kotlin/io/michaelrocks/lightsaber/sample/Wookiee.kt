@@ -17,6 +17,6 @@
 package io.michaelrocks.lightsaber.sample
 
 interface Wookiee {
-    val planet: Planet
-    fun roar()
+  val planet: Planet
+  fun roar()
 }

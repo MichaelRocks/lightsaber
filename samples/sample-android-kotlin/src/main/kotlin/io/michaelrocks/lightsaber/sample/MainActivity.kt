@@ -25,43 +25,43 @@ import javax.inject.Inject
 import javax.inject.Provider
 
 public class MainActivity : Activity() {
-    @Inject
-    private lateinit var wookiee: Wookiee
-    @Inject
-    private lateinit var wookieeProvider: Provider<Wookiee>
+  @Inject
+  private lateinit var wookiee: Wookiee
+  @Inject
+  private lateinit var wookieeProvider: Provider<Wookiee>
 
-    @Inject
-    private lateinit var droid: Droid
-    @Inject
-    private lateinit var droidProvider: Provider<Droid>
+  @Inject
+  private lateinit var droid: Droid
+  @Inject
+  private lateinit var droidProvider: Provider<Droid>
 
-    @Inject
-    private lateinit var darthVader: DarthVader
+  @Inject
+  private lateinit var darthVader: DarthVader
 
-    @Inject
-    private lateinit var planet: Planet
+  @Inject
+  private lateinit var planet: Planet
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.main)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.main)
 
-        val afterInjectionTextView = findViewById(R.id.afterInjectionTextView) as TextView
+    val afterInjectionTextView = findViewById(R.id.afterInjectionTextView) as TextView
 
-        val injector = Lightsaber.get().createInjector(LightsaberModule())
-        injector.injectMembers(this)
+    val injector = Lightsaber.get().createInjector(LightsaberModule())
+    injector.injectMembers(this)
 
-        print(afterInjectionTextView, "Wookiee: $wookiee from ${wookiee.planet}")
-        val anotherWookiee = wookieeProvider.get()
-        print(afterInjectionTextView, "Another wookiee: $anotherWookiee from ${anotherWookiee.planet}")
-        print(afterInjectionTextView, "Droid: $droid")
-        val anotherDroid = droidProvider.get()
-        print(afterInjectionTextView, "Another droid: $anotherDroid")
-        print(afterInjectionTextView, "Darth Vader: $darthVader")
-        print(afterInjectionTextView, "Planet: $planet")
-    }
+    print(afterInjectionTextView, "Wookiee: $wookiee from ${wookiee.planet}")
+    val anotherWookiee = wookieeProvider.get()
+    print(afterInjectionTextView, "Another wookiee: $anotherWookiee from ${anotherWookiee.planet}")
+    print(afterInjectionTextView, "Droid: $droid")
+    val anotherDroid = droidProvider.get()
+    print(afterInjectionTextView, "Another droid: $anotherDroid")
+    print(afterInjectionTextView, "Darth Vader: $darthVader")
+    print(afterInjectionTextView, "Planet: $planet")
+  }
 
-    private fun print(textView: TextView, message: CharSequence) {
-        textView.append("\n")
-        textView.append(message)
-    }
+  private fun print(textView: TextView, message: CharSequence) {
+    textView.append("\n")
+    textView.append(message)
+  }
 }

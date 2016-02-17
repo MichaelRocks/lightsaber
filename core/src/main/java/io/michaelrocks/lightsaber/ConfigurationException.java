@@ -17,18 +17,18 @@
 package io.michaelrocks.lightsaber;
 
 public class ConfigurationException extends RuntimeException {
-    public ConfigurationException() {
-    }
+  public ConfigurationException() {
+  }
 
-    public ConfigurationException(final String message) {
-        super(message);
-    }
+  public ConfigurationException(final String message) {
+    super(message);
+  }
 
-    public ConfigurationException(final String message, final Throwable cause) {
-        super(message, cause);
-    }
+  public ConfigurationException(final String message, final Throwable cause) {
+    super(message, cause);
+  }
 
-    public ConfigurationException(final Throwable cause) {
-        super(cause);
-    }
+  public ConfigurationException(final Throwable cause) {
+    super(cause);
+  }
 }

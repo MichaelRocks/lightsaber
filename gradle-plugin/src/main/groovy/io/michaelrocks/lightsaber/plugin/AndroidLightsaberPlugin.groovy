@@ -20,15 +20,15 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 
 class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
-    @Override
-    void apply(final Project project) {
-        super.apply(project)
+  @Override
+  void apply(final Project project) {
+    super.apply(project)
 
-        if (project.hasProperty('android')) {
-            addDependencies('compile')
-            project.android.registerTransform(new LightsaberTransform(project))
-        } else {
-            throw new GradleException("Lightsaber plugin must be applied *AFTER* Android plugin")
-        }
+    if (project.hasProperty('android')) {
+      addDependencies('compile')
+      project.android.registerTransform(new LightsaberTransform(project))
+    } else {
+      throw new GradleException("Lightsaber plugin must be applied *AFTER* Android plugin")
     }
+  }
 }

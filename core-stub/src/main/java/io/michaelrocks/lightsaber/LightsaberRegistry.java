@@ -20,15 +20,15 @@ import java.util.List;
 import java.util.Map;
 
 public class LightsaberRegistry {
-    public static List getPackageInjectorConfigurators() {
-        throw new UnsupportedOperationException("This method must be generated");
-    }
+  public static List getPackageInjectorConfigurators() {
+    throw new UnsupportedOperationException("This method must be generated");
+  }
 
-    public static Map getInjectorConfigurators() {
-        throw new UnsupportedOperationException("This method must be generated");
-    }
+  public static Map getInjectorConfigurators() {
+    throw new UnsupportedOperationException("This method must be generated");
+  }
 
-    public static Map getMembersInjectors() {
-        throw new UnsupportedOperationException("This method must be generated");
-    }
+  public static Map getMembersInjectors() {
+    throw new UnsupportedOperationException("This method must be generated");
+  }
 }

@@ -19,59 +19,59 @@ package io.michaelrocks.lightsaber;
 import java.lang.annotation.Annotation;
 
 public class Key<T> {
-    private final Class<T> type;
-    private final Annotation qualifier;
+  private final Class<T> type;
+  private final Annotation qualifier;
 
-    public Key(final Class<T> type) {
-        this(type, null);
+  public Key(final Class<T> type) {
+    this(type, null);
+  }
+
+  public Key(final Class<T> type, final Annotation qualifier) {
+    this.type = type;
+    this.qualifier = qualifier;
+  }
+
+  public static <T> Key<T> of(final Class<T> type) {
+    return new Key<T>(type);
+  }
+
+  public static <T> Key<T> of(final Class<T> type, final Annotation annotation) {
+    return new Key<T>(type, annotation);
+  }
+
+  public Class<T> getType() {
+    return type;
+  }
+
+  public Annotation getQualifier() {
+    return qualifier;
+  }
+
+  @Override
+  public boolean equals(final Object object) {
+    if (this == object) {
+      return true;
     }
 
-    public Key(final Class<T> type, final Annotation qualifier) {
-        this.type = type;
-        this.qualifier = qualifier;
+    if (object == null || getClass() != object.getClass()) {
+      return false;
     }
 
-    public static <T> Key<T> of(final Class<T> type) {
-        return new Key<T>(type);
-    }
+    final Key<?> key = (Key<?>) object;
+    return type.equals(key.type)
+        && (qualifier != null ? qualifier.equals(key.qualifier) : key.qualifier == null);
 
-    public static <T> Key<T> of(final Class<T> type, final Annotation annotation) {
-        return new Key<T>(type, annotation);
-    }
+  }
 
-    public Class<T> getType() {
-        return type;
-    }
+  @Override
+  public int hashCode() {
+    int result = type.hashCode();
+    result = 31 * result + (qualifier != null ? qualifier.hashCode() : 0);
+    return result;
+  }
 
-    public Annotation getQualifier() {
-        return qualifier;
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-        if (this == object) {
-            return true;
-        }
-
-        if (object == null || getClass() != object.getClass()) {
-            return false;
-        }
-
-        final Key<?> key = (Key<?>) object;
-        return type.equals(key.type)
-                && (qualifier != null ? qualifier.equals(key.qualifier) : key.qualifier == null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = type.hashCode();
-        result = 31 * result + (qualifier != null ? qualifier.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        return "Key{type=" + type + ", qualifier=" + qualifier + '}';
-    }
+  @Override
+  public String toString() {
+    return "Key{type=" + type + ", qualifier=" + qualifier + '}';
+  }
 }

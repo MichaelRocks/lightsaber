@@ -22,11 +22,11 @@ import javax.inject.Singleton
 
 @Singleton
 internal class Chewbacca @Inject private constructor(
-        planetProvider: Provider<Planet>
+    planetProvider: Provider<Planet>
 ) : Wookiee {
-    override val planet: Planet = planetProvider.get()
+  override val planet: Planet = planetProvider.get()
 
-    override fun roar() {
-        System.out.println("AULRGHHHGR")
-    }
+  override fun roar() {
+    System.out.println("AULRGHHHGR")
+  }
 }

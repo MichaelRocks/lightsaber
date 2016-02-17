@@ -19,23 +19,23 @@ package io.michaelrocks.lightsaber;
 import javax.inject.Provider;
 
 class LazyAdapter<T> implements Lazy<T> {
-    private final Provider<T> provider;
-    private volatile T instance;
-    private final Object instanceLock = new Object();
+  private final Provider<T> provider;
+  private volatile T instance;
+  private final Object instanceLock = new Object();
 
-    public LazyAdapter(final Provider<T> provider) {
-        this.provider = provider;
-    }
+  public LazyAdapter(final Provider<T> provider) {
+    this.provider = provider;
+  }
 
-    @Override
-    public T get() {
+  @Override
+  public T get() {
+    if (instance == null) {
+      synchronized (instanceLock) {
         if (instance == null) {
-            synchronized (instanceLock) {
-                if (instance == null) {
-                    instance = provider.get();
-                }
-            }
+          instance = provider.get();
         }
-        return instance;
+      }
     }
+    return instance;
+  }
 }

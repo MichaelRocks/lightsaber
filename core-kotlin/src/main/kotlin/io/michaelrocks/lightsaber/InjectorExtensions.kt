@@ -19,30 +19,44 @@ package io.michaelrocks.lightsaber
 import javax.inject.Provider
 import kotlin.reflect.KClass
 
+val lightsaber: Lightsaber
+  get() = Lightsaber.get()
+
 fun <T : Any> Injector.getInstance(type: Class<out T>): T =
-        Lightsaber.getInstance(this, type)
+    Lightsaber.getInstance(this, type)
+
 fun <T : Any> Injector.getInstance(type: Class<out T>, annotation: Annotation): T =
-        Lightsaber.getInstance(this, type, annotation)
+    Lightsaber.getInstance(this, type, annotation)
+
 fun <T : Any> Injector.getInstance(type: KClass<out T>): T =
-        Lightsaber.getInstance(this, type.java)
+    Lightsaber.getInstance(this, type.java)
+
 fun <T : Any> Injector.getInstance(type: KClass<out T>, annotation: Annotation): T =
-        Lightsaber.getInstance(this, type.java, annotation)
+    Lightsaber.getInstance(this, type.java, annotation)
 
 inline fun <reified T : Any> Injector.getInstance(): T =
-        getInstance(T::class)
+    getInstance(T::class)
+
 inline fun <reified T : Any> Injector.getInstance(annotation: Annotation): T =
-        getInstance(T::class, annotation)
+    getInstance(T::class, annotation)
 
 fun <T : Any> Injector.getProvider(type: Class<out T>): Provider<T> =
-        Lightsaber.getProvider(this, type)
+    Lightsaber.getProvider(this, type)
+
 fun <T : Any> Injector.getProvider(type: Class<out T>, annotation: Annotation): Provider<T> =
-        Lightsaber.getProvider(this, type, annotation)
+    Lightsaber.getProvider(this, type, annotation)
+
 fun <T : Any> Injector.getProvider(type: KClass<out T>): Provider<T> =
-        Lightsaber.getProvider(this, type.java)
+    Lightsaber.getProvider(this, type.java)
+
 fun <T : Any> Injector.getProvider(type: KClass<out T>, annotation: Annotation): Provider<T> =
-        Lightsaber.getProvider(this, type.java, annotation)
+    Lightsaber.getProvider(this, type.java, annotation)
 
 inline fun <reified T : Any> Injector.getProvider(): Provider<T> =
-        getProvider(T::class)
+    getProvider(T::class)
+
 inline fun <reified T : Any> Injector.getProvider(annotation: Annotation): Provider<T> =
-        getProvider(T::class, annotation)
+    getProvider(T::class, annotation)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun <T> inject(): T = null as T

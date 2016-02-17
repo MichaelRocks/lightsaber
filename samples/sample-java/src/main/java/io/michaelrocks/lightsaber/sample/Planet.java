@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber.sample;
 
 interface Planet {
-    String getName();
-    String getSector();
+  String getName();
+
+  String getSector();
 }

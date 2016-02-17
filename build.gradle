@@ -1,65 +1,64 @@
 buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
-        // XXX: Workaround for https://code.google.com/p/android/issues/detail?id=192875.
-        classpath 'org.jacoco:org.jacoco.core:0.7.4.201502262128'
-    }
+  repositories {
+    jcenter()
+  }
+  dependencies {
+    classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.4'
+    // XXX: Workaround for https://code.google.com/p/android/issues/detail?id=192875.
+    classpath 'org.jacoco:org.jacoco.core:0.7.4.201502262128'
+  }
 }
 
 allprojects {
-    ext.kotlinVersion = '1.0.0-beta-3595'
+  ext.kotlinVersion = '1.0.0'
 
-    buildscript {
-        repositories {
-            mavenLocal()
-            jcenter()
-            mavenCentral()
-            maven { url 'https://dl.bintray.com/michaelrocks/lightsaber' }
-        }
-    }
-
+  buildscript {
     repositories {
-        mavenLocal()
-        jcenter()
-        mavenCentral()
-        maven { url 'https://dl.bintray.com/michaelrocks/lightsaber' }
-
+      mavenLocal()
+      jcenter()
+      mavenCentral()
+      maven { url 'https://dl.bintray.com/michaelrocks/lightsaber' }
     }
+  }
+
+  repositories {
+    mavenLocal()
+    jcenter()
+    mavenCentral()
+    maven { url 'https://dl.bintray.com/michaelrocks/lightsaber' }
+
+  }
 }
 
 allprojects {
-    def properties = new Properties()
-    properties.load(new FileInputStream(new File(rootDir, "version.properties")))
-    def major = properties['version.major'] as int
-    def minor = properties['version.minor'] as int
-    def patch = properties['version.patch'] as int
-    def suffix = properties['version.suffix'].toString().trim() ?: ""
-    def snapshot = properties['version.snapshot'].toBoolean()
-    version = "$major.$minor.$patch" + (suffix.isAllWhitespace() ? '' : "-$suffix") + (snapshot ? '-SNAPSHOT' : '')
-    group = 'io.michaelrocks'
+  def properties = new Properties()
+  properties.load(new FileInputStream(new File(rootDir, "version.properties")))
+  def major = properties['version.major'] as int
+  def minor = properties['version.minor'] as int
+  def patch = properties['version.patch'] as int
+  def suffix = properties['version.suffix'].toString().trim() ?: ""
+  def snapshot = properties['version.snapshot'].toBoolean()
+  version = "$major.$minor.$patch" + (suffix.isAllWhitespace() ? '' : "-$suffix") + (snapshot ? '-SNAPSHOT' : '')
+  group = 'io.michaelrocks'
 
-    ext.dryRun = properties['version.dryRun'].toBoolean()
-    ext.publish = properties['version.publish'].toBoolean()
+  ext.dryRun = properties['version.dryRun'].toBoolean()
+  ext.publish = properties['version.publish'].toBoolean()
 }
 
 ext {
-    shadowVersion = '1.2.1'
+  shadowVersion = '1.2.1'
 
-    javaxInjectVersion = '1'
-    jsr305Version = '3.0.0'
-    jcommanderVersion = '1.47'
-    asmVersion = '5.0.4'
-    commonsLangVersion = '3.3.2'
-    commonsIoVersion = '2.4'
-    commonsCollectionsVersion = '4.0'
-    logbackVersion = '1.1.3'
+  javaxInjectVersion = '1'
+  jsr305Version = '3.0.0'
+  jcommanderVersion = '1.47'
+  asmVersion = '5.0.4'
+  commonsLangVersion = '3.3.2'
+  commonsCollectionsVersion = '4.0'
+  logbackVersion = '1.1.3'
 
-    junitVersion = '4.12'
-    mockitoVersion = '2.0.31-beta'
+  junitVersion = '4.12'
+  mockitoVersion = '2.0.31-beta'
 
-    androidToolsVersion = '1.5.0'
-    supportVersion = '23.0.1'
+  androidToolsVersion = '1.5.0'
+  supportVersion = '23.0.1'
 }

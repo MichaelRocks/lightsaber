@@ -1,15 +1,20 @@
 buildscript {
-    dependencies {
-        classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
-    }
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
+  }
 }
 
 apply plugin: 'java'
+apply plugin: 'kotlin'
 apply plugin: 'io.michaelrocks.lightsaber'
 
-sourceCompatibility = 1.6
+sourceCompatibility = JavaVersion.VERSION_1_6
+targetCompatibility = JavaVersion.VERSION_1_6
 
 dependencies {
-    testCompile "io.michaelrocks:lightsaber-core:$version"
-    testCompile "junit:junit:$junitVersion"
+  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+
+  testCompile "io.michaelrocks:lightsaber-core-kotlin:$version"
+  testCompile "junit:junit:$junitVersion"
 }
