@@ -61,6 +61,10 @@ public class LightsaberTask extends DefaultTask {
     logger.info("Removing patched files...")
     logger.info("  from [$classesDir]")
 
+§    if (!classesDir.exists()) {
+      return
+    }
+
     classesDir.traverse(
         postDir: { final File dir -> FileMethods.deleteDirectoryIfEmpty(dir) }
     ) { final file ->

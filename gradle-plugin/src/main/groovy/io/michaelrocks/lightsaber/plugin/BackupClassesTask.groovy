@@ -45,6 +45,10 @@ class BackupClassesTask extends DefaultTask {
     logger.info("  from [$classesDir]")
     logger.info("    to [$backupDir]")
 
+    if (!classesDir.exists()) {
+      return Collections.emptySet()
+    }
+
     final Set<String> visitedPaths = new HashSet<>()
     classesDir.traverse { final file ->
       if (file.isDirectory()) {
@@ -83,6 +87,10 @@ class BackupClassesTask extends DefaultTask {
     logger.info("Removing abandoned files...")
     logger.info("  from [$backupDir]")
 
+    if (!classesDir.exists()) {
+      return
+    }
+
     backupDir.traverse(
         postDir: { final File dir -> FileMethods.deleteDirectoryIfEmpty(dir) }
     ) { final file ->
@@ -106,6 +114,10 @@ class BackupClassesTask extends DefaultTask {
     logger.info("Restoring patched files...")
     logger.info("  from [$backupDir]")
     logger.info("    to [$classesDir]")
+
+    if (!classesDir.exists()) {
+      return
+    }
 
     backupDir.traverse { final file ->
       if (file.isDirectory()) {
