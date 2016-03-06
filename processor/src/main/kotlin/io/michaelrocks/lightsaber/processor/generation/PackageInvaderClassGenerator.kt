@@ -68,7 +68,6 @@ class PackageInvaderClassGenerator(
     val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, MethodDescriptor.forDefaultConstructor())
     generator.visitCode()
     generator.loadThis()
-    generator.dup()
     generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forDefaultConstructor())
     generator.returnValue()
     generator.endMethod()
