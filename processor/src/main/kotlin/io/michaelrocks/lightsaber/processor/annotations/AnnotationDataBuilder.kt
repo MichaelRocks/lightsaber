@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.annotations
 
-import org.apache.commons.lang3.Validate
 import org.objectweb.asm.Type
 import java.util.*
 
@@ -38,8 +37,6 @@ class AnnotationDataBuilder {
   }
 
   fun addDefaultValue(name: String, defaultValue: Any): AnnotationDataBuilder {
-    Validate.notNull(name)
-    Validate.notNull(defaultValue)
     if (values == null) {
       values = LinkedHashMap<String, Any>()
     }

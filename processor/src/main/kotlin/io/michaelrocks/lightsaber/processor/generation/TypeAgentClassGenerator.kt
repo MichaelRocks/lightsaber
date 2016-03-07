@@ -23,7 +23,6 @@ import io.michaelrocks.lightsaber.processor.descriptors.*
 import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
-import org.apache.commons.lang3.Validate
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes.*
@@ -131,7 +130,7 @@ class TypeAgentClassGenerator(
     injector.injectableTarget.injectableMethods.values.forEachIndexed { i, injectableMethod ->
       val argumentTypes = injectableMethod.argumentTypes
       val parameterQualifiers = injectableMethod.parameterQualifiers
-      Validate.isTrue(argumentTypes.size == parameterQualifiers.size)
+      check(argumentTypes.size == parameterQualifiers.size)
 
       for (j in 0 until argumentTypes.size) {
         val dependencyType = getDependencyTypeForType(argumentTypes[j])

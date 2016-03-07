@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.annotations
 
-import org.apache.commons.lang3.Validate
 import java.util.*
 
 internal open class AnnotationArrayParser(
@@ -28,8 +27,8 @@ internal open class AnnotationArrayParser(
     get() = if (mutableValues == null) emptyList<Any>() else Collections.unmodifiableList(mutableValues)
 
   override fun addValue(name: String?, value: Any) {
-    Validate.isTrue(name == null)
-    if (mutableValues == null) {
+    check(name === null)
+    if (mutableValues === null) {
       mutableValues = ArrayList<Any>()
     }
     mutableValues!!.add(value)

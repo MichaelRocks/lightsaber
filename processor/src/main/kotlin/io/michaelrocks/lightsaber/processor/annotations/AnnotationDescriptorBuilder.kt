@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.annotations
 
-import org.apache.commons.lang3.Validate
 import org.objectweb.asm.Type
 import java.util.*
 
@@ -28,8 +27,6 @@ class AnnotationDescriptorBuilder(private val annotationType: Type) {
   }
 
   fun addField(name: String, type: Type): AnnotationDescriptorBuilder {
-    Validate.notNull(name)
-    Validate.notNull(type)
     if (fields == null) {
       fields = LinkedHashMap<String, Type>()
     }
