@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.processor
 
 import ch.qos.logback.classic.Level
 import com.beust.jcommander.Parameter
+import com.beust.jcommander.converters.FileConverter
 import org.apache.commons.lang3.builder.ToStringBuilder
 import java.io.File
 
@@ -28,7 +29,8 @@ class LightsaberParameters {
   @Parameter(names = arrayOf("--classes"), description = "Classes directory to process")
   var classes: File? = null
 
-  @Parameter(names = arrayOf("--libs"), description = "Project dependencies", variableArity = true)
+  @Parameter(names = arrayOf("--libs"), listConverter = FileConverter::class, description = "Project dependencies",
+      variableArity = true)
   var libs = emptyList<File>()
 
   @Parameter(names = arrayOf("--output"), description = "Output jar file or classes directory")
