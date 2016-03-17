@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -23,7 +24,6 @@ import io.michaelrocks.lightsaber.processor.commons.box
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.PackageInvaderDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
-import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter

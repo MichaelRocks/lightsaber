@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,12 @@
 
 package io.michaelrocks.lightsaber.processor.annotations.proxy
 
+import io.michaelrocks.grip.mirrors.AnnotationMirror
+import io.michaelrocks.grip.mirrors.ClassMirror
+import io.michaelrocks.grip.mirrors.EnumMirror
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.annotations.AnnotationData
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
-import io.michaelrocks.lightsaber.processor.descriptors.EnumValueDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer
 import org.apache.commons.collections4.IteratorUtils
@@ -36,17 +37,16 @@ class AnnotationCreator(
 
   fun newAnnotation(generator: GeneratorAdapter, data: AnnotationData) {
     val annotationProxyType = composeAnnotationProxyType(data.type)
-    processorContext.annotationRegistry.findAnnotation(data.type).let { annotation ->
-      generateAnnotationProxyClassIfNecessary(annotation, annotationProxyType)
-      constructAnnotationProxy(generator, annotation, data, annotationProxyType)
+    processorContext.classRegistry.getClassMirror(data.type).let { mirror ->
+      generateAnnotationProxyClassIfNecessary(mirror, annotationProxyType)
+      constructAnnotationProxy(generator, mirror, data, annotationProxyType)
     }
   }
 
   private fun composeAnnotationProxyType(annotationType: Type): Type =
       Type.getObjectType(annotationType.internalName + "\$Lightsaber\$Proxy")
 
-  private fun generateAnnotationProxyClassIfNecessary(annotation: AnnotationDescriptor,
-      annotationProxyType: Type) {
+  private fun generateAnnotationProxyClassIfNecessary(annotation: ClassMirror, annotationProxyType: Type) {
     if (generatedAnnotationProxies.add(annotationProxyType)) {
       val generator = AnnotationProxyGenerator(processorContext.classRegistry, annotation, annotationProxyType)
       val annotationProxyClassData = generator.generate()
@@ -54,16 +54,16 @@ class AnnotationCreator(
     }
   }
 
-  private fun constructAnnotationProxy(generator: GeneratorAdapter, annotation: AnnotationDescriptor,
+  private fun constructAnnotationProxy(generator: GeneratorAdapter, annotation: ClassMirror,
       data: AnnotationData, annotationProxyType: Type) {
     generator.newInstance(annotationProxyType)
     generator.dup()
 
-    for ((fieldName, fieldType) in annotation.fields.entries) {
-      createValue(generator, fieldType, data.values[fieldName]!!)
+    for (method in annotation.methods) {
+      createValue(generator, method.type.returnType, data.values[method.name]!!)
     }
 
-    val fieldTypes = annotation.fields.values
+    val fieldTypes = annotation.methods.map { it.type.returnType }
     val argumentTypes = fieldTypes.toTypedArray()
     val constructor = MethodDescriptor.forConstructor(*argumentTypes)
     generator.invokeConstructor(annotationProxyType, constructor)
@@ -77,7 +77,7 @@ class AnnotationCreator(
       }
       Type.ARRAY -> createArray(generator, fieldType, value)
       Type.OBJECT -> createObject(generator, fieldType, value)
-      else -> throw IllegalArgumentException("Unsupported annotation field type: " + fieldType)
+      else -> throw IllegalArgumentException("Unsupported annotation field type: $fieldType")
     }
   }
 
@@ -109,12 +109,13 @@ class AnnotationCreator(
     when (value) {
       is Type -> generator.push(value)
       is String -> generator.push(value)
-      is EnumValueDescriptor -> createEnumValue(generator, value)
-      is AnnotationData -> newAnnotation(generator, value)
+      is EnumMirror -> createEnumValue(generator, value)
+      is AnnotationMirror -> newAnnotation(generator, AnnotationData(value.type, value.values))
+      else -> throw IllegalArgumentException("Unsupported annotation value type: $value")
     }
   }
 
-  private fun createEnumValue(generator: GeneratorAdapter, value: EnumValueDescriptor) {
+  private fun createEnumValue(generator: GeneratorAdapter, value: EnumMirror) {
     generator.getStatic(value.type, value.value, value.type)
   }
 }

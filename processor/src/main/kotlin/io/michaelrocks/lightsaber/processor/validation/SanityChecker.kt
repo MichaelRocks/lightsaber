@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 package io.michaelrocks.lightsaber.processor.validation
 
+import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier
-import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.providableType
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
@@ -58,17 +58,17 @@ class SanityChecker(private val processorContext: ProcessorContext) {
   }
 
   private fun checkProvidableTargetIsConstructable(providableTarget: Type) {
-    val targetClass = processorContext.classRegistry.findClass(providableTarget)
-    checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_INTERFACE)
-    checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ABSTRACT)
-    checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ENUM)
-    checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ANNOTATION)
+    val mirror = processorContext.classRegistry.getClassMirror(providableTarget)
+    checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_INTERFACE)
+    checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ABSTRACT)
+    checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ENUM)
+    checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ANNOTATION)
   }
 
-  private fun checkProvidableTargetAccessFlagNotSet(targetClass: ClassDescriptor, flag: Int) {
-    if ((targetClass.access and flag) != 0) {
+  private fun checkProvidableTargetAccessFlagNotSet(mirror: ClassMirror, flag: Int) {
+    if ((mirror.access and flag) != 0) {
       processorContext.reportError(
-          "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${targetClass.classType}")
+          "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${mirror.type}")
     }
   }
 }

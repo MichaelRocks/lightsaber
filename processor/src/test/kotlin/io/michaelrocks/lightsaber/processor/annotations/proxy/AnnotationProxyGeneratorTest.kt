@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package io.michaelrocks.lightsaber.processor.annotations.proxy
 
+import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.ClassMirror
+import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.lightsaber.mockito.*
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptorBuilder
 import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.*
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor
-import io.michaelrocks.lightsaber.processor.files.ClassRegistry
+import io.michaelrocks.lightsaber.processor.commons.internalName
+import io.michaelrocks.lightsaber.processor.commons.type
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -69,7 +70,7 @@ class AnnotationProxyGeneratorTest {
       return annotationClass.simpleName + "Proxy"
     }
 
-    private fun getAnnotationDescriptor(annotationClass: Class<out Annotation>): AnnotationDescriptor {
+    private fun getAnnotationDescriptor(annotationClass: Class<out Annotation>): ClassMirror {
       val orderedMethods = TreeMap<Int, Method>()
       for (method in annotationClass.declaredMethods) {
         val orderAnnotation = method.getAnnotation(Order::class.java)
@@ -78,12 +79,19 @@ class AnnotationProxyGeneratorTest {
         assertNull("Method order must be distinct", oldMethod)
       }
 
-      val annotationType = Type.getType(annotationClass)
-      val builder = AnnotationDescriptorBuilder(annotationType)
-      for (method in orderedMethods.values) {
-        builder.addField(method.name, Type.getType(method.returnType))
-      }
-      return builder.build()
+      return ClassMirror.Builder()
+          .name(annotationClass.internalName)
+          .run {
+            for (method in orderedMethods.values) {
+              addMethod(
+                  MethodMirror.Builder()
+                      .name(method.name)
+                      .type(Type.getMethodType(method.returnType.type))
+                      .build()
+              )
+            }
+            build()
+          }
     }
 
     private fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T {
@@ -430,8 +438,12 @@ class AnnotationProxyGeneratorTest {
 
   private fun addAnnotationProxy(annotationClass: Class<out Annotation>) {
     val classRegistry = mock<ClassRegistry>()
-    given(classRegistry.findClass(notNull())).thenAnswer { invocation ->
-      ClassDescriptor(Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER, invocation.arguments[0] as Type, Types.OBJECT_TYPE)
+    given(classRegistry.getClassMirror(notNull())).thenAnswer { invocation ->
+      mock<ClassMirror>().apply {
+        given(access).thenReturn(Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER)
+        given(type).thenReturn(invocation.arguments[0] as Type)
+        given(superType).thenReturn(Types.OBJECT_TYPE)
+      }
     }
     val annotationDescriptor = getAnnotationDescriptor(annotationClass)
     val annotationProxyType = Type.getObjectType(getAnnotationProxyClassName(annotationClass))

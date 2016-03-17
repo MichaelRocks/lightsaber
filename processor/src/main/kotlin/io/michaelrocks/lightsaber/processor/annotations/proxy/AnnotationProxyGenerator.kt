@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.annotations.proxy
 
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor
+import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -24,7 +25,6 @@ import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
-import io.michaelrocks.lightsaber.processor.files.ClassRegistry
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -36,7 +36,7 @@ import java.util.*
 
 class AnnotationProxyGenerator(
     private val classRegistry: ClassRegistry,
-    private val annotation: AnnotationDescriptor,
+    private val annotation: ClassMirror,
     private val proxyType: Type
 ) {
   companion object {
@@ -82,11 +82,11 @@ class AnnotationProxyGenerator(
   }
 
   private fun generateFields(classVisitor: ClassVisitor) {
-    for ((name, type) in annotation.fields.entries) {
+    for (method in annotation.methods) {
       val fieldVisitor = classVisitor.visitField(
           ACC_PRIVATE or ACC_FINAL,
-          name,
-          type.descriptor,
+          method.name,
+          method.type.returnType.descriptor,
           null,
           null)
       fieldVisitor.visitEnd()
@@ -110,7 +110,7 @@ class AnnotationProxyGenerator(
   }
 
   private fun generateConstructor(classVisitor: ClassVisitor) {
-    val fieldTypes = annotation.fields.values
+    val fieldTypes = annotation.methods.map { it.type.returnType }
     val argumentTypes = fieldTypes.toTypedArray()
     val method = MethodDescriptor.forConstructor(*argumentTypes)
     val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, method)
@@ -122,11 +122,10 @@ class AnnotationProxyGenerator(
     generator.invokeConstructor(Types.OBJECT_TYPE, constructor)
 
     // Initialize fields with arguments passed to the constructor.
-    annotation.fields.entries.forEachIndexed { localPosition, entry ->
-      val (fieldName, fieldType) = entry
+    annotation.methods.forEachIndexed { localPosition, method ->
       generator.loadThis()
       generator.loadArg(localPosition)
-      generator.putField(proxyType, fieldName, fieldType)
+      generator.putField(proxyType, method.name, method.type.returnType)
     }
 
     generator.returnValue()
@@ -162,8 +161,9 @@ class AnnotationProxyGenerator(
     generator.storeLocal(annotationLocal)
 
     val fieldsNotEqualLabel = generator.newLabel()
-    for ((fieldName, fieldType) in annotation.fields.entries) {
-      generateEqualsInvocationForField(generator, fieldName, fieldType, annotationLocal, fieldsNotEqualLabel)
+    for (method in annotation.methods) {
+      generateEqualsInvocationForField(
+          generator, method.name, method.type.returnType, annotationLocal, fieldsNotEqualLabel)
     }
     generator.push(true)
 
@@ -231,9 +231,9 @@ class AnnotationProxyGenerator(
     generator.visitLabel(cacheHashCodeIsNullLabel)
     generator.push(0)
 
-    for ((fieldName, fieldType) in annotation.fields.entries) {
-      // Hash code for annotation is the sum of 127 * fieldName.hashCode() ^ fieldValue.hashCode().
-      generateHashCodeComputationForField(generator, fieldName, fieldType)
+    for (method in annotation.methods) {
+      // Hash code for annotation is the sum of 127 * name.hashCode() ^ value.hashCode().
+      generateHashCodeComputationForField(generator, method.name, method.type.returnType)
       generator.math(ADD, Type.INT_TYPE)
     }
 
@@ -297,11 +297,9 @@ class AnnotationProxyGenerator(
     generateStringBuilderAppendInvocation(generator, Types.STRING_TYPE)
 
     var addComma = false
-    for (entry in annotation.fields.entries) {
-      val fieldName = entry.key
-      val fieldType = entry.value
-      appendFieldName(generator, fieldName, addComma)
-      appendFieldValue(generator, fieldName, fieldType)
+    for (method in annotation.methods) {
+      appendFieldName(generator, method.name, addComma)
+      appendFieldValue(generator, method.name, method.type.returnType)
       addComma = true
     }
 
@@ -356,13 +354,12 @@ class AnnotationProxyGenerator(
   }
 
   private fun generateGetters(classVisitor: ClassVisitor) {
-    for ((fieldName, fieldType) in annotation.fields.entries) {
+    for (method in annotation.methods) {
 
-      val method = MethodDescriptor.forMethod(fieldName, fieldType)
-      val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, method)
+      val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, MethodDescriptor(method.name, method.type))
       generator.visitCode()
       generator.loadThis()
-      generator.getField(proxyType, fieldName, fieldType)
+      generator.getField(proxyType, method.name, method.type.returnType)
       generator.returnValue()
       generator.endMethod()
     }
