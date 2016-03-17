@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -985,6 +985,6 @@ class QualifiedInjectionTest {
     @Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.FUNCTION, AnnotationTarget.FIELD)
     @Retention(AnnotationRetention.RUNTIME)
     @Qualifier
-    annotation class AnnotationArrayQualifier(vararg val value: IntQualifier = arrayOf(/* IntAnnotation() */))
+    annotation class AnnotationArrayQualifier(vararg val value: IntQualifier = arrayOf(IntQualifier()))
   }
 }
