@@ -57,7 +57,6 @@ class LightsaberRegistryClassGenerator(
     private val GET_MEMBERS_INJECTORS_METHOD = MethodDescriptor.forMethod("getMembersInjectors", MAP_TYPE)
   }
 
-
   fun generateLightsaberRegistry() {
     val classWriter =
         StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, processorContext.classRegistry)
@@ -67,8 +66,8 @@ class LightsaberRegistryClassGenerator(
         ACC_PUBLIC or ACC_SUPER,
         LIGHTSABER_REGISTRY_TYPE.internalName,
         null,
-        Type.getInternalName(Any::class.java),
-        arrayOf(Types.PROVIDER_TYPE.internalName))
+        Types.OBJECT_TYPE.internalName,
+        null)
 
     generateFields(classVisitor)
     generateStaticInitializer(classVisitor)

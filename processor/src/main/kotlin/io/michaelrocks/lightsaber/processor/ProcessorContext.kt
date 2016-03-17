@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,29 @@
 
 package io.michaelrocks.lightsaber.processor
 
+import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.Grip
+import io.michaelrocks.grip.GripFactory
 import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationRegistryImpl
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.*
-import io.michaelrocks.lightsaber.processor.files.ClassRegistry
-import io.michaelrocks.lightsaber.processor.files.ClassRegistryImpl
-import io.michaelrocks.lightsaber.processor.files.FileRegistry
-import io.michaelrocks.lightsaber.processor.files.FileRegistryImpl
 import io.michaelrocks.lightsaber.processor.io.FileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
 import io.michaelrocks.lightsaber.processor.io.IoFactory
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import org.apache.commons.collections4.CollectionUtils
 import org.objectweb.asm.Type
+import java.io.File
 import java.util.*
 import javax.inject.Singleton
 
-class ProcessorContext {
+class ProcessorContext(
+    val inputFile: File,
+    val outputFile: File,
+    libraries: List<File>
+) {
+
   companion object {
     private val PACKAGE_MODULE_CLASS_NAME = "Lightsaber\$PackageModule"
     private val SINGLETON_SCOPE_DESCRIPTOR =
@@ -48,9 +52,9 @@ class ProcessorContext {
 
   val fileSourceFactory: FileSource.Factory = IoFactory
   val fileSinkFactory: FileSink.Factory = IoFactory
-  val fileRegistry: FileRegistry = FileRegistryImpl(fileSourceFactory)
-  val annotationRegistry = AnnotationRegistryImpl(fileRegistry)
-  val classRegistry: ClassRegistry = ClassRegistryImpl(fileRegistry, annotationRegistry)
+  val grip: Grip = GripFactory.create(listOf(inputFile) + libraries)
+  val classRegistry: ClassRegistry
+    get() = grip.classRegistry
 
   private val modules = HashMap<Type, ModuleDescriptor>()
   private val packageModules = HashMap<Type, ModuleDescriptor>()
@@ -162,7 +166,7 @@ class ProcessorContext {
   }
 
   fun isQualifier(annotationType: Type): Boolean {
-    return classRegistry.findClass(annotationType).annotations.any { it.type == Types.QUALIFIER_TYPE }
+    return classRegistry.getClassMirror(annotationType).annotations.contains(Types.QUALIFIER_TYPE)
   }
 
   fun getPackageModuleType(packageName: String): Type {

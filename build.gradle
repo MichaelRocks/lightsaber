@@ -26,7 +26,6 @@ allprojects {
     jcenter()
     mavenCentral()
     maven { url 'https://dl.bintray.com/michaelrocks/lightsaber' }
-
   }
 }
 
@@ -52,6 +51,7 @@ ext {
   jsr305Version = '3.0.0'
   jcommanderVersion = '1.47'
   asmVersion = '5.0.4'
+  gripVersion = '0.1.0-alpha'
   commonsLangVersion = '3.3.2'
   commonsCollectionsVersion = '4.0'
   logbackVersion = '1.1.3'

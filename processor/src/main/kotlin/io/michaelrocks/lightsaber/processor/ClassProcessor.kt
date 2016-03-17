@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,23 +38,20 @@ import java.io.IOException
 import java.util.*
 
 class ClassProcessor(
-    private val inputFile: File,
-    private val outputFile: File,
+    inputFile: File,
+    outputFile: File,
     libraries: List<File>
 ) {
-  private val processorContext = ProcessorContext()
+  private val processorContext = ProcessorContext(inputFile, outputFile, libraries)
 
   private val fileSource = processorContext.fileSourceFactory.createFileSource(inputFile)
   private val fileSink = processorContext.fileSinkFactory.createFileSink(inputFile, outputFile)
-
-  private val libraries = libraries.toMutableList()
 
   private val classProducer = ProcessorClassProducer(fileSink, processorContext)
   private val annotationCreator = AnnotationCreator(processorContext, classProducer)
 
   @Throws(IOException::class)
   fun processClasses() {
-    buildFileRegistry()
     performAnalysis()
     composePackageModules()
     composeInjectors()
@@ -69,18 +66,10 @@ class ClassProcessor(
     copyAndPatchClasses()
   }
 
-  private fun buildFileRegistry() {
-    with(processorContext.fileRegistry) {
-      add(inputFile)
-      add(libraries)
-    }
-    checkErrors()
-  }
-
   @Throws(IOException::class)
   private fun performAnalysis() {
     val analyzer = Analyzer(processorContext)
-    analyzer.analyze(fileSource)
+    analyzer.analyze()
     SanityChecker(processorContext).performSanityChecks()
     checkErrors()
   }
