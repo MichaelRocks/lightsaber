@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,11 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationData
+import io.michaelrocks.grip.mirrors.AnnotationMirror
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature
 import org.objectweb.asm.Type
 
-data class QualifiedFieldDescriptor(val field: FieldDescriptor, val qualifier: AnnotationData?)
+data class QualifiedFieldDescriptor(val field: FieldDescriptor, val qualifier: AnnotationMirror?)
 
 val QualifiedFieldDescriptor.name: String
   get() = field.name

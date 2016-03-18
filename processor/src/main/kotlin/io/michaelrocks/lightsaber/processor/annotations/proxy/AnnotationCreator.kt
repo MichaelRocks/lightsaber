@@ -20,7 +20,6 @@ import io.michaelrocks.grip.mirrors.AnnotationMirror
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.EnumMirror
 import io.michaelrocks.lightsaber.processor.ProcessorContext
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationData
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer
@@ -35,7 +34,7 @@ class AnnotationCreator(
 ) {
   private val generatedAnnotationProxies = HashSet<Type>()
 
-  fun newAnnotation(generator: GeneratorAdapter, data: AnnotationData) {
+  fun newAnnotation(generator: GeneratorAdapter, data: AnnotationMirror) {
     val annotationProxyType = composeAnnotationProxyType(data.type)
     processorContext.classRegistry.getClassMirror(data.type).let { mirror ->
       generateAnnotationProxyClassIfNecessary(mirror, annotationProxyType)
@@ -55,7 +54,7 @@ class AnnotationCreator(
   }
 
   private fun constructAnnotationProxy(generator: GeneratorAdapter, annotation: ClassMirror,
-      data: AnnotationData, annotationProxyType: Type) {
+      data: AnnotationMirror, annotationProxyType: Type) {
     generator.newInstance(annotationProxyType)
     generator.dup()
 
@@ -110,7 +109,7 @@ class AnnotationCreator(
       is Type -> generator.push(value)
       is String -> generator.push(value)
       is EnumMirror -> createEnumValue(generator, value)
-      is AnnotationMirror -> newAnnotation(generator, AnnotationData(value.type, value.values))
+      is AnnotationMirror -> newAnnotation(generator, value)
       else -> throw IllegalArgumentException("Unsupported annotation value type: $value")
     }
   }

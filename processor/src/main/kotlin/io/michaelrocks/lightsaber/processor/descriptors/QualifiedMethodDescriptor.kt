@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationData
+import io.michaelrocks.grip.mirrors.AnnotationMirror
 import io.michaelrocks.lightsaber.processor.signature.MethodSignature
 import io.michaelrocks.lightsaber.processor.signature.TypeSignature
 import org.objectweb.asm.Type
@@ -26,13 +26,13 @@ fun QualifiedMethodDescriptor(method: MethodDescriptor): QualifiedMethodDescript
     QualifiedMethodDescriptor(method, emptyMap(), null)
 
 fun QualifiedMethodDescriptor(method: MethodDescriptor,
-    parameterQualifiers: Map<Int, AnnotationData>): QualifiedMethodDescriptor =
+    parameterQualifiers: Map<Int, AnnotationMirror>): QualifiedMethodDescriptor =
     QualifiedMethodDescriptor(method, parameterQualifiers, null)
 
 fun QualifiedMethodDescriptor(
     method: MethodDescriptor,
-    parameterQualifiersMap: Map<Int, AnnotationData>,
-    resultQualifier: AnnotationData?
+    parameterQualifiersMap: Map<Int, AnnotationMirror>,
+    resultQualifier: AnnotationMirror?
 ): QualifiedMethodDescriptor {
   val parameterCount = method.argumentTypes.size
   val parameterQualifiers = toQualifierList(parameterQualifiersMap, parameterCount)
@@ -40,10 +40,10 @@ fun QualifiedMethodDescriptor(
 }
 
 private fun toQualifierList(
-    parameterQualifiers: Map<Int, AnnotationData>,
+    parameterQualifiers: Map<Int, AnnotationMirror>,
     parameterCount: Int
-): List<AnnotationData?> {
-  val qualifiers = ArrayList<AnnotationData?>(parameterCount)
+): List<AnnotationMirror?> {
+  val qualifiers = ArrayList<AnnotationMirror?>(parameterCount)
   for (i in 0..parameterCount - 1) {
     qualifiers.add(parameterQualifiers[i])
   }
@@ -52,8 +52,8 @@ private fun toQualifierList(
 
 data class QualifiedMethodDescriptor internal constructor(
     val method: MethodDescriptor,
-    val parameterQualifiers: List<AnnotationData?>,
-    val resultQualifier: AnnotationData?
+    val parameterQualifiers: List<AnnotationMirror?>,
+    val resultQualifier: AnnotationMirror?
 )
 
 val QualifiedMethodDescriptor.name: String

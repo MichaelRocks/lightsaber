@@ -17,14 +17,10 @@
 package io.michaelrocks.lightsaber.processor.analysis
 
 import io.michaelrocks.grip.*
-import io.michaelrocks.grip.mirrors.Annotated
-import io.michaelrocks.grip.mirrors.FieldMirror
-import io.michaelrocks.grip.mirrors.MethodMirror
-import io.michaelrocks.grip.mirrors.isConstructor
+import io.michaelrocks.grip.mirrors.*
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.grip.mirrors.signature.MethodSignatureMirror
 import io.michaelrocks.lightsaber.processor.ProcessorContext
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationData
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.descriptors.*
 import io.michaelrocks.lightsaber.processor.logging.getLogger
@@ -162,14 +158,13 @@ class Analyzer(private val processorContext: ProcessorContext) {
         else -> error("Unsupported generic type: $this")
       }
 
-  private fun findQualifier(annotated: Annotated): AnnotationData? {
+  private fun findQualifier(annotated: Annotated): AnnotationMirror? {
     val qualifierCount = annotated.annotations.count { processorContext.isQualifier(it.type) }
     if (qualifierCount > 0) {
       if (qualifierCount > 1) {
         processorContext.reportError("Element $annotated has multiple qualifiers")
       }
-      val annotation = annotated.annotations.first { processorContext.isQualifier(it.type) }
-      return AnnotationData(annotation.type, annotation.values)
+      return annotated.annotations.first { processorContext.isQualifier(it.type) }
     } else {
       return null
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationData
+import io.michaelrocks.grip.mirrors.AnnotationMirror
 import org.objectweb.asm.Type
 import java.util.*
 
@@ -44,7 +44,7 @@ class ProviderDescriptor private constructor(
   ) : this(providerType, providableType, null, providerMethod, moduleType, delegatorType)
 }
 
-val ProviderDescriptor.qualifier: AnnotationData?
+val ProviderDescriptor.qualifier: AnnotationMirror?
   get() = qualifiedProvidableType.qualifier
 
 val ProviderDescriptor.providableType: Type
