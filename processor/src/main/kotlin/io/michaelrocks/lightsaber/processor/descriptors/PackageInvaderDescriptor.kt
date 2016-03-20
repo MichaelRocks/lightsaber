@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
+import io.michaelrocks.grip.mirrors.signature.FieldSignatureMirror
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
 import org.objectweb.asm.Type
@@ -72,9 +73,12 @@ data class PackageInvaderDescriptor(
     }
 
     private fun addClassField(type: Type) {
-      val fieldName = FIELD_PREFIX + classFields.size
-      val fieldType = GenericType.ParameterizedType(Types.CLASS_TYPE, GenericType.RawType(type))
-      val field = FieldDescriptor(fieldName, fieldType)
+      val name = FIELD_PREFIX + classFields.size
+      val signature =
+          FieldSignatureMirror.Builder()
+              .type(GenericType.ParameterizedType(Types.CLASS_TYPE, GenericType.RawType(type)))
+              .build()
+      val field = FieldDescriptor(name, signature)
       classFields.put(type, field)
     }
   }

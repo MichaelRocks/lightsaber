@@ -111,7 +111,7 @@ class TypeAgentClassGenerator(
 
   private fun initializeFieldKeys(generator: GeneratorAdapter) {
     injector.injectableTarget.injectableFields.values.forEachIndexed { i, injectableField ->
-      val dependencyType = getDependencyTypeForType(injectableField.signature)
+      val dependencyType = getDependencyTypeForType(injectableField.signature.type)
 
       generator.newInstance(Types.KEY_TYPE)
       generator.dup()
@@ -185,9 +185,9 @@ class TypeAgentClassGenerator(
 
     generator.getStatic(injector.injectorType, KEY_FIELD_NAME_PREFIX + fieldIndex, Types.KEY_TYPE)
 
-    val method = getInjectorMethodForType(qualifiedField.signature)
+    val method = getInjectorMethodForType(qualifiedField.signature.type)
     generator.invokeInterface(Types.INJECTOR_TYPE, method)
-    GenerationHelper.convertDependencyToTargetType(generator, qualifiedField.signature)
+    GenerationHelper.convertDependencyToTargetType(generator, qualifiedField.signature.type)
     generator.putField(injector.injectableTarget.targetType, qualifiedField.field)
   }
 

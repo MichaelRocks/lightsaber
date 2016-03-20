@@ -132,7 +132,7 @@ class Analyzer(private val processorContext: ProcessorContext) {
   }
 
   private fun FieldMirror.toQualifiedFieldDescriptor(): QualifiedFieldDescriptor {
-    val field = FieldDescriptor(name, genericType)
+    val field = FieldDescriptor(name, signature)
     val qualifier = findQualifier(this)
     return QualifiedFieldDescriptor(field, qualifier)
   }

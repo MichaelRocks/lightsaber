@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.processor.descriptors
 
 import io.michaelrocks.grip.mirrors.AnnotationMirror
-import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.grip.mirrors.signature.FieldSignatureMirror
 import org.objectweb.asm.Type
 
 data class QualifiedFieldDescriptor(val field: FieldDescriptor, val qualifier: AnnotationMirror?)
@@ -31,7 +31,7 @@ val QualifiedFieldDescriptor.parameterType: Type?
 val QualifiedFieldDescriptor.parameterized: Boolean
   get() = field.parameterized
 
-val QualifiedFieldDescriptor.signature: GenericType
+val QualifiedFieldDescriptor.signature: FieldSignatureMirror
   get() = field.signature
 
 val QualifiedFieldDescriptor.rawType: Type
