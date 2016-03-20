@@ -17,6 +17,8 @@
 package io.michaelrocks.lightsaber.processor.descriptors
 
 import io.michaelrocks.grip.mirrors.AnnotationMirror
+import io.michaelrocks.lightsaber.processor.commons.parameterType
+import io.michaelrocks.lightsaber.processor.commons.rawType
 import org.objectweb.asm.Type
 import java.util.*
 

@@ -17,11 +17,11 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.MembersInjector
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.*
-import io.michaelrocks.lightsaber.processor.signature.TypeSignature
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -44,10 +44,10 @@ class TypeAgentClassGenerator(
     private val GET_INSTANCE_METHOD = MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.KEY_TYPE)
     private val GET_PROVIDER_METHOD = MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE)
 
-    private fun getDependencyTypeForType(type: TypeSignature): Type =
+    private fun getDependencyTypeForType(type: GenericType): Type =
         type.parameterType ?: type.rawType.box()
 
-    private fun getInjectorMethodForType(type: TypeSignature): MethodDescriptor =
+    private fun getInjectorMethodForType(type: GenericType): MethodDescriptor =
         if (type.isParameterized) GET_PROVIDER_METHOD else GET_INSTANCE_METHOD
   }
 

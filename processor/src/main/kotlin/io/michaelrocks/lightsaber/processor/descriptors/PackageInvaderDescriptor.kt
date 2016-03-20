@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
+import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.signature.TypeSignature
 import org.objectweb.asm.Type
 import java.util.*
 
@@ -73,7 +73,7 @@ data class PackageInvaderDescriptor(
 
     private fun addClassField(type: Type) {
       val fieldName = FIELD_PREFIX + classFields.size
-      val fieldType = TypeSignature(Types.CLASS_TYPE, type)
+      val fieldType = GenericType.ParameterizedType(Types.CLASS_TYPE, GenericType.RawType(type))
       val field = FieldDescriptor(fieldName, fieldType)
       classFields.put(type, field)
     }

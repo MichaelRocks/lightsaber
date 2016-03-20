@@ -18,14 +18,10 @@ package io.michaelrocks.lightsaber.processor.analysis
 
 import io.michaelrocks.grip.*
 import io.michaelrocks.grip.mirrors.*
-import io.michaelrocks.grip.mirrors.signature.GenericType
-import io.michaelrocks.grip.mirrors.signature.MethodSignatureMirror
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.descriptors.*
 import io.michaelrocks.lightsaber.processor.logging.getLogger
-import io.michaelrocks.lightsaber.processor.signature.MethodSignature
-import io.michaelrocks.lightsaber.processor.signature.TypeSignature
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import java.io.File
@@ -136,27 +132,14 @@ class Analyzer(private val processorContext: ProcessorContext) {
   }
 
   private fun FieldMirror.toQualifiedFieldDescriptor(): QualifiedFieldDescriptor {
-    val field = FieldDescriptor(name, genericType.toTypeSignature())
+    val field = FieldDescriptor(name, genericType)
     val qualifier = findQualifier(this)
     return QualifiedFieldDescriptor(field, qualifier)
   }
 
   private fun MethodMirror.toMethodDescriptor(): MethodDescriptor {
-    return MethodDescriptor(name, signature.toMethodSignature())
+    return MethodDescriptor(name, type, signature)
   }
-
-  private fun MethodSignatureMirror.toMethodSignature(): MethodSignature {
-    val returnType = returnType.toTypeSignature()
-    val argumentTypes = parameterTypes.map { it.toTypeSignature() }
-    return MethodSignature(returnType, argumentTypes)
-  }
-
-  private fun GenericType.toTypeSignature(): TypeSignature =
-      when (this) {
-        is GenericType.ParameterizedType -> TypeSignature(type, (typeArguments[0] as GenericType.RawType).type)
-        is GenericType.RawType -> TypeSignature(type)
-        else -> error("Unsupported generic type: $this")
-      }
 
   private fun findQualifier(annotated: Annotated): AnnotationMirror? {
     val qualifierCount = annotated.annotations.count { processorContext.isQualifier(it.type) }

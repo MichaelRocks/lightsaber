@@ -17,8 +17,8 @@
 package io.michaelrocks.lightsaber.processor.descriptors
 
 import io.michaelrocks.grip.mirrors.AnnotationMirror
-import io.michaelrocks.lightsaber.processor.signature.MethodSignature
-import io.michaelrocks.lightsaber.processor.signature.TypeSignature
+import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.grip.mirrors.signature.MethodSignatureMirror
 import org.objectweb.asm.Type
 import java.util.*
 
@@ -62,16 +62,16 @@ val QualifiedMethodDescriptor.name: String
 val QualifiedMethodDescriptor.descriptor: String
   get() = method.descriptor
 
-val QualifiedMethodDescriptor.argumentTypes: List<TypeSignature>
+val QualifiedMethodDescriptor.argumentTypes: List<GenericType>
   get() = method.argumentTypes
 
-val QualifiedMethodDescriptor.returnType: TypeSignature
+val QualifiedMethodDescriptor.returnType: GenericType
   get() = method.returnType
 
 val QualifiedMethodDescriptor.type: Type
   get() = method.type
 
-val QualifiedMethodDescriptor.signature: MethodSignature
+val QualifiedMethodDescriptor.signature: MethodSignatureMirror
   get() = method.signature
 
 val QualifiedMethodDescriptor.isConstructor: Boolean

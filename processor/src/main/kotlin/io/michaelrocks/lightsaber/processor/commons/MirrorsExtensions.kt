@@ -14,28 +14,23 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.descriptors
+package io.michaelrocks.lightsaber.processor.commons
 
-import io.michaelrocks.grip.mirrors.AnnotationMirror
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import org.objectweb.asm.Type
 
-data class QualifiedFieldDescriptor(val field: FieldDescriptor, val qualifier: AnnotationMirror?)
+val GenericType.isParameterized: Boolean
+  get() = this is GenericType.ParameterizedType
 
-val QualifiedFieldDescriptor.name: String
-  get() = field.name
-
-val QualifiedFieldDescriptor.parameterType: Type?
-  get() = field.parameterType
-
-val QualifiedFieldDescriptor.parameterized: Boolean
-  get() = field.parameterized
-
-val QualifiedFieldDescriptor.signature: GenericType
-  get() = field.signature
-
-val QualifiedFieldDescriptor.rawType: Type
-  get() = field.rawType
-
-val QualifiedFieldDescriptor.descriptor: String
-  get() = field.descriptor
+val GenericType.rawType: Type
+  get() = when (this) {
+    is GenericType.RawType -> type
+    is GenericType.ParameterizedType -> type
+    else -> throw IllegalArgumentException("Unsupported generic type: $this")
+  }
+val GenericType.parameterType: Type?
+  get() = when (this) {
+    is GenericType.ParameterizedType -> typeArguments[0].rawType
+    is GenericType.RawType -> null
+    else -> throw IllegalArgumentException("Unsupported generic type: $this")
+  }

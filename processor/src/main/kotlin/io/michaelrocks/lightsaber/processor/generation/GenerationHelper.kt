@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,11 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
+import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.Lazy
 import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
-import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.getType
+import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.signature.TypeSignature
 
 internal object GenerationHelper {
   private val LAZY_TYPE = getType<Lazy<*>>()
@@ -30,7 +28,7 @@ internal object GenerationHelper {
 
   private val LAZY_ADAPTER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
 
-  fun convertDependencyToTargetType(generator: GeneratorAdapter, type: TypeSignature) {
+  fun convertDependencyToTargetType(generator: GeneratorAdapter, type: GenericType) {
     if (type.isParameterized) {
       if (LAZY_TYPE == type.rawType) {
         generator.newInstance(LAZY_ADAPTER_TYPE)

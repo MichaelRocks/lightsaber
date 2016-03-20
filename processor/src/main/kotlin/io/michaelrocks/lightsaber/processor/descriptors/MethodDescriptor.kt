@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,18 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
-import io.michaelrocks.lightsaber.processor.signature.MethodSignature
-import io.michaelrocks.lightsaber.processor.signature.TypeSignature
+import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.grip.mirrors.signature.MethodSignatureMirror
 import org.objectweb.asm.Type
 
 private val DEFAULT_CONSTRUCTOR_DESCRIPTOR = MethodDescriptor.forConstructor()
 private val STATIC_INITIALIZER_DESCRIPTOR =
     MethodDescriptor.forMethod(MethodDescriptor.STATIC_INITIALIZER_NAME, Type.VOID_TYPE)
 
-fun MethodDescriptor(name: String, desc: String): MethodDescriptor = MethodDescriptor(name, Type.getType(desc))
-fun MethodDescriptor(name: String, type: Type): MethodDescriptor = MethodDescriptor(name, MethodSignature(type))
+fun MethodDescriptor(name: String, desc: String) = MethodDescriptor(name, Type.getType(desc))
+fun MethodDescriptor(name: String, type: Type) = MethodDescriptor(name, type, type.toMethodSignatureMirror())
 
-data class MethodDescriptor(val name: String, val signature: MethodSignature) {
+class MethodDescriptor(val name: String, val type: Type, val signature: MethodSignatureMirror) {
   companion object {
     const val CONSTRUCTOR_NAME = "<init>"
     const val STATIC_INITIALIZER_NAME = "<clinit>"
@@ -60,25 +60,49 @@ data class MethodDescriptor(val name: String, val signature: MethodSignature) {
       return STATIC_INITIALIZER_NAME == methodName
     }
   }
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) {
+      return true
+    }
+
+    val that = other as? MethodDescriptor ?: return false
+    return name == that.name && type == that.type
+  }
+
+  override fun hashCode(): Int {
+    var hashCode = 31
+    hashCode = hashCode * 17 + name.hashCode()
+    hashCode = hashCode * 17 + type.hashCode()
+    return hashCode
+  }
+
+  override fun toString() = "MethodDescriptor{name = $name, type = $type}"
 }
 
-val MethodDescriptor.type: Type
-  get() = signature.methodType
-
 val MethodDescriptor.descriptor: String
-  get() = signature.methodType.descriptor
+  get() = type.descriptor
 
-val MethodDescriptor.returnType: TypeSignature
+val MethodDescriptor.returnType: GenericType
   get() = signature.returnType
 
-val MethodDescriptor.argumentTypes: List<TypeSignature>
-  get() = signature.argumentTypes
+val MethodDescriptor.argumentTypes: List<GenericType>
+  get() = signature.parameterTypes
 
 val MethodDescriptor.isConstructor: Boolean
   get() = MethodDescriptor.isConstructor(name)
 
 val MethodDescriptor.isDefaultConstructor: Boolean
-  get() = MethodDescriptor.isDefaultConstructor(name, signature.methodType.descriptor)
+  get() = MethodDescriptor.isDefaultConstructor(name, type.descriptor)
 
 val MethodDescriptor.isStaticInitializer: Boolean
   get() = STATIC_INITIALIZER_DESCRIPTOR == this
+
+private fun Type.toMethodSignatureMirror(): MethodSignatureMirror =
+    MethodSignatureMirror.Builder().run {
+      returnType(GenericType.RawType(returnType))
+      for (argumentType in argumentTypes) {
+        addParameterType(GenericType.RawType(argumentType))
+      }
+      build()
+    }

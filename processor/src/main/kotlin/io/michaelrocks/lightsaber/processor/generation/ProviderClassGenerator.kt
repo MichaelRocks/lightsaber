@@ -17,13 +17,10 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
-import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
-import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.getType
+import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.*
-import io.michaelrocks.lightsaber.processor.signature.TypeSignature
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -234,7 +231,7 @@ class ProviderClassGenerator(
     }
   }
 
-  private fun generateProviderMethodArgument(generator: GeneratorAdapter, argumentType: TypeSignature,
+  private fun generateProviderMethodArgument(generator: GeneratorAdapter, argumentType: GenericType,
       argumentIndex: Int) {
     generator.loadThis()
     generator.getField(provider.providerType, INJECTOR_FIELD)
