@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
   val parser = JCommander(parameters)
 
   try {
-    parser.parse(*args)
+    parser.parse(*normalizeArguments(args))
     validateParameters(parameters)
   } catch (exception: ParameterException) {
     logger.error(exception.message)
@@ -53,6 +53,20 @@ fun main(args: Array<String>) {
     }
     System.exit(2)
   }
+}
+
+private fun normalizeArguments(arguments: Array<String>): Array<String> {
+  val result = arguments.copyOf()
+  var lastIndex = 0
+  for (i in 1..result.size - 1) {
+    if (result[lastIndex].endsWith('\\')) {
+      result[lastIndex] = "${result[lastIndex].substring(0, result[lastIndex].length - 1)} ${result[i]}"
+    } else {
+      lastIndex += 1
+      result[lastIndex] = result[i]
+    }
+  }
+  return result.copyOfRange(0, lastIndex + 1)
 }
 
 private fun validateParameters(parameters: LightsaberParameters) {
