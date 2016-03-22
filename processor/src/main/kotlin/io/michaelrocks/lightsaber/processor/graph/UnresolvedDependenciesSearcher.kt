@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,19 +20,24 @@ import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType
 import java.util.*
 
 class UnresolvedDependenciesSearcher(private val graph: DependencyGraph) {
-  fun findUnresolvedDependencies(): Collection<QualifiedType> = findUnresolvedDependencies(HashSet())
+  fun findUnresolvedDependencies(): Collection<QualifiedType> = findUnresolvedDependencies(HashSet(), HashSet())
 
   private fun findUnresolvedDependencies(
-      visitedTypes: MutableSet<QualifiedType>
+      visitedTypes: MutableCollection<QualifiedType>,
+      unresolvedTypes: MutableCollection<QualifiedType>
   ): Collection<QualifiedType> {
     fun traverse(type: QualifiedType) {
       if (visitedTypes.add(type)) {
         val dependencies = graph.getTypeDependencies(type)
-        dependencies?.forEach { traverse(it) }
+        if (dependencies == null) {
+          unresolvedTypes.add(type)
+        } else {
+          dependencies.forEach { traverse(it) }
+        }
       }
     }
 
     graph.types.forEach { traverse(it) }
-    return graph.types.filterNot { it in visitedTypes }
+    return unresolvedTypes
   }
 }
