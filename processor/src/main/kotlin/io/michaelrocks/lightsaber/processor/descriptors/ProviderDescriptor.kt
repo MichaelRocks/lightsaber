@@ -59,9 +59,11 @@ val ProviderDescriptor.dependencies: List<QualifiedType>
     }
 
     val dependencies = ArrayList<QualifiedType>(providerMethod.argumentTypes.size)
-    for (argumentType in providerMethod.argumentTypes) {
+    for (index in 0..providerMethod.argumentTypes.size - 1) {
+      val argumentType = providerMethod.argumentTypes[index]
       val dependencyType = argumentType.parameterType ?: argumentType.rawType
-      dependencies.add(QualifiedType(dependencyType))
+      val qualifier = providerMethod.parameterQualifiers[index]
+      dependencies.add(QualifiedType(dependencyType, qualifier))
     }
     return dependencies
   }
