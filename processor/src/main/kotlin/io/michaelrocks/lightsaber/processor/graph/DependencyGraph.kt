@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,9 @@ import java.util.*
 class DependencyGraph(processorContext: ProcessorContext, modules: Collection<ModuleDescriptor>) {
   private val typeGraph = HashMap<QualifiedType, List<QualifiedType>>()
 
+  val types: Collection<QualifiedType>
+    get() = typeGraph.keys
+
   init {
     val rootType = QualifiedType(Type.getType(Injector::class.java))
     typeGraph.put(rootType, emptyList<QualifiedType>())
@@ -44,9 +47,6 @@ class DependencyGraph(processorContext: ProcessorContext, modules: Collection<Mo
       }
     }
   }
-
-  val types: Collection<QualifiedType>
-    get() = typeGraph.keys
 
   fun getTypeDependencies(type: QualifiedType): Collection<QualifiedType>? = typeGraph[type]
 }
