@@ -40,11 +40,6 @@ class ProcessorContext(
     val outputFile: File,
     libraries: List<File>
 ) {
-
-  companion object {
-    private val PACKAGE_MODULE_CLASS_NAME = "Lightsaber\$PackageModule"
-  }
-
   private val logger = getLogger()
 
   var classFilePath: String? = null
@@ -160,11 +155,6 @@ class ProcessorContext(
 
   fun isQualifier(annotationType: Type): Boolean {
     return classRegistry.getClassMirror(annotationType).annotations.contains(Types.QUALIFIER_TYPE)
-  }
-
-  fun getPackageModuleType(packageName: String): Type {
-    val name = if (packageName.isEmpty()) PACKAGE_MODULE_CLASS_NAME else "$packageName/$PACKAGE_MODULE_CLASS_NAME"
-    return Type.getObjectType(name)
   }
 
   fun dump() {

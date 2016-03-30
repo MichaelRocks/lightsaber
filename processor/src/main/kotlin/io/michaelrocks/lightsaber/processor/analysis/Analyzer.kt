@@ -30,6 +30,8 @@ import org.objectweb.asm.Type
 import java.io.File
 import java.util.*
 
+private val PACKAGE_MODULE_CLASS_NAME = "Lightsaber\$PackageModule"
+
 class Analyzer(private val processorContext: ProcessorContext) {
   private val logger = getLogger("Analyzer")
   private val scopeRegistry = ScopeRegistry()
@@ -138,7 +140,7 @@ class Analyzer(private val processorContext: ProcessorContext) {
       val providers = injectionTargets.map {
         it.injectionPoints.first().toProvider(grip.classRegistry.getClassMirror(it.type))
       }
-      val moduleType = processorContext.getPackageModuleType(packageName)
+      val moduleType = composePackageModuleType(packageName)
       val configuratorType = composeConfiguratorType(moduleType)
       val module = Module(moduleType, configuratorType, providers)
       processorContext.addPackageModule(module)
@@ -254,6 +256,11 @@ class Analyzer(private val processorContext: ProcessorContext) {
         Scope.None
       }
     }
+  }
+
+  fun composePackageModuleType(packageName: String): Type {
+    val name = if (packageName.isEmpty()) PACKAGE_MODULE_CLASS_NAME else "$packageName/$PACKAGE_MODULE_CLASS_NAME"
+    return Type.getObjectType(name)
   }
 
   private fun composeConfiguratorType(moduleType: Type): Type {
