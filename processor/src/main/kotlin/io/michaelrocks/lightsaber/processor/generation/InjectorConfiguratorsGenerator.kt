@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor
 import io.michaelrocks.lightsaber.processor.logging.getLogger
+import io.michaelrocks.lightsaber.processor.model.Module
 
 class InjectorConfiguratorsGenerator(
     private val classProducer: ClassProducer,
@@ -30,7 +30,7 @@ class InjectorConfiguratorsGenerator(
 
   fun generateInjectorConfigurators() = processorContext.allModules.forEach { generateInjectorConfigurator(it) }
 
-  private fun generateInjectorConfigurator(module: ModuleDescriptor) {
+  private fun generateInjectorConfigurator(module: Module) {
     logger.debug("Generating injector configurator {}", module.configuratorType.internalName)
     val generator = InjectorConfiguratorClassGenerator(processorContext, annotationCreator, module)
     val classData = generator.generate()

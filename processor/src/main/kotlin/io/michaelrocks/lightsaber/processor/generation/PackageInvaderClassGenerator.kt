@@ -22,8 +22,8 @@ import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.box
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.PackageInvaderDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
+import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -31,7 +31,7 @@ import org.objectweb.asm.Opcodes.*
 
 class PackageInvaderClassGenerator(
     private val classRegistry: ClassRegistry,
-    private val packageInvader: PackageInvaderDescriptor
+    private val packageInvader: PackageInvader
 ) {
   fun generate(): ByteArray {
     val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)

@@ -17,10 +17,15 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
-import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.*
-import io.michaelrocks.lightsaber.processor.descriptors.*
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
+import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
+import io.michaelrocks.lightsaber.processor.descriptors.descriptor
+import io.michaelrocks.lightsaber.processor.model.Injectee
+import io.michaelrocks.lightsaber.processor.model.Provider
+import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
+import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -30,7 +35,7 @@ import org.objectweb.asm.Type
 class ProviderClassGenerator(
     private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator,
-    private val provider: ProviderDescriptor
+    private val provider: Provider
 ) {
   companion object {
     private const val KEY_FIELD_NAME_PREFIX = "key"
@@ -48,7 +53,7 @@ class ProviderClassGenerator(
 
   private val providerConstructor: MethodDescriptor
     get() {
-      if (provider.isConstructorProvider) {
+      if (provider.provisionPoint is ProvisionPoint.Constructor) {
         return MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
       } else {
         return MethodDescriptor.forConstructor(provider.moduleType, Types.INJECTOR_TYPE)
@@ -61,7 +66,7 @@ class ProviderClassGenerator(
     classVisitor.visit(
         V1_6,
         ACC_PUBLIC or ACC_SUPER,
-        provider.providerType.internalName,
+        provider.type.internalName,
         null,
         Types.OBJECT_TYPE.internalName,
         arrayOf(Types.PROVIDER_TYPE.internalName))
@@ -84,14 +89,16 @@ class ProviderClassGenerator(
   }
 
   private fun generateKeyFields(classVisitor: ClassVisitor) {
-    provider.providerMethod?.argumentTypes?.forEachIndexed { index, argumentType ->
-      val fieldVisitor = classVisitor.visitField(
-          ACC_PRIVATE or ACC_STATIC or ACC_FINAL,
-          KEY_FIELD_NAME_PREFIX + index,
-          Types.KEY_TYPE.descriptor,
-          null,
-          null)
-      fieldVisitor.visitEnd()
+    (provider.provisionPoint as? ProvisionPoint.AbstractMethod)?.let {
+      it.injectionPoint.injectees.forEachIndexed { index, injectee ->
+        val fieldVisitor = classVisitor.visitField(
+            ACC_PRIVATE or ACC_STATIC or ACC_FINAL,
+            KEY_FIELD_NAME_PREFIX + index,
+            Types.KEY_TYPE.descriptor,
+            null,
+            null)
+        fieldVisitor.visitEnd()
+      }
     }
   }
 
@@ -116,15 +123,12 @@ class ProviderClassGenerator(
   }
 
   private fun generateStaticInitializer(classVisitor: ClassVisitor) {
-    if (provider.providerMethod == null) {
+    val provisionPoint = provider.provisionPoint
+    if (provisionPoint !is ProvisionPoint.AbstractMethod) {
       return
     }
 
-    val argumentTypes = provider.providerMethod.argumentTypes
-    val parameterQualifiers = provider.providerMethod.parameterQualifiers
-    check(argumentTypes.size == parameterQualifiers.size)
-
-    if (argumentTypes.isEmpty()) {
+    if (provisionPoint.injectionPoint.injectees.isEmpty()) {
       return
     }
 
@@ -132,20 +136,19 @@ class ProviderClassGenerator(
     val generator = GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer)
     generator.visitCode()
 
-    argumentTypes.forEachIndexed { index, argumentType ->
-      val parameterQualifier = parameterQualifiers[index]
-      val dependencyType = argumentType.parameterType ?: Types.box(argumentType.rawType)
+    provisionPoint.injectionPoint.injectees.forEachIndexed { index, injectee ->
+      val dependencyType = injectee.dependency.type
 
       generator.newInstance(Types.KEY_TYPE)
       generator.dup()
-      generator.push(dependencyType)
-      if (parameterQualifier == null) {
+      generator.push(dependencyType.rawType.box())
+      if (injectee.dependency.qualifier == null) {
         generator.pushNull()
       } else {
-        annotationCreator.newAnnotation(generator, parameterQualifier)
+        annotationCreator.newAnnotation(generator, injectee.dependency.qualifier)
       }
       generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR)
-      generator.putStatic(provider.providerType, KEY_FIELD_NAME_PREFIX + index, Types.KEY_TYPE)
+      generator.putStatic(provider.type, KEY_FIELD_NAME_PREFIX + index, Types.KEY_TYPE)
     }
 
     generator.returnValue()
@@ -161,14 +164,14 @@ class ProviderClassGenerator(
     if (provider.isConstructorProvider) {
       generator.loadThis()
       generator.loadArg(0)
-      generator.putField(provider.providerType, INJECTOR_FIELD)
+      generator.putField(provider.type, INJECTOR_FIELD)
     } else {
       generator.loadThis()
       generator.loadArg(0)
-      generator.putField(provider.providerType, MODULE_FIELD_NAME, provider.moduleType)
+      generator.putField(provider.type, MODULE_FIELD_NAME, provider.moduleType)
       generator.loadThis()
       generator.loadArg(1)
-      generator.putField(provider.providerType, INJECTOR_FIELD)
+      generator.putField(provider.type, INJECTOR_FIELD)
     }
 
     generator.returnValue()
@@ -179,16 +182,16 @@ class ProviderClassGenerator(
     val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, GET_METHOD)
     generator.visitCode()
 
-    if (provider.providerField != null) {
+    if (provider.provisionPoint is ProvisionPoint.Field) {
       generateProviderFieldRetrieval(generator)
-    } else if (provider.providerMethod!!.isConstructor) {
+    } else if (provider.isConstructorProvider) {
       generateConstructorInvocation(generator)
       generateInjectMembersInvocation(generator)
     } else {
       generateProviderMethodInvocation(generator)
     }
 
-    generator.valueOf(provider.providableType)
+    generator.valueOf(provider.dependency.type.rawType)
 
     generator.returnValue()
     generator.endMethod()
@@ -196,24 +199,27 @@ class ProviderClassGenerator(
 
   private fun generateProviderFieldRetrieval(generator: GeneratorAdapter) {
     generator.loadThis()
-    generator.getField(provider.providerType, MODULE_FIELD_NAME, provider.moduleType)
-    generator.getField(provider.moduleType, provider.providerField!!.field)
+    generator.getField(provider.type, MODULE_FIELD_NAME, provider.moduleType)
+    val field = provider.provisionPoint.cast<ProvisionPoint.Field>().field.toFieldDescriptor()
+    generator.getField(provider.moduleType, field)
   }
 
   private fun generateConstructorInvocation(generator: GeneratorAdapter) {
-    generator.newInstance(provider.providableType)
+    generator.newInstance(provider.dependency.type.rawType)
     generator.dup()
     generateProvideMethodArguments(generator)
-    generator.invokeConstructor(provider.providableType, provider.providerMethod!!.method)
+    val method = provider.provisionPoint.cast<ProvisionPoint.AbstractMethod>().method.toMethodDescriptor()
+    generator.invokeConstructor(provider.dependency.type.rawType, method)
   }
 
   private fun generateProviderMethodInvocation(generator: GeneratorAdapter) {
     generator.loadThis()
-    generator.getField(provider.providerType, MODULE_FIELD_NAME, provider.moduleType)
+    generator.getField(provider.type, MODULE_FIELD_NAME, provider.moduleType)
     generateProvideMethodArguments(generator)
-    generator.invokeVirtual(provider.moduleType, provider.providerMethod!!.method)
+    val method = provider.provisionPoint.cast<ProvisionPoint.AbstractMethod>().method.toMethodDescriptor()
+    generator.invokeVirtual(provider.moduleType, method)
 
-    if (Types.isPrimitive(provider.providableType)) {
+    if (Types.isPrimitive(provider.dependency.type.rawType)) {
       return
     }
 
@@ -226,27 +232,24 @@ class ProviderClassGenerator(
   }
 
   private fun generateProvideMethodArguments(generator: GeneratorAdapter) {
-    provider.providerMethod!!.argumentTypes.forEachIndexed { index, argumentType ->
-      generateProviderMethodArgument(generator, argumentType, index)
+    val injectees = provider.provisionPoint.cast<ProvisionPoint.AbstractMethod>().injectionPoint.injectees
+    injectees.forEachIndexed { index, injectee ->
+      generateProviderMethodArgument(generator, injectee, index)
     }
   }
 
-  private fun generateProviderMethodArgument(generator: GeneratorAdapter, argumentType: GenericType,
-      argumentIndex: Int) {
+  private fun generateProviderMethodArgument(generator: GeneratorAdapter, injectee: Injectee, argumentIndex: Int) {
     generator.loadThis()
-    generator.getField(provider.providerType, INJECTOR_FIELD)
-    generator.getStatic(provider.providerType, KEY_FIELD_NAME_PREFIX + argumentIndex, Types.KEY_TYPE)
+    generator.getField(provider.type, INJECTOR_FIELD)
+    generator.getStatic(provider.type, KEY_FIELD_NAME_PREFIX + argumentIndex, Types.KEY_TYPE)
     generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD)
-    if (argumentType.parameterType == null) {
-      generator.invokeInterface(Types.PROVIDER_TYPE, GET_METHOD)
-    }
-    GenerationHelper.convertDependencyToTargetType(generator, argumentType)
+    GenerationHelper.convertDependencyToTargetType(generator, injectee)
   }
 
   private fun generateInjectMembersInvocation(generator: GeneratorAdapter) {
     generator.dup()
     generator.loadThis()
-    generator.getField(provider.providerType, INJECTOR_FIELD)
+    generator.getField(provider.type, INJECTOR_FIELD)
     generator.swap()
     generator.invokeInterface(Types.INJECTOR_TYPE, INJECT_MEMBERS_METHOD)
   }

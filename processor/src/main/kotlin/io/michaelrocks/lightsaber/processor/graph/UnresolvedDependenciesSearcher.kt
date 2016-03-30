@@ -16,17 +16,17 @@
 
 package io.michaelrocks.lightsaber.processor.graph
 
-import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType
+import io.michaelrocks.lightsaber.processor.model.Dependency
 import java.util.*
 
 class UnresolvedDependenciesSearcher(private val graph: DependencyGraph) {
-  fun findUnresolvedDependencies(): Collection<QualifiedType> = findUnresolvedDependencies(HashSet(), HashSet())
+  fun findUnresolvedDependencies(): Collection<Dependency> = findUnresolvedDependencies(HashSet(), HashSet())
 
   private fun findUnresolvedDependencies(
-      visitedTypes: MutableCollection<QualifiedType>,
-      unresolvedTypes: MutableCollection<QualifiedType>
-  ): Collection<QualifiedType> {
-    fun traverse(type: QualifiedType) {
+      visitedTypes: MutableCollection<Dependency>,
+      unresolvedTypes: MutableCollection<Dependency>
+  ): Collection<Dependency> {
+    fun traverse(type: Dependency) {
       if (visitedTypes.add(type)) {
         val dependencies = graph.getTypeDependencies(type)
         if (dependencies == null) {

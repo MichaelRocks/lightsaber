@@ -16,28 +16,30 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
-import io.michaelrocks.grip.mirrors.signature.GenericType
-import io.michaelrocks.lightsaber.Lazy
-import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.processor.commons.*
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
+import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
+import io.michaelrocks.lightsaber.processor.model.Converter
+import io.michaelrocks.lightsaber.processor.model.Injectee
 
 internal object GenerationHelper {
-  private val LAZY_TYPE = getType<Lazy<*>>()
-  private val LAZY_ADAPTER_TYPE = LightsaberTypes.LAZY_ADAPTER_TYPE
+  private val PROVIDER_GET_METHOD = MethodDescriptor.forMethod("get", Types.OBJECT_TYPE)
+  private val ADAPTER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
 
-  private val LAZY_ADAPTER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
-
-  fun convertDependencyToTargetType(generator: GeneratorAdapter, type: GenericType) {
-    if (type.isParameterized) {
-      if (LAZY_TYPE == type.rawType) {
-        generator.newInstance(LAZY_ADAPTER_TYPE)
+  fun convertDependencyToTargetType(generator: GeneratorAdapter, injectee: Injectee) {
+    when (injectee.converter) {
+      is Converter.Identity -> {} // Do nothing.
+      is Converter.Instance -> {
+        generator.invokeInterface(Types.PROVIDER_TYPE, PROVIDER_GET_METHOD)
+        generator.unbox(injectee.dependency.type.rawType)
+      }
+      is Converter.Adapter -> {
+        generator.newInstance(injectee.converter.adapterType)
         generator.dupX1()
         generator.swap()
-        generator.invokeConstructor(LAZY_ADAPTER_TYPE, LAZY_ADAPTER_CONSTRUCTOR)
+        generator.invokeConstructor(injectee.converter.adapterType, ADAPTER_CONSTRUCTOR)
       }
-    } else {
-      generator.unbox(type.rawType)
     }
   }
 }

@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.commons
+package io.michaelrocks.lightsaber.processor.model
 
-import java.io.Closeable
+import io.michaelrocks.grip.mirrors.FieldMirror
+import io.michaelrocks.grip.mirrors.MethodMirror
+import org.objectweb.asm.Type
 
-inline fun <T : Closeable, R> using(closeable: T, block: (T) -> R): R {
-  try {
-    return block(closeable)
-  } finally {
-    try {
-      closeable.close()
-    } catch (exception: Exception) {
-      // Ignore the exception.
-    }
-  }
+sealed class InjectionPoint {
+  abstract val containerType: Type
+
+  class Method(
+      override val containerType: Type,
+      val method: MethodMirror,
+      val injectees: List<Injectee>
+  ) : InjectionPoint()
+
+  class Field(
+      override val containerType: Type,
+      val field: FieldMirror,
+      val injectee: Injectee
+  ) : InjectionPoint()
 }
-
-inline fun <reified T> Any.cast(): T = this as T

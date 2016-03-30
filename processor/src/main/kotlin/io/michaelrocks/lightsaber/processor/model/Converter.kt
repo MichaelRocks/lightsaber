@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.descriptors
+package io.michaelrocks.lightsaber.processor.model
 
 import org.objectweb.asm.Type
 
-data class ScopeDescriptor(val scopeAnnotationType: Type, val providerType: Type)
+sealed class Converter {
+  object Identity : Converter()
+  object Instance : Converter()
+  class Adapter(val adapterType: Type) : Converter()
+}

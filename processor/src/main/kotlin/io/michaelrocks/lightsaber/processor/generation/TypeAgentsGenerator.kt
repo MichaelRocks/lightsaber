@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.descriptors.InjectorDescriptor
+import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 
 class TypeAgentsGenerator(
     private val classProducer: ClassProducer,
@@ -27,14 +27,14 @@ class TypeAgentsGenerator(
     private val annotationCreator: AnnotationCreator
 ) {
   fun generateInjectors() {
-    for (injector in processorContext.getInjectors()) {
+    for (injector in processorContext.getMembersInjectors()) {
       generateTypeAgent(injector)
     }
   }
 
-  private fun generateTypeAgent(injectorDescriptor: InjectorDescriptor) {
-    val generator = TypeAgentClassGenerator(processorContext.classRegistry, annotationCreator, injectorDescriptor)
+  private fun generateTypeAgent(injector: MembersInjector) {
+    val generator = TypeAgentClassGenerator(processorContext.classRegistry, annotationCreator, injector)
     val injectorClassData = generator.generate()
-    classProducer.produceClass(injectorDescriptor.injectorType.internalName, injectorClassData)
+    classProducer.produceClass(injector.type.internalName, injectorClassData)
   }
 }

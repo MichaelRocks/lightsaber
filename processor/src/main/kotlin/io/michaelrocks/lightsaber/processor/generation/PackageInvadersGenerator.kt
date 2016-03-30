@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext
-import io.michaelrocks.lightsaber.processor.descriptors.PackageInvaderDescriptor
+import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 
 class PackageInvadersGenerator(
@@ -30,7 +30,7 @@ class PackageInvadersGenerator(
     processorContext.getPackageInvaders().forEach { generatePackageInvaders(it) }
   }
 
-  private fun generatePackageInvaders(packageInvader: PackageInvaderDescriptor) {
+  private fun generatePackageInvaders(packageInvader: PackageInvader) {
     logger.debug("Generating package invader {}", packageInvader.type)
     val generator = PackageInvaderClassGenerator(processorContext.classRegistry, packageInvader)
     val classData = generator.generate()

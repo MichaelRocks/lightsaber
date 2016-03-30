@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.commons
+package io.michaelrocks.lightsaber.processor.model
 
-import java.io.Closeable
+import io.michaelrocks.grip.mirrors.AnnotationMirror
+import io.michaelrocks.grip.mirrors.signature.GenericType
 
-inline fun <T : Closeable, R> using(closeable: T, block: (T) -> R): R {
-  try {
-    return block(closeable)
-  } finally {
-    try {
-      closeable.close()
-    } catch (exception: Exception) {
-      // Ignore the exception.
-    }
-  }
-}
-
-inline fun <reified T> Any.cast(): T = this as T
+data class Dependency(
+    val type: GenericType,
+    val qualifier: AnnotationMirror? = null
+)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,7 +154,7 @@ class LightsaberRegistryClassGenerator(
 
     for (module in modules) {
       generator.dup()
-      generator.push(module.moduleType)
+      generator.push(module.type)
       generator.newInstance(module.configuratorType)
       generator.dup()
       generator.invokeConstructor(module.configuratorType, MethodDescriptor.forDefaultConstructor())
@@ -166,7 +166,7 @@ class LightsaberRegistryClassGenerator(
   }
 
   private fun populateMembersInjectors(generator: GeneratorAdapter) {
-    val injectors = processorContext.getInjectors()
+    val injectors = processorContext.getMembersInjectors()
     generator.newInstance(HASH_MAP_TYPE)
     generator.dup()
     generator.push(injectors.size)
@@ -174,10 +174,10 @@ class LightsaberRegistryClassGenerator(
 
     for (injector in injectors) {
       generator.dup()
-      generator.push(injector.injectableTarget.targetType)
-      generator.newInstance(injector.injectorType)
+      generator.push(injector.target.type)
+      generator.newInstance(injector.type)
       generator.dup()
-      generator.invokeConstructor(injector.injectorType, MethodDescriptor.forDefaultConstructor())
+      generator.invokeConstructor(injector.type, MethodDescriptor.forDefaultConstructor())
       generator.invokeInterface(MAP_TYPE, PUT_METHOD)
       generator.pop()
     }

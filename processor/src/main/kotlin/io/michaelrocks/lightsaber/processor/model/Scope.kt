@@ -14,20 +14,11 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.commons
+package io.michaelrocks.lightsaber.processor.model
 
-import java.io.Closeable
+import org.objectweb.asm.Type
 
-inline fun <T : Closeable, R> using(closeable: T, block: (T) -> R): R {
-  try {
-    return block(closeable)
-  } finally {
-    try {
-      closeable.close()
-    } catch (exception: Exception) {
-      // Ignore the exception.
-    }
-  }
+sealed class Scope {
+  object None : Scope()
+  class Class(val scopeType: Type) : Scope()
 }
-
-inline fun <reified T> Any.cast(): T = this as T

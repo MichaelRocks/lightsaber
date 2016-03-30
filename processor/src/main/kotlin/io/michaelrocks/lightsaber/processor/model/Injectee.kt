@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.descriptors
+package io.michaelrocks.lightsaber.processor.model
 
-import io.michaelrocks.grip.mirrors.AnnotationMirror
-import org.objectweb.asm.Type
-
-data class QualifiedType constructor(val type: Type, val qualifier: AnnotationMirror? = null)
+data class Injectee(
+    val dependency: Dependency,
+    val converter: Converter
+)

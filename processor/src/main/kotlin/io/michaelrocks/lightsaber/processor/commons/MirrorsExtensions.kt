@@ -16,7 +16,11 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
+import io.michaelrocks.grip.mirrors.FieldMirror
+import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
+import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import org.objectweb.asm.Type
 
 val GenericType.isParameterized: Boolean
@@ -34,3 +38,11 @@ val GenericType.parameterType: Type?
     is GenericType.RawType -> null
     else -> throw IllegalArgumentException("Unsupported generic type: $this")
   }
+
+fun MethodMirror.toMethodDescriptor(): MethodDescriptor {
+  return MethodDescriptor(name, type)
+}
+
+fun FieldMirror.toFieldDescriptor(): FieldDescriptor {
+  return FieldDescriptor(name, type)
+}

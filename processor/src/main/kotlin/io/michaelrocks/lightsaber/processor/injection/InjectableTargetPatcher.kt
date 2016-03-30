@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,20 +17,18 @@
 package io.michaelrocks.lightsaber.processor.injection
 
 import io.michaelrocks.lightsaber.processor.ProcessorContext
-import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.isInjectableField
-import io.michaelrocks.lightsaber.processor.descriptors.isInjectableMethod
+import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
-
 import org.objectweb.asm.Opcodes.*
 
 class InjectableTargetPatcher(
     processorContext: ProcessorContext,
     classVisitor: ClassVisitor,
-    private val injectableTarget: InjectionTargetDescriptor
+    private val injectableTarget: InjectionTarget
 ) : BaseInjectionClassVisitor(processorContext, classVisitor) {
 
   override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
@@ -43,7 +41,8 @@ class InjectableTargetPatcher(
   }
 
   override fun visitField(access: Int, name: String, desc: String, signature: String?, value: Any?): FieldVisitor? {
-    if (injectableTarget.isInjectableField(name)) {
+    val field = FieldDescriptor(name, desc)
+    if (injectableTarget.isInjectableField(field)) {
       val newAccess = access and (ACC_PRIVATE or ACC_FINAL).inv()
       if (newAccess != access) {
         isDirty = true
@@ -56,8 +55,8 @@ class InjectableTargetPatcher(
 
   override fun visitMethod(access: Int, name: String, desc: String, signature: String?,
       exceptions: Array<String>?): MethodVisitor? {
-    val methodDescriptor = MethodDescriptor(name, desc)
-    if (injectableTarget.isInjectableMethod(methodDescriptor)) {
+    val method = MethodDescriptor(name, desc)
+    if (injectableTarget.isInjectableMethod(method)) {
       val newAccess = access and (ACC_PRIVATE or ACC_FINAL).inv()
       if (newAccess != access) {
         isDirty = true

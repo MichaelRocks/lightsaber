@@ -17,9 +17,11 @@
 package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.grip.mirrors.ClassMirror
+import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier
-import io.michaelrocks.lightsaber.processor.descriptors.providableType
+import io.michaelrocks.lightsaber.processor.commons.rawType
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
@@ -32,26 +34,32 @@ class SanityChecker(private val processorContext: ProcessorContext) {
 
   private fun checkStaticInjectionPoints() {
     for (injectableTarget in processorContext.getInjectableTargets()) {
-      for (field in injectableTarget.injectableStaticFields.values) {
-        processorContext.reportError("Static field injection is not supported yet: " + field)
-      }
-      for (method in injectableTarget.injectableStaticMethods.values) {
-        processorContext.reportError("Static method injection is not supported yet: " + method)
+      injectableTarget.injectionPoints.forEach { injectionPoint ->
+        when (injectionPoint) {
+          is InjectionPoint.Field ->
+              if (injectionPoint.field.isStatic) {
+                processorContext.reportError("Static field injection is not supported yet: " + injectionPoint.field)
+              }
+          is InjectionPoint.Method ->
+            if (injectionPoint.method.isStatic) {
+              processorContext.reportError("Static method injection is not supported yet: " + injectionPoint.method)
+            }
+        }
       }
     }
   }
 
   private fun checkProvidableTargetsAreConstructable() {
     for (providableTarget in processorContext.getProvidableTargets()) {
-      checkProvidableTargetIsConstructable(providableTarget.targetType)
+      checkProvidableTargetIsConstructable(providableTarget.type)
     }
   }
 
   private fun checkProviderMethodsReturnValues() {
     for (module in processorContext.getModules()) {
       for (provider in module.providers) {
-        if (provider.providableType == Type.VOID_TYPE) {
-          processorContext.reportError("Provider method returns void: " + provider.providerMethod)
+        if (provider.dependency.type.rawType == Type.VOID_TYPE) {
+          processorContext.reportError("Provider returns void: " + provider.provisionPoint)
         }
       }
     }

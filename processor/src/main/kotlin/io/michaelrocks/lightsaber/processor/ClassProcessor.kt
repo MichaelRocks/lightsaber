@@ -17,12 +17,8 @@
 package io.michaelrocks.lightsaber.processor
 
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer
-import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
-import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.box
-import io.michaelrocks.lightsaber.processor.descriptors.*
-import io.michaelrocks.lightsaber.processor.generation.*
+import io.michaelrocks.lightsaber.processor.generation.Generator
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
 import io.michaelrocks.lightsaber.processor.graph.DependencyGraph
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
@@ -32,10 +28,7 @@ import io.michaelrocks.lightsaber.processor.validation.SanityChecker
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Type
 import java.io.File
-import java.io.IOException
-import java.util.*
 
 class ClassProcessor(
     inputFile: File,
@@ -47,26 +40,14 @@ class ClassProcessor(
   private val fileSource = processorContext.fileSourceFactory.createFileSource(inputFile)
   private val fileSink = processorContext.fileSinkFactory.createFileSink(inputFile, outputFile)
 
-  private val classProducer = ProcessorClassProducer(fileSink, processorContext)
-  private val annotationCreator = AnnotationCreator(processorContext, classProducer)
-
-  @Throws(IOException::class)
   fun processClasses() {
     performAnalysis()
-    composePackageModules()
-    composeInjectors()
-    composePackageInvaders()
     processorContext.dump()
     validateDependencyGraph()
-    generateProviders()
-    generateLightsaberConfigurator()
-    generateInjectorConfigurators()
-    generateInjectors()
-    generatePackageInvaders()
+    performGeneration()
     copyAndPatchClasses()
   }
 
-  @Throws(IOException::class)
   private fun performAnalysis() {
     val analyzer = Analyzer(processorContext)
     analyzer.analyze()
@@ -74,61 +55,6 @@ class ClassProcessor(
     checkErrors()
   }
 
-  private fun composePackageModules() {
-    val moduleBuilders = HashMap<String, ModuleDescriptor.Builder>()
-    for (providableTarget in processorContext.getProvidableTargets()) {
-      val providableTargetType = providableTarget.targetType
-      val providableTargetConstructor = providableTarget.injectableConstructor!!
-
-      val packageName = providableTargetType.internalName.substringBeforeLast('/', "")
-      val moduleBuilder = moduleBuilders[packageName] ?:
-          ModuleDescriptor.Builder(processorContext.getPackageModuleType(packageName)).apply {
-            moduleBuilders.put(packageName, this)
-          }
-
-      val providerType = Type.getObjectType(
-          providableTargetType.internalName + "\$Provider")
-      val providableType = QualifiedType(providableTarget.targetType)
-      val scope = providableTarget.scope
-      val delegatorType = scope?.providerType
-      val provider = ProviderDescriptor(
-          providerType, providableType, providableTargetConstructor, moduleBuilder.moduleType, delegatorType)
-
-      moduleBuilder.addProvider(provider)
-    }
-
-    for (moduleBuilder in moduleBuilders.values) {
-      processorContext.addPackageModule(moduleBuilder.build())
-    }
-  }
-
-  private fun composeInjectors() {
-    for (injectableTarget in processorContext.getInjectableTargets()) {
-      val injectorType = Type.getObjectType(injectableTarget.targetType.internalName + "\$MembersInjector")
-      val injector = InjectorDescriptor(injectorType, injectableTarget)
-      processorContext.addInjector(injector)
-    }
-  }
-
-  private fun composePackageInvaders() {
-    val builders = HashMap<String, PackageInvaderDescriptor.Builder>()
-    for (module in processorContext.allModules) {
-      for (provider in module.providers) {
-        val providableType = provider.providableType.box()
-        val packageName = Types.getPackageName(module.moduleType)
-        val builder = builders[packageName] ?: PackageInvaderDescriptor.Builder(packageName).apply {
-          builders.put(packageName, this)
-        }
-        builder.addClass(providableType)
-      }
-    }
-
-    for (builder in builders.values) {
-      processorContext.addPackageInvader(builder.build())
-    }
-  }
-
-  @Throws(ProcessingException::class)
   private fun validateDependencyGraph() {
     val dependencyGraph = DependencyGraph(processorContext, processorContext.allModules)
 
@@ -149,43 +75,12 @@ class ClassProcessor(
     checkErrors()
   }
 
-  @Throws(ProcessingException::class)
-  private fun generateProviders() {
-    val providersGenerator = ProvidersGenerator(classProducer, processorContext, annotationCreator)
-    providersGenerator.generateProviders()
+  private fun performGeneration() {
+    val generator = Generator(processorContext, fileSink)
+    generator.generate()
     checkErrors()
   }
 
-  @Throws(ProcessingException::class)
-  private fun generateLightsaberConfigurator() {
-    val lightsaberRegistryClassGenerator = LightsaberRegistryClassGenerator(classProducer, processorContext)
-    lightsaberRegistryClassGenerator.generateLightsaberRegistry()
-    checkErrors()
-  }
-
-  @Throws(ProcessingException::class)
-  private fun generateInjectorConfigurators() {
-    val injectorConfiguratorsGenerator = InjectorConfiguratorsGenerator(classProducer, processorContext,
-        annotationCreator)
-    injectorConfiguratorsGenerator.generateInjectorConfigurators()
-    checkErrors()
-  }
-
-  @Throws(ProcessingException::class)
-  private fun generateInjectors() {
-    val typeAgentsGenerator = TypeAgentsGenerator(classProducer, processorContext, annotationCreator)
-    typeAgentsGenerator.generateInjectors()
-    checkErrors()
-  }
-
-  @Throws(ProcessingException::class)
-  private fun generatePackageInvaders() {
-    val packageInvadersGenerator = PackageInvadersGenerator(classProducer, processorContext)
-    packageInvadersGenerator.generatePackageInvaders()
-    checkErrors()
-  }
-
-  @Throws(IOException::class)
   private fun copyAndPatchClasses() {
     fileSource.listFiles { path, type ->
       when (type) {
@@ -205,7 +100,6 @@ class ClassProcessor(
     checkErrors()
   }
 
-  @Throws(ProcessingException::class)
   private fun checkErrors() {
     if (processorContext.hasErrors()) {
       throw ProcessingException(composeErrorMessage())

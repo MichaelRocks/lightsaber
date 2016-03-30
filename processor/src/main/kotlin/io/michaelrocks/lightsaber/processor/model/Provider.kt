@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.commons
+package io.michaelrocks.lightsaber.processor.model
 
-import java.io.Closeable
+import org.objectweb.asm.Type
 
-inline fun <T : Closeable, R> using(closeable: T, block: (T) -> R): R {
-  try {
-    return block(closeable)
-  } finally {
-    try {
-      closeable.close()
-    } catch (exception: Exception) {
-      // Ignore the exception.
-    }
-  }
+data class Provider(
+    val type: Type,
+    val provisionPoint: ProvisionPoint,
+    val moduleType: Type,
+    val scope: Scope
+) {
+  val dependency: Dependency
+    get() = provisionPoint.dependency
 }
 
-inline fun <reified T> Any.cast(): T = this as T
+val Provider.isConstructorProvider: Boolean
+  get() = provisionPoint is ProvisionPoint.Constructor

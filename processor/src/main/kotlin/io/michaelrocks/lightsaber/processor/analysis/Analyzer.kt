@@ -18,23 +18,25 @@ package io.michaelrocks.lightsaber.processor.analysis
 
 import io.michaelrocks.grip.*
 import io.michaelrocks.grip.mirrors.*
+import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.descriptors.*
+import io.michaelrocks.lightsaber.processor.commons.cast
+import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.logging.getLogger
-import org.objectweb.asm.Opcodes
+import io.michaelrocks.lightsaber.processor.model.*
 import org.objectweb.asm.Type
 import java.io.File
-import java.io.IOException
 import java.util.*
 
 class Analyzer(private val processorContext: ProcessorContext) {
   private val logger = getLogger("Analyzer")
 
-  @Throws(IOException::class)
   fun analyze() {
     analyzeModules(processorContext.grip, processorContext.inputFile)
     analyzeInjectionTargets(processorContext.grip, processorContext.inputFile)
+    composePackageModules(processorContext.grip)
   }
 
   fun analyzeModules(grip: Grip, file: File) {
@@ -49,24 +51,20 @@ class Analyzer(private val processorContext: ProcessorContext) {
     val fieldsResult = fieldsQuery.execute()
 
     for (moduleResult in modulesResult) {
-      val type = moduleResult.type
-      val module = ModuleDescriptor.Builder(type).run {
-        logger.debug("Module: {}", moduleResult)
-        methodsResult[type]?.forEach { methodResult ->
-          logger.debug("  Method: {}", methodResult)
-          val qualifiedMethod = methodResult.toQualifiedMethodDescriptor()
-          val scope = findScope(methodResult)
-          addProviderMethod(qualifiedMethod, scope)
-        }
-
-        fieldsResult[type]?.forEach { fieldResult ->
-          logger.debug("  Field: {}", fieldResult)
-          val qualifiedField = fieldResult.toQualifiedFieldDescriptor()
-          addProviderField(qualifiedField)
-        }
-
-        build()
+      val moduleType = moduleResult.type
+      logger.debug("Module: {}", moduleResult)
+      val methods = methodsResult[moduleType].orEmpty().mapIndexed { index, method ->
+        logger.debug("  Method: {}", method)
+        method.toProvider(moduleResult.type, index)
       }
+
+      val fields = fieldsResult[moduleType].orEmpty().mapIndexed { index, field ->
+        logger.debug("  Field: {}", field)
+        field.toProvider(moduleResult.type, index)
+      }
+
+      val configuratorType = composeConfiguratorType(moduleType)
+      val module = Module(moduleType, configuratorType, methods + fields)
       processorContext.addModule(module)
     }
   }
@@ -83,83 +81,182 @@ class Analyzer(private val processorContext: ProcessorContext) {
       addAll(fieldsResult.types)
     }
 
+    addInjectableTargets(types, methodsResult, fieldsResult)
+    addProvidableTargets(types, methodsResult)
+  }
+
+  private fun addInjectableTargets(types: Collection<Type>, methodsResult: MethodsResult, fieldsResult: FieldsResult) {
     for (type in types) {
-      val target = InjectionTargetDescriptor.Builder(type).run {
-        logger.debug("Target: {}", type)
-        methodsResult[type]?.forEach { methodResult ->
-          logger.debug("  Method: {}", methodResult)
-          val qualifiedMethod = methodResult.toQualifiedMethodDescriptor()
-          if (methodResult.isConstructor()) {
-            addInjectableConstructor(qualifiedMethod)
-          } else if (methodResult.access and Opcodes.ACC_STATIC == 0) {
-            addInjectableMethod(qualifiedMethod)
-          } else {
-            addInjectableStaticMethod(qualifiedMethod)
-          }
-        }
+      logger.debug("Target: {}", type)
+      val injectionPoints = ArrayList<InjectionPoint>()
 
-        fieldsResult[type]?.forEach { fieldResult ->
-          logger.debug("  Field: {}", fieldResult)
-          val qualifiedField = fieldResult.toQualifiedFieldDescriptor()
-          if (fieldResult.access and Opcodes.ACC_STATIC == 0) {
-            addInjectableField(qualifiedField)
-          } else {
-            addInjectableStaticField(qualifiedField)
-          }
-        }
-
-        build()
+      methodsResult[type]?.mapNotNullTo(injectionPoints) { method ->
+        logger.debug("  Method: {}", method)
+        if (method.isConstructor()) null else method.toInjectionPoint(type)
       }
 
-      if (!target.injectableFields.isEmpty() || !target.injectableMethods.isEmpty()) {
-        processorContext.addInjectableTarget(target)
+      fieldsResult[type]?.mapTo(injectionPoints) { field ->
+        logger.debug("  Field: {}", field)
+        field.toInjectionPoint(type)
       }
-      if (target.injectableConstructors.size > 1) {
-        val separator = "\n  "
-        val constructors = target.injectableConstructors.keys.joinToString(separator)
-        processorContext.reportError("Class has multiple injectable constructors:$separator$constructors")
-      } else if (!target.injectableConstructors.isEmpty()) {
-        processorContext.addProvidableTarget(target)
+
+      if (injectionPoints.isNotEmpty()) {
+        val injectionTarget = InjectionTarget(type, injectionPoints)
+        processorContext.addInjectableTarget(injectionTarget)
       }
     }
   }
 
-  private fun MethodMirror.toQualifiedMethodDescriptor(): QualifiedMethodDescriptor {
-    val method = toMethodDescriptor()
-    val resultQualifier = findQualifier(this)
-    val parametersQualifiers = parameters.map { findQualifier(it) }
-    return QualifiedMethodDescriptor(method, parametersQualifiers, resultQualifier)
+  private fun addProvidableTargets(types: Collection<Type>, methodsResult: MethodsResult) {
+    for (type in types) {
+      logger.debug("Target: {}", type)
+      val constructors = methodsResult[type].orEmpty().mapNotNull { method ->
+        logger.debug("  Method: {}", method)
+        if (method.isConstructor()) method.toInjectionPoint(type) else null
+      }
+
+      if (constructors.isNotEmpty()) {
+        if (constructors.size > 1) {
+          val separator = "\n  "
+          val constructorsString = constructors.map { it.cast<InjectionPoint.Method>().method }.joinToString(separator)
+          processorContext.reportError("Class has multiple injectable constructors:$separator$constructorsString")
+        }
+
+        val injectionTarget = InjectionTarget(type, constructors)
+        processorContext.addProvidableTarget(injectionTarget)
+      }
+    }
   }
 
-  private fun FieldMirror.toQualifiedFieldDescriptor(): QualifiedFieldDescriptor {
-    val field = FieldDescriptor(name, signature)
-    val qualifier = findQualifier(this)
-    return QualifiedFieldDescriptor(field, qualifier)
+  private fun composePackageModules(grip: Grip) {
+    val injectionTargetsByPackageName = processorContext.getProvidableTargets().associateManyBy {
+      it.type.internalName.substringBeforeLast('/', "")
+    }
+    injectionTargetsByPackageName.entries.forEach {
+      val (packageName, injectionTargets) = it
+      val providers = injectionTargets.map {
+        it.injectionPoints.first().toProvider(grip.classRegistry.getClassMirror(it.type))
+      }
+      val moduleType = processorContext.getPackageModuleType(packageName)
+      val configuratorType = composeConfiguratorType(moduleType)
+      val module = Module(moduleType, configuratorType, providers)
+      processorContext.addPackageModule(module)
+    }
   }
 
-  private fun MethodMirror.toMethodDescriptor(): MethodDescriptor {
-    return MethodDescriptor(name, type, signature)
+  private inline fun <T, K> Iterable<T>.associateManyBy(keySelector: (T) -> K): Map<K, Collection<T>> {
+    val destination = HashMap<K, MutableCollection<T>>()
+    for (element in this) {
+      val items = destination.getOrPut(keySelector(element)) { ArrayList() }
+      items += element
+    }
+    return destination
   }
 
-  private fun findQualifier(annotated: Annotated): AnnotationMirror? {
-    val qualifierCount = annotated.annotations.count { processorContext.isQualifier(it.type) }
+  private fun MethodMirror.toProvider(container: Type, index: Int): Provider {
+    val providerType = Type.getObjectType("${container.internalName}\$MethodProvider\$$index")
+    val injectionPoint = toInjectionPoint(container)
+    val dependency = Dependency(signature.returnType, findQualifier())
+    val provisionPoint = ProvisionPoint.Method(dependency, injectionPoint)
+    val scope = findScope()
+    return Provider(providerType, provisionPoint, container, scope)
+  }
+
+  private fun FieldMirror.toProvider(container: Type, index: Int): Provider {
+    val providerType = Type.getObjectType("${container.internalName}\$FieldProvider\$$index")
+    val dependency = Dependency(signature.type, findQualifier())
+    val provisionPoint = ProvisionPoint.Field(container, dependency, this)
+    val scope = findScope()
+    return Provider(providerType, provisionPoint, container, scope)
+  }
+
+  private fun InjectionPoint.toProvider(container: ClassMirror): Provider {
+    val providerType = Type.getObjectType("${containerType.internalName}\$ConstructorProvider")
+    val dependency = Dependency(GenericType.RawType(containerType), null)
+    val provisionPoint = ProvisionPoint.Constructor(dependency, cast<InjectionPoint.Method>())
+    return Provider(providerType, provisionPoint, container.type, container.findScope())
+  }
+
+  private fun MethodMirror.toInjectionPoint(container: Type): InjectionPoint.Method {
+    return InjectionPoint.Method(container, this, getInjectees())
+  }
+
+  private fun FieldMirror.toInjectionPoint(container: Type): InjectionPoint.Field {
+    return InjectionPoint.Field(container, this, getInjectee())
+  }
+
+  private fun MethodMirror.getInjectees(): List<Injectee> {
+    return ArrayList<Injectee>(parameters.size).apply {
+      parameters.forEachIndexed { index, parameter ->
+        val type = signature.parameterTypes[index]
+        val qualifier = parameter.findQualifier()
+        add(type.toInjectee(qualifier))
+      }
+    }
+  }
+
+  private fun FieldMirror.getInjectee(): Injectee {
+    return signature.type.toInjectee(findQualifier())
+  }
+
+  private fun GenericType.toInjectee(qualifier: AnnotationMirror?): Injectee {
+    val dependency = toDependency(qualifier)
+    val converter = getConverter()
+    return Injectee(dependency, converter)
+  }
+
+  private fun GenericType.getConverter(): Converter {
+    return when (rawType) {
+      Types.PROVIDER_TYPE -> Converter.Identity
+      Types.LAZY_TYPE -> Converter.Adapter(LightsaberTypes.LAZY_ADAPTER_TYPE)
+      else -> Converter.Instance
+    }
+  }
+
+  private fun GenericType.toDependency(qualifier: AnnotationMirror?): Dependency {
+    when (rawType) {
+      Types.PROVIDER_TYPE,
+      Types.LAZY_TYPE ->
+        if (this is GenericType.ParameterizedType) {
+          return Dependency(typeArguments[0], qualifier)
+        } else {
+          processorContext.reportError("Type $this must be parameterized")
+          return Dependency(this, qualifier)
+        }
+    }
+
+    return Dependency(this, qualifier)
+  }
+
+  private fun Annotated.findQualifier(): AnnotationMirror? {
+    val qualifierCount = annotations.count { processorContext.isQualifier(it.type) }
     if (qualifierCount > 0) {
       if (qualifierCount > 1) {
-        processorContext.reportError("Element $annotated has multiple qualifiers")
+        processorContext.reportError("Element $this has multiple qualifiers")
       }
-      return annotated.annotations.first { processorContext.isQualifier(it.type) }
+      return annotations.first { processorContext.isQualifier(it.type) }
     } else {
       return null
     }
   }
 
-  private fun findScope(annotated: Annotated): ScopeDescriptor? {
-    annotated.annotations.forEach {
-      val scope = processorContext.findScopeByAnnotationType(it.type)
-      if (scope != null) {
-        return scope
+  private fun Annotated.findScope(): Scope {
+    val scopes = annotations.mapNotNull {
+      processorContext.findScopeByAnnotationType(it.type)
+    }
+
+    return when (scopes.size) {
+      0 -> Scope.None
+      1 -> scopes[0]
+      else -> {
+        processorContext.reportError("Element $this has multiple scopes")
+        Scope.None
       }
     }
-    return null
+  }
+
+  private fun composeConfiguratorType(moduleType: Type): Type {
+    val moduleNameWithDollars = moduleType.internalName.replace('/', '$')
+    return Type.getObjectType("io/michaelrocks/lightsaber/InjectorConfigurator\$$moduleNameWithDollars")
   }
 }
