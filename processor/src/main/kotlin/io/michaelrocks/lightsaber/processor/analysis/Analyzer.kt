@@ -32,6 +32,7 @@ import java.util.*
 
 class Analyzer(private val processorContext: ProcessorContext) {
   private val logger = getLogger("Analyzer")
+  private val scopeRegistry = ScopeRegistry()
 
   fun analyze() {
     analyzeModules(processorContext.grip, processorContext.inputFile)
@@ -241,15 +242,15 @@ class Analyzer(private val processorContext: ProcessorContext) {
   }
 
   private fun Annotated.findScope(): Scope {
-    val scopes = annotations.mapNotNull {
-      processorContext.findScopeByAnnotationType(it.type)
+    val scopeProviders = annotations.mapNotNull {
+      scopeRegistry.findScopeProviderByAnnotationType(it.type)
     }
 
-    return when (scopes.size) {
+    return when (scopeProviders.size) {
       0 -> Scope.None
-      1 -> scopes[0]
+      1 -> Scope.Class(scopeProviders[0])
       else -> {
-        processorContext.reportError("Element $this has multiple scopes")
+        processorContext.reportError("Element $this has multiple scopes: $scopeProviders")
         Scope.None
       }
     }

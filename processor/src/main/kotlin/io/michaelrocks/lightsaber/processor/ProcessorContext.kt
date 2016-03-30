@@ -19,7 +19,6 @@ package io.michaelrocks.lightsaber.processor
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.Grip
 import io.michaelrocks.grip.GripFactory
-import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
@@ -27,7 +26,10 @@ import io.michaelrocks.lightsaber.processor.io.FileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
 import io.michaelrocks.lightsaber.processor.io.IoFactory
 import io.michaelrocks.lightsaber.processor.logging.getLogger
-import io.michaelrocks.lightsaber.processor.model.*
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
+import io.michaelrocks.lightsaber.processor.model.InjectionTarget
+import io.michaelrocks.lightsaber.processor.model.Module
+import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import org.apache.commons.collections4.CollectionUtils
 import org.objectweb.asm.Type
 import java.io.File
@@ -41,7 +43,6 @@ class ProcessorContext(
 
   companion object {
     private val PACKAGE_MODULE_CLASS_NAME = "Lightsaber\$PackageModule"
-    private val SINGLETON_SCOPE = Scope.Class(LightsaberTypes.SINGLETON_PROVIDER_TYPE)
   }
 
   private val logger = getLogger()
@@ -155,13 +156,6 @@ class ProcessorContext(
 
   fun addPackageInvader(packageInvader: PackageInvader) {
     packageInvaders.put(packageInvader.packageName, packageInvader)
-  }
-
-  fun findScopeByAnnotationType(annotationType: Type): Scope? {
-    return when (annotationType) {
-      Types.SINGLETON_TYPE -> SINGLETON_SCOPE
-      else -> null
-    }
   }
 
   fun isQualifier(annotationType: Type): Boolean {
