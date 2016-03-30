@@ -61,15 +61,13 @@ class ClassProcessor(
     val unresolvedDependenciesSearcher = UnresolvedDependenciesSearcher(dependencyGraph)
     val unresolvedDependencies = unresolvedDependenciesSearcher.findUnresolvedDependencies()
     for (unresolvedDependency in unresolvedDependencies) {
-      processorContext.reportError(
-          ProcessingException("Unresolved dependency: " + unresolvedDependency))
+      processorContext.reportError("Unresolved dependency: $unresolvedDependency")
     }
 
     val cycleSearcher = CycleSearcher(dependencyGraph)
     val cycles = cycleSearcher.findCycles()
     for (cycle in cycles) {
-      processorContext.reportError(
-          ProcessingException("Cycled dependency: " + cycle))
+      processorContext.reportError("Cycled dependency: $cycle")
     }
 
     checkErrors()
