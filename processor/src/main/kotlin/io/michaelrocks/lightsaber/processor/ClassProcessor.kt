@@ -56,7 +56,7 @@ class ClassProcessor(
 
   private fun performAnalysis(): InjectionConfiguration {
     val analyzer = Analyzer(processorContext)
-    val configuration = analyzer.analyze()
+    val configuration = analyzer.analyze(listOf(processorContext.inputFile))
     SanityChecker(processorContext).performSanityChecks(configuration)
     checkErrors()
     return configuration

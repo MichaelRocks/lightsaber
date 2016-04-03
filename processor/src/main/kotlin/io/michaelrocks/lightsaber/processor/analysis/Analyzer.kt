@@ -38,17 +38,17 @@ class Analyzer(private val processorContext: ProcessorContext) {
   private val scopeRegistry = ScopeRegistry()
   private val grip: Grip = processorContext.grip
 
-  fun analyze(): InjectionConfiguration {
-    val modules = analyzeModules(processorContext.inputFile)
-    val context = createInjectionTargetsContext(processorContext.inputFile)
+  fun analyze(files: Collection<File>): InjectionConfiguration {
+    val modules = analyzeModules(files)
+    val context = createInjectionTargetsContext(files)
     val injectableTargets = analyzeInjectableTargets(context)
     val providableTargets = analyzeProvidableTargets(context)
     val packageModules = composePackageModules(providableTargets)
     return InjectionConfiguration(modules, packageModules, injectableTargets, providableTargets)
   }
 
-  fun analyzeModules(file: File): Collection<Module> {
-    val modulesQuery = grip select classes from file where annotatedWith(Types.MODULE_TYPE)
+  fun analyzeModules(files: Collection<File>): Collection<Module> {
+    val modulesQuery = grip select classes from files where annotatedWith(Types.MODULE_TYPE)
     val methodsQuery = grip select methods from modulesQuery where
         (annotatedWith(Types.PROVIDES_TYPE) and type(not(returns(Type.VOID_TYPE))) and not(isStatic()))
     val fieldsQuery = grip select fields from modulesQuery where
@@ -76,9 +76,9 @@ class Analyzer(private val processorContext: ProcessorContext) {
     }
   }
 
-  private fun createInjectionTargetsContext(file: File): InjectionTargetsContext {
-    val methodsQuery = grip select methods from file where annotatedWith(Types.INJECT_TYPE)
-    val fieldsQuery = grip select fields from file where annotatedWith(Types.INJECT_TYPE)
+  private fun createInjectionTargetsContext(files: Collection<File>): InjectionTargetsContext {
+    val methodsQuery = grip select methods from files where annotatedWith(Types.INJECT_TYPE)
+    val fieldsQuery = grip select fields from files where annotatedWith(Types.INJECT_TYPE)
 
     val methodsResult = methodsQuery.execute()
     val fieldsResult = fieldsQuery.execute()
