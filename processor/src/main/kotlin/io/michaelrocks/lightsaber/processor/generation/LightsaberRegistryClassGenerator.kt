@@ -24,6 +24,7 @@ import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
+import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -33,7 +34,8 @@ import java.util.*
 
 class LightsaberRegistryClassGenerator(
     private val classProducer: ClassProducer,
-    private val processorContext: ProcessorContext
+    private val processorContext: ProcessorContext,
+    private val configuration: InjectionConfiguration
 ) {
   companion object {
     private val LIGHTSABER_REGISTRY_TYPE = Type.getObjectType("io/michaelrocks/lightsaber/LightsaberRegistry")
@@ -57,7 +59,7 @@ class LightsaberRegistryClassGenerator(
     private val GET_MEMBERS_INJECTORS_METHOD = MethodDescriptor.forMethod("getMembersInjectors", MAP_TYPE)
   }
 
-  fun generateLightsaberRegistry() {
+  fun generate() {
     val classWriter =
         StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, processorContext.classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
@@ -127,7 +129,7 @@ class LightsaberRegistryClassGenerator(
   }
 
   private fun populatePackageInjectorConfiguratorsMethod(generator: GeneratorAdapter) {
-    val packageModules = processorContext.getPackageModules()
+    val packageModules = configuration.packageModules
     generator.newInstance(ARRAY_LIST_TYPE)
     generator.dup()
     generator.push(packageModules.size)
@@ -146,7 +148,7 @@ class LightsaberRegistryClassGenerator(
   }
 
   private fun populateInjectorConfigurators(generator: GeneratorAdapter) {
-    val modules = processorContext.getModules()
+    val modules = configuration.modules
     generator.newInstance(HASH_MAP_TYPE)
     generator.dup()
     generator.push(modules.size)

@@ -25,12 +25,6 @@ import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.io.FileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
 import io.michaelrocks.lightsaber.processor.io.IoFactory
-import io.michaelrocks.lightsaber.processor.logging.getLogger
-import io.michaelrocks.lightsaber.processor.model.InjectionPoint
-import io.michaelrocks.lightsaber.processor.model.InjectionTarget
-import io.michaelrocks.lightsaber.processor.model.Module
-import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
-import org.apache.commons.collections4.CollectionUtils
 import org.objectweb.asm.Type
 import java.io.File
 import java.util.*
@@ -40,8 +34,6 @@ class ProcessorContext(
     val outputFile: File,
     libraries: List<File>
 ) {
-  private val logger = getLogger()
-
   var classFilePath: String? = null
   private val errorsByPath = LinkedHashMap<String, MutableList<Exception>>()
 
@@ -51,10 +43,6 @@ class ProcessorContext(
   val classRegistry: ClassRegistry
     get() = grip.classRegistry
 
-  private val modules = HashMap<Type, Module>()
-  private val packageModules = HashMap<Type, Module>()
-  private val injectableTargets = HashMap<Type, InjectionTarget>()
-  private val providableTargets = HashMap<Type, InjectionTarget>()
   private val injectors = HashMap<Type, MembersInjector>()
   private val packageInvaders = HashMap<String, PackageInvader>()
 
@@ -76,57 +64,6 @@ class ProcessorContext(
       errorsByPath.put(classFilePath.orEmpty(), errors)
     }
     errors.add(error)
-  }
-
-  fun findModuleByType(moduleType: Type): Module? {
-    return modules[moduleType]
-  }
-
-  fun getModules(): Collection<Module> {
-    return Collections.unmodifiableCollection(modules.values)
-  }
-
-  fun addModule(module: Module) {
-    modules.put(module.type, module)
-  }
-
-  fun getPackageModules(): Collection<Module> {
-    return Collections.unmodifiableCollection(packageModules.values)
-  }
-
-  fun addPackageModule(packageModule: Module) {
-    packageModules.put(packageModule.type, packageModule)
-  }
-
-  val allModules: Collection<Module>
-    get() = CollectionUtils.union(modules.values, packageModules.values)
-
-  fun findInjectableTargetByType(injectableTargetType: Type): InjectionTarget? {
-    return injectableTargets[injectableTargetType]
-  }
-
-  fun getInjectableTargets(): Collection<InjectionTarget> {
-    return Collections.unmodifiableCollection(injectableTargets.values)
-  }
-
-  fun addInjectableTarget(injectableTarget: InjectionTarget) {
-    injectableTargets.put(injectableTarget.type, injectableTarget)
-  }
-
-  fun findProvidableTargetByType(providableTargetType: Type): InjectionTarget? {
-    return providableTargets[providableTargetType]
-  }
-
-  fun getProvidableTargets(): Collection<InjectionTarget> {
-    return Collections.unmodifiableCollection(providableTargets.values)
-  }
-
-  fun addProvidableTarget(providableTarget: InjectionTarget) {
-    providableTargets.put(providableTarget.type, providableTarget)
-  }
-
-  fun findInjectorByTargetType(targetType: Type): MembersInjector? {
-    return injectors[targetType]
   }
 
   fun getMembersInjectors(): Collection<MembersInjector> {
@@ -155,54 +92,5 @@ class ProcessorContext(
 
   fun isQualifier(annotationType: Type): Boolean {
     return classRegistry.getClassMirror(annotationType).annotations.contains(Types.QUALIFIER_TYPE)
-  }
-
-  fun dump() {
-    for (module in getModules()) {
-      logger.debug("Module: {}", module.type)
-      for (provider in module.providers) {
-        if (provider.provisionPoint is ProvisionPoint.AbstractMethod) {
-          logger.debug("\tProvides: {}", provider.provisionPoint.method)
-        } else if (provider.provisionPoint is ProvisionPoint.Field) {
-          logger.debug("\tProvides: {}", provider.provisionPoint.field)
-        } else {
-          logger.debug("\tProvides: {}", provider.provisionPoint)
-        }
-      }
-    }
-    for (module in getPackageModules()) {
-      logger.debug("Package module: {}", module.type)
-      for (provider in module.providers) {
-        when (provider.provisionPoint) {
-          is ProvisionPoint.AbstractMethod -> logger.debug("\tProvides: {}", provider.provisionPoint.method)
-          is ProvisionPoint.Field -> logger.debug("\tProvides: {}", provider.provisionPoint.field)
-          else -> logger.debug("\tProvides: {}", provider.provisionPoint)
-        }
-      }
-    }
-    for (injectableTarget in getInjectableTargets()) {
-      logger.debug("Injectable: {}", injectableTarget.type)
-      for (injectionPoint in injectableTarget.injectionPoints) {
-        when (injectionPoint) {
-          is InjectionPoint.Field -> logger.debug("\tField: {}", injectionPoint.field)
-          is InjectionPoint.Method -> logger.debug("\tMethod: {}", injectionPoint.method)
-        }
-      }
-    }
-    for (providableTarget in getProvidableTargets()) {
-      logger.debug("Providable: {}", providableTarget.type)
-      for (injectionPoint in providableTarget.injectionPoints) {
-        when (injectionPoint) {
-          is InjectionPoint.Method -> logger.debug("\tConstructor: {}", injectionPoint.method)
-        }
-      }
-    }
-    for (packageInvader in getPackageInvaders()) {
-      logger.debug("Package invader: {} for package {}",
-          packageInvader.type, packageInvader.packageName)
-      for (entry in packageInvader.classFields.entries) {
-        logger.debug("\tClass field: {} for class {}", entry.value.name, entry.key)
-      }
-    }
   }
 }

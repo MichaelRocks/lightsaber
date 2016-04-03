@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.model.InjectionTarget
@@ -26,10 +25,9 @@ import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes.*
 
 class InjectableTargetPatcher(
-    processorContext: ProcessorContext,
     classVisitor: ClassVisitor,
     private val injectableTarget: InjectionTarget
-) : BaseInjectionClassVisitor(processorContext, classVisitor) {
+) : BaseInjectionClassVisitor(classVisitor) {
 
   override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
       interfaces: Array<String>?) {

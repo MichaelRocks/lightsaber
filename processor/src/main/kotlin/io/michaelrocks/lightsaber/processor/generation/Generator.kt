@@ -24,6 +24,7 @@ import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.io.FileSink
+import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
 import org.objectweb.asm.Type
 import java.util.*
 
@@ -34,31 +35,31 @@ class Generator(
   private val classProducer = ProcessorClassProducer(fileSink, processorContext)
   private val annotationCreator = AnnotationCreator(processorContext, classProducer)
 
-  fun generate() {
-    composeGeneratorModel()
-    generateProviders()
-    generateLightsaberConfigurator()
-    generateInjectorConfigurators()
+  fun generate(configuration: InjectionConfiguration) {
+    composeGeneratorModel(configuration)
+    generateProviders(configuration)
+    generateLightsaberConfigurator(configuration)
+    generateInjectorConfigurators(configuration)
     generateInjectors()
     generatePackageInvaders()
   }
 
-  private fun composeGeneratorModel() {
-    composeInjectors()
-    composePackageInvaders()
+  private fun composeGeneratorModel(configuration: InjectionConfiguration) {
+    composeInjectors(configuration)
+    composePackageInvaders(configuration)
   }
 
-  private fun composeInjectors() {
-    for (injectableTarget in processorContext.getInjectableTargets()) {
+  private fun composeInjectors(configuration: InjectionConfiguration) {
+    for (injectableTarget in configuration.injectableTargets) {
       val injectorType = Type.getObjectType(injectableTarget.type.internalName + "\$MembersInjector")
       val injector = MembersInjector(injectorType, injectableTarget)
       processorContext.addMembersInjector(injector)
     }
   }
 
-  private fun composePackageInvaders() {
+  private fun composePackageInvaders(configuration: InjectionConfiguration) {
     val builders = HashMap<String, PackageInvader.Builder>()
-    for (module in processorContext.allModules) {
+    for (module in configuration.allModules) {
       for (provider in module.providers) {
         val providableType = provider.dependency.type.rawType.box()
         val packageName = Types.getPackageName(module.type)
@@ -75,20 +76,19 @@ class Generator(
   }
 
 
-  private fun generateProviders() {
-    val providersGenerator = ProvidersGenerator(classProducer, processorContext, annotationCreator)
-    providersGenerator.generateProviders()
+  private fun generateProviders(configuration: InjectionConfiguration) {
+    val generator = ProvidersGenerator(classProducer, processorContext, annotationCreator)
+    generator.generate(configuration)
   }
 
-  private fun generateLightsaberConfigurator() {
-    val lightsaberRegistryClassGenerator = LightsaberRegistryClassGenerator(classProducer, processorContext)
-    lightsaberRegistryClassGenerator.generateLightsaberRegistry()
+  private fun generateLightsaberConfigurator(configuration: InjectionConfiguration) {
+    val generator = LightsaberRegistryClassGenerator(classProducer, processorContext, configuration)
+    generator.generate()
   }
 
-  private fun generateInjectorConfigurators() {
-    val injectorConfiguratorsGenerator = InjectorConfiguratorsGenerator(classProducer, processorContext,
-        annotationCreator)
-    injectorConfiguratorsGenerator.generateInjectorConfigurators()
+  private fun generateInjectorConfigurators(configuration: InjectionConfiguration) {
+    val generator = InjectorConfiguratorsGenerator(classProducer, processorContext, annotationCreator)
+    generator.generate(configuration)
   }
 
   private fun generateInjectors() {

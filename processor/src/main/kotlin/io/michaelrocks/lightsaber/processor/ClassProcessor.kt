@@ -24,6 +24,10 @@ import io.michaelrocks.lightsaber.processor.graph.DependencyGraph
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
 import io.michaelrocks.lightsaber.processor.injection.InjectionDispatcher
 import io.michaelrocks.lightsaber.processor.io.FileSource
+import io.michaelrocks.lightsaber.processor.logging.getLogger
+import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
+import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import io.michaelrocks.lightsaber.processor.validation.SanityChecker
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.objectweb.asm.ClassReader
@@ -35,28 +39,31 @@ class ClassProcessor(
     outputFile: File,
     libraries: List<File>
 ) {
+  private val logger = getLogger()
+
   private val processorContext = ProcessorContext(inputFile, outputFile, libraries)
 
   private val fileSource = processorContext.fileSourceFactory.createFileSource(inputFile)
   private val fileSink = processorContext.fileSinkFactory.createFileSink(inputFile, outputFile)
 
   fun processClasses() {
-    performAnalysis()
-    processorContext.dump()
-    validateDependencyGraph()
-    performGeneration()
-    copyAndPatchClasses()
+    val configuration = performAnalysis()
+    configuration.dump()
+    validateDependencyGraph(configuration)
+    performGeneration(configuration)
+    copyAndPatchClasses(configuration)
   }
 
-  private fun performAnalysis() {
+  private fun performAnalysis(): InjectionConfiguration {
     val analyzer = Analyzer(processorContext)
-    analyzer.analyze()
-    SanityChecker(processorContext).performSanityChecks()
+    val configuration = analyzer.analyze()
+    SanityChecker(processorContext).performSanityChecks(configuration)
     checkErrors()
+    return configuration
   }
 
-  private fun validateDependencyGraph() {
-    val dependencyGraph = DependencyGraph(processorContext, processorContext.allModules)
+  private fun validateDependencyGraph(configuration: InjectionConfiguration) {
+    val dependencyGraph = DependencyGraph(processorContext, configuration.allModules)
 
     val unresolvedDependenciesSearcher = UnresolvedDependenciesSearcher(dependencyGraph)
     val unresolvedDependencies = unresolvedDependenciesSearcher.findUnresolvedDependencies()
@@ -73,20 +80,20 @@ class ClassProcessor(
     checkErrors()
   }
 
-  private fun performGeneration() {
+  private fun performGeneration(configuration: InjectionConfiguration) {
     val generator = Generator(processorContext, fileSink)
-    generator.generate()
+    generator.generate(configuration)
     checkErrors()
   }
 
-  private fun copyAndPatchClasses() {
+  private fun copyAndPatchClasses(configuration: InjectionConfiguration) {
     fileSource.listFiles { path, type ->
       when (type) {
         FileSource.EntryType.CLASS -> {
           val classReader = ClassReader(fileSource.readFile(path))
           val classWriter = StandaloneClassWriter(
               classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, processorContext.classRegistry)
-          val classVisitor = InjectionDispatcher(classWriter, processorContext)
+          val classVisitor = InjectionDispatcher(classWriter, configuration)
           classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
           fileSink.createFile(path, classWriter.toByteArray())
         }
@@ -115,6 +122,48 @@ class ClassProcessor(
           append(error.message)
           append('\n')
           append(ExceptionUtils.getStackTrace(error))
+        }
+      }
+    }
+  }
+
+  fun InjectionConfiguration.dump() {
+    for (module in modules) {
+      logger.debug("Module: {}", module.type)
+      for (provider in module.providers) {
+        if (provider.provisionPoint is ProvisionPoint.AbstractMethod) {
+          logger.debug("\tProvides: {}", provider.provisionPoint.method)
+        } else if (provider.provisionPoint is ProvisionPoint.Field) {
+          logger.debug("\tProvides: {}", provider.provisionPoint.field)
+        } else {
+          logger.debug("\tProvides: {}", provider.provisionPoint)
+        }
+      }
+    }
+    for (module in packageModules) {
+      logger.debug("Package module: {}", module.type)
+      for (provider in module.providers) {
+        when (provider.provisionPoint) {
+          is ProvisionPoint.AbstractMethod -> logger.debug("\tProvides: {}", provider.provisionPoint.method)
+          is ProvisionPoint.Field -> logger.debug("\tProvides: {}", provider.provisionPoint.field)
+          else -> logger.debug("\tProvides: {}", provider.provisionPoint)
+        }
+      }
+    }
+    for (injectableTarget in injectableTargets) {
+      logger.debug("Injectable: {}", injectableTarget.type)
+      for (injectionPoint in injectableTarget.injectionPoints) {
+        when (injectionPoint) {
+          is InjectionPoint.Field -> logger.debug("\tField: {}", injectionPoint.field)
+          is InjectionPoint.Method -> logger.debug("\tMethod: {}", injectionPoint.method)
+        }
+      }
+    }
+    for (providableTarget in providableTargets) {
+      logger.debug("Providable: {}", providableTarget.type)
+      for (injectionPoint in providableTarget.injectionPoints) {
+        when (injectionPoint) {
+          is InjectionPoint.Method -> logger.debug("\tConstructor: {}", injectionPoint.method)
         }
       }
     }

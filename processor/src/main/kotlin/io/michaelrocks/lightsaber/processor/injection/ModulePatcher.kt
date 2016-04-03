@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
 import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
@@ -30,10 +29,9 @@ import org.objectweb.asm.Opcodes.*
 import java.util.*
 
 class ModulePatcher(
-    processorContext: ProcessorContext,
     classVisitor: ClassVisitor,
     module: Module
-) : BaseInjectionClassVisitor(processorContext, classVisitor) {
+) : BaseInjectionClassVisitor(classVisitor) {
   private val providableFields: MutableSet<FieldDescriptor>
   private val providableMethods: MutableSet<MethodDescriptor>
 

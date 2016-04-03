@@ -21,19 +21,20 @@ import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier
 import io.michaelrocks.lightsaber.processor.commons.rawType
+import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
 class SanityChecker(private val processorContext: ProcessorContext) {
-  fun performSanityChecks() {
-    checkStaticInjectionPoints()
-    checkProvidableTargetsAreConstructable()
-    checkProviderMethodsReturnValues()
+  fun performSanityChecks(configuration: InjectionConfiguration) {
+    checkStaticInjectionPoints(configuration)
+    checkProvidableTargetsAreConstructable(configuration)
+    checkProviderMethodsReturnValues(configuration)
   }
 
-  private fun checkStaticInjectionPoints() {
-    for (injectableTarget in processorContext.getInjectableTargets()) {
+  private fun checkStaticInjectionPoints(configuration: InjectionConfiguration) {
+    for (injectableTarget in configuration.injectableTargets) {
       injectableTarget.injectionPoints.forEach { injectionPoint ->
         when (injectionPoint) {
           is InjectionPoint.Field ->
@@ -49,14 +50,14 @@ class SanityChecker(private val processorContext: ProcessorContext) {
     }
   }
 
-  private fun checkProvidableTargetsAreConstructable() {
-    for (providableTarget in processorContext.getProvidableTargets()) {
+  private fun checkProvidableTargetsAreConstructable(configuration: InjectionConfiguration) {
+    for (providableTarget in configuration.providableTargets) {
       checkProvidableTargetIsConstructable(providableTarget.type)
     }
   }
 
-  private fun checkProviderMethodsReturnValues() {
-    for (module in processorContext.getModules()) {
+  private fun checkProviderMethodsReturnValues(configuration: InjectionConfiguration) {
+    for (module in configuration.modules) {
       for (provider in module.providers) {
         if (provider.dependency.type.rawType == Type.VOID_TYPE) {
           processorContext.reportError("Provider returns void: " + provider.provisionPoint)

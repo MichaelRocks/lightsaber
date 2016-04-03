@@ -23,6 +23,7 @@ import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.cast
+import io.michaelrocks.lightsaber.processor.commons.given
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import io.michaelrocks.lightsaber.processor.model.*
@@ -36,13 +37,16 @@ class Analyzer(private val processorContext: ProcessorContext) {
   private val logger = getLogger("Analyzer")
   private val scopeRegistry = ScopeRegistry()
 
-  fun analyze() {
-    analyzeModules(processorContext.grip, processorContext.inputFile)
-    analyzeInjectionTargets(processorContext.grip, processorContext.inputFile)
-    composePackageModules(processorContext.grip)
+  fun analyze(): InjectionConfiguration {
+    val modules = analyzeModules(processorContext.grip, processorContext.inputFile)
+    val context = createInjectionTargetsContext(processorContext.grip, processorContext.inputFile)
+    val injectableTargets = analyzeInjectableTargets(context)
+    val providableTargets = analyzeProvidableTargets(context)
+    val packageModules = composePackageModules(processorContext.grip, providableTargets)
+    return InjectionConfiguration(modules, packageModules, injectableTargets, providableTargets)
   }
 
-  fun analyzeModules(grip: Grip, file: File) {
+  fun analyzeModules(grip: Grip, file: File): Collection<Module> {
     val modulesQuery = grip select classes from file where annotatedWith(Types.MODULE_TYPE)
     val methodsQuery = grip select methods from modulesQuery where
         (annotatedWith(Types.PROVIDES_TYPE) and type(not(returns(Type.VOID_TYPE))) and not(isStatic()))
@@ -53,7 +57,7 @@ class Analyzer(private val processorContext: ProcessorContext) {
     val methodsResult = methodsQuery.execute()
     val fieldsResult = fieldsQuery.execute()
 
-    for (moduleResult in modulesResult) {
+    return modulesResult.map { moduleResult ->
       val moduleType = moduleResult.type
       logger.debug("Module: {}", moduleResult)
       val methods = methodsResult[moduleType].orEmpty().mapIndexed { index, method ->
@@ -67,12 +71,11 @@ class Analyzer(private val processorContext: ProcessorContext) {
       }
 
       val configuratorType = composeConfiguratorType(moduleType)
-      val module = Module(moduleType, configuratorType, methods + fields)
-      processorContext.addModule(module)
+      Module(moduleType, configuratorType, methods + fields)
     }
   }
 
-  private fun analyzeInjectionTargets(grip: Grip, file: File) {
+  private fun createInjectionTargetsContext(grip: Grip, file: File): InjectionTargetsContext {
     val methodsQuery = grip select methods from file where annotatedWith(Types.INJECT_TYPE)
     val fieldsQuery = grip select fields from file where annotatedWith(Types.INJECT_TYPE)
 
@@ -84,66 +87,60 @@ class Analyzer(private val processorContext: ProcessorContext) {
       addAll(fieldsResult.types)
     }
 
-    addInjectableTargets(types, methodsResult, fieldsResult)
-    addProvidableTargets(types, methodsResult)
+    return InjectionTargetsContext(types, methodsResult, fieldsResult)
   }
 
-  private fun addInjectableTargets(types: Collection<Type>, methodsResult: MethodsResult, fieldsResult: FieldsResult) {
-    for (type in types) {
+  private fun analyzeInjectableTargets(context: InjectionTargetsContext): Collection<InjectionTarget> {
+    return context.types.mapNotNull { type ->
       logger.debug("Target: {}", type)
       val injectionPoints = ArrayList<InjectionPoint>()
 
-      methodsResult[type]?.mapNotNullTo(injectionPoints) { method ->
+      context.methods[type]?.mapNotNullTo(injectionPoints) { method ->
         logger.debug("  Method: {}", method)
         if (method.isConstructor()) null else method.toInjectionPoint(type)
       }
 
-      fieldsResult[type]?.mapTo(injectionPoints) { field ->
+      context.fields[type]?.mapTo(injectionPoints) { field ->
         logger.debug("  Field: {}", field)
         field.toInjectionPoint(type)
       }
 
-      if (injectionPoints.isNotEmpty()) {
-        val injectionTarget = InjectionTarget(type, injectionPoints)
-        processorContext.addInjectableTarget(injectionTarget)
-      }
+      given(injectionPoints.isNotEmpty()) { InjectionTarget(type, injectionPoints) }
     }
   }
 
-  private fun addProvidableTargets(types: Collection<Type>, methodsResult: MethodsResult) {
-    for (type in types) {
+  private fun analyzeProvidableTargets(context: InjectionTargetsContext): Collection<InjectionTarget> {
+    return context.types.mapNotNull { type ->
       logger.debug("Target: {}", type)
-      val constructors = methodsResult[type].orEmpty().mapNotNull { method ->
+      val constructors = context.methods[type].orEmpty().mapNotNull { method ->
         logger.debug("  Method: {}", method)
-        if (method.isConstructor()) method.toInjectionPoint(type) else null
+        given(method.isConstructor()) { method.toInjectionPoint(type) }
       }
 
-      if (constructors.isNotEmpty()) {
+      given(constructors.isNotEmpty()) {
         if (constructors.size > 1) {
           val separator = "\n  "
           val constructorsString = constructors.map { it.cast<InjectionPoint.Method>().method }.joinToString(separator)
           processorContext.reportError("Class has multiple injectable constructors:$separator$constructorsString")
         }
 
-        val injectionTarget = InjectionTarget(type, constructors)
-        processorContext.addProvidableTarget(injectionTarget)
+        InjectionTarget(type, constructors)
       }
     }
   }
 
-  private fun composePackageModules(grip: Grip) {
-    val injectionTargetsByPackageName = processorContext.getProvidableTargets().associateManyBy {
+  private fun composePackageModules(grip: Grip, providableTargets: Iterable<InjectionTarget>): Collection<Module> {
+    val injectionTargetsByPackageName = providableTargets.associateManyBy {
       it.type.internalName.substringBeforeLast('/', "")
     }
-    injectionTargetsByPackageName.entries.forEach {
+    return injectionTargetsByPackageName.entries.map {
       val (packageName, injectionTargets) = it
       val providers = injectionTargets.map {
         it.injectionPoints.first().toProvider(grip.classRegistry.getClassMirror(it.type))
       }
       val moduleType = composePackageModuleType(packageName)
       val configuratorType = composeConfiguratorType(moduleType)
-      val module = Module(moduleType, configuratorType, providers)
-      processorContext.addPackageModule(module)
+      Module(moduleType, configuratorType, providers)
     }
   }
 
@@ -267,4 +264,10 @@ class Analyzer(private val processorContext: ProcessorContext) {
     val moduleNameWithDollars = moduleType.internalName.replace('/', '$')
     return Type.getObjectType("io/michaelrocks/lightsaber/InjectorConfigurator\$$moduleNameWithDollars")
   }
+
+  class InjectionTargetsContext(
+      val types: Collection<Type>,
+      val methods: MethodsResult,
+      val fields: FieldsResult
+  )
 }
