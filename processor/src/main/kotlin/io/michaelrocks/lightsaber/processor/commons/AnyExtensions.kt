@@ -30,4 +30,11 @@ inline fun <T : Closeable, R> using(closeable: T, block: (T) -> R): R {
   }
 }
 
-inline fun <reified T> Any.cast(): T = this as T
+inline fun <reified T> Any.cast(): T =
+    this as T
+
+inline fun <T : Any> given(condition: Boolean, body: () -> T): T? =
+    if (condition) body() else null
+
+infix inline fun <T : Any> T?.or(body: () -> T): T =
+    this ?: body()
