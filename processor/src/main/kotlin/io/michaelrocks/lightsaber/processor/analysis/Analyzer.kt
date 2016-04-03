@@ -36,17 +36,18 @@ private val PACKAGE_MODULE_CLASS_NAME = "Lightsaber\$PackageModule"
 class Analyzer(private val processorContext: ProcessorContext) {
   private val logger = getLogger("Analyzer")
   private val scopeRegistry = ScopeRegistry()
+  private val grip: Grip = processorContext.grip
 
   fun analyze(): InjectionConfiguration {
-    val modules = analyzeModules(processorContext.grip, processorContext.inputFile)
-    val context = createInjectionTargetsContext(processorContext.grip, processorContext.inputFile)
+    val modules = analyzeModules(processorContext.inputFile)
+    val context = createInjectionTargetsContext(processorContext.inputFile)
     val injectableTargets = analyzeInjectableTargets(context)
     val providableTargets = analyzeProvidableTargets(context)
-    val packageModules = composePackageModules(processorContext.grip, providableTargets)
+    val packageModules = composePackageModules(providableTargets)
     return InjectionConfiguration(modules, packageModules, injectableTargets, providableTargets)
   }
 
-  fun analyzeModules(grip: Grip, file: File): Collection<Module> {
+  fun analyzeModules(file: File): Collection<Module> {
     val modulesQuery = grip select classes from file where annotatedWith(Types.MODULE_TYPE)
     val methodsQuery = grip select methods from modulesQuery where
         (annotatedWith(Types.PROVIDES_TYPE) and type(not(returns(Type.VOID_TYPE))) and not(isStatic()))
@@ -75,7 +76,7 @@ class Analyzer(private val processorContext: ProcessorContext) {
     }
   }
 
-  private fun createInjectionTargetsContext(grip: Grip, file: File): InjectionTargetsContext {
+  private fun createInjectionTargetsContext(file: File): InjectionTargetsContext {
     val methodsQuery = grip select methods from file where annotatedWith(Types.INJECT_TYPE)
     val fieldsQuery = grip select fields from file where annotatedWith(Types.INJECT_TYPE)
 
@@ -129,7 +130,8 @@ class Analyzer(private val processorContext: ProcessorContext) {
     }
   }
 
-  private fun composePackageModules(grip: Grip, providableTargets: Iterable<InjectionTarget>): Collection<Module> {
+  private fun composePackageModules(
+      providableTargets: Iterable<InjectionTarget>): Collection<Module> {
     val injectionTargetsByPackageName = providableTargets.associateManyBy {
       it.type.internalName.substringBeforeLast('/', "")
     }
@@ -229,12 +231,16 @@ class Analyzer(private val processorContext: ProcessorContext) {
   }
 
   private fun Annotated.findQualifier(): AnnotationMirror? {
-    val qualifierCount = annotations.count { processorContext.isQualifier(it.type) }
+    fun isQualifier(annotationType: Type): Boolean {
+      return grip.classRegistry.getClassMirror(annotationType).annotations.contains(Types.QUALIFIER_TYPE)
+    }
+
+    val qualifierCount = annotations.count { isQualifier(it.type) }
     if (qualifierCount > 0) {
       if (qualifierCount > 1) {
         processorContext.reportError("Element $this has multiple qualifiers")
       }
-      return annotations.first { processorContext.isQualifier(it.type) }
+      return annotations.first { isQualifier(it.type) }
     } else {
       return null
     }

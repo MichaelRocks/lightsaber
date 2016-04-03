@@ -89,8 +89,4 @@ class ProcessorContext(
   fun addPackageInvader(packageInvader: PackageInvader) {
     packageInvaders.put(packageInvader.packageName, packageInvader)
   }
-
-  fun isQualifier(annotationType: Type): Boolean {
-    return classRegistry.getClassMirror(annotationType).annotations.contains(Types.QUALIFIER_TYPE)
-  }
 }
