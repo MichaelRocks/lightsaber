@@ -52,6 +52,7 @@ ext {
   jcommanderVersion = '1.47'
   asmVersion = '5.0.4'
   gripVersion = '0.2.2-alpha'
+  bimapVersion = '1.0.1'
   commonsLangVersion = '3.3.2'
   commonsCollectionsVersion = '4.0'
   logbackVersion = '1.1.3'
