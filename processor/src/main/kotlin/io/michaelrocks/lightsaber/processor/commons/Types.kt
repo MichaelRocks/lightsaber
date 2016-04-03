@@ -41,7 +41,7 @@ object Types {
   val CLASS_TYPE = getType<Class<Any>>()
   val ANNOTATION_TYPE = getType<Annotation>()
 
-  val BOXED_VOID_TYPE = getType<Byte>()
+  val BOXED_VOID_TYPE = getType<Void>()
   val BOXED_BOOLEAN_TYPE = getType<Boolean>()
   val BOXED_BYTE_TYPE = getType<Byte>()
   val BOXED_CHAR_TYPE = getType<Char>()
