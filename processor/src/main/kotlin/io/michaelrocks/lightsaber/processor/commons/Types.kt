@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,12 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
+import io.michaelrocks.bimap.BiMap
+import io.michaelrocks.bimap.HashBiMap
 import io.michaelrocks.lightsaber.Injector
 import io.michaelrocks.lightsaber.Key
 import io.michaelrocks.lightsaber.Module
 import io.michaelrocks.lightsaber.Provides
-import org.apache.commons.collections4.BidiMap
-import org.apache.commons.collections4.bidimap.DualHashBidiMap
 import org.objectweb.asm.Type
 import javax.inject.Inject
 import javax.inject.Provider
@@ -51,10 +51,10 @@ object Types {
   val BOXED_LONG_TYPE = getType<Long>()
   val BOXED_SHORT_TYPE = getType<Short>()
 
-  private val primitiveToBoxedMap: BidiMap<Type, Type>
+  private val primitiveToBoxedMap: BiMap<Type, Type>
 
   init {
-    primitiveToBoxedMap = DualHashBidiMap<Type, Type>()
+    primitiveToBoxedMap = HashBiMap<Type, Type>()
     primitiveToBoxedMap.put(Type.VOID_TYPE, BOXED_VOID_TYPE)
     primitiveToBoxedMap.put(Type.BOOLEAN_TYPE, BOXED_BOOLEAN_TYPE)
     primitiveToBoxedMap.put(Type.BYTE_TYPE, BOXED_BYTE_TYPE)
@@ -67,7 +67,7 @@ object Types {
   }
 
   fun box(type: Type): Type = primitiveToBoxedMap[type] ?: type
-  fun unbox(type: Type): Type = primitiveToBoxedMap.getKey(type) ?: type
+  fun unbox(type: Type): Type = primitiveToBoxedMap.inverse[type] ?: type
 
   fun isPrimitive(type: Type): Boolean = primitiveToBoxedMap.containsKey(type)
 
