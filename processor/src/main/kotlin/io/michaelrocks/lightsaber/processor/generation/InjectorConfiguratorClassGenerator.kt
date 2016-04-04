@@ -21,7 +21,7 @@ import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.model.Module
+import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.model.Provider
 import io.michaelrocks.lightsaber.processor.model.Scope
 import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
@@ -34,7 +34,7 @@ import org.objectweb.asm.Type
 class InjectorConfiguratorClassGenerator(
     private val processorContext: ProcessorContext,
     private val annotationCreator: AnnotationCreator,
-    private val module: Module
+    private val configurator: InjectorConfigurator
 ) {
   companion object {
     private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE)
@@ -56,7 +56,7 @@ class InjectorConfiguratorClassGenerator(
     classVisitor.visit(
         V1_6,
         ACC_PUBLIC or ACC_SUPER,
-        module.configuratorType.internalName,
+        configurator.type.internalName,
         null,
         Types.OBJECT_TYPE.internalName,
         arrayOf(LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE.internalName))
@@ -84,14 +84,14 @@ class InjectorConfiguratorClassGenerator(
     val moduleLocal: Int
     if (isModuleArgumentUsed()) {
       generator.loadArg(1)
-      generator.checkCast(module.type)
-      moduleLocal = generator.newLocal(module.type)
+      generator.checkCast(configurator.module.type)
+      moduleLocal = generator.newLocal(configurator.module.type)
       generator.storeLocal(moduleLocal)
     } else {
       moduleLocal = INVALID_LOCAL
     }
 
-    for (provider in module.providers) {
+    for (provider in configurator.module.providers) {
       generateRegisterProviderInvocation(generator, provider, moduleLocal)
     }
 
@@ -99,7 +99,7 @@ class InjectorConfiguratorClassGenerator(
     generator.endMethod()
   }
 
-  private fun isModuleArgumentUsed(): Boolean = module.providers.any { !it.isConstructorProvider }
+  private fun isModuleArgumentUsed(): Boolean = configurator.module.providers.any { !it.isConstructorProvider }
 
   private fun generateRegisterProviderInvocation(generator: GeneratorAdapter, provider: Provider, moduleLocal: Int) {
     generator.loadArg(0)
@@ -117,7 +117,7 @@ class InjectorConfiguratorClassGenerator(
     generator.newInstance(Types.KEY_TYPE)
     generator.dup()
     val providableType = provider.dependency.type.rawType
-    val packageInvader = processorContext.findPackageInvaderByTargetType(module.type)!!
+    val packageInvader = processorContext.findPackageInvaderByTargetType(configurator.module.type)!!
     val classField = packageInvader.getClassField(providableType.box()) ?:
         error("Cannot find class field for type: %s".format(providableType))
 

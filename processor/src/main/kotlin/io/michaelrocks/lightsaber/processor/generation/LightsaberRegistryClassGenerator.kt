@@ -24,7 +24,6 @@ import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
-import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -34,8 +33,7 @@ import java.util.*
 
 class LightsaberRegistryClassGenerator(
     private val classProducer: ClassProducer,
-    private val processorContext: ProcessorContext,
-    private val configuration: InjectionConfiguration
+    private val processorContext: ProcessorContext
 ) {
   companion object {
     private val LIGHTSABER_REGISTRY_TYPE = Type.getObjectType("io/michaelrocks/lightsaber/LightsaberRegistry")
@@ -129,17 +127,17 @@ class LightsaberRegistryClassGenerator(
   }
 
   private fun populatePackageInjectorConfiguratorsMethod(generator: GeneratorAdapter) {
-    val packageModules = configuration.packageModules
+    val configurators = processorContext.getPackageInjectorConfigurators()
     generator.newInstance(ARRAY_LIST_TYPE)
     generator.dup()
-    generator.push(packageModules.size)
+    generator.push(configurators.size)
     generator.invokeConstructor(ARRAY_LIST_TYPE, ARRAY_LIST_CONSTRUCTOR)
 
-    for (packageModule in packageModules) {
+    for (configurator in configurators) {
       generator.dup()
-      generator.newInstance(packageModule.configuratorType)
+      generator.newInstance(configurator.type)
       generator.dup()
-      generator.invokeConstructor(packageModule.configuratorType, MethodDescriptor.forDefaultConstructor())
+      generator.invokeConstructor(configurator.type, MethodDescriptor.forDefaultConstructor())
       generator.invokeInterface(LIST_TYPE, ADD_METHOD)
       generator.pop()
     }
@@ -148,18 +146,18 @@ class LightsaberRegistryClassGenerator(
   }
 
   private fun populateInjectorConfigurators(generator: GeneratorAdapter) {
-    val modules = configuration.modules
+    val configurators = processorContext.getInjectorConfigurators()
     generator.newInstance(HASH_MAP_TYPE)
     generator.dup()
-    generator.push(modules.size)
+    generator.push(configurators.size)
     generator.invokeConstructor(HASH_MAP_TYPE, HASH_MAP_CONSTRUCTOR)
 
-    for (module in modules) {
+    for (configurator in configurators) {
       generator.dup()
-      generator.push(module.type)
-      generator.newInstance(module.configuratorType)
+      generator.push(configurator.module.type)
+      generator.newInstance(configurator.type)
       generator.dup()
-      generator.invokeConstructor(module.configuratorType, MethodDescriptor.forDefaultConstructor())
+      generator.invokeConstructor(configurator.type, MethodDescriptor.forDefaultConstructor())
       generator.invokeInterface(MAP_TYPE, PUT_METHOD)
       generator.pop()
     }

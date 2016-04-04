@@ -20,6 +20,8 @@ import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.Grip
 import io.michaelrocks.grip.GripFactory
 import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.immutable
+import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.io.FileSink
@@ -43,6 +45,8 @@ class ProcessorContext(
   val classRegistry: ClassRegistry
     get() = grip.classRegistry
 
+  private val configurators = HashMap<Type, InjectorConfigurator>()
+  private val packageConfigurators = ArrayList<InjectorConfigurator>()
   private val injectors = HashMap<Type, MembersInjector>()
   private val packageInvaders = HashMap<String, PackageInvader>()
 
@@ -64,6 +68,26 @@ class ProcessorContext(
       errorsByPath.put(classFilePath.orEmpty(), errors)
     }
     errors.add(error)
+  }
+
+  fun getPackageInjectorConfigurators(): Collection<InjectorConfigurator> {
+    return packageConfigurators.immutable()
+  }
+
+  fun addPackageInjectorConfigurator(configurator: InjectorConfigurator) {
+    packageConfigurators.add(configurator)
+  }
+
+  fun getInjectorConfigurators(): Collection<InjectorConfigurator> {
+    return configurators.values.immutable()
+  }
+
+  fun addInjectorConfigurator(configurator: InjectorConfigurator) {
+    configurators.put(configurator.module.type, configurator)
+  }
+
+  fun getAllInjectorConfigurators(): Collection<InjectorConfigurator> {
+    return getInjectorConfigurators() + getPackageInjectorConfigurators()
   }
 
   fun getMembersInjectors(): Collection<MembersInjector> {
