@@ -20,6 +20,5 @@ import org.objectweb.asm.Type
 
 data class Module(
     val type: Type,
-    val configuratorType: Type,
     val providers: Collection<Provider>
 )

@@ -71,8 +71,7 @@ class Analyzer(private val processorContext: ProcessorContext) {
         field.toProvider(moduleResult.type, index)
       }
 
-      val configuratorType = composeConfiguratorType(moduleType)
-      Module(moduleType, configuratorType, methods + fields)
+      Module(moduleType, methods + fields)
     }
   }
 
@@ -141,8 +140,7 @@ class Analyzer(private val processorContext: ProcessorContext) {
         it.injectionPoints.first().toProvider(grip.classRegistry.getClassMirror(it.type))
       }
       val moduleType = composePackageModuleType(packageName)
-      val configuratorType = composeConfiguratorType(moduleType)
-      Module(moduleType, configuratorType, providers)
+      Module(moduleType, providers)
     }
   }
 
@@ -264,11 +262,6 @@ class Analyzer(private val processorContext: ProcessorContext) {
   fun composePackageModuleType(packageName: String): Type {
     val name = if (packageName.isEmpty()) PACKAGE_MODULE_CLASS_NAME else "$packageName/$PACKAGE_MODULE_CLASS_NAME"
     return Type.getObjectType(name)
-  }
-
-  private fun composeConfiguratorType(moduleType: Type): Type {
-    val moduleNameWithDollars = moduleType.internalName.replace('/', '$')
-    return Type.getObjectType("io/michaelrocks/lightsaber/InjectorConfigurator\$$moduleNameWithDollars")
   }
 
   class InjectionTargetsContext(
