@@ -19,15 +19,9 @@ package io.michaelrocks.lightsaber.processor
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.Grip
 import io.michaelrocks.grip.GripFactory
-import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.immutable
-import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
-import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
-import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.io.FileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
 import io.michaelrocks.lightsaber.processor.io.IoFactory
-import org.objectweb.asm.Type
 import java.io.File
 import java.util.*
 
@@ -44,11 +38,6 @@ class ProcessorContext(
   val grip: Grip = GripFactory.create(listOf(inputFile) + libraries)
   val classRegistry: ClassRegistry
     get() = grip.classRegistry
-
-  private val configurators = HashMap<Type, InjectorConfigurator>()
-  private val packageConfigurators = ArrayList<InjectorConfigurator>()
-  private val injectors = HashMap<Type, MembersInjector>()
-  private val packageInvaders = HashMap<String, PackageInvader>()
 
   fun hasErrors(): Boolean {
     return !errorsByPath.isEmpty()
@@ -68,49 +57,5 @@ class ProcessorContext(
       errorsByPath.put(classFilePath.orEmpty(), errors)
     }
     errors.add(error)
-  }
-
-  fun getPackageInjectorConfigurators(): Collection<InjectorConfigurator> {
-    return packageConfigurators.immutable()
-  }
-
-  fun addPackageInjectorConfigurator(configurator: InjectorConfigurator) {
-    packageConfigurators.add(configurator)
-  }
-
-  fun getInjectorConfigurators(): Collection<InjectorConfigurator> {
-    return configurators.values.immutable()
-  }
-
-  fun addInjectorConfigurator(configurator: InjectorConfigurator) {
-    configurators.put(configurator.module.type, configurator)
-  }
-
-  fun getAllInjectorConfigurators(): Collection<InjectorConfigurator> {
-    return getInjectorConfigurators() + getPackageInjectorConfigurators()
-  }
-
-  fun getMembersInjectors(): Collection<MembersInjector> {
-    return Collections.unmodifiableCollection(injectors.values)
-  }
-
-  fun addMembersInjector(injector: MembersInjector) {
-    injectors.put(injector.target.type, injector)
-  }
-
-  fun findPackageInvaderByTargetType(targetType: Type): PackageInvader? {
-    return findPackageInvaderByPackageName(Types.getPackageName(targetType))
-  }
-
-  fun findPackageInvaderByPackageName(packageName: String): PackageInvader? {
-    return packageInvaders[packageName]
-  }
-
-  fun getPackageInvaders(): Collection<PackageInvader> {
-    return Collections.unmodifiableCollection(packageInvaders.values)
-  }
-
-  fun addPackageInvader(packageInvader: PackageInvader) {
-    packageInvaders.put(packageInvader.packageName, packageInvader)
   }
 }

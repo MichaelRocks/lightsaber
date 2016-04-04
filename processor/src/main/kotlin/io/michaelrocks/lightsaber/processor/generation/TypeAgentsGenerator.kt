@@ -17,24 +17,20 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
+import io.michaelrocks.lightsaber.processor.generation.model.GenerationConfiguration
 
 class TypeAgentsGenerator(
     private val classProducer: ClassProducer,
-    private val processorContext: ProcessorContext,
+    private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator
 ) {
-  fun generateInjectors() {
-    for (injector in processorContext.getMembersInjectors()) {
-      generateTypeAgent(injector)
+  fun generate(generationConfiguration: GenerationConfiguration) {
+    generationConfiguration.membersInjectors.forEach { injector ->
+      val generator = TypeAgentClassGenerator(classRegistry, annotationCreator, injector)
+      val injectorClassData = generator.generate()
+      classProducer.produceClass(injector.type.internalName, injectorClassData)
     }
-  }
-
-  private fun generateTypeAgent(injector: MembersInjector) {
-    val generator = TypeAgentClassGenerator(processorContext.classRegistry, annotationCreator, injector)
-    val injectorClassData = generator.generate()
-    classProducer.produceClass(injector.type.internalName, injectorClassData)
   }
 }

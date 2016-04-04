@@ -16,29 +16,26 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
-import io.michaelrocks.lightsaber.processor.model.Module
-import io.michaelrocks.lightsaber.processor.model.Provider
 
 class ProvidersGenerator(
     private val classProducer: ClassProducer,
-    private val processorContext: ProcessorContext,
+    private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator
 ) {
   private val logger = getLogger()
 
-  fun generate(configuration: InjectionConfiguration) =
-      configuration.allModules.forEach { generateModuleProviders(it) }
-
-  private fun generateModuleProviders(module: Module) = module.providers.forEach { generateProvider(it) }
-
-  private fun generateProvider(provider: Provider) {
-    logger.debug("Generating provider {}", provider.type.internalName)
-    val generator = ProviderClassGenerator(processorContext.classRegistry, annotationCreator, provider)
-    val providerClassData = generator.generate()
-    classProducer.produceClass(provider.type.internalName, providerClassData)
+  fun generate(configuration: InjectionConfiguration) {
+    configuration.allModules.forEach { module ->
+      module.providers.forEach { provider ->
+        logger.debug("Generating provider {}", provider.type.internalName)
+        val generator = ProviderClassGenerator(classRegistry, annotationCreator, provider)
+        val providerClassData = generator.generate()
+        classProducer.produceClass(provider.type.internalName, providerClassData)
+      }
+    }
   }
 }
