@@ -33,10 +33,12 @@ import java.util.*
 
 private val PACKAGE_MODULE_CLASS_NAME = "Lightsaber\$PackageModule"
 
-class Analyzer(private val processorContext: ProcessorContext) {
+class Analyzer(
+    private val grip: Grip,
+    private val processorContext: ProcessorContext
+) {
   private val logger = getLogger("Analyzer")
   private val scopeRegistry = ScopeRegistry()
-  private val grip: Grip = processorContext.grip
 
   fun analyze(files: Collection<File>): InjectionConfiguration {
     val modules = analyzeModules(files)

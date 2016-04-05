@@ -16,6 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor
 
+import io.michaelrocks.grip.Grip
+import io.michaelrocks.grip.GripFactory
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.generation.Generator
@@ -24,6 +26,7 @@ import io.michaelrocks.lightsaber.processor.graph.DependencyGraph
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
 import io.michaelrocks.lightsaber.processor.injection.InjectionDispatcher
 import io.michaelrocks.lightsaber.processor.io.FileSource
+import io.michaelrocks.lightsaber.processor.io.IoFactory
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
@@ -35,16 +38,17 @@ import org.objectweb.asm.ClassWriter
 import java.io.File
 
 class ClassProcessor(
-    inputFile: File,
+    private val inputFile: File,
     outputFile: File,
     libraries: List<File>
 ) {
   private val logger = getLogger()
 
-  private val processorContext = ProcessorContext(inputFile, outputFile, libraries)
+  private val grip: Grip = GripFactory.create(listOf(inputFile) + libraries)
+  private val processorContext = ProcessorContext()
 
-  private val fileSource = processorContext.fileSourceFactory.createFileSource(inputFile)
-  private val fileSink = processorContext.fileSinkFactory.createFileSink(inputFile, outputFile)
+  private val fileSource = IoFactory.createFileSource(inputFile)
+  private val fileSink = IoFactory.createFileSink(inputFile, outputFile)
 
   fun processClasses() {
     val configuration = performAnalysis()
@@ -55,9 +59,9 @@ class ClassProcessor(
   }
 
   private fun performAnalysis(): InjectionConfiguration {
-    val analyzer = Analyzer(processorContext)
-    val configuration = analyzer.analyze(listOf(processorContext.inputFile))
-    SanityChecker(processorContext.grip.classRegistry, processorContext).performSanityChecks(configuration)
+    val analyzer = Analyzer(grip, processorContext)
+    val configuration = analyzer.analyze(listOf(inputFile))
+    SanityChecker(grip.classRegistry, processorContext).performSanityChecks(configuration)
     checkErrors()
     return configuration
   }
@@ -81,7 +85,7 @@ class ClassProcessor(
   }
 
   private fun performGeneration(configuration: InjectionConfiguration) {
-    val generator = Generator(processorContext.grip.classRegistry, processorContext, fileSink)
+    val generator = Generator(grip.classRegistry, processorContext, fileSink)
     generator.generate(configuration)
     checkErrors()
   }
@@ -92,7 +96,7 @@ class ClassProcessor(
         FileSource.EntryType.CLASS -> {
           val classReader = ClassReader(fileSource.readFile(path))
           val classWriter = StandaloneClassWriter(
-              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, processorContext.grip.classRegistry)
+              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry)
           val classVisitor = InjectionDispatcher(classWriter, configuration)
           classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
           fileSink.createFile(path, classWriter.toByteArray())

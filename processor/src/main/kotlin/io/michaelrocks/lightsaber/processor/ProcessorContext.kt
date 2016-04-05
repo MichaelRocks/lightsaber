@@ -16,25 +16,11 @@
 
 package io.michaelrocks.lightsaber.processor
 
-import io.michaelrocks.grip.Grip
-import io.michaelrocks.grip.GripFactory
-import io.michaelrocks.lightsaber.processor.io.FileSink
-import io.michaelrocks.lightsaber.processor.io.FileSource
-import io.michaelrocks.lightsaber.processor.io.IoFactory
-import java.io.File
 import java.util.*
 
-class ProcessorContext(
-    val inputFile: File,
-    val outputFile: File,
-    libraries: List<File>
-) {
+class ProcessorContext {
   var classFilePath: String? = null
   private val errorsByPath = LinkedHashMap<String, MutableList<Exception>>()
-
-  val fileSourceFactory: FileSource.Factory = IoFactory
-  val fileSinkFactory: FileSink.Factory = IoFactory
-  val grip: Grip = GripFactory.create(listOf(inputFile) + libraries)
 
   fun hasErrors(): Boolean {
     return !errorsByPath.isEmpty()
