@@ -117,16 +117,10 @@ class ClassProcessor(
 
   private fun composeErrorMessage(): String {
     return buildString {
-      for (entry in processorContext.errors.entries) {
-        val path = entry.key
-        for (error in entry.value) {
-          append('\n')
-          append(path)
-          append(": ")
-          append(error.message)
-          append('\n')
-          append(ExceptionUtils.getStackTrace(error))
-        }
+      for (error in processorContext.getErrors()) {
+        append(error.message)
+        append('\n')
+        append(ExceptionUtils.getStackTrace(error))
       }
     }
   }

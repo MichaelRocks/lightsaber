@@ -19,26 +19,21 @@ package io.michaelrocks.lightsaber.processor
 import java.util.*
 
 class ProcessorContext {
-  var classFilePath: String? = null
-  private val errorsByPath = LinkedHashMap<String, MutableList<Exception>>()
+  private val errors = ArrayList<Exception>()
 
   fun hasErrors(): Boolean {
-    return !errorsByPath.isEmpty()
+    return errors.isNotEmpty()
   }
 
-  val errors: Map<String, List<Exception>>
-    get() = Collections.unmodifiableMap(errorsByPath)
+  fun getErrors(): List<Exception> {
+    return errors
+  }
 
   fun reportError(errorMessage: String) {
-    reportError(ProcessingException(errorMessage, classFilePath))
+    reportError(ProcessingException(errorMessage))
   }
 
   fun reportError(error: Exception) {
-    var errors: MutableList<Exception>? = errorsByPath.get(classFilePath.orEmpty())
-    if (errors == null) {
-      errors = ArrayList<Exception>()
-      errorsByPath.put(classFilePath.orEmpty(), errors)
-    }
     errors.add(error)
   }
 }
