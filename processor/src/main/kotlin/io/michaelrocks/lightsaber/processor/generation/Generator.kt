@@ -112,7 +112,7 @@ class Generator(
   }
 
   private fun generateInjectors(generationContext: GenerationContext) {
-    val typeAgentsGenerator = TypeAgentsGenerator(classProducer, classRegistry, annotationCreator)
+    val typeAgentsGenerator = MembersInjectorsGenerator(classProducer, classRegistry, annotationCreator)
     typeAgentsGenerator.generate(generationContext)
   }
 

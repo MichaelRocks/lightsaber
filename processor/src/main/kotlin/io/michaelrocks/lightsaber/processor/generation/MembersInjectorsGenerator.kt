@@ -21,14 +21,14 @@ import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 
-class TypeAgentsGenerator(
+class MembersInjectorsGenerator(
     private val classProducer: ClassProducer,
     private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator
 ) {
   fun generate(generationContext: GenerationContext) {
     generationContext.membersInjectors.forEach { injector ->
-      val generator = TypeAgentClassGenerator(classRegistry, annotationCreator, injector)
+      val generator = MembersInjectorClassGenerator(classRegistry, annotationCreator, injector)
       val injectorClassData = generator.generate()
       classProducer.produceClass(injector.type.internalName, injectorClassData)
     }

@@ -30,7 +30,7 @@ import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
 import java.util.*
 
-class TypeAgentClassGenerator(
+class MembersInjectorClassGenerator(
     private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator,
     private val injector: MembersInjector
