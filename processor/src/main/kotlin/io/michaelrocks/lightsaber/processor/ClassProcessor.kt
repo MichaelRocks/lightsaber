@@ -45,7 +45,7 @@ class ClassProcessor(
   private val logger = getLogger()
 
   private val grip: Grip = GripFactory.create(listOf(inputFile) + libraries)
-  private val processorContext = ProcessorContext()
+  private val errorReporter = ErrorReporter()
 
   private val fileSource = IoFactory.createFileSource(inputFile)
   private val fileSink = IoFactory.createFileSink(inputFile, outputFile)
@@ -59,33 +59,33 @@ class ClassProcessor(
   }
 
   private fun performAnalysis(): InjectionConfiguration {
-    val analyzer = Analyzer(grip, processorContext)
+    val analyzer = Analyzer(grip, errorReporter)
     val configuration = analyzer.analyze(listOf(inputFile))
-    SanityChecker(grip.classRegistry, processorContext).performSanityChecks(configuration)
+    SanityChecker(grip.classRegistry, errorReporter).performSanityChecks(configuration)
     checkErrors()
     return configuration
   }
 
   private fun validateDependencyGraph(configuration: InjectionConfiguration) {
-    val dependencyGraph = DependencyGraph(processorContext, configuration.allModules)
+    val dependencyGraph = DependencyGraph(errorReporter, configuration.allModules)
 
     val unresolvedDependenciesSearcher = UnresolvedDependenciesSearcher(dependencyGraph)
     val unresolvedDependencies = unresolvedDependenciesSearcher.findUnresolvedDependencies()
     for (unresolvedDependency in unresolvedDependencies) {
-      processorContext.reportError("Unresolved dependency: $unresolvedDependency")
+      errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
     }
 
     val cycleSearcher = CycleSearcher(dependencyGraph)
     val cycles = cycleSearcher.findCycles()
     for (cycle in cycles) {
-      processorContext.reportError("Cycled dependency: $cycle")
+      errorReporter.reportError("Cycled dependency: $cycle")
     }
 
     checkErrors()
   }
 
   private fun performGeneration(configuration: InjectionConfiguration) {
-    val generator = Generator(grip.classRegistry, processorContext, fileSink)
+    val generator = Generator(grip.classRegistry, errorReporter, fileSink)
     generator.generate(configuration)
     checkErrors()
   }
@@ -110,14 +110,14 @@ class ClassProcessor(
   }
 
   private fun checkErrors() {
-    if (processorContext.hasErrors()) {
+    if (errorReporter.hasErrors()) {
       throw ProcessingException(composeErrorMessage())
     }
   }
 
   private fun composeErrorMessage(): String {
     return buildString {
-      for (error in processorContext.getErrors()) {
+      for (error in errorReporter.getErrors()) {
         append(error.message)
         append('\n')
         append(ExceptionUtils.getStackTrace(error))

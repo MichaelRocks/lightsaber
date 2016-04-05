@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor
 
 import java.util.*
 
-class ProcessorContext {
+class ErrorReporter {
   private val errors = ArrayList<Exception>()
 
   fun hasErrors(): Boolean {

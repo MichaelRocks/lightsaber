@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.processor.validation
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.isStatic
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
@@ -29,7 +29,7 @@ import org.objectweb.asm.Type
 
 class SanityChecker(
     private val classRegistry: ClassRegistry,
-    private val processorContext: ProcessorContext
+    private val errorReporter: ErrorReporter
 ) {
   fun performSanityChecks(configuration: InjectionConfiguration) {
     checkStaticInjectionPoints(configuration)
@@ -43,11 +43,11 @@ class SanityChecker(
         when (injectionPoint) {
           is InjectionPoint.Field ->
               if (injectionPoint.field.isStatic) {
-                processorContext.reportError("Static field injection is not supported yet: " + injectionPoint.field)
+                errorReporter.reportError("Static field injection is not supported yet: " + injectionPoint.field)
               }
           is InjectionPoint.Method ->
             if (injectionPoint.method.isStatic) {
-              processorContext.reportError("Static method injection is not supported yet: " + injectionPoint.method)
+              errorReporter.reportError("Static method injection is not supported yet: " + injectionPoint.method)
             }
         }
       }
@@ -64,7 +64,7 @@ class SanityChecker(
     for (module in configuration.modules) {
       for (provider in module.providers) {
         if (provider.dependency.type.rawType == Type.VOID_TYPE) {
-          processorContext.reportError("Provider returns void: " + provider.provisionPoint)
+          errorReporter.reportError("Provider returns void: " + provider.provisionPoint)
         }
       }
     }
@@ -80,7 +80,7 @@ class SanityChecker(
 
   private fun checkProvidableTargetAccessFlagNotSet(mirror: ClassMirror, flag: Int) {
     if ((mirror.access and flag) != 0) {
-      processorContext.reportError(
+      errorReporter.reportError(
           "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${mirror.type}")
     }
   }

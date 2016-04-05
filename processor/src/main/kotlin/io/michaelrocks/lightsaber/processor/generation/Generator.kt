@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.box
@@ -34,10 +34,10 @@ import java.util.*
 
 class Generator(
     private val classRegistry: ClassRegistry,
-    private val processorContext: ProcessorContext,
+    private val errorReporter: ErrorReporter,
     fileSink: FileSink
 ) {
-  private val classProducer = ProcessorClassProducer(fileSink, processorContext)
+  private val classProducer = ProcessorClassProducer(fileSink, errorReporter)
   private val annotationCreator = AnnotationCreator(classProducer, classRegistry)
 
   fun generate(injectionConfiguration: InjectionConfiguration) {

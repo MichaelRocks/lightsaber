@@ -20,7 +20,7 @@ import io.michaelrocks.grip.*
 import io.michaelrocks.grip.mirrors.*
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.cast
 import io.michaelrocks.lightsaber.processor.commons.given
@@ -35,7 +35,7 @@ private val PACKAGE_MODULE_CLASS_NAME = "Lightsaber\$PackageModule"
 
 class Analyzer(
     private val grip: Grip,
-    private val processorContext: ProcessorContext
+    private val errorReporter: ErrorReporter
 ) {
   private val logger = getLogger("Analyzer")
   private val scopeRegistry = ScopeRegistry()
@@ -123,7 +123,7 @@ class Analyzer(
         if (constructors.size > 1) {
           val separator = "\n  "
           val constructorsString = constructors.map { it.cast<InjectionPoint.Method>().method }.joinToString(separator)
-          processorContext.reportError("Class has multiple injectable constructors:$separator$constructorsString")
+          errorReporter.reportError("Class has multiple injectable constructors:$separator$constructorsString")
         }
 
         InjectionTarget(type, constructors)
@@ -222,7 +222,7 @@ class Analyzer(
         if (this is GenericType.ParameterizedType) {
           return Dependency(typeArguments[0], qualifier)
         } else {
-          processorContext.reportError("Type $this must be parameterized")
+          errorReporter.reportError("Type $this must be parameterized")
           return Dependency(this, qualifier)
         }
     }
@@ -238,7 +238,7 @@ class Analyzer(
     val qualifierCount = annotations.count { isQualifier(it.type) }
     if (qualifierCount > 0) {
       if (qualifierCount > 1) {
-        processorContext.reportError("Element $this has multiple qualifiers")
+        errorReporter.reportError("Element $this has multiple qualifiers")
       }
       return annotations.first { isQualifier(it.type) }
     } else {
@@ -255,7 +255,7 @@ class Analyzer(
       0 -> Scope.None
       1 -> Scope.Class(scopeProviders[0])
       else -> {
-        processorContext.reportError("Element $this has multiple scopes: $scopeProviders")
+        errorReporter.reportError("Element $this has multiple scopes: $scopeProviders")
         Scope.None
       }
     }

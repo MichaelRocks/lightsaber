@@ -18,15 +18,15 @@ package io.michaelrocks.lightsaber.processor.graph
 
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.Injector
+import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.ProcessingException
-import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.Module
 import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import org.objectweb.asm.Type
 import java.util.*
 
-class DependencyGraph(processorContext: ProcessorContext, modules: Collection<Module>) {
+class DependencyGraph(errorReporter: ErrorReporter, modules: Collection<Module>) {
   private val typeGraph = HashMap<Dependency, List<Dependency>>()
 
   val types: Collection<Dependency>
@@ -46,7 +46,7 @@ class DependencyGraph(processorContext: ProcessorContext, modules: Collection<Mo
           typeGraph.put(returnType, dependencies)
         } else {
           val message = "Module %s provides %s multiple times".format(module.type.internalName, returnType)
-          processorContext.reportError(ProcessingException(message))
+          errorReporter.reportError(ProcessingException(message))
         }
       }
     }
