@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -32,11 +33,12 @@ import org.objectweb.asm.Type
 import java.util.*
 
 class Generator(
+    private val classRegistry: ClassRegistry,
     private val processorContext: ProcessorContext,
     fileSink: FileSink
 ) {
   private val classProducer = ProcessorClassProducer(fileSink, processorContext)
-  private val annotationCreator = AnnotationCreator(processorContext, classProducer)
+  private val annotationCreator = AnnotationCreator(classProducer, classRegistry)
 
   fun generate(injectionConfiguration: InjectionConfiguration) {
     val generationConfiguration = composeGeneratorModel(injectionConfiguration)
@@ -95,27 +97,27 @@ class Generator(
   }
 
   private fun generateProviders(injectionConfiguration: InjectionConfiguration) {
-    val generator = ProvidersGenerator(classProducer, processorContext.classRegistry, annotationCreator)
+    val generator = ProvidersGenerator(classProducer, classRegistry, annotationCreator)
     generator.generate(injectionConfiguration)
   }
 
   private fun generateLightsaberConfigurator(generationConfiguration: GenerationConfiguration) {
-    val generator = LightsaberRegistryClassGenerator(classProducer, processorContext.classRegistry)
+    val generator = LightsaberRegistryClassGenerator(classProducer, classRegistry)
     generator.generate(generationConfiguration)
   }
 
   private fun generateInjectorConfigurators(generationConfiguration: GenerationConfiguration) {
-    val generator = InjectorConfiguratorsGenerator(classProducer, processorContext.classRegistry, annotationCreator)
+    val generator = InjectorConfiguratorsGenerator(classProducer, classRegistry, annotationCreator)
     generator.generate(generationConfiguration)
   }
 
   private fun generateInjectors(generationConfiguration: GenerationConfiguration) {
-    val typeAgentsGenerator = TypeAgentsGenerator(classProducer, processorContext.classRegistry, annotationCreator)
+    val typeAgentsGenerator = TypeAgentsGenerator(classProducer, classRegistry, annotationCreator)
     typeAgentsGenerator.generate(generationConfiguration)
   }
 
   private fun generatePackageInvaders(generationConfiguration: GenerationConfiguration) {
-    val packageInvadersGenerator = PackageInvadersGenerator(classProducer, processorContext.classRegistry)
+    val packageInvadersGenerator = PackageInvadersGenerator(classProducer, classRegistry)
     packageInvadersGenerator.generate(generationConfiguration)
   }
 }

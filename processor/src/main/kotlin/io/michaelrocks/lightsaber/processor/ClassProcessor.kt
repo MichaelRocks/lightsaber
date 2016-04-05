@@ -57,7 +57,7 @@ class ClassProcessor(
   private fun performAnalysis(): InjectionConfiguration {
     val analyzer = Analyzer(processorContext)
     val configuration = analyzer.analyze(listOf(processorContext.inputFile))
-    SanityChecker(processorContext).performSanityChecks(configuration)
+    SanityChecker(processorContext.grip.classRegistry, processorContext).performSanityChecks(configuration)
     checkErrors()
     return configuration
   }
@@ -81,7 +81,7 @@ class ClassProcessor(
   }
 
   private fun performGeneration(configuration: InjectionConfiguration) {
-    val generator = Generator(processorContext, fileSink)
+    val generator = Generator(processorContext.grip.classRegistry, processorContext, fileSink)
     generator.generate(configuration)
     checkErrors()
   }
@@ -92,7 +92,7 @@ class ClassProcessor(
         FileSource.EntryType.CLASS -> {
           val classReader = ClassReader(fileSource.readFile(path))
           val classWriter = StandaloneClassWriter(
-              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, processorContext.classRegistry)
+              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, processorContext.grip.classRegistry)
           val classVisitor = InjectionDispatcher(classWriter, configuration)
           classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
           fileSink.createFile(path, classWriter.toByteArray())

@@ -16,10 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.annotations.proxy
 
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.AnnotationMirror
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.EnumMirror
-import io.michaelrocks.lightsaber.processor.ProcessorContext
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer
@@ -29,14 +29,14 @@ import java.lang.reflect.Array
 import java.util.*
 
 class AnnotationCreator(
-    private val processorContext: ProcessorContext,
-    private val classProducer: ClassProducer
+    private val classProducer: ClassProducer,
+    private val classRegistry: ClassRegistry
 ) {
   private val generatedAnnotationProxies = HashSet<Type>()
 
   fun newAnnotation(generator: GeneratorAdapter, data: AnnotationMirror) {
     val annotationProxyType = composeAnnotationProxyType(data.type)
-    processorContext.classRegistry.getClassMirror(data.type).let { mirror ->
+    classRegistry.getClassMirror(data.type).let { mirror ->
       generateAnnotationProxyClassIfNecessary(mirror, annotationProxyType)
       constructAnnotationProxy(generator, mirror, data, annotationProxyType)
     }
@@ -47,7 +47,7 @@ class AnnotationCreator(
 
   private fun generateAnnotationProxyClassIfNecessary(annotation: ClassMirror, annotationProxyType: Type) {
     if (generatedAnnotationProxies.add(annotationProxyType)) {
-      val generator = AnnotationProxyGenerator(processorContext.classRegistry, annotation, annotationProxyType)
+      val generator = AnnotationProxyGenerator(classRegistry, annotation, annotationProxyType)
       val annotationProxyClassData = generator.generate()
       classProducer.produceClass(annotationProxyType.internalName, annotationProxyClassData)
     }

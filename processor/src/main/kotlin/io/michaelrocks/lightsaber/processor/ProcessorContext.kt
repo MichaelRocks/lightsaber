@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber.processor
 
-import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.Grip
 import io.michaelrocks.grip.GripFactory
 import io.michaelrocks.lightsaber.processor.io.FileSink
@@ -36,8 +35,6 @@ class ProcessorContext(
   val fileSourceFactory: FileSource.Factory = IoFactory
   val fileSinkFactory: FileSink.Factory = IoFactory
   val grip: Grip = GripFactory.create(listOf(inputFile) + libraries)
-  val classRegistry: ClassRegistry
-    get() = grip.classRegistry
 
   fun hasErrors(): Boolean {
     return !errorsByPath.isEmpty()

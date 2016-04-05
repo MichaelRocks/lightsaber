@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.validation
 
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.lightsaber.processor.ProcessorContext
@@ -26,7 +27,10 @@ import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
-class SanityChecker(private val processorContext: ProcessorContext) {
+class SanityChecker(
+    private val classRegistry: ClassRegistry,
+    private val processorContext: ProcessorContext
+) {
   fun performSanityChecks(configuration: InjectionConfiguration) {
     checkStaticInjectionPoints(configuration)
     checkProvidableTargetsAreConstructable(configuration)
@@ -67,7 +71,7 @@ class SanityChecker(private val processorContext: ProcessorContext) {
   }
 
   private fun checkProvidableTargetIsConstructable(providableTarget: Type) {
-    val mirror = processorContext.classRegistry.getClassMirror(providableTarget)
+    val mirror = classRegistry.getClassMirror(providableTarget)
     checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_INTERFACE)
     checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ABSTRACT)
     checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ENUM)
