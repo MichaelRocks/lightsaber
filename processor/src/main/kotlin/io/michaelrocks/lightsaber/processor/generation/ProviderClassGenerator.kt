@@ -243,7 +243,7 @@ class ProviderClassGenerator(
     generator.getField(provider.type, INJECTOR_FIELD)
     generator.getStatic(provider.type, KEY_FIELD_NAME_PREFIX + argumentIndex, Types.KEY_TYPE)
     generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD)
-    GenerationHelper.convertDependencyToTargetType(generator, injectee)
+    generator.convertDependencyToTargetType(injectee)
   }
 
   private fun generateInjectMembersInvocation(generator: GeneratorAdapter) {

@@ -191,7 +191,7 @@ class MembersInjectorClassGenerator(
     generator.getStatic(injector.type, KEY_FIELD_NAME_PREFIX + fieldIndex, Types.KEY_TYPE)
 
     generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD)
-    GenerationHelper.convertDependencyToTargetType(generator, field.injectee)
+    generator.convertDependencyToTargetType(field.injectee)
     generator.putField(injector.target.type, field.field.toFieldDescriptor())
   }
 
@@ -221,7 +221,7 @@ class MembersInjectorClassGenerator(
       generator.getStatic(
           injector.type, KEY_FIELD_NAME_PREFIX + methodIndex + '_' + index, Types.KEY_TYPE)
       generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD)
-      GenerationHelper.convertDependencyToTargetType(generator, injectee)
+      generator.convertDependencyToTargetType(injectee)
     }
     generator.invokeVirtual(injector.target.type, method.method.toMethodDescriptor())
   }

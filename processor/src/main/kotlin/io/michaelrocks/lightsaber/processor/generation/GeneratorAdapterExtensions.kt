@@ -23,23 +23,21 @@ import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.model.Converter
 import io.michaelrocks.lightsaber.processor.model.Injectee
 
-internal object GenerationHelper {
-  private val PROVIDER_GET_METHOD = MethodDescriptor.forMethod("get", Types.OBJECT_TYPE)
-  private val ADAPTER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
+private val PROVIDER_GET_METHOD = MethodDescriptor.forMethod("get", Types.OBJECT_TYPE)
+private val ADAPTER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
 
-  fun convertDependencyToTargetType(generator: GeneratorAdapter, injectee: Injectee) {
-    when (injectee.converter) {
-      is Converter.Identity -> {} // Do nothing.
-      is Converter.Instance -> {
-        generator.invokeInterface(Types.PROVIDER_TYPE, PROVIDER_GET_METHOD)
-        generator.unbox(injectee.dependency.type.rawType)
-      }
-      is Converter.Adapter -> {
-        generator.newInstance(injectee.converter.adapterType)
-        generator.dupX1()
-        generator.swap()
-        generator.invokeConstructor(injectee.converter.adapterType, ADAPTER_CONSTRUCTOR)
-      }
+fun GeneratorAdapter.convertDependencyToTargetType(injectee: Injectee) {
+  when (injectee.converter) {
+    is Converter.Identity -> {} // Do nothing.
+    is Converter.Instance -> {
+      invokeInterface(Types.PROVIDER_TYPE, PROVIDER_GET_METHOD)
+      unbox(injectee.dependency.type.rawType)
+    }
+    is Converter.Adapter -> {
+      newInstance(injectee.converter.adapterType)
+      dupX1()
+      swap()
+      invokeConstructor(injectee.converter.adapterType, ADAPTER_CONSTRUCTOR)
     }
   }
 }
