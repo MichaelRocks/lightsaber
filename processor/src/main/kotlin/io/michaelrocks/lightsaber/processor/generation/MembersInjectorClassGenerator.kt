@@ -17,21 +17,23 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
-import io.michaelrocks.grip.mirrors.signature.GenericType
-import io.michaelrocks.lightsaber.MembersInjector
+import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.*
-import io.michaelrocks.lightsaber.processor.descriptors.*
+import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
+import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
+import java.util.*
 
-class TypeAgentClassGenerator(
+class MembersInjectorClassGenerator(
     private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator,
-    private val injector: InjectorDescriptor
+    private val injector: MembersInjector
 ) {
   companion object {
     private const val KEY_FIELD_NAME_PREFIX = "key"
@@ -41,14 +43,25 @@ class TypeAgentClassGenerator(
         MethodDescriptor.forMethod("injectFields", Type.VOID_TYPE, Types.INJECTOR_TYPE, Types.OBJECT_TYPE)
     private val INJECT_METHODS_METHOD =
         MethodDescriptor.forMethod("injectMethods", Type.VOID_TYPE, Types.INJECTOR_TYPE, Types.OBJECT_TYPE)
-    private val GET_INSTANCE_METHOD = MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.KEY_TYPE)
     private val GET_PROVIDER_METHOD = MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE)
+  }
 
-    private fun getDependencyTypeForType(type: GenericType): Type =
-        type.parameterType ?: type.rawType.box()
+  private val fields: Collection<InjectionPoint.Field>
+  private val methods: Collection<InjectionPoint.Method>
 
-    private fun getInjectorMethodForType(type: GenericType): MethodDescriptor =
-        if (type.isParameterized) GET_PROVIDER_METHOD else GET_INSTANCE_METHOD
+  init {
+    val fields = ArrayList<InjectionPoint.Field>()
+    val methods = ArrayList<InjectionPoint.Method>()
+
+    injector.target.injectionPoints.forEach {
+      when (it) {
+        is InjectionPoint.Field -> fields += it
+        is InjectionPoint.Method -> methods += it
+      }
+    }
+
+    this.fields = fields
+    this.methods = methods
   }
 
   fun generate(): ByteArray {
@@ -57,10 +70,10 @@ class TypeAgentClassGenerator(
     classVisitor.visit(
         V1_6,
         ACC_PUBLIC or ACC_SUPER,
-        injector.injectorType.internalName,
+        injector.type.internalName,
         null,
         Types.OBJECT_TYPE.internalName,
-        arrayOf(MembersInjector::class.internalName))
+        arrayOf(LightsaberTypes.MEMBERS_INJECTOR_TYPE.internalName))
 
     generateKeyFields(classVisitor)
     generateStaticInitializer(classVisitor)
@@ -73,8 +86,7 @@ class TypeAgentClassGenerator(
   }
 
   private fun generateKeyFields(classVisitor: ClassVisitor) {
-    val injectableFields = injector.injectableTarget.injectableFields
-    for (i in 0 until injectableFields.size) {
+    for (i in 0..fields.size - 1) {
       val fieldVisitor = classVisitor.visitField(
           ACC_PRIVATE or ACC_STATIC or ACC_FINAL,
           KEY_FIELD_NAME_PREFIX + i,
@@ -84,11 +96,12 @@ class TypeAgentClassGenerator(
       fieldVisitor.visitEnd()
     }
 
-    injector.injectableTarget.injectableMethods.values.forEachIndexed { i, injectableMethod ->
-      for (j in 0 until injectableMethod.argumentTypes.size) {
+    methods.forEachIndexed { index, method ->
+      val keyFieldNamePrefix = KEY_FIELD_NAME_PREFIX + index + '_'
+      method.injectees.forEachIndexed { index, injectee ->
         val fieldVisitor = classVisitor.visitField(
             ACC_PRIVATE or ACC_STATIC or ACC_FINAL,
-            KEY_FIELD_NAME_PREFIX + i + '_' + j,
+            keyFieldNamePrefix + index,
             Types.KEY_TYPE.descriptor,
             null,
             null)
@@ -110,42 +123,34 @@ class TypeAgentClassGenerator(
   }
 
   private fun initializeFieldKeys(generator: GeneratorAdapter) {
-    injector.injectableTarget.injectableFields.values.forEachIndexed { i, injectableField ->
-      val dependencyType = getDependencyTypeForType(injectableField.signature.type)
-
+    fields.forEachIndexed { index, field ->
       generator.newInstance(Types.KEY_TYPE)
       generator.dup()
-      generator.push(dependencyType)
-      if (injectableField.qualifier == null) {
+      generator.push(field.injectee.dependency.type.rawType.box())
+      if (field.injectee.dependency.qualifier == null) {
         generator.pushNull()
       } else {
-        annotationCreator.newAnnotation(generator, injectableField.qualifier)
+        annotationCreator.newAnnotation(generator, field.injectee.dependency.qualifier)
       }
       generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR)
-      generator.putStatic(injector.injectorType, KEY_FIELD_NAME_PREFIX + i, Types.KEY_TYPE)
+      generator.putStatic(injector.type, KEY_FIELD_NAME_PREFIX + index, Types.KEY_TYPE)
     }
   }
 
   private fun initializeMethodKeys(generator: GeneratorAdapter) {
-    injector.injectableTarget.injectableMethods.values.forEachIndexed { i, injectableMethod ->
-      val argumentTypes = injectableMethod.argumentTypes
-      val parameterQualifiers = injectableMethod.parameterQualifiers
-      check(argumentTypes.size == parameterQualifiers.size)
-
-      for (j in 0 until argumentTypes.size) {
-        val dependencyType = getDependencyTypeForType(argumentTypes[j])
-        val parameterQualifier = parameterQualifiers[j]
-
+    methods.forEachIndexed { index, method ->
+      val keyFieldNamePrefix = KEY_FIELD_NAME_PREFIX + index + '_'
+      method.injectees.forEachIndexed { index, injectee ->
         generator.newInstance(Types.KEY_TYPE)
         generator.dup()
-        generator.push(dependencyType)
-        if (parameterQualifier == null) {
+        generator.push(injectee.dependency.type.rawType.box())
+        if (injectee.dependency.qualifier == null) {
           generator.pushNull()
         } else {
-          annotationCreator.newAnnotation(generator, parameterQualifier)
+          annotationCreator.newAnnotation(generator, injectee.dependency.qualifier)
         }
         generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR)
-        generator.putStatic(injector.injectorType, KEY_FIELD_NAME_PREFIX + i + '_' + j, Types.KEY_TYPE)
+        generator.putStatic(injector.type, keyFieldNamePrefix + index, Types.KEY_TYPE)
       }
     }
   }
@@ -163,14 +168,14 @@ class TypeAgentClassGenerator(
     val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, INJECT_FIELDS_METHOD)
     generator.visitCode()
 
-    if (!injector.injectableTarget.injectableFields.isEmpty()) {
+    if (!fields.isEmpty()) {
       generator.loadArg(1)
-      generator.checkCast(injector.injectableTarget.targetType)
-      val injectableTargetLocal = generator.newLocal(injector.injectableTarget.targetType)
+      generator.checkCast(injector.target.type)
+      val injectableTargetLocal = generator.newLocal(injector.target.type)
       generator.storeLocal(injectableTargetLocal)
 
-      injector.injectableTarget.injectableFields.values.forEachIndexed { fieldIndex, injectableField ->
-        generateFieldInitializer(generator, injectableTargetLocal, injectableField, fieldIndex)
+      fields.forEachIndexed { index, field ->
+        generateFieldInitializer(generator, injectableTargetLocal, field, index)
       }
     }
 
@@ -179,16 +184,15 @@ class TypeAgentClassGenerator(
   }
 
   private fun generateFieldInitializer(generator: GeneratorAdapter, injectableTargetLocal: Int,
-      qualifiedField: QualifiedFieldDescriptor, fieldIndex: Int) {
+      field: InjectionPoint.Field, fieldIndex: Int) {
     generator.loadLocal(injectableTargetLocal)
     generator.loadArg(0)
 
-    generator.getStatic(injector.injectorType, KEY_FIELD_NAME_PREFIX + fieldIndex, Types.KEY_TYPE)
+    generator.getStatic(injector.type, KEY_FIELD_NAME_PREFIX + fieldIndex, Types.KEY_TYPE)
 
-    val method = getInjectorMethodForType(qualifiedField.signature.type)
-    generator.invokeInterface(Types.INJECTOR_TYPE, method)
-    GenerationHelper.convertDependencyToTargetType(generator, qualifiedField.signature.type)
-    generator.putField(injector.injectableTarget.targetType, qualifiedField.field)
+    generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD)
+    GenerationHelper.convertDependencyToTargetType(generator, field.injectee)
+    generator.putField(injector.target.type, field.field.toFieldDescriptor())
   }
 
   private fun generateInjectMethodsMethod(classVisitor: ClassVisitor) {
@@ -196,12 +200,12 @@ class TypeAgentClassGenerator(
     generator.visitCode()
 
     generator.loadArg(1)
-    generator.checkCast(injector.injectableTarget.targetType)
-    val injectableTargetLocal = generator.newLocal(injector.injectableTarget.targetType)
+    generator.checkCast(injector.target.type)
+    val injectableTargetLocal = generator.newLocal(injector.target.type)
     generator.storeLocal(injectableTargetLocal)
 
-    injector.injectableTarget.injectableMethods.values.forEachIndexed { methodIndex, injectableMethod ->
-      generateMethodInvocation(generator, injectableTargetLocal, injectableMethod, methodIndex)
+    methods.forEachIndexed { index, method ->
+      generateMethodInvocation(generator, injectableTargetLocal, method, index)
     }
 
     generator.returnValue()
@@ -209,17 +213,16 @@ class TypeAgentClassGenerator(
   }
 
   private fun generateMethodInvocation(generator: GeneratorAdapter, injectableTargetLocal: Int,
-      qualifiedMethod: QualifiedMethodDescriptor, methodIndex: Int) {
+      method: InjectionPoint.Method, methodIndex: Int) {
     generator.loadLocal(injectableTargetLocal)
 
-    qualifiedMethod.argumentTypes.forEachIndexed { i, argumentType ->
+    method.injectees.forEachIndexed { index, injectee ->
       generator.loadArg(0)
       generator.getStatic(
-          injector.injectorType, KEY_FIELD_NAME_PREFIX + methodIndex + '_' + i, Types.KEY_TYPE)
-      val method = getInjectorMethodForType(argumentType)
-      generator.invokeInterface(Types.INJECTOR_TYPE, method)
-      GenerationHelper.convertDependencyToTargetType(generator, argumentType)
+          injector.type, KEY_FIELD_NAME_PREFIX + methodIndex + '_' + index, Types.KEY_TYPE)
+      generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD)
+      GenerationHelper.convertDependencyToTargetType(generator, injectee)
     }
-    generator.invokeVirtual(injector.injectableTarget.targetType, qualifiedMethod.method)
+    generator.invokeVirtual(injector.target.type, method.method.toMethodDescriptor())
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.descriptors
+package io.michaelrocks.lightsaber.processor.generation.model
 
+import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 import org.objectweb.asm.Type
 
-data class InjectorDescriptor(val injectorType: Type, val injectableTarget: InjectionTargetDescriptor)
+data class MembersInjector(
+    val type: Type,
+    val target: InjectionTarget
+)

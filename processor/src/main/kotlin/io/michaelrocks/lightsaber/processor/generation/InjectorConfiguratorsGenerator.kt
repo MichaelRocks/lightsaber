@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,25 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor
+import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 
 class InjectorConfiguratorsGenerator(
     private val classProducer: ClassProducer,
-    private val processorContext: ProcessorContext,
+    private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator
 ) {
   private val logger = getLogger()
 
-  fun generateInjectorConfigurators() = processorContext.allModules.forEach { generateInjectorConfigurator(it) }
-
-  private fun generateInjectorConfigurator(module: ModuleDescriptor) {
-    logger.debug("Generating injector configurator {}", module.configuratorType.internalName)
-    val generator = InjectorConfiguratorClassGenerator(processorContext, annotationCreator, module)
-    val classData = generator.generate()
-    classProducer.produceClass(module.configuratorType.internalName, classData)
+  fun generate(generationContext: GenerationContext) {
+    generationContext.allInjectorConfigurators.forEach { configurator ->
+      logger.debug("Generating injector configurator {}", configurator.type.internalName)
+      val generator =
+          InjectorConfiguratorClassGenerator(classRegistry, annotationCreator, generationContext, configurator)
+      val classData = generator.generate()
+      classProducer.produceClass(configurator.type.internalName, classData)
+    }
   }
 }

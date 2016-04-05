@@ -16,37 +16,41 @@
 
 package io.michaelrocks.lightsaber.processor.graph
 
+import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.Injector
+import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.ProcessingException
-import io.michaelrocks.lightsaber.processor.ProcessorContext
-import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType
-import io.michaelrocks.lightsaber.processor.descriptors.dependencies
+import io.michaelrocks.lightsaber.processor.model.Dependency
+import io.michaelrocks.lightsaber.processor.model.Module
+import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import org.objectweb.asm.Type
 import java.util.*
 
-class DependencyGraph(processorContext: ProcessorContext, modules: Collection<ModuleDescriptor>) {
-  private val typeGraph = HashMap<QualifiedType, List<QualifiedType>>()
+class DependencyGraph(errorReporter: ErrorReporter, modules: Collection<Module>) {
+  private val typeGraph = HashMap<Dependency, List<Dependency>>()
 
-  val types: Collection<QualifiedType>
+  val types: Collection<Dependency>
     get() = typeGraph.keys
 
   init {
-    val rootType = QualifiedType(Type.getType(Injector::class.java))
-    typeGraph.put(rootType, emptyList<QualifiedType>())
+    val rootType = Dependency(GenericType.RawType(Type.getType(Injector::class.java)))
+    typeGraph.put(rootType, emptyList<Dependency>())
     for (module in modules) {
-      val providableModuleTypes = HashSet<QualifiedType>()
+      val providableModuleTypes = HashSet<Dependency>()
       for (provider in module.providers) {
-        val returnType = provider.qualifiedProvidableType
+        val returnType = provider.dependency
         if (providableModuleTypes.add(returnType)) {
-          typeGraph.put(returnType, provider.dependencies)
+          val injectees =
+              (provider.provisionPoint as? ProvisionPoint.AbstractMethod)?.injectionPoint?.injectees.orEmpty()
+          val dependencies = injectees.map { it.dependency }
+          typeGraph.put(returnType, dependencies)
         } else {
-          val message = "Module %s provides %s multiple times".format(module.moduleType.internalName, returnType)
-          processorContext.reportError(ProcessingException(message))
+          val message = "Module %s provides %s multiple times".format(module.type.internalName, returnType)
+          errorReporter.reportError(ProcessingException(message))
         }
       }
     }
   }
 
-  fun getTypeDependencies(type: QualifiedType): Collection<QualifiedType>? = typeGraph[type]
+  fun getTypeDependencies(type: Dependency): Collection<Dependency>? = typeGraph[type]
 }

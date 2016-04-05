@@ -16,34 +16,14 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
-import io.michaelrocks.grip.mirrors.signature.FieldSignatureMirror
-import io.michaelrocks.grip.mirrors.signature.GenericType
-import io.michaelrocks.lightsaber.processor.commons.isParameterized
-import io.michaelrocks.lightsaber.processor.commons.parameterType
-import io.michaelrocks.lightsaber.processor.commons.rawType
 import org.objectweb.asm.Type
 
 fun FieldDescriptor(name: String, desc: String): FieldDescriptor = FieldDescriptor(name, Type.getType(desc))
-fun FieldDescriptor(name: String, type: Type): FieldDescriptor = FieldDescriptor(name, type.toFieldSignatureMirror())
 
 data class FieldDescriptor(
     val name: String,
-    val signature: FieldSignatureMirror
+    val type: Type
 )
 
-val FieldDescriptor.parameterized: Boolean
-  get() = signature.type.isParameterized
-
-val FieldDescriptor.rawType: Type
-  get() = signature.type.rawType
-
-val FieldDescriptor.parameterType: Type?
-  get() = signature.type.parameterType
-
 val FieldDescriptor.descriptor: String
-  get() = signature.type.rawType.descriptor
-
-fun Type.toFieldSignatureMirror(): FieldSignatureMirror =
-    FieldSignatureMirror.Builder()
-        .type(GenericType.RawType(this))
-        .build()
+  get() = type.descriptor

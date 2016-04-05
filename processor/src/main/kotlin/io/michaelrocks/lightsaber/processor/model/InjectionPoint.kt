@@ -14,21 +14,24 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor
+package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes.ASM5
+import io.michaelrocks.grip.mirrors.FieldMirror
+import io.michaelrocks.grip.mirrors.MethodMirror
+import org.objectweb.asm.Type
 
-open class ProcessorMethodVisitor @JvmOverloads constructor(
-    val errorReporter: ErrorReporter,
-    methodVisitor: MethodVisitor? = null
-) : MethodVisitor(ASM5, methodVisitor) {
+sealed class InjectionPoint {
+  abstract val containerType: Type
 
-  fun reportError(errorMessage: String) {
-    reportError(ProcessingException(errorMessage))
-  }
+  class Method(
+      override val containerType: Type,
+      val method: MethodMirror,
+      val injectees: List<Injectee>
+  ) : InjectionPoint()
 
-  fun reportError(error: Exception) {
-    errorReporter.reportError(error)
-  }
+  class Field(
+      override val containerType: Type,
+      val field: FieldMirror,
+      val injectee: Injectee
+  ) : InjectionPoint()
 }

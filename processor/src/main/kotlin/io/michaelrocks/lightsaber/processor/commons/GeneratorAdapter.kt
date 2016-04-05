@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package io.michaelrocks.lightsaber.processor.commons
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
-import io.michaelrocks.lightsaber.processor.descriptors.rawType
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes.*
@@ -86,19 +85,19 @@ class GeneratorAdapter(
   }
 
   fun getField(owner: Type, field: FieldDescriptor) {
-    getField(owner, field.name, field.rawType)
+    getField(owner, field.name, field.type)
   }
 
   fun putField(owner: Type, field: FieldDescriptor) {
-    putField(owner, field.name, field.rawType)
+    putField(owner, field.name, field.type)
   }
 
   fun getStatic(owner: Type, field: FieldDescriptor) {
-    getStatic(owner, field.name, field.rawType)
+    getStatic(owner, field.name, field.type)
   }
 
   fun putStatic(owner: Type, field: FieldDescriptor) {
-    putStatic(owner, field.name, field.rawType)
+    putStatic(owner, field.name, field.type)
   }
 
   fun pushNull() {

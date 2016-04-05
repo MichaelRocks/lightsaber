@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,27 +16,26 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor
 import io.michaelrocks.lightsaber.processor.logging.getLogger
+import io.michaelrocks.lightsaber.processor.model.InjectionContext
 
 class ProvidersGenerator(
     private val classProducer: ClassProducer,
-    private val processorContext: ProcessorContext,
+    private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator
 ) {
   private val logger = getLogger()
 
-  fun generateProviders() = processorContext.allModules.forEach { generateModuleProviders(it) }
-
-  private fun generateModuleProviders(module: ModuleDescriptor) = module.providers.forEach { generateProvider(it) }
-
-  private fun generateProvider(provider: ProviderDescriptor) {
-    logger.debug("Generating provider {}", provider.providerType.internalName)
-    val generator = ProviderClassGenerator(processorContext.classRegistry, annotationCreator, provider)
-    val providerClassData = generator.generate()
-    classProducer.produceClass(provider.providerType.internalName, providerClassData)
+  fun generate(context: InjectionContext) {
+    context.allModules.forEach { module ->
+      module.providers.forEach { provider ->
+        logger.debug("Generating provider {}", provider.type.internalName)
+        val generator = ProviderClassGenerator(classRegistry, annotationCreator, provider)
+        val providerClassData = generator.generate()
+        classProducer.produceClass(provider.type.internalName, providerClassData)
+      }
+    }
   }
 }

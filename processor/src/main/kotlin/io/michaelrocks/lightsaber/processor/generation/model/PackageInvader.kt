@@ -14,27 +14,23 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.descriptors
+package io.michaelrocks.lightsaber.processor.generation.model
 
-import io.michaelrocks.grip.mirrors.signature.FieldSignatureMirror
-import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import org.objectweb.asm.Type
 import java.util.*
 
-inline fun PackageInvaderDescriptor(
-    packageName: String,
-    body: PackageInvaderDescriptor.Builder.() -> Unit
-): PackageInvaderDescriptor =
-    PackageInvaderDescriptor.Builder(packageName).apply { body() }.build()
+private val CLASS_NAME = "Lightsaber\$PackageInvader"
+private val FIELD_PREFIX = "class"
 
-data class PackageInvaderDescriptor(
+data class PackageInvader(
     val type: Type,
     val packageName: String,
     val classFields: Map<Type, FieldDescriptor>
 ) {
   private constructor(
-      builder: PackageInvaderDescriptor.Builder
+      builder: Builder
   ) : this(
       type = builder.type,
       packageName = builder.packageName,
@@ -46,23 +42,18 @@ data class PackageInvaderDescriptor(
   }
 
   class Builder(internal val packageName: String) {
-    companion object {
-      private val CLASS_NAME = "Lightsaber\$PackageInvader"
-      private val FIELD_PREFIX = "class"
-    }
-
-    internal val type: Type = Type.getObjectType(packageName + '/' + CLASS_NAME)
-    internal val classes = HashSet<Type>()
-    internal val classFields = HashMap<Type, FieldDescriptor>()
+    val type: Type = Type.getObjectType(packageName + '/' + CLASS_NAME)
+    val classes = HashSet<Type>()
+    val classFields = HashMap<Type, FieldDescriptor>()
 
     fun addClass(type: Type): Builder {
       classes.add(type)
       return this
     }
 
-    fun build(): PackageInvaderDescriptor {
+    fun build(): PackageInvader {
       addClassFields()
-      return PackageInvaderDescriptor(this)
+      return PackageInvader(this)
     }
 
     private fun addClassFields() {
@@ -74,11 +65,7 @@ data class PackageInvaderDescriptor(
 
     private fun addClassField(type: Type) {
       val name = FIELD_PREFIX + classFields.size
-      val signature =
-          FieldSignatureMirror.Builder()
-              .type(GenericType.ParameterizedType(Types.CLASS_TYPE, GenericType.RawType(type)))
-              .build()
-      val field = FieldDescriptor(name, signature)
+      val field = FieldDescriptor(name, Types.CLASS_TYPE)
       classFields.put(type, field)
     }
   }

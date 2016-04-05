@@ -16,49 +16,62 @@
 
 package io.michaelrocks.lightsaber.processor.validation
 
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.ClassMirror
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.grip.mirrors.isStatic
+import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier
-import io.michaelrocks.lightsaber.processor.descriptors.providableType
+import io.michaelrocks.lightsaber.processor.commons.rawType
+import io.michaelrocks.lightsaber.processor.model.InjectionContext
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
-class SanityChecker(private val processorContext: ProcessorContext) {
-  fun performSanityChecks() {
-    checkStaticInjectionPoints()
-    checkProvidableTargetsAreConstructable()
-    checkProviderMethodsReturnValues()
+class SanityChecker(
+    private val classRegistry: ClassRegistry,
+    private val errorReporter: ErrorReporter
+) {
+  fun performSanityChecks(context: InjectionContext) {
+    checkStaticInjectionPoints(context)
+    checkProvidableTargetsAreConstructable(context)
+    checkProviderMethodsReturnValues(context)
   }
 
-  private fun checkStaticInjectionPoints() {
-    for (injectableTarget in processorContext.getInjectableTargets()) {
-      for (field in injectableTarget.injectableStaticFields.values) {
-        processorContext.reportError("Static field injection is not supported yet: " + field)
-      }
-      for (method in injectableTarget.injectableStaticMethods.values) {
-        processorContext.reportError("Static method injection is not supported yet: " + method)
+  private fun checkStaticInjectionPoints(context: InjectionContext) {
+    for (injectableTarget in context.injectableTargets) {
+      injectableTarget.injectionPoints.forEach { injectionPoint ->
+        when (injectionPoint) {
+          is InjectionPoint.Field ->
+              if (injectionPoint.field.isStatic) {
+                errorReporter.reportError("Static field injection is not supported yet: " + injectionPoint.field)
+              }
+          is InjectionPoint.Method ->
+            if (injectionPoint.method.isStatic) {
+              errorReporter.reportError("Static method injection is not supported yet: " + injectionPoint.method)
+            }
+        }
       }
     }
   }
 
-  private fun checkProvidableTargetsAreConstructable() {
-    for (providableTarget in processorContext.getProvidableTargets()) {
-      checkProvidableTargetIsConstructable(providableTarget.targetType)
+  private fun checkProvidableTargetsAreConstructable(context: InjectionContext) {
+    for (providableTarget in context.providableTargets) {
+      checkProvidableTargetIsConstructable(providableTarget.type)
     }
   }
 
-  private fun checkProviderMethodsReturnValues() {
-    for (module in processorContext.getModules()) {
+  private fun checkProviderMethodsReturnValues(context: InjectionContext) {
+    for (module in context.modules) {
       for (provider in module.providers) {
-        if (provider.providableType == Type.VOID_TYPE) {
-          processorContext.reportError("Provider method returns void: " + provider.providerMethod)
+        if (provider.dependency.type.rawType == Type.VOID_TYPE) {
+          errorReporter.reportError("Provider returns void: " + provider.provisionPoint)
         }
       }
     }
   }
 
   private fun checkProvidableTargetIsConstructable(providableTarget: Type) {
-    val mirror = processorContext.classRegistry.getClassMirror(providableTarget)
+    val mirror = classRegistry.getClassMirror(providableTarget)
     checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_INTERFACE)
     checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ABSTRACT)
     checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ENUM)
@@ -67,7 +80,7 @@ class SanityChecker(private val processorContext: ProcessorContext) {
 
   private fun checkProvidableTargetAccessFlagNotSet(mirror: ClassMirror, flag: Int) {
     if ((mirror.access and flag) != 0) {
-      processorContext.reportError(
+      errorReporter.reportError(
           "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${mirror.type}")
     }
   }

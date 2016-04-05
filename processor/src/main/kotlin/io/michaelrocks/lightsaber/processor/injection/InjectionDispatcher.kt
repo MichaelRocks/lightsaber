@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,30 +16,30 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
-import io.michaelrocks.lightsaber.processor.ProcessorClassVisitor
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
 class InjectionDispatcher(
     classVisitor: ClassVisitor,
-    processorContext: ProcessorContext
-) : ProcessorClassVisitor(processorContext, classVisitor) {
+    private val context: InjectionContext
+) : ClassVisitor(Opcodes.ASM5, classVisitor) {
 
   override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
       interfaces: Array<String>?) {
     val type = Type.getObjectType(name)
 
-    processorContext.findModuleByType(type)?.let {
-      cv = ModulePatcher(processorContext, cv, it)
+    context.findModuleByType(type)?.let {
+      cv = ModulePatcher(cv, it)
     }
 
-    processorContext.findInjectableTargetByType(type)?.let {
-      cv = InjectableTargetPatcher(processorContext, cv, it)
+    context.findInjectableTargetByType(type)?.let {
+      cv = InjectableTargetPatcher(cv, it)
     }
 
-    processorContext.findProvidableTargetByType(type)?.let {
-      cv = ProvidableTargetPatcher(processorContext, cv, it)
+    context.findProvidableTargetByType(type)?.let {
+      cv = ProvidableTargetPatcher(cv, it)
     }
 
     super.visit(version, access, name, signature, superName, interfaces)

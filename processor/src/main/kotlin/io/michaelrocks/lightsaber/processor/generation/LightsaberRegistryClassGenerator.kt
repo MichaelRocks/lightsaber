@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -24,6 +24,7 @@ import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
+import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -33,7 +34,7 @@ import java.util.*
 
 class LightsaberRegistryClassGenerator(
     private val classProducer: ClassProducer,
-    private val processorContext: ProcessorContext
+    private val classRegistry: ClassRegistry
 ) {
   companion object {
     private val LIGHTSABER_REGISTRY_TYPE = Type.getObjectType("io/michaelrocks/lightsaber/LightsaberRegistry")
@@ -57,9 +58,9 @@ class LightsaberRegistryClassGenerator(
     private val GET_MEMBERS_INJECTORS_METHOD = MethodDescriptor.forMethod("getMembersInjectors", MAP_TYPE)
   }
 
-  fun generateLightsaberRegistry() {
+  fun generate(generationContext: GenerationContext) {
     val classWriter =
-        StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, processorContext.classRegistry)
+        StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
         V1_6,
@@ -70,7 +71,7 @@ class LightsaberRegistryClassGenerator(
         null)
 
     generateFields(classVisitor)
-    generateStaticInitializer(classVisitor)
+    generateStaticInitializer(classVisitor, generationContext)
     generateMethods(classVisitor)
 
     classVisitor.visitEnd()
@@ -114,30 +115,31 @@ class LightsaberRegistryClassGenerator(
     fieldVisitor.visitEnd()
   }
 
-  private fun generateStaticInitializer(classVisitor: ClassVisitor) {
+  private fun generateStaticInitializer(classVisitor: ClassVisitor, generationContext: GenerationContext) {
     val generator = GeneratorAdapter(classVisitor, ACC_STATIC, MethodDescriptor.forStaticInitializer())
     generator.visitCode()
 
-    populatePackageInjectorConfiguratorsMethod(generator)
-    populateInjectorConfigurators(generator)
-    populateMembersInjectors(generator)
+    populatePackageInjectorConfiguratorsMethod(generator, generationContext)
+    populateInjectorConfigurators(generator, generationContext)
+    populateMembersInjectors(generator, generationContext)
 
     generator.returnValue()
     generator.endMethod()
   }
 
-  private fun populatePackageInjectorConfiguratorsMethod(generator: GeneratorAdapter) {
-    val packageModules = processorContext.getPackageModules()
+  private fun populatePackageInjectorConfiguratorsMethod(generator: GeneratorAdapter,
+      generationContext: GenerationContext) {
+    val configurators = generationContext.packageInjectorConfigurators
     generator.newInstance(ARRAY_LIST_TYPE)
     generator.dup()
-    generator.push(packageModules.size)
+    generator.push(configurators.size)
     generator.invokeConstructor(ARRAY_LIST_TYPE, ARRAY_LIST_CONSTRUCTOR)
 
-    for (packageModule in packageModules) {
+    for (configurator in configurators) {
       generator.dup()
-      generator.newInstance(packageModule.configuratorType)
+      generator.newInstance(configurator.type)
       generator.dup()
-      generator.invokeConstructor(packageModule.configuratorType, MethodDescriptor.forDefaultConstructor())
+      generator.invokeConstructor(configurator.type, MethodDescriptor.forDefaultConstructor())
       generator.invokeInterface(LIST_TYPE, ADD_METHOD)
       generator.pop()
     }
@@ -145,19 +147,20 @@ class LightsaberRegistryClassGenerator(
     generator.putStatic(LIGHTSABER_REGISTRY_TYPE, PACKAGE_INJECTOR_CONFIGURATORS_FIELD)
   }
 
-  private fun populateInjectorConfigurators(generator: GeneratorAdapter) {
-    val modules = processorContext.getModules()
+  private fun populateInjectorConfigurators(generator: GeneratorAdapter,
+      generationContext: GenerationContext) {
+    val configurators = generationContext.injectorConfigurators
     generator.newInstance(HASH_MAP_TYPE)
     generator.dup()
-    generator.push(modules.size)
+    generator.push(configurators.size)
     generator.invokeConstructor(HASH_MAP_TYPE, HASH_MAP_CONSTRUCTOR)
 
-    for (module in modules) {
+    for (configurator in configurators) {
       generator.dup()
-      generator.push(module.moduleType)
-      generator.newInstance(module.configuratorType)
+      generator.push(configurator.module.type)
+      generator.newInstance(configurator.type)
       generator.dup()
-      generator.invokeConstructor(module.configuratorType, MethodDescriptor.forDefaultConstructor())
+      generator.invokeConstructor(configurator.type, MethodDescriptor.forDefaultConstructor())
       generator.invokeInterface(MAP_TYPE, PUT_METHOD)
       generator.pop()
     }
@@ -165,8 +168,8 @@ class LightsaberRegistryClassGenerator(
     generator.putStatic(LIGHTSABER_REGISTRY_TYPE, INJECTOR_CONFIGURATORS_FIELD)
   }
 
-  private fun populateMembersInjectors(generator: GeneratorAdapter) {
-    val injectors = processorContext.getInjectors()
+  private fun populateMembersInjectors(generator: GeneratorAdapter, generationContext: GenerationContext) {
+    val injectors = generationContext.membersInjectors
     generator.newInstance(HASH_MAP_TYPE)
     generator.dup()
     generator.push(injectors.size)
@@ -174,10 +177,10 @@ class LightsaberRegistryClassGenerator(
 
     for (injector in injectors) {
       generator.dup()
-      generator.push(injector.injectableTarget.targetType)
-      generator.newInstance(injector.injectorType)
+      generator.push(injector.target.type)
+      generator.newInstance(injector.type)
       generator.dup()
-      generator.invokeConstructor(injector.injectorType, MethodDescriptor.forDefaultConstructor())
+      generator.invokeConstructor(injector.type, MethodDescriptor.forDefaultConstructor())
       generator.invokeInterface(MAP_TYPE, PUT_METHOD)
       generator.pop()
     }

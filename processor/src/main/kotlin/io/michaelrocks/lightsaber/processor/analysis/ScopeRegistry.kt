@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor
+package io.michaelrocks.lightsaber.processor.analysis
 
-import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes.ASM5
+import io.michaelrocks.lightsaber.LightsaberTypes
+import io.michaelrocks.lightsaber.processor.commons.Types
+import org.objectweb.asm.Type
 
-open class ProcessorMethodVisitor @JvmOverloads constructor(
-    val errorReporter: ErrorReporter,
-    methodVisitor: MethodVisitor? = null
-) : MethodVisitor(ASM5, methodVisitor) {
-
-  fun reportError(errorMessage: String) {
-    reportError(ProcessingException(errorMessage))
-  }
-
-  fun reportError(error: Exception) {
-    errorReporter.reportError(error)
+class ScopeRegistry {
+  fun findScopeProviderByAnnotationType(annotationType: Type): Type? {
+    return when (annotationType) {
+      Types.SINGLETON_TYPE -> LightsaberTypes.SINGLETON_PROVIDER_TYPE
+      else -> null
+    }
   }
 }

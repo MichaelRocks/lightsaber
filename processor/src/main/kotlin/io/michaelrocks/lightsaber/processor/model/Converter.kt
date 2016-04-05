@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.descriptors
+package io.michaelrocks.lightsaber.processor.model
 
 import org.objectweb.asm.Type
 
-data class ClassDescriptor(
-    val access: Int,
-    val classType: Type,
-    val superType: Type?,
-    val interfaceTypes: List<Type> = emptyList()
-)
+sealed class Converter {
+  object Identity : Converter()
+  object Instance : Converter()
+  class Adapter(val adapterType: Type) : Converter()
+}

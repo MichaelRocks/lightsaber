@@ -16,19 +16,24 @@
 
 package io.michaelrocks.lightsaber.processor
 
-import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes.ASM5
+import java.util.*
 
-open class ProcessorMethodVisitor @JvmOverloads constructor(
-    val errorReporter: ErrorReporter,
-    methodVisitor: MethodVisitor? = null
-) : MethodVisitor(ASM5, methodVisitor) {
+class ErrorReporter {
+  private val errors = ArrayList<Exception>()
+
+  fun hasErrors(): Boolean {
+    return errors.isNotEmpty()
+  }
+
+  fun getErrors(): List<Exception> {
+    return errors
+  }
 
   fun reportError(errorMessage: String) {
     reportError(ProcessingException(errorMessage))
   }
 
   fun reportError(error: Exception) {
-    errorReporter.reportError(error)
+    errors.add(error)
   }
 }

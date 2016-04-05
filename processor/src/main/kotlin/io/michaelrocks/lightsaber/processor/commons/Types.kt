@@ -18,14 +18,12 @@ package io.michaelrocks.lightsaber.processor.commons
 
 import io.michaelrocks.bimap.BiMap
 import io.michaelrocks.bimap.HashBiMap
-import io.michaelrocks.lightsaber.Injector
-import io.michaelrocks.lightsaber.Key
-import io.michaelrocks.lightsaber.Module
-import io.michaelrocks.lightsaber.Provides
+import io.michaelrocks.lightsaber.*
 import org.objectweb.asm.Type
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Qualifier
+import javax.inject.Singleton
 import kotlin.reflect.KClass
 
 object Types {
@@ -35,10 +33,12 @@ object Types {
   val PROVIDES_TYPE = getType<Provides>()
   val MODULE_TYPE = getType<Module>()
   val QUALIFIER_TYPE = getType<Qualifier>()
+  val SINGLETON_TYPE = getType<Singleton>()
   val INJECTOR_TYPE = getType<Injector>()
-  val PROVIDER_TYPE = getType<Provider<Any>>()
-  val KEY_TYPE = getType<Key<Any>>()
-  val CLASS_TYPE = getType<Class<Any>>()
+  val PROVIDER_TYPE = getType<Provider<*>>()
+  val LAZY_TYPE = getType<Lazy<*>>()
+  val KEY_TYPE = getType<Key<*>>()
+  val CLASS_TYPE = getType<Class<*>>()
   val ANNOTATION_TYPE = getType<Annotation>()
 
   val BOXED_VOID_TYPE = getType<Void>()

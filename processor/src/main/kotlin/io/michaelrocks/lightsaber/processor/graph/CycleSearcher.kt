@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,17 @@
 
 package io.michaelrocks.lightsaber.processor.graph
 
-import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType
+import io.michaelrocks.lightsaber.processor.model.Dependency
 import java.util.*
 
 class CycleSearcher(private val graph: DependencyGraph) {
-  fun findCycles(): Collection<QualifiedType> = findCycles(HashMap(), HashSet())
+  fun findCycles(): Collection<Dependency> = findCycles(HashMap(), HashSet())
 
   private fun findCycles(
-      colors: MutableMap<QualifiedType, VertexColor>,
-      cycles: MutableSet<QualifiedType>
-  ): Collection<QualifiedType> {
-    fun traverse(type: QualifiedType) {
+      colors: MutableMap<Dependency, VertexColor>,
+      cycles: MutableSet<Dependency>
+  ): Collection<Dependency> {
+    fun traverse(type: Dependency) {
       val color = colors[type]
       if (color == VertexColor.BLACK) {
         return

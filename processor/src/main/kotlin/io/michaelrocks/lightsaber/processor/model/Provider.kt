@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor
+package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes.ASM5
+import org.objectweb.asm.Type
 
-open class ProcessorMethodVisitor @JvmOverloads constructor(
-    val errorReporter: ErrorReporter,
-    methodVisitor: MethodVisitor? = null
-) : MethodVisitor(ASM5, methodVisitor) {
-
-  fun reportError(errorMessage: String) {
-    reportError(ProcessingException(errorMessage))
-  }
-
-  fun reportError(error: Exception) {
-    errorReporter.reportError(error)
-  }
+data class Provider(
+    val type: Type,
+    val provisionPoint: ProvisionPoint,
+    val moduleType: Type,
+    val scope: Scope
+) {
+  val dependency: Dependency
+    get() = provisionPoint.dependency
 }
+
+val Provider.isConstructorProvider: Boolean
+  get() = provisionPoint is ProvisionPoint.Constructor

@@ -14,21 +14,12 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor
+package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes.ASM5
+import io.michaelrocks.grip.mirrors.AnnotationMirror
+import io.michaelrocks.grip.mirrors.signature.GenericType
 
-open class ProcessorMethodVisitor @JvmOverloads constructor(
-    val errorReporter: ErrorReporter,
-    methodVisitor: MethodVisitor? = null
-) : MethodVisitor(ASM5, methodVisitor) {
-
-  fun reportError(errorMessage: String) {
-    reportError(ProcessingException(errorMessage))
-  }
-
-  fun reportError(error: Exception) {
-    errorReporter.reportError(error)
-  }
-}
+data class Dependency(
+    val type: GenericType,
+    val qualifier: AnnotationMirror? = null
+)
