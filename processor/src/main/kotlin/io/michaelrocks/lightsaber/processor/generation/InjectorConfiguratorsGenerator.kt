@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.generation.model.GenerationConfiguration
+import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 
 class InjectorConfiguratorsGenerator(
@@ -28,11 +28,11 @@ class InjectorConfiguratorsGenerator(
 ) {
   private val logger = getLogger()
 
-  fun generate(generationConfiguration: GenerationConfiguration) {
-    generationConfiguration.allInjectorConfigurators.forEach { configurator ->
+  fun generate(generationContext: GenerationContext) {
+    generationContext.allInjectorConfigurators.forEach { configurator ->
       logger.debug("Generating injector configurator {}", configurator.type.internalName)
       val generator =
-          InjectorConfiguratorClassGenerator(classRegistry, annotationCreator, generationConfiguration, configurator)
+          InjectorConfiguratorClassGenerator(classRegistry, annotationCreator, generationContext, configurator)
       val classData = generator.generate()
       classProducer.produceClass(configurator.type.internalName, classData)
     }

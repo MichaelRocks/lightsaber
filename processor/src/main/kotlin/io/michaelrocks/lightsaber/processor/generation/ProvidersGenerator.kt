@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.processor.generation
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.logging.getLogger
-import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
+import io.michaelrocks.lightsaber.processor.model.InjectionContext
 
 class ProvidersGenerator(
     private val classProducer: ClassProducer,
@@ -28,8 +28,8 @@ class ProvidersGenerator(
 ) {
   private val logger = getLogger()
 
-  fun generate(configuration: InjectionConfiguration) {
-    configuration.allModules.forEach { module ->
+  fun generate(context: InjectionContext) {
+    context.allModules.forEach { module ->
       module.providers.forEach { provider ->
         logger.debug("Generating provider {}", provider.type.internalName)
         val generator = ProviderClassGenerator(classRegistry, annotationCreator, provider)

@@ -21,7 +21,7 @@ import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.generation.model.GenerationConfiguration
+import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.model.Provider
 import io.michaelrocks.lightsaber.processor.model.Scope
@@ -35,7 +35,7 @@ import org.objectweb.asm.Type
 class InjectorConfiguratorClassGenerator(
     private val classRegistry: ClassRegistry,
     private val annotationCreator: AnnotationCreator,
-    private val generationConfiguration: GenerationConfiguration,
+    private val generationContext: GenerationContext,
     private val injectorConfigurator: InjectorConfigurator
 ) {
   companion object {
@@ -119,7 +119,7 @@ class InjectorConfiguratorClassGenerator(
     generator.newInstance(Types.KEY_TYPE)
     generator.dup()
     val providableType = provider.dependency.type.rawType
-    val packageInvader = generationConfiguration.findPackageInvaderByTargetType(injectorConfigurator.module.type)!!
+    val packageInvader = generationContext.findPackageInvaderByTargetType(injectorConfigurator.module.type)!!
     val classField = packageInvader.getClassField(providableType.box()) ?:
         error("Cannot find class field for type: %s".format(providableType))
 

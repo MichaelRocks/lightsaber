@@ -28,7 +28,7 @@ import io.michaelrocks.lightsaber.processor.injection.InjectionDispatcher
 import io.michaelrocks.lightsaber.processor.io.FileSource
 import io.michaelrocks.lightsaber.processor.io.IoFactory
 import io.michaelrocks.lightsaber.processor.logging.getLogger
-import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
+import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import io.michaelrocks.lightsaber.processor.validation.SanityChecker
@@ -51,23 +51,23 @@ class ClassProcessor(
   private val fileSink = IoFactory.createFileSink(inputFile, outputFile)
 
   fun processClasses() {
-    val configuration = performAnalysis()
-    configuration.dump()
-    validateDependencyGraph(configuration)
-    performGeneration(configuration)
-    copyAndPatchClasses(configuration)
+    val context = performAnalysis()
+    context.dump()
+    validateDependencyGraph(context)
+    performGeneration(context)
+    copyAndPatchClasses(context)
   }
 
-  private fun performAnalysis(): InjectionConfiguration {
+  private fun performAnalysis(): InjectionContext {
     val analyzer = Analyzer(grip, errorReporter)
-    val configuration = analyzer.analyze(listOf(inputFile))
-    SanityChecker(grip.classRegistry, errorReporter).performSanityChecks(configuration)
+    val context = analyzer.analyze(listOf(inputFile))
+    SanityChecker(grip.classRegistry, errorReporter).performSanityChecks(context)
     checkErrors()
-    return configuration
+    return context
   }
 
-  private fun validateDependencyGraph(configuration: InjectionConfiguration) {
-    val dependencyGraph = DependencyGraph(errorReporter, configuration.allModules)
+  private fun validateDependencyGraph(context: InjectionContext) {
+    val dependencyGraph = DependencyGraph(errorReporter, context.allModules)
 
     val unresolvedDependenciesSearcher = UnresolvedDependenciesSearcher(dependencyGraph)
     val unresolvedDependencies = unresolvedDependenciesSearcher.findUnresolvedDependencies()
@@ -84,20 +84,20 @@ class ClassProcessor(
     checkErrors()
   }
 
-  private fun performGeneration(configuration: InjectionConfiguration) {
+  private fun performGeneration(context: InjectionContext) {
     val generator = Generator(grip.classRegistry, errorReporter, fileSink)
-    generator.generate(configuration)
+    generator.generate(context)
     checkErrors()
   }
 
-  private fun copyAndPatchClasses(configuration: InjectionConfiguration) {
+  private fun copyAndPatchClasses(context: InjectionContext) {
     fileSource.listFiles { path, type ->
       when (type) {
         FileSource.EntryType.CLASS -> {
           val classReader = ClassReader(fileSource.readFile(path))
           val classWriter = StandaloneClassWriter(
               classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry)
-          val classVisitor = InjectionDispatcher(classWriter, configuration)
+          val classVisitor = InjectionDispatcher(classWriter, context)
           classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
           fileSink.createFile(path, classWriter.toByteArray())
         }
@@ -125,7 +125,7 @@ class ClassProcessor(
     }
   }
 
-  fun InjectionConfiguration.dump() {
+  fun InjectionContext.dump() {
     for (module in modules) {
       logger.debug("Module: {}", module.type)
       for (provider in module.providers) {

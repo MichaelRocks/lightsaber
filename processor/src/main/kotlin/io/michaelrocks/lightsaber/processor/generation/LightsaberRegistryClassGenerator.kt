@@ -24,7 +24,7 @@ import io.michaelrocks.lightsaber.processor.commons.getType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
-import io.michaelrocks.lightsaber.processor.generation.model.GenerationConfiguration
+import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -58,7 +58,7 @@ class LightsaberRegistryClassGenerator(
     private val GET_MEMBERS_INJECTORS_METHOD = MethodDescriptor.forMethod("getMembersInjectors", MAP_TYPE)
   }
 
-  fun generate(generationConfiguration: GenerationConfiguration) {
+  fun generate(generationContext: GenerationContext) {
     val classWriter =
         StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
@@ -71,7 +71,7 @@ class LightsaberRegistryClassGenerator(
         null)
 
     generateFields(classVisitor)
-    generateStaticInitializer(classVisitor, generationConfiguration)
+    generateStaticInitializer(classVisitor, generationContext)
     generateMethods(classVisitor)
 
     classVisitor.visitEnd()
@@ -115,21 +115,21 @@ class LightsaberRegistryClassGenerator(
     fieldVisitor.visitEnd()
   }
 
-  private fun generateStaticInitializer(classVisitor: ClassVisitor, generationConfiguration: GenerationConfiguration) {
+  private fun generateStaticInitializer(classVisitor: ClassVisitor, generationContext: GenerationContext) {
     val generator = GeneratorAdapter(classVisitor, ACC_STATIC, MethodDescriptor.forStaticInitializer())
     generator.visitCode()
 
-    populatePackageInjectorConfiguratorsMethod(generator, generationConfiguration)
-    populateInjectorConfigurators(generator, generationConfiguration)
-    populateMembersInjectors(generator, generationConfiguration)
+    populatePackageInjectorConfiguratorsMethod(generator, generationContext)
+    populateInjectorConfigurators(generator, generationContext)
+    populateMembersInjectors(generator, generationContext)
 
     generator.returnValue()
     generator.endMethod()
   }
 
   private fun populatePackageInjectorConfiguratorsMethod(generator: GeneratorAdapter,
-      generationConfiguration: GenerationConfiguration) {
-    val configurators = generationConfiguration.packageInjectorConfigurators
+      generationContext: GenerationContext) {
+    val configurators = generationContext.packageInjectorConfigurators
     generator.newInstance(ARRAY_LIST_TYPE)
     generator.dup()
     generator.push(configurators.size)
@@ -148,8 +148,8 @@ class LightsaberRegistryClassGenerator(
   }
 
   private fun populateInjectorConfigurators(generator: GeneratorAdapter,
-      generationConfiguration: GenerationConfiguration) {
-    val configurators = generationConfiguration.injectorConfigurators
+      generationContext: GenerationContext) {
+    val configurators = generationContext.injectorConfigurators
     generator.newInstance(HASH_MAP_TYPE)
     generator.dup()
     generator.push(configurators.size)
@@ -168,8 +168,8 @@ class LightsaberRegistryClassGenerator(
     generator.putStatic(LIGHTSABER_REGISTRY_TYPE, INJECTOR_CONFIGURATORS_FIELD)
   }
 
-  private fun populateMembersInjectors(generator: GeneratorAdapter, generationConfiguration: GenerationConfiguration) {
-    val injectors = generationConfiguration.membersInjectors
+  private fun populateMembersInjectors(generator: GeneratorAdapter, generationContext: GenerationContext) {
+    val injectors = generationContext.membersInjectors
     generator.newInstance(HASH_MAP_TYPE)
     generator.dup()
     generator.push(injectors.size)

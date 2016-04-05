@@ -20,7 +20,7 @@ import io.michaelrocks.lightsaber.processor.commons.Types
 import org.objectweb.asm.Type
 import java.util.*
 
-data class GenerationConfiguration(
+data class GenerationContext(
     val packageInjectorConfigurators: Collection<InjectorConfigurator>,
     val injectorConfigurators: Collection<InjectorConfigurator>,
     val membersInjectors: Collection<MembersInjector>,

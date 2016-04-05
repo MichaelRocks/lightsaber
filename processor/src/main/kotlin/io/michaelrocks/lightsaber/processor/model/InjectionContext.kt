@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.model
 
 import org.objectweb.asm.Type
 
-data class InjectionConfiguration(
+data class InjectionContext(
     val modules: Collection<Module>,
     val packageModules: Collection<Module>,
     val injectableTargets: Collection<InjectionTarget>,

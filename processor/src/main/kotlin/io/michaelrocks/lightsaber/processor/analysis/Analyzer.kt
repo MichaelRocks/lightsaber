@@ -40,13 +40,13 @@ class Analyzer(
   private val logger = getLogger("Analyzer")
   private val scopeRegistry = ScopeRegistry()
 
-  fun analyze(files: Collection<File>): InjectionConfiguration {
+  fun analyze(files: Collection<File>): InjectionContext {
     val modules = analyzeModules(files)
     val context = createInjectionTargetsContext(files)
     val injectableTargets = analyzeInjectableTargets(context)
     val providableTargets = analyzeProvidableTargets(context)
     val packageModules = composePackageModules(providableTargets)
-    return InjectionConfiguration(modules, packageModules, injectableTargets, providableTargets)
+    return InjectionContext(modules, packageModules, injectableTargets, providableTargets)
   }
 
   fun analyzeModules(files: Collection<File>): Collection<Module> {

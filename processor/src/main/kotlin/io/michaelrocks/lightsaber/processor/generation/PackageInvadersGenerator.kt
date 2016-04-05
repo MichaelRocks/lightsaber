@@ -17,7 +17,7 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
-import io.michaelrocks.lightsaber.processor.generation.model.GenerationConfiguration
+import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 
 class PackageInvadersGenerator(
@@ -26,8 +26,8 @@ class PackageInvadersGenerator(
 ) {
   private val logger = getLogger()
 
-  fun generate(generationConfiguration: GenerationConfiguration) {
-    generationConfiguration.packageInvaders.forEach { packageInvader ->
+  fun generate(generationContext: GenerationContext) {
+    generationContext.packageInvaders.forEach { packageInvader ->
       logger.debug("Generating package invader {}", packageInvader.type)
       val generator = PackageInvaderClassGenerator(classRegistry, packageInvader)
       val classData = generator.generate()

@@ -16,29 +16,29 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
-import io.michaelrocks.lightsaber.processor.model.InjectionConfiguration
+import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
 class InjectionDispatcher(
     classVisitor: ClassVisitor,
-    private val configuration: InjectionConfiguration
+    private val context: InjectionContext
 ) : ClassVisitor(Opcodes.ASM5, classVisitor) {
 
   override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
       interfaces: Array<String>?) {
     val type = Type.getObjectType(name)
 
-    configuration.findModuleByType(type)?.let {
+    context.findModuleByType(type)?.let {
       cv = ModulePatcher(cv, it)
     }
 
-    configuration.findInjectableTargetByType(type)?.let {
+    context.findInjectableTargetByType(type)?.let {
       cv = InjectableTargetPatcher(cv, it)
     }
 
-    configuration.findProvidableTargetByType(type)?.let {
+    context.findProvidableTargetByType(type)?.let {
       cv = ProvidableTargetPatcher(cv, it)
     }
 
