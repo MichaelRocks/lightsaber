@@ -133,7 +133,7 @@ class Analyzer(
 
   private fun composePackageModules(
       providableTargets: Iterable<InjectionTarget>): Collection<Module> {
-    val injectionTargetsByPackageName = providableTargets.associateManyBy {
+    val injectionTargetsByPackageName = providableTargets.groupByTo(HashMap()) {
       it.type.internalName.substringBeforeLast('/', "")
     }
     return injectionTargetsByPackageName.entries.map {
@@ -144,15 +144,6 @@ class Analyzer(
       val moduleType = composePackageModuleType(packageName)
       Module(moduleType, providers)
     }
-  }
-
-  private inline fun <T, K> Iterable<T>.associateManyBy(keySelector: (T) -> K): Map<K, Collection<T>> {
-    val destination = HashMap<K, MutableCollection<T>>()
-    for (element in this) {
-      val items = destination.getOrPut(keySelector(element)) { ArrayList() }
-      items += element
-    }
-    return destination
   }
 
   private fun MethodMirror.toProvider(container: Type, index: Int): Provider {
