@@ -38,7 +38,7 @@ class MembersInjectorClassGenerator(
   companion object {
     private const val KEY_FIELD_NAME_PREFIX = "key"
 
-    private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE)
+    private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.TYPE_TYPE, Types.ANNOTATION_TYPE)
     private val INJECT_FIELDS_METHOD =
         MethodDescriptor.forMethod("injectFields", Type.VOID_TYPE, Types.INJECTOR_TYPE, Types.OBJECT_TYPE)
     private val INJECT_METHODS_METHOD =

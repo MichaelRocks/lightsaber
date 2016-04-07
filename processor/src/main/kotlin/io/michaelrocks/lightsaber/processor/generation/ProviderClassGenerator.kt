@@ -45,7 +45,7 @@ class ProviderClassGenerator(
 
     private val INJECTOR_FIELD = FieldDescriptor("injector", Types.INJECTOR_TYPE)
 
-    private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE)
+    private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.TYPE_TYPE, Types.ANNOTATION_TYPE)
     private val GET_METHOD = MethodDescriptor.forMethod("get", Types.OBJECT_TYPE)
     private val GET_PROVIDER_METHOD = MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE)
     private val INJECT_MEMBERS_METHOD = MethodDescriptor.forMethod("injectMembers", Type.VOID_TYPE, Types.OBJECT_TYPE)

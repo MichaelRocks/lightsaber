@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,19 @@
 package io.michaelrocks.lightsaber;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
 public class Key<T> {
-  private final Class<T> type;
+  private final Type type;
   private final Annotation qualifier;
 
-  public Key(final Class<T> type) {
+  public Key(final Type type) {
     this(type, null);
   }
 
-  public Key(final Class<T> type, final Annotation qualifier) {
+  public Key(final Type type, final Annotation qualifier) {
     this.type = type;
     this.qualifier = qualifier;
   }
@@ -39,7 +42,15 @@ public class Key<T> {
     return new Key<T>(type, annotation);
   }
 
-  public Class<T> getType() {
+  public static <T> Key<T> of(final Type type) {
+    return new Key<T>(type);
+  }
+
+  public static <T> Key<T> of(final Type type, final Annotation annotation) {
+    return new Key<T>(type, annotation);
+  }
+
+  public Type getType() {
     return type;
   }
 
@@ -60,12 +71,12 @@ public class Key<T> {
     final Key<?> key = (Key<?>) object;
     return type.equals(key.type)
         && (qualifier != null ? qualifier.equals(key.qualifier) : key.qualifier == null);
-
   }
 
   @Override
   public int hashCode() {
-    int result = type.hashCode();
+    int result = 1;
+    result = 31 * result + hashCode(type);
     result = 31 * result + (qualifier != null ? qualifier.hashCode() : 0);
     return result;
   }
@@ -73,5 +84,36 @@ public class Key<T> {
   @Override
   public String toString() {
     return "Key{type=" + type + ", qualifier=" + qualifier + '}';
+  }
+
+  private int hashCode(final Type type) {
+    if (type instanceof Class<?>) {
+      return type.hashCode();
+    } else if (type instanceof ParameterizedType) {
+      final ParameterizedType parameterizedType = (ParameterizedType) type;
+      int result = 1;
+      result = 31 * result + hashCode(parameterizedType.getActualTypeArguments());
+      result = 31 * result + hashCode(parameterizedType.getOwnerType());
+      result = 31 * result + hashCode(parameterizedType.getRawType());
+      return result;
+    } else if (type instanceof GenericArrayType) {
+      final GenericArrayType genericArrayType = (GenericArrayType) type;
+      return 31 + hashCode(genericArrayType.getGenericComponentType());
+    } else {
+      return type.hashCode();
+    }
+  }
+
+  private int hashCode(final Type[] types) {
+    if (types == null) {
+      return 0;
+    }
+
+    int result = 1;
+    for (final Type type : types) {
+      result = 31 * result + (type == null ? 0 : hashCode(type));
+    }
+
+    return result;
   }
 }

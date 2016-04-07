@@ -39,7 +39,7 @@ class InjectorConfiguratorClassGenerator(
     private val injectorConfigurator: InjectorConfigurator
 ) {
   companion object {
-    private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE)
+    private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.TYPE_TYPE, Types.ANNOTATION_TYPE)
     private val CONFIGURE_INJECTOR_METHOD =
         MethodDescriptor.forMethod("configureInjector",
             Type.VOID_TYPE, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, Types.OBJECT_TYPE)
