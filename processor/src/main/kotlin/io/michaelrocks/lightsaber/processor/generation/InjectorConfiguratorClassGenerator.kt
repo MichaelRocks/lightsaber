@@ -118,12 +118,15 @@ class InjectorConfiguratorClassGenerator(
   private fun generateKeyConstruction(generator: GeneratorAdapter, provider: Provider) {
     generator.newInstance(Types.KEY_TYPE)
     generator.dup()
-    val providableType = provider.dependency.type.rawType
-    val packageInvader = generationContext.findPackageInvaderByTargetType(injectorConfigurator.module.type)!!
-    val classField = packageInvader.getClassField(providableType.box()) ?:
-        error("Cannot find class field for type: %s".format(providableType))
+    val providableType = provider.dependency.type.rawType.box()
+    val packageInvader = generationContext.findPackageInvaderByTargetType(injectorConfigurator.module.type)
+    val classField = packageInvader?.fields?.get(providableType.box())
 
-    generator.getStatic(packageInvader.type, classField)
+    if (classField != null) {
+      generator.getStatic(packageInvader!!.type, classField)
+    } else {
+      generator.push(providableType)
+    }
     val qualifier = provider.dependency.qualifier
     if (qualifier == null) {
       generator.pushNull()

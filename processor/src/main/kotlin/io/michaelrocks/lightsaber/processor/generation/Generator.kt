@@ -17,11 +17,11 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.isPublic
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.box
-import io.michaelrocks.lightsaber.processor.commons.rawType
+import io.michaelrocks.lightsaber.processor.commons.*
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
@@ -80,21 +80,27 @@ class Generator(
         MembersInjector(injectorType, injectableTarget)
       }
 
-  private fun composePackageInvaders(context: InjectionContext): Collection<PackageInvader> {
-    val builders = HashMap<String, PackageInvader.Builder>()
-    for (module in context.allModules) {
-      for (provider in module.providers) {
-        val providableType = provider.dependency.type.rawType.box()
-        val packageName = Types.getPackageName(module.type)
-        val builder = builders[packageName] ?: PackageInvader.Builder(packageName).apply {
-          builders.put(packageName, this)
-        }
-        builder.addClass(providableType)
-      }
-    }
-
-    return builders.values.map { it.build() }
-  }
+  private fun composePackageInvaders(context: InjectionContext): Collection<PackageInvader> =
+      context.allModules.asSequence()
+          .flatMap { module -> module.providers.asSequence() }
+          .asIterable()
+          .groupNotNullByTo(
+              HashMap(),
+              { provider -> Types.getPackageName(provider.moduleType) },
+              { provider ->
+                val type = provider.dependency.type.rawType.box()
+                given (!classRegistry.getClassMirror(type).isPublic) { type }
+              }
+          )
+          .map {
+            val (packageName, types) = it
+            val type = Type.getObjectType("$packageName/Lightsaber\$PackageInvader")
+            val fields = types.associateByIndexedTo(HashMap(),
+                { index, type -> type.box() },
+                { index, type -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
+            )
+            PackageInvader(type, packageName, fields)
+          }
 
   private fun generateProviders(injectionContext: InjectionContext) {
     val generator = ProvidersGenerator(classProducer, classRegistry, annotationCreator)

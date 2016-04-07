@@ -16,57 +16,11 @@
 
 package io.michaelrocks.lightsaber.processor.generation.model
 
-import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import org.objectweb.asm.Type
-import java.util.*
-
-private val CLASS_NAME = "Lightsaber\$PackageInvader"
-private val FIELD_PREFIX = "class"
 
 data class PackageInvader(
     val type: Type,
     val packageName: String,
-    val classFields: Map<Type, FieldDescriptor>
-) {
-  private constructor(
-      builder: Builder
-  ) : this(
-      type = builder.type,
-      packageName = builder.packageName,
-      classFields = Collections.unmodifiableMap(HashMap(builder.classFields))
-  )
-
-  fun getClassField(type: Type): FieldDescriptor? {
-    return classFields[type]
-  }
-
-  class Builder(internal val packageName: String) {
-    val type: Type = Type.getObjectType(packageName + '/' + CLASS_NAME)
-    val classes = HashSet<Type>()
-    val classFields = HashMap<Type, FieldDescriptor>()
-
-    fun addClass(type: Type): Builder {
-      classes.add(type)
-      return this
-    }
-
-    fun build(): PackageInvader {
-      addClassFields()
-      return PackageInvader(this)
-    }
-
-    private fun addClassFields() {
-      classFields.clear()
-      for (type in classes) {
-        addClassField(type)
-      }
-    }
-
-    private fun addClassField(type: Type) {
-      val name = FIELD_PREFIX + classFields.size
-      val field = FieldDescriptor(name, Types.CLASS_TYPE)
-      classFields.put(type, field)
-    }
-  }
-}
+    val fields: Map<Type, FieldDescriptor>
+)
