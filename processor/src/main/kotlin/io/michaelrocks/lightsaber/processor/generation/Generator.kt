@@ -22,10 +22,7 @@ import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
-import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
-import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
-import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
-import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
+import io.michaelrocks.lightsaber.processor.generation.model.*
 import io.michaelrocks.lightsaber.processor.io.FileSink
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.Module
@@ -41,12 +38,12 @@ class Generator(
   private val annotationCreator = AnnotationCreator(classProducer, classRegistry)
 
   fun generate(injectionContext: InjectionContext) {
-    val generationConfiguration = composeGeneratorModel(injectionContext)
+    val generationContext = composeGeneratorModel(injectionContext)
     generateProviders(injectionContext)
-    generateLightsaberConfigurator(generationConfiguration)
-    generateInjectorConfigurators(generationConfiguration)
-    generateInjectors(generationConfiguration)
-    generatePackageInvaders(generationConfiguration)
+    generateLightsaberConfigurator(generationContext)
+    generateInjectorConfigurators(generationContext)
+    generateInjectors(generationContext)
+    generatePackageInvaders(generationContext)
   }
 
   private fun composeGeneratorModel(context: InjectionContext) =
@@ -54,7 +51,8 @@ class Generator(
           composePackageInjectorConfigurators(context),
           composeInjectorConfigurators(context),
           composeMembersInjectors(context),
-          composePackageInvaders(context)
+          composePackageInvaders(context),
+          composeKeyRegistry(context)
       )
 
   private fun composePackageInjectorConfigurators(context: InjectionContext) =
@@ -101,6 +99,19 @@ class Generator(
             )
             PackageInvader(type, packageName, fields)
           }
+
+  private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {
+    val type = Type.getObjectType("io/michaelrocks/lightsaber/KeyRegistry")
+    val fields = context.allModules.asSequence()
+        .flatMap { module -> module.providers.asSequence() }
+        .asIterable()
+        .associateByIndexedTo(
+            HashMap(),
+            { index, provider -> provider.dependency.box() },
+            { index, provider -> FieldDescriptor("key$index", Types.KEY_TYPE) }
+        )
+    return KeyRegistry(type, fields)
+  }
 
   private fun generateProviders(injectionContext: InjectionContext) {
     val generator = ProvidersGenerator(classProducer, classRegistry, annotationCreator)

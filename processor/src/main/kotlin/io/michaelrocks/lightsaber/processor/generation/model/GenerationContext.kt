@@ -24,7 +24,8 @@ data class GenerationContext(
     val packageInjectorConfigurators: Collection<InjectorConfigurator>,
     val injectorConfigurators: Collection<InjectorConfigurator>,
     val membersInjectors: Collection<MembersInjector>,
-    val packageInvaders: Collection<PackageInvader>
+    val packageInvaders: Collection<PackageInvader>,
+    val keyRegistry: KeyRegistry
 ) {
   private val packageInvadersByPackageName = HashMap<String, PackageInvader>()
 
