@@ -39,7 +39,7 @@ class Generator(
 
   fun generate(injectionContext: InjectionContext) {
     val generationContext = composeGeneratorModel(injectionContext)
-    generateProviders(injectionContext)
+    generateProviders(injectionContext, generationContext)
     generateLightsaberConfigurator(generationContext)
     generateInjectorConfigurators(generationContext)
     generateInjectors(generationContext)
@@ -114,9 +114,9 @@ class Generator(
     return KeyRegistry(type, fields)
   }
 
-  private fun generateProviders(injectionContext: InjectionContext) {
-    val generator = ProvidersGenerator(classProducer, classRegistry, annotationCreator)
-    generator.generate(injectionContext)
+  private fun generateProviders(injectionContext: InjectionContext, generationContext: GenerationContext) {
+    val generator = ProvidersGenerator(classProducer, classRegistry)
+    generator.generate(injectionContext, generationContext)
   }
 
   private fun generateLightsaberConfigurator(generationContext: GenerationContext) {
@@ -125,12 +125,12 @@ class Generator(
   }
 
   private fun generateInjectorConfigurators(generationContext: GenerationContext) {
-    val generator = InjectorConfiguratorsGenerator(classProducer, classRegistry, annotationCreator)
+    val generator = InjectorConfiguratorsGenerator(classProducer, classRegistry)
     generator.generate(generationContext)
   }
 
   private fun generateInjectors(generationContext: GenerationContext) {
-    val typeAgentsGenerator = MembersInjectorsGenerator(classProducer, classRegistry, annotationCreator)
+    val typeAgentsGenerator = MembersInjectorsGenerator(classProducer, classRegistry)
     typeAgentsGenerator.generate(generationContext)
   }
 

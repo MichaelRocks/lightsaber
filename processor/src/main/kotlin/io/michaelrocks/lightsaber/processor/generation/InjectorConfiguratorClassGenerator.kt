@@ -18,11 +18,12 @@ package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.commons.*
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
+import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
+import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
+import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
 import io.michaelrocks.lightsaber.processor.model.Provider
 import io.michaelrocks.lightsaber.processor.model.Scope
 import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
@@ -34,12 +35,10 @@ import org.objectweb.asm.Type
 
 class InjectorConfiguratorClassGenerator(
     private val classRegistry: ClassRegistry,
-    private val annotationCreator: AnnotationCreator,
-    private val generationContext: GenerationContext,
+    private val keyRegistry: KeyRegistry,
     private val injectorConfigurator: InjectorConfigurator
 ) {
   companion object {
-    private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.TYPE_TYPE, Types.ANNOTATION_TYPE)
     private val CONFIGURE_INJECTOR_METHOD =
         MethodDescriptor.forMethod("configureInjector",
             Type.VOID_TYPE, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, Types.OBJECT_TYPE)
@@ -105,7 +104,7 @@ class InjectorConfiguratorClassGenerator(
 
   private fun generateRegisterProviderInvocation(generator: GeneratorAdapter, provider: Provider, moduleLocal: Int) {
     generator.loadArg(0)
-    generateKeyConstruction(generator, provider)
+    generator.getKey(keyRegistry, provider.dependency)
 
     when (provider.scope) {
       is Scope.Class -> generateDelegatorConstruction(generator, provider, moduleLocal, provider.scope.scopeType)
@@ -113,27 +112,6 @@ class InjectorConfiguratorClassGenerator(
     }
 
     generator.invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD)
-  }
-
-  private fun generateKeyConstruction(generator: GeneratorAdapter, provider: Provider) {
-    generator.newInstance(Types.KEY_TYPE)
-    generator.dup()
-    val providableType = provider.dependency.type.rawType.box()
-    val packageInvader = generationContext.findPackageInvaderByTargetType(injectorConfigurator.module.type)
-    val classField = packageInvader?.fields?.get(providableType.box())
-
-    if (classField != null) {
-      generator.getStatic(packageInvader!!.type, classField)
-    } else {
-      generator.push(providableType)
-    }
-    val qualifier = provider.dependency.qualifier
-    if (qualifier == null) {
-      generator.pushNull()
-    } else {
-      annotationCreator.newAnnotation(generator, qualifier)
-    }
-    generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR)
   }
 
   private fun generateDelegatorConstruction(generator: GeneratorAdapter, provider: Provider,
