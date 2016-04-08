@@ -44,6 +44,7 @@ class Generator(
     generateInjectorConfigurators(generationContext)
     generateInjectors(generationContext)
     generatePackageInvaders(generationContext)
+    generateKeyRegistry(generationContext)
   }
 
   private fun composeGeneratorModel(context: InjectionContext) =
@@ -136,5 +137,10 @@ class Generator(
   private fun generatePackageInvaders(generationContext: GenerationContext) {
     val packageInvadersGenerator = PackageInvadersGenerator(classProducer, classRegistry)
     packageInvadersGenerator.generate(generationContext)
+  }
+
+  private fun generateKeyRegistry(generationContext: GenerationContext) {
+    val generator = KeyRegistryClassGenerator(classProducer, classRegistry, annotationCreator, generationContext)
+    generator.generate()
   }
 }
