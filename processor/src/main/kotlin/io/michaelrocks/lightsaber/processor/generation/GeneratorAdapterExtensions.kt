@@ -20,7 +20,9 @@ import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
+import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
 import io.michaelrocks.lightsaber.processor.model.Converter
+import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.Injectee
 
 private val PROVIDER_GET_METHOD = MethodDescriptor.forMethod("get", Types.OBJECT_TYPE)
@@ -40,4 +42,9 @@ fun GeneratorAdapter.convertDependencyToTargetType(injectee: Injectee) {
       invokeConstructor(injectee.converter.adapterType, ADAPTER_CONSTRUCTOR)
     }
   }
+}
+
+fun GeneratorAdapter.getKey(keyRegistry: KeyRegistry, dependency: Dependency) {
+  val field = keyRegistry.fields[dependency.box()] ?: error("Key for $dependency not found")
+  getStatic(keyRegistry.type, field)
 }
