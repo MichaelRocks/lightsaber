@@ -87,6 +87,10 @@ public class Key<T> {
   }
 
   private int hashCode(final Type type) {
+    if (type == null) {
+      return 0;
+    }
+
     if (type instanceof Class<?>) {
       return type.hashCode();
     } else if (type instanceof ParameterizedType) {
