@@ -10,7 +10,7 @@ dependencies {
   compile localGroovy()
   compile project(':processor')
 
-  provided "com.android.tools.build:gradle-api:$androidToolsVersion"
+  compileOnly "com.android.tools.build:gradle-api:$androidToolsVersion"
 }
 
 ext {
