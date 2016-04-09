@@ -39,6 +39,7 @@ object Types {
   val LAZY_TYPE = getType<Lazy<*>>()
   val KEY_TYPE = getType<Key<*>>()
   val CLASS_TYPE = getType<Class<*>>()
+  val TYPE_TYPE = getType<java.lang.reflect.Type>()
   val ANNOTATION_TYPE = getType<Annotation>()
 
   val BOXED_VOID_TYPE = getType<Void>()

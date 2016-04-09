@@ -53,7 +53,7 @@ class PackageInvaderClassGenerator(
   }
 
   private fun generateFields(classVisitor: ClassVisitor) {
-    for (field in packageInvader.classFields.values) {
+    for (field in packageInvader.fields.values) {
       val fieldVisitor = classVisitor.visitField(
           ACC_PUBLIC or ACC_STATIC or ACC_FINAL,
           field.name,
@@ -78,7 +78,7 @@ class PackageInvaderClassGenerator(
     val generator = GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer)
     generator.visitCode()
 
-    for ((type, field) in packageInvader.classFields.entries) {
+    for ((type, field) in packageInvader.fields.entries) {
       generator.push(type.box())
       generator.putStatic(packageInvader.type, field)
     }

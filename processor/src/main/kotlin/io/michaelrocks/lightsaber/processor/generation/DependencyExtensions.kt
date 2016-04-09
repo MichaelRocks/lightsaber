@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.generation.model
+package io.michaelrocks.lightsaber.processor.generation
 
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.model.Dependency
 
-data class PackageInvader(
-    val type: Type,
-    val packageName: String,
-    val fields: Map<Type, FieldDescriptor>
-)
+fun Dependency.box(): Dependency =
+    when (type) {
+      is GenericType.RawType -> Dependency(GenericType.RawType(type.type.box()), qualifier)
+      else -> this
+    }

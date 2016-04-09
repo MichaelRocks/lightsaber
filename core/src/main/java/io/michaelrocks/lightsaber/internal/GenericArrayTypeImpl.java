@@ -14,13 +14,20 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.generation.model
+package io.michaelrocks.lightsaber.internal;
 
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
-import org.objectweb.asm.Type
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.Type;
 
-data class PackageInvader(
-    val type: Type,
-    val packageName: String,
-    val fields: Map<Type, FieldDescriptor>
-)
+public final class GenericArrayTypeImpl implements GenericArrayType {
+  private final Type genericComponentType;
+
+  public GenericArrayTypeImpl(final Type genericComponentType) {
+    this.genericComponentType = genericComponentType;
+  }
+
+  @Override
+  public Type getGenericComponentType() {
+    return genericComponentType;
+  }
+}

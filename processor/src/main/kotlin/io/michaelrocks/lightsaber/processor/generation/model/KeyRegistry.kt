@@ -17,10 +17,10 @@
 package io.michaelrocks.lightsaber.processor.generation.model
 
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
+import io.michaelrocks.lightsaber.processor.model.Dependency
 import org.objectweb.asm.Type
 
-data class PackageInvader(
+data class KeyRegistry(
     val type: Type,
-    val packageName: String,
-    val fields: Map<Type, FieldDescriptor>
+    val fields: Map<Dependency, FieldDescriptor>
 )
