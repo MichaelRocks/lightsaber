@@ -30,6 +30,7 @@ import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes.*
+import org.objectweb.asm.Type
 
 private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.TYPE_TYPE, Types.ANNOTATION_TYPE)
 
@@ -108,16 +109,7 @@ class KeyRegistryClassGenerator(
     newInstance(Types.KEY_TYPE)
     dup()
 
-    val type = dependency.type.rawType.box()
-    val packageInvader = generationContext.findPackageInvaderByTargetType(type)
-    val field = packageInvader?.fields?.get(type)
-
-    if (field != null) {
-      getStatic(packageInvader!!.type, field)
-    } else {
-      push(type)
-    }
-
+    push(dependency.type)
     if (dependency.qualifier == null) {
       pushNull()
     } else {
@@ -129,7 +121,7 @@ class KeyRegistryClassGenerator(
 
   private fun GeneratorAdapter.push(type: GenericType) {
     when (type) {
-      is GenericType.RawType -> push(type.type.box())
+      is GenericType.RawType -> pushType(type.type.box())
       is GenericType.ParameterizedType -> newParameterizedType(type)
       is GenericType.GenericArrayType -> newGenericArrayType(type)
       else -> error("Unsupported generic type $type")
@@ -140,9 +132,14 @@ class KeyRegistryClassGenerator(
     newInstance(PARAMETERIZED_TYPE_IMPL_TYPE)
     dup()
     pushNull()
-    push(type.type)
+    pushType(type.type)
     newArray(Types.TYPE_TYPE, type.typeArguments.size)
-    type.typeArguments.forEach { push(it) }
+    type.typeArguments.forEachIndexed { index, type ->
+      dup()
+      push(index)
+      push(type)
+      arrayStore(Types.TYPE_TYPE)
+    }
     invokeConstructor(PARAMETERIZED_TYPE_IMPL_TYPE, PARAMETERIZED_TYPE_IMPL_CONSTRUCTOR)
   }
 
@@ -151,5 +148,17 @@ class KeyRegistryClassGenerator(
     dup()
     push(type.elementType)
     invokeConstructor(GENERIC_ARRAY_TYPE_IMPL_TYPE, GENERIC_ARRAY_TYPE_IMPL_CONSTRUCTOR)
+  }
+
+  private fun GeneratorAdapter.pushType(rawType: Type) {
+    val type = rawType.box()
+    val packageInvader = generationContext.findPackageInvaderByTargetType(type)
+    val field = packageInvader?.fields?.get(type)
+
+    if (field != null) {
+      getStatic(packageInvader!!.type, field)
+    } else {
+      push(type)
+    }
   }
 }
