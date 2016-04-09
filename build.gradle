@@ -60,6 +60,6 @@ ext {
   junitVersion = '4.12'
   mockitoVersion = '2.0.31-beta'
 
-  androidToolsVersion = '2.0.0-beta6'
-  supportVersion = '23.0.1'
+  androidToolsVersion = '2.1.0-alpha5'
+  supportVersion = '23.3.0'
 }
