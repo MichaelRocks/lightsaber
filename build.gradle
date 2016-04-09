@@ -6,7 +6,6 @@ allprojects {
       mavenLocal()
       jcenter()
       mavenCentral()
-      maven { url 'https://dl.bintray.com/michaelrocks/lightsaber' }
     }
   }
 
@@ -14,7 +13,6 @@ allprojects {
     mavenLocal()
     jcenter()
     mavenCentral()
-    maven { url 'https://dl.bintray.com/michaelrocks/lightsaber' }
   }
 }
 
