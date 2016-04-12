@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package io.michaelrocks.lightsaber.plugin
 
 import com.android.build.api.transform.*
-import com.google.common.collect.Iterables
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
 import org.gradle.api.Project
@@ -37,8 +36,7 @@ public class LightsaberTransform extends Transform {
       final Collection<TransformInput> referencedInputs, final TransformOutputProvider outputProvider,
       final boolean isIncremental) throws IOException, TransformException, InterruptedException {
     final def parameters = new LightsaberParameters()
-    final TransformInput input = Iterables.getOnlyElement(inputs)
-    final DirectoryInput directoryInput = Iterables.getOnlyElement(input.directoryInputs)
+    final DirectoryInput directoryInput = inputs.first().directoryInputs.first()
     final File output = outputProvider.getContentLocation(
         directoryInput.name, EnumSet.of(QualifiedContent.DefaultContentType.CLASSES),
         EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
