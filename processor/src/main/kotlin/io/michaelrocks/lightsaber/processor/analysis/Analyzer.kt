@@ -252,12 +252,12 @@ class Analyzer(
     }
   }
 
-  fun composePackageModuleType(packageName: String): Type {
+  private fun composePackageModuleType(packageName: String): Type {
     val name = if (packageName.isEmpty()) PACKAGE_MODULE_CLASS_NAME else "$packageName/$PACKAGE_MODULE_CLASS_NAME"
     return Type.getObjectType(name)
   }
 
-  class InjectionTargetsContext(
+  private class InjectionTargetsContext(
       val types: Collection<Type>,
       val methods: MethodsResult,
       val fields: FieldsResult
