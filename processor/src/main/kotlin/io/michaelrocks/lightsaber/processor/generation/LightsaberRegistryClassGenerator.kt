@@ -189,12 +189,12 @@ class LightsaberRegistryClassGenerator(
   }
 
   private fun generateMethods(classVisitor: ClassVisitor) {
-    generateGetInjectorGonfiguratorsMethod(classVisitor)
+    generateGetInjectorConfiguratorsMethod(classVisitor)
     generateGetMembersInjectorsMethod(classVisitor)
     generateGetPackageModulesMethod(classVisitor)
   }
 
-  private fun generateGetInjectorGonfiguratorsMethod(classVisitor: ClassVisitor) {
+  private fun generateGetInjectorConfiguratorsMethod(classVisitor: ClassVisitor) {
     val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC or ACC_STATIC, GET_INJECTOR_CONFIGURATORS_METHOD)
     generator.visitCode()
     generator.getStatic(LIGHTSABER_REGISTRY_TYPE, INJECTOR_CONFIGURATORS_FIELD)
