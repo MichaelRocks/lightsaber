@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,56 +45,45 @@ public class Lightsaber {
     return Holder.INSTANCE;
   }
 
-  public Injector createInjector(final Object... modules) {
-    final LightsaberInjector injector = createChildInjectorInternal(null, modules);
+  public Injector createInjector(final Object component) {
+    final LightsaberInjector injector = createChildInjectorInternal(null, component);
     for (final InjectorConfigurator injectorConfigurator : packageInjectorConfigurators) {
       injectorConfigurator.configureInjector(injector, null);
     }
     return injector;
   }
 
-  public Injector createChildInjector(final Injector parentInjector, final Object... modules) {
+  public Injector createChildInjector(final Injector parentInjector, final Object component) {
     if (parentInjector == null) {
       throw new NullPointerException("Parent injector cannot be null");
     }
-    return createChildInjectorInternal(parentInjector, modules);
+    return createChildInjectorInternal(parentInjector, component);
   }
 
-  private LightsaberInjector createChildInjectorInternal(final Injector parentInjector, final Object... modules) {
+  private LightsaberInjector createChildInjectorInternal(final Injector parentInjector, final Object component) {
     final LightsaberInjector injector = new LightsaberInjector(this, parentInjector);
-    configureInjector(injector, modules);
+    configureInjector(injector, component);
     checkProvidersNotOverlap(injector, parentInjector);
     return injector;
   }
 
-  private void configureInjector(final LightsaberInjector injector, final Object[] modules) {
-    if (modules != null) {
-      for (final Object module : modules) {
-        if (module == null) {
-          throw new NullPointerException("Trying to create injector with a null module");
-        }
-
-        if (!configureInjectorWithModule(injector, module, module.getClass())) {
-          throw new IllegalArgumentException("Module hasn't been processed with Lightsaber: " + module);
-        }
-      }
+  private void configureInjector(final LightsaberInjector injector, final Object component) {
+    if (component == null) {
+      throw new NullPointerException("Trying to create an injector with a null component");
+    }
+    if (!configureInjectorWithComponent(injector, component, component.getClass())) {
+      throw new IllegalArgumentException("Component hasn't been processed with Lightsaber: " + component);
     }
   }
 
-  private boolean configureInjectorWithModule(final LightsaberInjector injector, final Object module,
-      final Class moduleClass) {
-    if (moduleClass == Object.class) {
-      return false;
+  private boolean configureInjectorWithComponent(final LightsaberInjector injector, final Object component,
+      final Class componentClass) {
+    final InjectorConfigurator configurator = injectorConfigurators.get(componentClass);
+    if (configurator != null) {
+      configurator.configureInjector(injector, component);
+      return true;
     }
-
-    final InjectorConfigurator configurator = injectorConfigurators.get(moduleClass);
-    if (configurator == null) {
-      return configureInjectorWithModule(injector, module, moduleClass.getSuperclass());
-    }
-
-    configurator.configureInjector(injector, module);
-    configureInjectorWithModule(injector, module, moduleClass.getSuperclass());
-    return true;
+    return false;
   }
 
   private static void checkProvidersNotOverlap(final LightsaberInjector injector, final Injector parentInjector) {
