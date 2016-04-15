@@ -28,13 +28,14 @@ class ProvidersGenerator(
   private val logger = getLogger()
 
   fun generate(injectionContext: InjectionContext, generationContext: GenerationContext) {
-    injectionContext.allModules.forEach { module ->
-      module.providers.forEach { provider ->
-        logger.debug("Generating provider {}", provider.type.internalName)
-        val generator = ProviderClassGenerator(classRegistry, generationContext.keyRegistry, provider)
-        val providerClassData = generator.generate()
-        classProducer.produceClass(provider.type.internalName, providerClassData)
-      }
-    }
+    injectionContext.allComponents.asSequence()
+        .flatMap { it.modules.asSequence() }
+        .flatMap { it.providers.asSequence() }
+        .forEach { provider ->
+          logger.debug("Generating provider {}", provider.type.internalName)
+          val generator = ProviderClassGenerator(classRegistry, generationContext.keyRegistry, provider)
+          val providerClassData = generator.generate()
+          classProducer.produceClass(provider.type.internalName, providerClassData)
+        }
   }
 }

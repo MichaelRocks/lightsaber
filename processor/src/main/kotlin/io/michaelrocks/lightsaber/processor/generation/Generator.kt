@@ -57,16 +57,18 @@ class Generator(
       )
 
   private fun composePackageInjectorConfigurators(context: InjectionContext) =
-      context.packageModules.map { module ->
+      context.packageComponent.modules.map { module ->
         val configuratorType = composeConfiguratorType(module)
         InjectorConfigurator(configuratorType, module)
       }
 
   private fun composeInjectorConfigurators(context: InjectionContext) =
-      context.modules.map { module ->
-        val configuratorType = composeConfiguratorType(module)
-        InjectorConfigurator(configuratorType, module)
-      }
+      context.components
+          .flatMap { it.modules }
+          .map { module ->
+            val configuratorType = composeConfiguratorType(module)
+            InjectorConfigurator(configuratorType, module)
+          }
 
   private fun composeConfiguratorType(module: Module): Type {
     val moduleNameWithDollars = module.type.internalName.replace('/', '$')
@@ -80,8 +82,9 @@ class Generator(
       }
 
   private fun composePackageInvaders(context: InjectionContext): Collection<PackageInvader> =
-      context.allModules.asSequence()
-          .flatMap { module -> module.providers.asSequence() }
+      context.allComponents.asSequence()
+          .flatMap { it.modules.asSequence() }
+          .flatMap { it.providers.asSequence() }
           .asIterable()
           .groupNotNullByTo(
               HashMap(),
@@ -103,8 +106,9 @@ class Generator(
 
   private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {
     val type = Type.getObjectType("io/michaelrocks/lightsaber/KeyRegistry")
-    val fields = context.allModules.asSequence()
-        .flatMap { module -> module.providers.asSequence() }
+    val fields = context.allComponents.asSequence()
+        .flatMap { it.modules.asSequence() }
+        .flatMap { it.providers.asSequence() }
         .asIterable()
         .associateByIndexedTo(
             HashMap(),
