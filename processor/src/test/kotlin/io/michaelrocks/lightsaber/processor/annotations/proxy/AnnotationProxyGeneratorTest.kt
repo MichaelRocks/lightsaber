@@ -19,11 +19,11 @@ package io.michaelrocks.lightsaber.processor.annotations.proxy
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
-import io.michaelrocks.lightsaber.mockito.*
 import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.*
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.internalName
 import io.michaelrocks.lightsaber.processor.commons.type
+import io.michaelrocks.mockito.*
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test

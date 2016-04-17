@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.mockito
+package io.michaelrocks.mockito
 
 import org.mockito.ArgumentMatcher
 import org.mockito.Matchers
@@ -97,4 +97,3 @@ fun startsWith(prefix: String): String =
 
 inline fun <reified T : Any> argThat(matcher: ArgumentMatcher<T>): T =
     Matchers.argThat(matcher).toNotNull()
-
