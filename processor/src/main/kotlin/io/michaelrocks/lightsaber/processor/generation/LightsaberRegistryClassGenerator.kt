@@ -37,7 +37,7 @@ class LightsaberRegistryClassGenerator(
     private val classRegistry: ClassRegistry
 ) {
   companion object {
-    private val LIGHTSABER_REGISTRY_TYPE = Type.getObjectType("io/michaelrocks/lightsaber/LightsaberRegistry")
+    private val INJECTION_DISPATCHER_TYPE = Type.getObjectType("io/michaelrocks/lightsaber/InjectionDispatcher")
     private val LIST_TYPE = getType<List<*>>()
     private val ARRAY_LIST_TYPE = getType<ArrayList<*>>()
     private val MAP_TYPE = getType<Map<*, *>>()
@@ -65,7 +65,7 @@ class LightsaberRegistryClassGenerator(
     classVisitor.visit(
         V1_6,
         ACC_PUBLIC or ACC_SUPER,
-        LIGHTSABER_REGISTRY_TYPE.internalName,
+        INJECTION_DISPATCHER_TYPE.internalName,
         null,
         Types.OBJECT_TYPE.internalName,
         null)
@@ -76,7 +76,7 @@ class LightsaberRegistryClassGenerator(
 
     classVisitor.visitEnd()
     val classBytes = classWriter.toByteArray()
-    classProducer.produceClass(LIGHTSABER_REGISTRY_TYPE.internalName, classBytes)
+    classProducer.produceClass(INJECTION_DISPATCHER_TYPE.internalName, classBytes)
   }
 
   private fun generateFields(classVisitor: ClassVisitor) {
@@ -144,7 +144,7 @@ class LightsaberRegistryClassGenerator(
       generator.pop()
     }
 
-    generator.putStatic(LIGHTSABER_REGISTRY_TYPE, PACKAGE_INJECTOR_CONFIGURATORS_FIELD)
+    generator.putStatic(INJECTION_DISPATCHER_TYPE, PACKAGE_INJECTOR_CONFIGURATORS_FIELD)
   }
 
   private fun populateInjectorConfigurators(generator: GeneratorAdapter,
@@ -165,7 +165,7 @@ class LightsaberRegistryClassGenerator(
       generator.pop()
     }
 
-    generator.putStatic(LIGHTSABER_REGISTRY_TYPE, INJECTOR_CONFIGURATORS_FIELD)
+    generator.putStatic(INJECTION_DISPATCHER_TYPE, INJECTOR_CONFIGURATORS_FIELD)
   }
 
   private fun populateMembersInjectors(generator: GeneratorAdapter, generationContext: GenerationContext) {
@@ -185,7 +185,7 @@ class LightsaberRegistryClassGenerator(
       generator.pop()
     }
 
-    generator.putStatic(LIGHTSABER_REGISTRY_TYPE, MEMBERS_INJECTORS_FIELD)
+    generator.putStatic(INJECTION_DISPATCHER_TYPE, MEMBERS_INJECTORS_FIELD)
   }
 
   private fun generateMethods(classVisitor: ClassVisitor) {
@@ -197,7 +197,7 @@ class LightsaberRegistryClassGenerator(
   private fun generateGetInjectorConfiguratorsMethod(classVisitor: ClassVisitor) {
     val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC or ACC_STATIC, GET_INJECTOR_CONFIGURATORS_METHOD)
     generator.visitCode()
-    generator.getStatic(LIGHTSABER_REGISTRY_TYPE, INJECTOR_CONFIGURATORS_FIELD)
+    generator.getStatic(INJECTION_DISPATCHER_TYPE, INJECTOR_CONFIGURATORS_FIELD)
     generator.returnValue()
     generator.endMethod()
   }
@@ -205,7 +205,7 @@ class LightsaberRegistryClassGenerator(
   private fun generateGetMembersInjectorsMethod(classVisitor: ClassVisitor) {
     val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC or ACC_STATIC, GET_MEMBERS_INJECTORS_METHOD)
     generator.visitCode()
-    generator.getStatic(LIGHTSABER_REGISTRY_TYPE, MEMBERS_INJECTORS_FIELD)
+    generator.getStatic(INJECTION_DISPATCHER_TYPE, MEMBERS_INJECTORS_FIELD)
     generator.returnValue()
     generator.endMethod()
   }
@@ -213,7 +213,7 @@ class LightsaberRegistryClassGenerator(
   private fun generateGetPackageModulesMethod(classVisitor: ClassVisitor) {
     val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC or ACC_STATIC, GET_PACKAGE_INJECTOR_CONFIGURATORS_METHOD)
     generator.visitCode()
-    generator.getStatic(LIGHTSABER_REGISTRY_TYPE, PACKAGE_INJECTOR_CONFIGURATORS_FIELD)
+    generator.getStatic(INJECTION_DISPATCHER_TYPE, PACKAGE_INJECTOR_CONFIGURATORS_FIELD)
     generator.returnValue()
     generator.endMethod()
   }

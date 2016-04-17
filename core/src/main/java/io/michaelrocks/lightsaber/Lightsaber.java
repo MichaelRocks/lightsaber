@@ -95,12 +95,12 @@ public class Lightsaber {
   private static class DefaultConfigurator implements Configurator {
     @Override
     public void configureInjector(final LightsaberInjector injector, final Object component) {
-      LightsaberRegistry.configureInjector(injector, component);
+      InjectionDispatcher.configureInjector(injector, component);
     }
 
     @Override
     public void injectMembers(final Injector injector, final Object object) {
-      LightsaberRegistry.injectMembers(injector, object);
+      InjectionDispatcher.injectMembers(injector, object);
     }
   }
 

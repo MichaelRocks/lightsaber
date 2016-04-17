@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber;
 
-public class LightsaberRegistry {
+class InjectionDispatcher {
   public static void configureInjector(Object injector, Object component) {
     throw new UnsupportedOperationException("This method must be generated");
   }
