@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package io.michaelrocks.lightsaber;
 
 import javax.inject.Provider;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,14 +24,14 @@ class LightsaberInjector implements Injector {
   private static final Key<Injector> INJECTOR_KEY = new Key<Injector>(Injector.class);
 
   private final Lightsaber lightsaber;
-  private final Injector parentInjector;
+  private final LightsaberInjector parentInjector;
   private final Map<Key<?>, Provider<?>> providers = new HashMap<Key<?>, Provider<?>>();
 
   public LightsaberInjector(final Lightsaber lightsaber) {
     this(lightsaber, null);
   }
 
-  public LightsaberInjector(final Lightsaber lightsaber, final Injector parentInjector) {
+  public LightsaberInjector(final Lightsaber lightsaber, final LightsaberInjector parentInjector) {
     this.lightsaber = lightsaber;
     this.parentInjector = parentInjector;
     registerProvider(INJECTOR_KEY, new Provider<Injector>() {
@@ -67,25 +66,10 @@ class LightsaberInjector implements Injector {
     return provider;
   }
 
-  @Override
-  public Map<Key<?>, Provider<?>> getAllProviders() {
-    final Map<Key<?>, Provider<?>> parentProviders =
-        parentInjector == null ? Collections.<Key<?>, Provider<?>>emptyMap() : parentInjector.getAllProviders();
-    final Map<Key<?>, Provider<?>> allProviders =
-        new HashMap<Key<?>, Provider<?>>(parentProviders.size() + providers.size());
-    allProviders.putAll(parentProviders);
-    allProviders.putAll(providers);
-    return allProviders;
-  }
-
   public <T> void registerProvider(final Key<T> key, final Provider<T> provider) {
     final Provider<?> oldProvider = providers.put(key, provider);
     if (oldProvider != null) {
       throw new ConfigurationException("Provider for " + key + " already registered");
     }
-  }
-
-  Map<Key<?>, Provider<?>> getProviders() {
-    return providers;
   }
 }

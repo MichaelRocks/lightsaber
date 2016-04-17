@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,104 +18,126 @@ package io.michaelrocks.lightsaber;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import javax.annotation.Nonnull;
 import javax.inject.Named;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.*;
 
 public class LightsaberTest {
-  private Lightsaber lightsaber;
+  private Lightsaber.Configurator configurator;
 
   @Before
-  public void createLightsaber() {
-    final Lightsaber.Configurator configurator = mock(Lightsaber.Configurator.class, RETURNS_DEEP_STUBS);
-    when(configurator.getInjectorConfigurators().get(ParentModule.class))
-        .thenReturn(new InjectorConfigurator() {
+  public void createConfigurator() {
+    configurator = mock(Lightsaber.Configurator.class, RETURNS_DEEP_STUBS);
+    doAnswer(new Answer<Object>() {
+      @Override
+      public Object answer(final InvocationOnMock invocation) throws Throwable {
+        final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
+        injector.registerProvider(Key.of(String.class), new Provider<String>() {
           @Override
-          public void configureInjector(final LightsaberInjector injector, final Object module) {
-            injector.registerProvider(Key.of(String.class), new Provider<String>() {
+          public String get() {
+            return "Parent String";
+          }
+        });
+        return null;
+      }
+    })
+        .when(configurator).configureInjector(any(LightsaberInjector.class), isA(ParentModule.class));
+    doAnswer(new Answer<Object>() {
+      @Override
+      public Object answer(final InvocationOnMock invocation) throws Throwable {
+        final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
+        injector.registerProvider(Key.of(Object.class), new Provider<Object>() {
+          @Override
+          public Object get() {
+            return "Child Object";
+          }
+        });
+        return null;
+      }
+    })
+        .when(configurator).configureInjector(any(LightsaberInjector.class), isA(ChildModule.class));
+    doAnswer(new Answer<Object>() {
+      @Override
+      public Object answer(final InvocationOnMock invocation) throws Throwable {
+        final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
+        injector.registerProvider(Key.of(String.class, new NamedProxy("Annotated")),
+            new Provider<String>() {
               @Override
               public String get() {
-                return "Parent String";
+                return "Child Annotated String";
               }
-            });
-          }
-        });
-    when(configurator.getInjectorConfigurators().get(ChildModule.class))
-        .thenReturn(new InjectorConfigurator() {
-          @Override
-          public void configureInjector(final LightsaberInjector injector, final Object module) {
-            injector.registerProvider(Key.of(Object.class), new Provider<Object>() {
-              @Override
-              public Object get() {
-                return "Child Object";
-              }
-            });
-          }
-        });
-    when(configurator.getInjectorConfigurators().get(ChildAnnotatedModule.class))
-        .thenReturn(new InjectorConfigurator() {
-          @Override
-          public void configureInjector(final LightsaberInjector injector, final Object module) {
-            injector.registerProvider(Key.of(String.class, new NamedProxy("Annotated")),
-                new Provider<String>() {
-                  @Override
-                  public String get() {
-                    return "Child Annotated String";
-                  }
-                });
-          }
-        });
-    lightsaber = new Lightsaber(configurator);
+            });;
+        return null;
+      }
+    })
+        .when(configurator).configureInjector(any(LightsaberInjector.class), isA(ChildAnnotatedModule.class));
   }
 
   @Test
   public void testCreateInjector() throws Exception {
+    final Lightsaber lightsaber = new Lightsaber(configurator);
     final ParentModule parentModule = new ParentModule();
+
     final Injector injector = lightsaber.createInjector(parentModule);
+
+    verify(configurator).configureInjector((LightsaberInjector) injector, null);
+    verify(configurator).configureInjector((LightsaberInjector) injector, parentModule);
+    verifyNoMoreInteractions(configurator);
     assertSame(injector, injector.getInstance(Key.of(Injector.class)));
     assertEquals("Parent String", injector.getInstance(Key.of(String.class)));
-    assertEquals(2, injector.getAllProviders().size());
-    assertTrue(injector.getAllProviders().containsKey(Key.of(Injector.class)));
-    assertTrue(injector.getAllProviders().containsKey(Key.of(String.class)));
   }
 
   @Test
   public void testCreateChildInjector() throws Exception {
-    final Injector injector = lightsaber.createInjector(new ParentModule());
-    final Injector childInjector = lightsaber.createChildInjector(injector, new ChildModule());
+    final Lightsaber lightsaber = new Lightsaber(configurator);
+    final ParentModule parentModule = new ParentModule();
+    final ChildModule childModule = new ChildModule();
+
+    final Injector injector = lightsaber.createInjector(parentModule);
+    final Injector childInjector = lightsaber.createChildInjector(injector, childModule);
+
+    verify(configurator).configureInjector((LightsaberInjector) injector, null);
+    verify(configurator).configureInjector((LightsaberInjector) injector, parentModule);
+    verify(configurator).configureInjector((LightsaberInjector) childInjector, childModule);
+    verifyNoMoreInteractions(configurator);
     assertSame(injector, injector.getInstance(Key.of(Injector.class)));
     assertSame(childInjector, childInjector.getInstance(Key.of(Injector.class)));
     assertEquals("Parent String", childInjector.getInstance(Key.of(String.class)));
     assertEquals("Child Object", childInjector.getInstance(Key.of(Object.class)));
-    assertEquals(3, childInjector.getAllProviders().size());
-    assertTrue(childInjector.getAllProviders().containsKey(Key.of(Injector.class)));
-    assertTrue(childInjector.getAllProviders().containsKey(Key.of(String.class)));
-    assertTrue(childInjector.getAllProviders().containsKey(Key.of(Object.class)));
   }
 
   @Test
   public void testCreateChildInjectorWithAnnotation() throws Exception {
-    final Injector injector = lightsaber.createInjector(new ParentModule());
+    final Lightsaber lightsaber = new Lightsaber(configurator);
+    final ParentModule parentModule = new ParentModule();
+    final ChildAnnotatedModule childAnnotatedModule = new ChildAnnotatedModule();
+
+    final Injector injector = lightsaber.createInjector(parentModule);
     final Injector childInjector =
-        lightsaber.createChildInjector(injector, new ChildAnnotatedModule());
+        lightsaber.createChildInjector(injector, childAnnotatedModule);
+
+    verify(configurator).configureInjector((LightsaberInjector) injector, null);
+    verify(configurator).configureInjector((LightsaberInjector) injector, parentModule);
+    verify(configurator).configureInjector((LightsaberInjector) childInjector, childAnnotatedModule);
+    verifyNoMoreInteractions(configurator);
     final Named annotation = new NamedProxy("Annotated");
     assertSame(injector, injector.getInstance(Key.of(Injector.class)));
     assertSame(childInjector, childInjector.getInstance(Key.of(Injector.class)));
     assertEquals("Parent String", childInjector.getInstance(Key.of(String.class)));
     assertEquals("Child Annotated String", childInjector.getInstance(Key.of(String.class, annotation)));
-    assertEquals(3, childInjector.getAllProviders().size());
-    assertTrue(childInjector.getAllProviders().containsKey(Key.of(Injector.class)));
-    assertTrue(childInjector.getAllProviders().containsKey(Key.of(String.class)));
-    assertTrue(childInjector.getAllProviders().containsKey(Key.of(String.class, annotation)));
   }
 
   @Test(expected = ConfigurationException.class)
   public void testCreateChildInjectorWithSameModule() throws Exception {
+    final Lightsaber lightsaber = new Lightsaber(configurator);
     final Injector injector = lightsaber.createInjector(new ParentModule());
     // noinspection unused
     final Injector childInjector = lightsaber.createChildInjector(injector, new ParentModule());
