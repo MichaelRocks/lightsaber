@@ -93,7 +93,7 @@ class InjectorConfiguratorClassGenerator(
     }
 
     for (provider in injectorConfigurator.module.providers) {
-      generateRegisterProviderInvocation(generator, provider, moduleLocal)
+      generator.registerProvider(provider, moduleLocal)
     }
 
     generator.returnValue()
@@ -102,39 +102,37 @@ class InjectorConfiguratorClassGenerator(
 
   private fun isModuleArgumentUsed(): Boolean = injectorConfigurator.module.providers.any { !it.isConstructorProvider }
 
-  private fun generateRegisterProviderInvocation(generator: GeneratorAdapter, provider: Provider, moduleLocal: Int) {
-    generator.loadArg(0)
-    generator.getKey(keyRegistry, provider.dependency)
+  private fun GeneratorAdapter.registerProvider(provider: Provider, moduleLocal: Int) {
+    loadArg(0)
+    getKey(keyRegistry, provider.dependency)
 
     when (provider.scope) {
-      is Scope.Class -> generateDelegatorConstruction(generator, provider, moduleLocal, provider.scope.scopeType)
-      is Scope.None -> generateProviderConstruction(generator, provider, moduleLocal)
+      is Scope.Class -> newDelegator(provider, moduleLocal, provider.scope.scopeType)
+      is Scope.None -> newProvider(provider, moduleLocal)
     }
 
-    generator.invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD)
+    invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD)
   }
 
-  private fun generateDelegatorConstruction(generator: GeneratorAdapter, provider: Provider,
-      moduleLocal: Int, scopeType: Type) {
-    generator.newInstance(scopeType)
-    generator.dup()
-    generateProviderConstruction(generator, provider, moduleLocal)
-    generator.invokeConstructor(scopeType, DELEGATE_PROVIDER_CONSTRUCTOR)
+  private fun GeneratorAdapter.newDelegator(provider: Provider, moduleLocal: Int, scopeType: Type) {
+    newInstance(scopeType)
+    dup()
+    this.newProvider(provider, moduleLocal)
+    this.invokeConstructor(scopeType, DELEGATE_PROVIDER_CONSTRUCTOR)
   }
 
-  private fun generateProviderConstruction(generator: GeneratorAdapter, provider: Provider,
-      moduleLocal: Int) {
-    generator.newInstance(provider.type)
-    generator.dup()
+  private fun GeneratorAdapter.newProvider(provider: Provider, moduleLocal: Int) {
+    newInstance(provider.type)
+    dup()
     if (moduleLocal == INVALID_LOCAL) {
-      generator.loadArg(0)
+      loadArg(0)
       val constructor = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
-      generator.invokeConstructor(provider.type, constructor)
+      invokeConstructor(provider.type, constructor)
     } else {
-      generator.loadLocal(moduleLocal)
-      generator.loadArg(0)
+      loadLocal(moduleLocal)
+      loadArg(0)
       val constructor = MethodDescriptor.forConstructor(provider.moduleType, Types.INJECTOR_TYPE)
-      generator.invokeConstructor(provider.type, constructor)
+      invokeConstructor(provider.type, constructor)
     }
   }
 }
