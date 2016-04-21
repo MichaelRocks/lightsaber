@@ -18,9 +18,7 @@ package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
-import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
-import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
@@ -28,7 +26,6 @@ import io.michaelrocks.lightsaber.processor.model.Provider
 import io.michaelrocks.lightsaber.processor.model.Scope
 import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
-import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes.*
 import org.objectweb.asm.Type
@@ -62,42 +59,27 @@ class InjectorConfiguratorClassGenerator(
         Types.OBJECT_TYPE.internalName,
         arrayOf(LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE.internalName))
 
-    generateConstructor(classVisitor)
-    generateConfigureInjectorMethod(classVisitor)
+    classVisitor.newDefaultConstructor()
+    classVisitor.newMethod(ACC_PUBLIC, CONFIGURE_INJECTOR_METHOD) { configureInjector() }
 
     classVisitor.visitEnd()
     return classWriter.toByteArray()
   }
 
-  private fun generateConstructor(classVisitor: ClassVisitor) {
-    val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, MethodDescriptor.forDefaultConstructor())
-    generator.visitCode()
-    generator.loadThis()
-    generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forDefaultConstructor())
-    generator.returnValue()
-    generator.endMethod()
-  }
-
-  private fun generateConfigureInjectorMethod(classVisitor: ClassVisitor) {
-    val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, CONFIGURE_INJECTOR_METHOD)
-    generator.visitCode()
-
+  private fun GeneratorAdapter.configureInjector() {
     val moduleLocal: Int
     if (isModuleArgumentUsed()) {
-      generator.loadArg(1)
-      generator.checkCast(injectorConfigurator.module.type)
-      moduleLocal = generator.newLocal(injectorConfigurator.module.type)
-      generator.storeLocal(moduleLocal)
+      loadArg(1)
+      checkCast(injectorConfigurator.module.type)
+      moduleLocal = newLocal(injectorConfigurator.module.type)
+      storeLocal(moduleLocal)
     } else {
       moduleLocal = INVALID_LOCAL
     }
 
     for (provider in injectorConfigurator.module.providers) {
-      generator.registerProvider(provider, moduleLocal)
+      registerProvider(provider, moduleLocal)
     }
-
-    generator.returnValue()
-    generator.endMethod()
   }
 
   private fun isModuleArgumentUsed(): Boolean = injectorConfigurator.module.providers.any { !it.isConstructorProvider }
