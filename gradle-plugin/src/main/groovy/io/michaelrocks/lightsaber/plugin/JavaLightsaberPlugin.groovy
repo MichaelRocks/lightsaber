@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,11 +60,9 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
     final File classesDir = sourceSet.output.classesDir
     final File backupDir = new File(project.buildDir, "lightsaber$suffix")
     final List<File> classpath = compileTask.classpath.toList();
-    if (Jvm.current().runtimeJar != null) {
-      classpath.add(Jvm.current().runtimeJar)
-    }
+    final List<File> bootClasspath = Jvm.current().runtimeJar != null ? [Jvm.current().runtimeJar] : null
     final LightsaberTask lightsaberTask =
-        createLightsaberProcessTask("lightsaberProcess$suffix", classesDir, backupDir, classpath)
+        createLightsaberProcessTask("lightsaberProcess$suffix", classesDir, backupDir, classpath, bootClasspath)
     final BackupClassesTask backupTask =
         createBackupClassFilesTask("lightsaberBackupClasses$suffix", classesDir, backupDir)
     configureTasks(lightsaberTask, backupTask, compileTask)
@@ -93,7 +91,7 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
   }
 
   private LightsaberTask createLightsaberProcessTask(final String taskName, final File classesDir,
-      final File backupDir, final List<File> libraries) {
+      final File backupDir, final List<File> classpath, final List<File> bootClasspath) {
     logger.info("Creating Lightsaber task $taskName...")
     logger.info("  Source classes directory [$backupDir]")
     logger.info("  Processed classes directory [$classesDir]")
@@ -102,7 +100,8 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
       description 'Processes .class files with Lightsaber Processor.'
       setBackupDir(backupDir)
       setClassesDir(classesDir)
-      setClasspath(libraries)
+      setClasspath(classpath)
+      setBootClasspath(bootClasspath)
     } as LightsaberTask
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,11 @@ class LightsaberProcessor(private val parameters: LightsaberParameters) {
     val jar = parameters.jar
     val classes = parameters.classes
     val inputFile = jar ?: classes!!
+    val classpath = parameters.classpath
+    val bootClasspath = parameters.bootClasspath
     val outputFile = parameters.output!!
-    ClassProcessor(inputFile, outputFile, parameters.libs).processClasses()
+    val genFile = parameters.gen!!
+    ClassProcessor(inputFile, classpath, bootClasspath, outputFile, genFile).processClasses()
     logger.info("DONE")
   }
 }

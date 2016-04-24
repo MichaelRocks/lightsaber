@@ -42,9 +42,10 @@ public class LightsaberTransform extends Transform {
         EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
     parameters.classes = directoryInput.file
     parameters.output = output
-    parameters.libs = project.android.bootClasspath.toList() +
-        referencedInputs.collect { it.directoryInputs }.flatten().collect { it.file }.flatten() +
-        referencedInputs.collect { it.jarInputs }.flatten().collect { it.file }.flatten()
+    parameters.classpath = referencedInputs.collectMany {
+      it.directoryInputs.collect { it.file } + it.jarInputs.collect { it.file }
+    }
+    parameters.bootClasspath = project.android.bootClasspath.toList()
     parameters.debug = logger.isDebugEnabled()
     parameters.info = logger.isInfoEnabled()
     logger.error("Starting Lightsaber processor: $parameters")

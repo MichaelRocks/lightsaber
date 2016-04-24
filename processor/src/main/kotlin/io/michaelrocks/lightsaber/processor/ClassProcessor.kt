@@ -37,12 +37,13 @@ import java.io.File
 
 class ClassProcessor(
     private val inputFile: File,
-    outputFile: File,
-    libraries: List<File>
+    classpath: List<File>,
+    bootClasspath: List<File>,
+    outputFile: File
 ) {
   private val logger = getLogger()
 
-  private val grip: Grip = GripFactory.create(listOf(inputFile) + libraries)
+  private val grip: Grip = GripFactory.create(listOf(inputFile) + classpath + bootClasspath)
   private val errorReporter = ErrorReporter()
 
   private val fileSource = IoFactory.createFileSource(inputFile)

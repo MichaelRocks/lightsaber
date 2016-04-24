@@ -29,9 +29,13 @@ class LightsaberParameters {
   @Parameter(names = arrayOf("--classes"), description = "Classes directory to process")
   var classes: File? = null
 
-  @Parameter(names = arrayOf("--libs"), listConverter = FileConverter::class, description = "Project dependencies",
+  @Parameter(names = arrayOf("--classpath"), listConverter = FileConverter::class, description = "Classpath",
       variableArity = true)
-  var libs = emptyList<File>()
+  var classpath = emptyList<File>()
+
+  @Parameter(names = arrayOf("--bootclasspath"), listConverter = FileConverter::class, description = "Boot classpath",
+      variableArity = true)
+  var bootClasspath = emptyList<File>()
 
   @Parameter(names = arrayOf("--output"), description = "Output jar file or classes directory")
   var output: File? = null
@@ -63,7 +67,8 @@ class LightsaberParameters {
       ToStringBuilder(this).run {
         append("jar", jar)
         append("classes", classes)
-        append("libs", libs)
+        append("classpath", classpath)
+        append("bootClasspath", bootClasspath)
         append("output", output)
         append("gen", gen)
         append("info", info)
