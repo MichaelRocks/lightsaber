@@ -24,8 +24,8 @@ import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.*
 import io.michaelrocks.lightsaber.processor.io.FileSink
+import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
-import io.michaelrocks.lightsaber.processor.model.Module
 import org.objectweb.asm.Type
 import java.util.*
 
@@ -49,30 +49,29 @@ class Generator(
 
   private fun composeGeneratorModel(context: InjectionContext) =
       GenerationContext(
-          composePackageInjectorConfigurators(context),
+          composePackageInjectorConfigurator(context),
           composeInjectorConfigurators(context),
           composeMembersInjectors(context),
           composePackageInvaders(context),
           composeKeyRegistry(context)
       )
 
-  private fun composePackageInjectorConfigurators(context: InjectionContext) =
-      context.packageComponent.modules.map { module ->
-        val configuratorType = composeConfiguratorType(module)
-        InjectorConfigurator(configuratorType, module)
-      }
+  private fun composePackageInjectorConfigurator(context: InjectionContext): InjectorConfigurator {
+    val configuratorType = composeConfiguratorType(context.packageComponent)
+    return InjectorConfigurator(configuratorType, context.packageComponent)
+  }
 
-  private fun composeInjectorConfigurators(context: InjectionContext) =
-      context.components
-          .flatMap { it.modules }
-          .map { module ->
-            val configuratorType = composeConfiguratorType(module)
-            InjectorConfigurator(configuratorType, module)
-          }
+  private fun composeInjectorConfigurators(context: InjectionContext): Collection<InjectorConfigurator> {
+    return context.components
+        .map { component ->
+          val configuratorType = composeConfiguratorType(component)
+          InjectorConfigurator(configuratorType, component)
+        }
+  }
 
-  private fun composeConfiguratorType(module: Module): Type {
-    val moduleNameWithDollars = module.type.internalName.replace('/', '$')
-    return Type.getObjectType("io/michaelrocks/lightsaber/InjectorConfigurator\$$moduleNameWithDollars")
+  private fun composeConfiguratorType(component: Component): Type {
+    val componentNameWithDollars = component.type.internalName.replace('/', '$')
+    return Type.getObjectType("io/michaelrocks/lightsaber/InjectorConfigurator\$$componentNameWithDollars")
   }
 
   private fun composeMembersInjectors(context: InjectionContext) =

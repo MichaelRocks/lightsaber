@@ -16,10 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.generation.model
 
-import io.michaelrocks.lightsaber.processor.model.Module
+import io.michaelrocks.lightsaber.processor.model.Component
 import org.objectweb.asm.Type
 
 data class InjectorConfigurator(
     val type: Type,
-    val module: Module
+    val component: Component
 )

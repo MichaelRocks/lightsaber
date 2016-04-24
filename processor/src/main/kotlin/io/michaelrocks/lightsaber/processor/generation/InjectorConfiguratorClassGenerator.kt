@@ -22,9 +22,7 @@ import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
-import io.michaelrocks.lightsaber.processor.model.Provider
-import io.michaelrocks.lightsaber.processor.model.Scope
-import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
+import io.michaelrocks.lightsaber.processor.model.*
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes.*
@@ -67,54 +65,86 @@ class InjectorConfiguratorClassGenerator(
   }
 
   private fun GeneratorAdapter.configureInjector() {
-    val moduleLocal: Int
-    if (isModuleArgumentUsed()) {
-      loadArg(1)
-      checkCast(injectorConfigurator.module.type)
-      moduleLocal = newLocal(injectorConfigurator.module.type)
-      storeLocal(moduleLocal)
-    } else {
-      moduleLocal = INVALID_LOCAL
+    loadArg(1)
+    checkCast(injectorConfigurator.component.type)
+    injectorConfigurator.component.providers.forEach { provider ->
+      dup()
+      configureInjectorWithModule(provider)
     }
+    pop()
+  }
 
-    for (provider in injectorConfigurator.module.providers) {
-      registerProvider(provider, moduleLocal)
+  private fun GeneratorAdapter.configureInjectorWithModule(moduleProvider: ModuleProvider) {
+    val moduleLocal = getModule(moduleProvider.provisionPoint)
+
+    moduleProvider.module.providers.forEach { provider ->
+      registerProvider(provider) {
+        if (moduleLocal == INVALID_LOCAL) {
+          check(provider.isConstructorProvider)
+          newConstructorProvider(provider)
+        } else {
+          check(!provider.isConstructorProvider)
+          newModuleProvider(provider) {
+            loadLocal(moduleLocal)
+          }
+        }
+      }
     }
   }
 
-  private fun isModuleArgumentUsed(): Boolean = injectorConfigurator.module.providers.any { !it.isConstructorProvider }
+  private fun GeneratorAdapter.getModule(provisionPoint: ModuleProvisionPoint): Int {
+    return when (provisionPoint) {
+      is ModuleProvisionPoint.Method -> getModule(provisionPoint)
+      is ModuleProvisionPoint.Field -> getModule(provisionPoint)
+      is ModuleProvisionPoint.Null -> INVALID_LOCAL
+    }
+  }
 
-  private fun GeneratorAdapter.registerProvider(provider: Provider, moduleLocal: Int) {
+  private fun GeneratorAdapter.getModule(provisionPoint: ModuleProvisionPoint.Method): Int {
+    return newLocal(provisionPoint.method.type.returnType) {
+      invokeVirtual(injectorConfigurator.component.type, provisionPoint.method.toMethodDescriptor())
+    }
+  }
+
+  private fun GeneratorAdapter.getModule(provisionPoint: ModuleProvisionPoint.Field): Int {
+    return newLocal(provisionPoint.field.type) {
+      getField(injectorConfigurator.component.type, provisionPoint.field.toFieldDescriptor())
+    }
+  }
+
+  private fun GeneratorAdapter.registerProvider(provider: Provider, providerCreator: () -> Unit) {
     loadArg(0)
     getKey(keyRegistry, provider.dependency)
 
     when (provider.scope) {
-      is Scope.Class -> newDelegator(provider, moduleLocal, provider.scope.scopeType)
-      is Scope.None -> newProvider(provider, moduleLocal)
+      is Scope.Class -> newDelegator(provider, provider.scope.scopeType, providerCreator)
+      is Scope.None -> providerCreator()
     }
 
     invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD)
   }
 
-  private fun GeneratorAdapter.newDelegator(provider: Provider, moduleLocal: Int, scopeType: Type) {
+  private fun GeneratorAdapter.newDelegator(provider: Provider, scopeType: Type, providerCreator: () -> Unit) {
     newInstance(scopeType)
     dup()
-    this.newProvider(provider, moduleLocal)
-    this.invokeConstructor(scopeType, DELEGATE_PROVIDER_CONSTRUCTOR)
+    providerCreator()
+    invokeConstructor(scopeType, DELEGATE_PROVIDER_CONSTRUCTOR)
   }
 
-  private fun GeneratorAdapter.newProvider(provider: Provider, moduleLocal: Int) {
+  private fun GeneratorAdapter.newModuleProvider(provider: Provider, moduleRetriever: () -> Unit) {
     newInstance(provider.type)
     dup()
-    if (moduleLocal == INVALID_LOCAL) {
-      loadArg(0)
-      val constructor = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
-      invokeConstructor(provider.type, constructor)
-    } else {
-      loadLocal(moduleLocal)
-      loadArg(0)
-      val constructor = MethodDescriptor.forConstructor(provider.moduleType, Types.INJECTOR_TYPE)
-      invokeConstructor(provider.type, constructor)
-    }
+    moduleRetriever()
+    loadArg(0)
+    val constructor = MethodDescriptor.forConstructor(provider.moduleType, Types.INJECTOR_TYPE)
+    invokeConstructor(provider.type, constructor)
+  }
+
+  private fun GeneratorAdapter.newConstructorProvider(provider: Provider) {
+    newInstance(provider.type)
+    dup()
+    loadArg(0)
+    val constructor = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
+    invokeConstructor(provider.type, constructor)
   }
 }
