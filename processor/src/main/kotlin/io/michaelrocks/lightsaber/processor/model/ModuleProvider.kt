@@ -16,12 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.Type
-
-data class Component(
-    val type: Type,
-    val providers: Collection<ModuleProvider>,
-    val subcomponents: Collection<Type>
-) {
-  val modules: Collection<Module> = providers.map { it.module }
-}
+data class ModuleProvider(
+    val module: Module,
+    val provisionPoint: ModuleProvisionPoint
+)

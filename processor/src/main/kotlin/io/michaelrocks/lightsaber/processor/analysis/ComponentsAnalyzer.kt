@@ -59,8 +59,9 @@ class ComponentsAnalyzerImpl(
   }
 
   private fun composePackageComponent(providableTargets: Iterable<InjectionTarget>): Component {
-    val modules = composePackageModules(providableTargets)
-    return Component(PACKAGE_COMPONENT_TYPE, modules, emptyList())
+    val providers = composePackageModules(providableTargets)
+        .map { ModuleProvider(it, ModuleProvisionPoint.Null) }
+    return Component(PACKAGE_COMPONENT_TYPE, providers, emptyList())
   }
 
   private fun composePackageModules(providableTargets: Iterable<InjectionTarget>): List<Module> {
@@ -116,12 +117,12 @@ class ComponentsAnalyzerImpl(
     logger.debug("Component: {}", mirror)
     val methods = methodsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, method ->
       logger.debug("  Method: {}", method)
-      method.toModule()
+      ModuleProvider(method.toModule(), ModuleProvisionPoint.Method(method))
     }
 
     val fields = fieldsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, field ->
       logger.debug("  Field: {}", field)
-      field.toModule()
+      ModuleProvider(field.toModule(), ModuleProvisionPoint.Field(field))
     }
 
     val subcomponents = mirror

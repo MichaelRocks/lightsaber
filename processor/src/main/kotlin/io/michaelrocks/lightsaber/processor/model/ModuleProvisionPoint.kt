@@ -16,12 +16,11 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.FieldMirror
+import io.michaelrocks.grip.mirrors.MethodMirror
 
-data class Component(
-    val type: Type,
-    val providers: Collection<ModuleProvider>,
-    val subcomponents: Collection<Type>
-) {
-  val modules: Collection<Module> = providers.map { it.module }
+sealed class ModuleProvisionPoint {
+  class Method(val method: MethodMirror) : ModuleProvisionPoint()
+  class Field(val field: FieldMirror) : ModuleProvisionPoint()
+  object Null : ModuleProvisionPoint()
 }
