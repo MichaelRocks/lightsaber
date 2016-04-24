@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,9 @@ class LightsaberParameters {
   @Parameter(names = arrayOf("--output"), description = "Output jar file or classes directory")
   var output: File? = null
 
+  @Parameter(names = arrayOf("--gen"), description = "Output directory for .java files")
+  var gen: File? = null
+
   @Parameter(names = arrayOf("-i", "--info"), description = "Use verbose output")
   var info = false
 
@@ -62,6 +65,7 @@ class LightsaberParameters {
         append("classes", classes)
         append("libs", libs)
         append("output", output)
+        append("gen", gen)
         append("info", info)
         append("debug", debug)
         append("printStacktrace", printStacktrace)
