@@ -21,7 +21,7 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
-class InjectionDispatcher(
+class Patcher(
     classVisitor: ClassVisitor,
     private val context: InjectionContext
 ) : ClassVisitor(Opcodes.ASM5, classVisitor) {

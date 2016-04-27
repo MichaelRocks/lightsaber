@@ -25,7 +25,7 @@ import io.michaelrocks.lightsaber.processor.generation.Generator
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
 import io.michaelrocks.lightsaber.processor.graph.DependencyGraph
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
-import io.michaelrocks.lightsaber.processor.injection.InjectionDispatcher
+import io.michaelrocks.lightsaber.processor.injection.Patcher
 import io.michaelrocks.lightsaber.processor.io.DirectoryFileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
 import io.michaelrocks.lightsaber.processor.io.IoFactory
@@ -97,7 +97,7 @@ class ClassProcessor(
           val classReader = ClassReader(fileSource.readFile(path))
           val classWriter = StandaloneClassWriter(
               classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry)
-          val classVisitor = InjectionDispatcher(classWriter, context)
+          val classVisitor = Patcher(classWriter, context)
           classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
           fileSink.createFile(path, classWriter.toByteArray())
         }
