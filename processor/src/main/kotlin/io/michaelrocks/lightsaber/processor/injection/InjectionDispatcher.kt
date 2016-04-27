@@ -30,6 +30,10 @@ class InjectionDispatcher(
       interfaces: Array<String>?) {
     val type = Type.getObjectType(name)
 
+    context.findComponentByType(type)?.let {
+      cv = ComponentPatcher(cv, it)
+    }
+
     context.findModuleByType(type)?.let {
       cv = ModulePatcher(cv, it)
     }
