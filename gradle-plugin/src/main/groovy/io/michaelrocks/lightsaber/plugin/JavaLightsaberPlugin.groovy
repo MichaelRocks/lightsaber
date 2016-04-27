@@ -58,11 +58,13 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
   private void createTasks(final SourceSet sourceSet, final JavaCompile compileTask, final String nameSuffix = "") {
     final String suffix = nameSuffix.capitalize()
     final File classesDir = sourceSet.output.classesDir
-    final File backupDir = new File(project.buildDir, "lightsaber$suffix")
+    final File backupDir = new File(project.buildDir, "lightsaber/classes$suffix")
+    final File sourceDir = new File(project.buildDir, "lightsaber/src$suffix")
     final List<File> classpath = compileTask.classpath.toList();
     final List<File> bootClasspath = Jvm.current().runtimeJar != null ? [Jvm.current().runtimeJar] : null
     final LightsaberTask lightsaberTask =
-        createLightsaberProcessTask("lightsaberProcess$suffix", classesDir, backupDir, classpath, bootClasspath)
+        createLightsaberProcessTask(
+            "lightsaberProcess$suffix", classesDir, backupDir, sourceDir, classpath, bootClasspath)
     final BackupClassesTask backupTask =
         createBackupClassFilesTask("lightsaberBackupClasses$suffix", classesDir, backupDir)
     configureTasks(lightsaberTask, backupTask, compileTask)
@@ -91,7 +93,7 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
   }
 
   private LightsaberTask createLightsaberProcessTask(final String taskName, final File classesDir,
-      final File backupDir, final List<File> classpath, final List<File> bootClasspath) {
+      final File backupDir, final File sourceDir, final List<File> classpath, final List<File> bootClasspath) {
     logger.info("Creating Lightsaber task $taskName...")
     logger.info("  Source classes directory [$backupDir]")
     logger.info("  Processed classes directory [$classesDir]")
@@ -100,6 +102,7 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
       description 'Processes .class files with Lightsaber Processor.'
       setBackupDir(backupDir)
       setClassesDir(classesDir)
+      setSourceDir(sourceDir)
       setClasspath(classpath)
       setBootClasspath(bootClasspath)
     } as LightsaberTask
