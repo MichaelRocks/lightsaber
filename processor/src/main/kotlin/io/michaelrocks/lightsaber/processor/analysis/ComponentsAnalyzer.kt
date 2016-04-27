@@ -31,7 +31,7 @@ import org.objectweb.asm.Type
 import java.io.File
 import java.util.*
 
-private val PACKAGE_COMPONENT_TYPE = Type.getObjectType("io/michaelrocks/lightsaber/Lightsaber\$PackageComponent")
+private val PACKAGE_COMPONENT_TYPE = Types.BOXED_VOID_TYPE
 private val PACKAGE_MODULE_CLASS_NAME = "Lightsaber\$PackageModule"
 
 interface ComponentsAnalyzer {
