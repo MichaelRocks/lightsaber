@@ -38,19 +38,19 @@ import org.objectweb.asm.ClassWriter
 import java.io.File
 
 class ClassProcessor(
-    private val inputFile: File,
+    private val inputPath: File,
+    private val sourcePath: File,
+    private val outputPath: File,
     classpath: List<File>,
-    bootClasspath: List<File>,
-    private val outputFile: File,
-    private val sourcePath: File
+    bootClasspath: List<File>
 ) {
   private val logger = getLogger()
 
-  private val grip: Grip = GripFactory.create(listOf(inputFile) + classpath + bootClasspath)
+  private val grip: Grip = GripFactory.create(listOf(inputPath) + classpath + bootClasspath)
   private val errorReporter = ErrorReporter()
 
-  private val fileSource = IoFactory.createFileSource(inputFile)
-  private val fileSink = IoFactory.createFileSink(inputFile, outputFile)
+  private val fileSource = IoFactory.createFileSource(inputPath)
+  private val fileSink = IoFactory.createFileSink(inputPath, outputPath)
   private val sourceSink = DirectoryFileSink(sourcePath)
 
   private val compiler = JavaToolsCompiler(classpath, bootClasspath, errorReporter)
@@ -66,7 +66,7 @@ class ClassProcessor(
 
   private fun performAnalysis(): InjectionContext {
     val analyzer = Analyzer(grip, errorReporter)
-    val context = analyzer.analyze(listOf(inputFile))
+    val context = analyzer.analyze(listOf(inputPath))
     SanityChecker(grip.classRegistry, errorReporter).performSanityChecks(context)
     checkErrors()
     return context
@@ -116,7 +116,7 @@ class ClassProcessor(
   }
 
   private fun performCompilation() {
-    compiler.compile(sourcePath, outputFile)
+    compiler.compile(sourcePath, outputPath)
     checkErrors()
   }
 

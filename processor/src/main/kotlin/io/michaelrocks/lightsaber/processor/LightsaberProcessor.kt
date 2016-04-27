@@ -25,12 +25,12 @@ class LightsaberProcessor(private val parameters: LightsaberParameters) {
   fun process() {
     val jar = parameters.jar
     val classes = parameters.classes
-    val inputFile = jar ?: classes!!
+    val inputPath = jar ?: classes!!
+    val sourcePath = parameters.source!!
+    val outputPath = parameters.output!!
     val classpath = parameters.classpath
     val bootClasspath = parameters.bootClasspath
-    val outputFile = parameters.output!!
-    val sourcePath = parameters.source!!
-    ClassProcessor(inputFile, classpath, bootClasspath, outputFile, sourcePath).processClasses()
+    ClassProcessor(inputPath, sourcePath, outputPath, classpath, bootClasspath).processClasses()
     logger.info("DONE")
   }
 }
