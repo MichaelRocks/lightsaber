@@ -23,28 +23,25 @@ import javax.inject.Inject
 class GenericInjectionTest {
   @Test
   fun testGenericConstructorInjection() {
-    val module = GenericModule()
-    val injector = lightsaber.createInjector(module)
+    val injector = lightsaber.createInjector(GenericComponent())
     val target = injector.getInstance<ConstructorInjectionTarget>()
-    validateTarget(module, target)
+    validateTarget(GenericModule(), target)
   }
 
   @Test
   fun testGenericFieldInjection() {
-    val module = GenericModule()
-    val injector = lightsaber.createInjector(module)
+    val injector = lightsaber.createInjector(GenericComponent())
     val target = FieldInjectionTarget()
     injector.injectMembers(target)
-    validateTarget(module, target)
+    validateTarget(GenericModule(), target)
   }
 
   @Test
   fun testGenericMethodInjection() {
-    val module = GenericModule()
-    val injector = lightsaber.createInjector(module)
+    val injector = lightsaber.createInjector(GenericComponent())
     val target = MethodInjectionTarget()
     injector.injectMembers(target)
-    validateTarget(module, target)
+    validateTarget(GenericModule(), target)
   }
 
   private fun validateTarget(module: GenericModule, target: Target) {
@@ -58,6 +55,12 @@ class GenericInjectionTest {
     fun provideStringList(): List<String> = listOf("Hello", "world")
     @Provides
     fun provideIntList(): List<Int> = listOf(42, 43)
+  }
+
+  @Component
+  private class GenericComponent {
+    @Provides
+    fun provideGenericModule(): GenericModule = GenericModule()
   }
 
   private interface Target {

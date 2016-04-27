@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,16 +24,14 @@ import org.junit.Test
 class AccessTest {
   @Test
   fun testInjectionAccess() {
-    val module = AccessModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(AccessComponent())
     val target = injector.getInstance(Key.of<InternalDependency>(InternalDependency::class.java))
     target.action()
   }
 
   @Test
   fun testInjectionAccessWithQualifier() {
-    val module = AccessModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(AccessComponent())
     val qualifier = javaClass.getAnnotation(InternalQualifier::class.java)
     val target = injector.getInstance(Key.of<InternalDependency>(InternalDependency::class.java, qualifier))
     target.action()
