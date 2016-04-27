@@ -20,11 +20,13 @@ import io.michaelrocks.grip.Grip
 import io.michaelrocks.grip.GripFactory
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
+import io.michaelrocks.lightsaber.processor.compiler.JavaToolsCompiler
 import io.michaelrocks.lightsaber.processor.generation.Generator
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
 import io.michaelrocks.lightsaber.processor.graph.DependencyGraph
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
 import io.michaelrocks.lightsaber.processor.injection.InjectionDispatcher
+import io.michaelrocks.lightsaber.processor.io.DirectoryFileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
 import io.michaelrocks.lightsaber.processor.io.IoFactory
 import io.michaelrocks.lightsaber.processor.logging.getLogger
@@ -39,7 +41,8 @@ class ClassProcessor(
     private val inputFile: File,
     classpath: List<File>,
     bootClasspath: List<File>,
-    outputFile: File
+    private val outputFile: File,
+    private val sourcePath: File
 ) {
   private val logger = getLogger()
 
@@ -48,13 +51,17 @@ class ClassProcessor(
 
   private val fileSource = IoFactory.createFileSource(inputFile)
   private val fileSink = IoFactory.createFileSink(inputFile, outputFile)
+  private val sourceSink = DirectoryFileSink(sourcePath)
+
+  private val compiler = JavaToolsCompiler(classpath, bootClasspath, errorReporter)
 
   fun processClasses() {
     val context = performAnalysis()
     context.dump()
     validateDependencyGraph(context)
-    performGeneration(context)
     copyAndPatchClasses(context)
+    performGeneration(context)
+    performCompilation()
   }
 
   private fun performAnalysis(): InjectionContext {
@@ -83,12 +90,6 @@ class ClassProcessor(
     checkErrors()
   }
 
-  private fun performGeneration(context: InjectionContext) {
-    val generator = Generator(grip.classRegistry, errorReporter, fileSink)
-    generator.generate(context)
-    checkErrors()
-  }
-
   private fun copyAndPatchClasses(context: InjectionContext) {
     fileSource.listFiles { path, type ->
       when (type) {
@@ -105,6 +106,17 @@ class ClassProcessor(
       }
     }
 
+    checkErrors()
+  }
+
+  private fun performGeneration(context: InjectionContext) {
+    val generator = Generator(grip.classRegistry, errorReporter, fileSink, sourceSink)
+    generator.generate(context)
+    checkErrors()
+  }
+
+  private fun performCompilation() {
+    compiler.compile(sourcePath, outputFile)
     checkErrors()
   }
 

@@ -32,19 +32,21 @@ import java.util.*
 class Generator(
     private val classRegistry: ClassRegistry,
     private val errorReporter: ErrorReporter,
-    fileSink: FileSink
+    fileSink: FileSink,
+    sourceSink: FileSink
 ) {
   private val classProducer = ProcessorClassProducer(fileSink, errorReporter)
+  private val sourceProducer = ProcessorSourceProducer(sourceSink, errorReporter)
   private val annotationCreator = AnnotationCreator(classProducer, classRegistry)
 
   fun generate(injectionContext: InjectionContext) {
     val generationContext = composeGeneratorModel(injectionContext)
     generateProviders(injectionContext, generationContext)
-    generateLightsaberConfigurator(generationContext)
     generateInjectorConfigurators(generationContext)
     generateInjectors(generationContext)
     generatePackageInvaders(generationContext)
     generateKeyRegistry(generationContext)
+    generateInjectionDispatcher(generationContext)
   }
 
   private fun composeGeneratorModel(context: InjectionContext) =
@@ -131,11 +133,6 @@ class Generator(
     generator.generate(injectionContext, generationContext)
   }
 
-  private fun generateLightsaberConfigurator(generationContext: GenerationContext) {
-    val generator = LightsaberRegistryClassGenerator(classProducer, classRegistry)
-    generator.generate(generationContext)
-  }
-
   private fun generateInjectorConfigurators(generationContext: GenerationContext) {
     val generator = InjectorConfiguratorsGenerator(classProducer, classRegistry)
     generator.generate(generationContext)
@@ -154,5 +151,10 @@ class Generator(
   private fun generateKeyRegistry(generationContext: GenerationContext) {
     val generator = KeyRegistryClassGenerator(classProducer, classRegistry, annotationCreator, generationContext)
     generator.generate()
+  }
+
+  private fun generateInjectionDispatcher(generationContext: GenerationContext) {
+    val generator = InjectorDispatcherSourceGenerator(sourceProducer)
+    generator.generate(generationContext)
   }
 }
