@@ -37,8 +37,10 @@ class JavaToolsCompiler(
     fileManager.setLocation(StandardLocation.CLASS_OUTPUT, listOf(outputPath))
     fileManager.setLocation(StandardLocation.CLASS_PATH, classpath + listOf(outputPath))
     fileManager.setLocation(StandardLocation.PLATFORM_CLASS_PATH, bootClasspath)
+    val options = listOf("-source", "6", "-target", "6")
     val compilationUnits = fileManager.getCompilationUnits(sourcePath)
-    val task = javaCompiler.getTask(newLoggerWriter(), fileManager, diagnosticsListener, null, null, compilationUnits)
+    val task =
+        javaCompiler.getTask(newLoggerWriter(), fileManager, diagnosticsListener, options, null, compilationUnits)
     try {
       if (!task.call()) {
         errorReporter.reportError(diagnosticsListener.toErrorMessage())
