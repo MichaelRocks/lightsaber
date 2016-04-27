@@ -20,7 +20,6 @@ import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
-import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.templates.TemplateLoader
 import org.objectweb.asm.Type
 
@@ -49,7 +48,10 @@ class InjectorDispatcherSourceGenerator(
         putInjectorConfigurator(injectorConfigurator, packageInvader)
       }
       appendln()
-      generationContext.membersInjectors.forEach { putMembersInjector(it) }
+      generationContext.membersInjectors.forEach { membersInjector ->
+        val packageInvader = generationContext.findPackageInvaderByTargetType(membersInjector.type)
+        putMembersInjector(membersInjector, packageInvader)
+      }
     }
   }
 
@@ -60,31 +62,31 @@ class InjectorDispatcherSourceGenerator(
 
   private fun StringBuilder.putInjectorConfigurator(injectorConfigurator: InjectorConfigurator,
       packageInvader: PackageInvader?) {
-    val component = injectorConfigurator.component.getClassReference(packageInvader)
+    val component = injectorConfigurator.component.type.getClassReference(packageInvader)
     val configurator = injectorConfigurator.className
     putToInjectorConfigurators("$component", "new $configurator()")
-  }
-
-  private fun Component.getClassReference(packageInvader: PackageInvader?): String {
-    val componentField = packageInvader?.fields?.get(type)
-    if (componentField == null) {
-      return "${type.className}.class"
-    } else {
-      return "${packageInvader!!.type.className}.${componentField.name}"
-    }
   }
 
   private fun StringBuilder.putToInjectorConfigurators(key: String, value: String) {
     appendln("injectorConfigurators.put($key, $value);")
   }
 
-  private fun StringBuilder.putMembersInjector(membersInjector: MembersInjector) {
-    val target = membersInjector.target.type.className
+  private fun StringBuilder.putMembersInjector(membersInjector: MembersInjector, packageInvader: PackageInvader?) {
+    val target = membersInjector.target.type.getClassReference(packageInvader)
     val injector = membersInjector.type.className
-    putToMembersInjectors("$target.class", "new $injector()")
+    putToMembersInjectors("$target", "new $injector()")
   }
 
   private fun StringBuilder.putToMembersInjectors(key: String, value: String) {
     appendln("membersInjectors.put($key, $value);")
+  }
+
+  private fun Type.getClassReference(packageInvader: PackageInvader?): String {
+    val componentField = packageInvader?.fields?.get(this)
+    if (componentField == null) {
+      return "$className.class"
+    } else {
+      return "${packageInvader!!.type.className}.${componentField.name}"
+    }
   }
 }
