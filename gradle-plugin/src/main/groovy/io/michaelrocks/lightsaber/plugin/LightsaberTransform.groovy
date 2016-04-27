@@ -42,6 +42,7 @@ public class LightsaberTransform extends Transform {
         EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
     parameters.classes = directoryInput.file
     parameters.output = output
+    parameters.source = new File(context.temporaryDir, "src")
     parameters.classpath = referencedInputs.collectMany {
       it.directoryInputs.collect { it.file } + it.jarInputs.collect { it.file }
     }
