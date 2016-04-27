@@ -72,14 +72,6 @@ class ChildInjectionTest {
     assertNotSame(childObject1, childObject2)
   }
 
-  @Test(expected = ConfigurationException::class)
-  fun testCreateChildInjectorWithParentModule() {
-    val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ParentComponent())
-    val childString = childInjector.getInstance<String>()
-    assertEquals("Parent String", childString)
-  }
-
   @Module
   private class ParentModule {
     @Provides

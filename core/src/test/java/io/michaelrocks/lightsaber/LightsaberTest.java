@@ -135,14 +135,6 @@ public class LightsaberTest {
     assertEquals("Child Annotated String", childInjector.getInstance(Key.of(String.class, annotation)));
   }
 
-  @Test(expected = ConfigurationException.class)
-  public void testCreateChildInjectorWithSameModule() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber(configurator);
-    final Injector injector = lightsaber.createInjector(new ParentModule());
-    // noinspection unused
-    final Injector childInjector = lightsaber.createChildInjector(injector, new ParentModule());
-  }
-
   private static class ParentModule {
   }
 
