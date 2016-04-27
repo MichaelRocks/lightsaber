@@ -21,7 +21,7 @@ import org.objectweb.asm.Type
 import java.util.*
 
 data class GenerationContext(
-    val packageInjectorConfigurators: Collection<InjectorConfigurator>,
+    val packageInjectorConfigurator: InjectorConfigurator,
     val injectorConfigurators: Collection<InjectorConfigurator>,
     val membersInjectors: Collection<MembersInjector>,
     val packageInvaders: Collection<PackageInvader>,
@@ -30,7 +30,7 @@ data class GenerationContext(
   private val packageInvadersByPackageName = HashMap<String, PackageInvader>()
 
   val allInjectorConfigurators: Collection<InjectorConfigurator>
-    get() = packageInjectorConfigurators + injectorConfigurators
+    get() = listOf(packageInjectorConfigurator) + injectorConfigurators
 
   init {
     packageInvaders.associateByTo(packageInvadersByPackageName) { it.packageName }

@@ -19,16 +19,20 @@ package io.michaelrocks.lightsaber.processor.model
 import org.objectweb.asm.Type
 
 data class InjectionContext(
-    val modules: Collection<Module>,
-    val packageModules: Collection<Module>,
+    val packageComponent: Component,
+    val components: Collection<Component>,
     val injectableTargets: Collection<InjectionTarget>,
     val providableTargets: Collection<InjectionTarget>
 ) {
-  val allModules: Collection<Module> = modules + packageModules
+  val allComponents: Collection<Component> = components + packageComponent
 
-  private val modulesByType = modules.associateBy { it.type }
+  private val compoentnsByType = components.associateBy { it.type }
+  private val modulesByType = components.flatMap { it.modules }.associateBy { it.type }
   private val injectableTargetsByType = injectableTargets.associateBy { it.type }
   private val providableTargetsByType = providableTargets.associateBy { it.type }
+
+  fun findComponentByType(componentType: Type): Component? =
+      compoentnsByType[componentType]
 
   fun findModuleByType(moduleType: Type): Module? =
       modulesByType[moduleType]

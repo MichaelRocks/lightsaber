@@ -31,6 +31,7 @@ object Types {
   val STRING_TYPE = getType<String>()
   val INJECT_TYPE = getType<Inject>()
   val PROVIDES_TYPE = getType<Provides>()
+  val COMPONENT_TYPE = getType<Component>()
   val MODULE_TYPE = getType<Module>()
   val QUALIFIER_TYPE = getType<Qualifier>()
   val SINGLETON_TYPE = getType<Singleton>()

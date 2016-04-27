@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,12 +29,19 @@ class LightsaberParameters {
   @Parameter(names = arrayOf("--classes"), description = "Classes directory to process")
   var classes: File? = null
 
-  @Parameter(names = arrayOf("--libs"), listConverter = FileConverter::class, description = "Project dependencies",
+  @Parameter(names = arrayOf("--classpath"), listConverter = FileConverter::class, description = "Classpath",
       variableArity = true)
-  var libs = emptyList<File>()
+  var classpath = emptyList<File>()
+
+  @Parameter(names = arrayOf("--bootclasspath"), listConverter = FileConverter::class, description = "Boot classpath",
+      variableArity = true)
+  var bootClasspath = emptyList<File>()
 
   @Parameter(names = arrayOf("--output"), description = "Output jar file or classes directory")
   var output: File? = null
+
+  @Parameter(names = arrayOf("--source"), description = "Output directory for .java files")
+  var source: File? = null
 
   @Parameter(names = arrayOf("-i", "--info"), description = "Use verbose output")
   var info = false
@@ -60,8 +67,10 @@ class LightsaberParameters {
       ToStringBuilder(this).run {
         append("jar", jar)
         append("classes", classes)
-        append("libs", libs)
+        append("classpath", classpath)
+        append("bootClasspath", bootClasspath)
         append("output", output)
+        append("gen", source)
         append("info", info)
         append("debug", debug)
         append("printStacktrace", printStacktrace)

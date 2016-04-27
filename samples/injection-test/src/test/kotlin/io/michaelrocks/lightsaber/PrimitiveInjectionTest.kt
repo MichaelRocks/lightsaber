@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ import javax.inject.Inject
 class PrimitiveInjectionTest {
   @Test
   fun testUnboxedIntoUnboxedInjection() {
-    val module = UnboxedPrimitiveModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(UnboxedPrimitiveComponent())
     val container = UnboxedInjectableContainer()
     injector.injectMembers(container)
 
+    val module = UnboxedPrimitiveModule()
     assertEquals(module.provideBoolean(), container.booleanField)
     assertEquals(module.provideByte().toLong(), container.byteField.toLong())
     assertEquals(module.provideChar().toLong(), container.charField.toLong())
@@ -41,11 +41,11 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testUnboxedIntoBoxedInjection() {
-    val module = UnboxedPrimitiveModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(UnboxedPrimitiveComponent())
     val container = BoxedInjectableContainer()
     injector.injectMembers(container)
 
+    val module = UnboxedPrimitiveModule()
     assertEquals(module.provideBoolean(), container.booleanField)
     assertEquals(module.provideByte().toLong(), (container.byteField as Byte).toLong())
     assertEquals(module.provideChar().toLong(), (container.characterField as Char).toLong())
@@ -58,11 +58,11 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testBoxedIntoUnboxedInjection() {
-    val module = BoxedPrimitiveModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(BoxedPrimitiveComponent())
     val container = UnboxedInjectableContainer()
     injector.injectMembers(container)
 
+    val module = BoxedPrimitiveModule()
     assertEquals(module.provideBoolean(), container.booleanField)
     assertEquals(module.provideByte(), java.lang.Byte.valueOf(container.byteField))
     assertEquals(module.provideCharacter(), Character.valueOf(container.charField))
@@ -75,11 +75,11 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testBoxedIntoBoxedInjection() {
-    val module = BoxedPrimitiveModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(BoxedPrimitiveComponent())
     val container = BoxedInjectableContainer()
     injector.injectMembers(container)
 
+    val module = BoxedPrimitiveModule()
     assertEquals(module.provideBoolean(), container.booleanField)
     assertEquals(module.provideByte(), container.byteField)
     assertEquals(module.provideCharacter(), container.characterField)
@@ -92,10 +92,10 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testUnboxedForUnboxedConstruction() {
-    val module = UnboxedPrimitiveModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(UnboxedPrimitiveComponent())
     val container = injector.getInstance<UnboxedConstructableContainer>()
 
+    val module = UnboxedPrimitiveModule()
     assertEquals(module.provideBoolean(), container.booleanField)
     assertEquals(module.provideByte().toLong(), container.byteField.toLong())
     assertEquals(module.provideChar().toLong(), container.charField.toLong())
@@ -108,10 +108,10 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testUnboxedForBoxedConstruction() {
-    val module = UnboxedPrimitiveModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(UnboxedPrimitiveComponent())
     val container = injector.getInstance<BoxedConstructableContainer>()
 
+    val module = UnboxedPrimitiveModule()
     assertEquals(module.provideBoolean(), container.booleanField)
     assertEquals(module.provideByte().toLong(), (container.byteField as Byte).toLong())
     assertEquals(module.provideChar().toLong(), (container.characterField as Char).toLong())
@@ -124,10 +124,10 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testBoxedForUnboxedConstruction() {
-    val module = BoxedPrimitiveModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(BoxedPrimitiveComponent())
     val container = injector.getInstance<UnboxedConstructableContainer>()
 
+    val module = BoxedPrimitiveModule()
     assertEquals(module.provideBoolean(), container.booleanField)
     assertEquals(module.provideByte(), java.lang.Byte.valueOf(container.byteField))
     assertEquals(module.provideCharacter(), Character.valueOf(container.charField))
@@ -140,10 +140,10 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testBoxedForBoxedConstruction() {
-    val module = BoxedPrimitiveModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(BoxedPrimitiveComponent())
     val container = injector.getInstance<BoxedConstructableContainer>()
 
+    val module = BoxedPrimitiveModule()
     assertEquals(module.provideBoolean(), container.booleanField)
     assertEquals(module.provideByte(), container.byteField)
     assertEquals(module.provideCharacter(), container.characterField)
@@ -156,8 +156,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testUnboxedProvision() {
-    val module = UnboxedPrimitiveModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(UnboxedPrimitiveComponent())
 
     val unboxedResult = injector.getInstance<UnboxedResult>()
     val boxedResult = injector.getInstance<BoxedResult>()
@@ -168,8 +167,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testBoxedProvision() {
-    val module = BoxedPrimitiveModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(BoxedPrimitiveComponent())
 
     val unboxedResult = injector.getInstance<UnboxedResult>()
     val boxedResult = injector.getInstance<BoxedResult>()
@@ -377,6 +375,18 @@ class PrimitiveInjectionTest {
       assertEquals(provideShort(), shortArg)
       return BoxedResult()
     }
+  }
+
+  @Component
+  private class UnboxedPrimitiveComponent {
+    @Provides
+    private fun provideUnboxedPrimitiveModule(): UnboxedPrimitiveModule = UnboxedPrimitiveModule()
+  }
+
+  @Component
+  private class BoxedPrimitiveComponent {
+    @Provides
+    private fun provideBoxedPrimitiveModule(): BoxedPrimitiveModule = BoxedPrimitiveModule()
   }
 
   private class UnboxedResult

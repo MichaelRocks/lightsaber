@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,9 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber;
+package io.michaelrocks.lightsaber.processor.templates
 
-import java.util.List;
-import java.util.Map;
-
-public class LightsaberRegistry {
-  public static List getPackageInjectorConfigurators() {
-    throw new UnsupportedOperationException("This method must be generated");
-  }
-
-  public static Map getInjectorConfigurators() {
-    throw new UnsupportedOperationException("This method must be generated");
-  }
-
-  public static Map getMembersInjectors() {
-    throw new UnsupportedOperationException("This method must be generated");
-  }
+internal sealed class Line {
+  class Text(val text: String) : Line()
+  class Parameter(val name: String, val prefix: String) : Line()
 }

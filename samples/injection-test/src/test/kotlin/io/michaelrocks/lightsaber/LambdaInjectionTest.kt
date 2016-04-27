@@ -23,28 +23,25 @@ import javax.inject.Inject
 class LambdaInjectionTest {
   @Test
   fun testLambdaConstructorInjection() {
-    val module = LambdaModule()
-    val injector = lightsaber.createInjector(module)
+    val injector = lightsaber.createInjector(LambdaComponent())
     val target = injector.getInstance<ConstructorInjectionTarget>()
-    validateTarget(module, target)
+    validateTarget(LambdaModule(), target)
   }
 
   @Test
   fun testLambdaFieldInjection() {
-    val module = LambdaModule()
-    val injector = lightsaber.createInjector(module)
+    val injector = lightsaber.createInjector(LambdaComponent())
     val target = FieldInjectionTarget()
     injector.injectMembers(target)
-    validateTarget(module, target)
+    validateTarget(LambdaModule(), target)
   }
 
   @Test
   fun testLambdaMethodInjection() {
-    val module = LambdaModule()
-    val injector = lightsaber.createInjector(module)
+    val injector = lightsaber.createInjector(LambdaComponent())
     val target = MethodInjectionTarget()
     injector.injectMembers(target)
-    validateTarget(module, target)
+    validateTarget(LambdaModule(), target)
   }
 
   private fun validateTarget(module: LambdaModule, target: Target) {
@@ -64,6 +61,12 @@ class LambdaInjectionTest {
     fun provideGreeting2(): (String) -> String = { "Hello, $it!" }
     @Provides
     fun provideGreeting3(): (String, String) -> String = { greeting, name -> "$greeting, $name!" }
+  }
+
+  @Component
+  private class LambdaComponent {
+    @Provides
+    fun provideLambdaModule(): LambdaModule = LambdaModule()
   }
 
   private interface Target {

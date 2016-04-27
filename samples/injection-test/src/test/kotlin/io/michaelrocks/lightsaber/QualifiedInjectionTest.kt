@@ -26,28 +26,25 @@ import kotlin.reflect.KClass
 class QualifiedInjectionTest {
   @Test
   fun testConstructionInjection() {
-    val module = QualifiedModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(QualifiedComponent())
     val container = injector.getInstance<ConstructorInjectionContainer>()
-    validateContainer(module, container)
+    validateContainer(QualifiedModule(), container)
   }
 
   @Test
   fun testFieldInjection() {
-    val module = QualifiedModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(QualifiedComponent())
     val container = FieldInjectionContainer()
     injector.injectMembers(container)
-    validateContainer(module, container)
+    validateContainer(QualifiedModule(), container)
   }
 
   @Test
   fun testMethodInjection() {
-    val module = QualifiedModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(QualifiedComponent())
     val container = MethodInjectionContainer()
     injector.injectMembers(container)
-    validateContainer(module, container)
+    validateContainer(QualifiedModule(), container)
   }
 
   private fun validateContainer(module: QualifiedModule, container: Container) {
@@ -303,6 +300,12 @@ class QualifiedInjectionTest {
     @Provides
     @AnnotationArrayQualifier(IntQualifier(-42))
     fun provideAnnotationArrayQualifierExplicit(): String = "AnnotationArrayQualifierExplicit"
+  }
+
+  @Component
+  private class QualifiedComponent {
+    @Provides
+    fun provideQualifiedModule(): QualifiedModule = QualifiedModule()
   }
 
   private interface Container {

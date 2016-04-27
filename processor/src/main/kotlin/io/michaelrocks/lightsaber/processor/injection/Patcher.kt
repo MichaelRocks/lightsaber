@@ -21,7 +21,7 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
-class InjectionDispatcher(
+class Patcher(
     classVisitor: ClassVisitor,
     private val context: InjectionContext
 ) : ClassVisitor(Opcodes.ASM5, classVisitor) {
@@ -29,6 +29,10 @@ class InjectionDispatcher(
   override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
       interfaces: Array<String>?) {
     val type = Type.getObjectType(name)
+
+    context.findComponentByType(type)?.let {
+      cv = ComponentPatcher(cv, it)
+    }
 
     context.findModuleByType(type)?.let {
       cv = ModulePatcher(cv, it)

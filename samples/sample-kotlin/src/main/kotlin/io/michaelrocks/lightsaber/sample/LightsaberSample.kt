@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class LightsaberSample {
   private lateinit var planet: Planet
 
   private fun run() {
-    val injector = Lightsaber.get().createInjector(LightsaberModule())
+    val injector = Lightsaber.get().createInjector(LightsaberComponent())
     injector.injectMembers(this)
     System.out.println("After injection")
     System.out.println("Wookiee: $wookiee from ${wookiee.planet}")

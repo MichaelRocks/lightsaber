@@ -24,6 +24,7 @@ import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
+import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
@@ -61,10 +62,12 @@ class SanityChecker(
   }
 
   private fun checkProviderMethodsReturnValues(context: InjectionContext) {
-    for (module in context.modules) {
-      for (provider in module.providers) {
-        if (provider.dependency.type.rawType == Type.VOID_TYPE) {
-          errorReporter.reportError("Provider returns void: " + provider.provisionPoint)
+    for (component in context.components) {
+      for (module in component.modules) {
+        for (provider in module.providers) {
+          if (!provider.isConstructorProvider && provider.dependency.type.rawType == Type.VOID_TYPE) {
+            errorReporter.reportError("Provider returns void: " + provider.provisionPoint)
+          }
         }
       }
     }

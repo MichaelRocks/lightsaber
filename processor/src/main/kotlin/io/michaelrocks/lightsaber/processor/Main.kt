@@ -87,7 +87,12 @@ private fun validateParameters(parameters: LightsaberParameters) {
     }
   }
 
-  validateLibraries(parameters.libs)
+  if (parameters.source == null) {
+    parameters.source = File("src$DEFAULT_SUFFIX")
+  }
+
+  validateLibraries(parameters.classpath)
+  validateLibraries(parameters.bootClasspath)
 }
 
 private fun validateLibraries(libraries: List<File>?) {
