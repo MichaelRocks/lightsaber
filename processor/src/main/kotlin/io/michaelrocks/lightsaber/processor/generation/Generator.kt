@@ -93,6 +93,15 @@ class Generator(
                 given (!classRegistry.getClassMirror(type).isPublic) { type }
               }
           )
+          .mergeWith(
+              context.components.groupNotNullByTo(
+                  HashMap<String, MutableList<Type>>(),
+                  { component -> Types.getPackageName(component.type) },
+                  { component ->
+                    given (!classRegistry.getClassMirror(component.type).isPublic) { component.type }
+                  }
+              )
+          )
           .map {
             val (packageName, types) = it
             val type = Type.getObjectType("$packageName/Lightsaber\$PackageInvader")
