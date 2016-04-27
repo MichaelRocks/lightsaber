@@ -29,8 +29,8 @@ class LightsaberProcessor(private val parameters: LightsaberParameters) {
     val classpath = parameters.classpath
     val bootClasspath = parameters.bootClasspath
     val outputFile = parameters.output!!
-    val genFile = parameters.gen!!
-    ClassProcessor(inputFile, classpath, bootClasspath, outputFile, genFile).processClasses()
+    val sourcePath = parameters.source!!
+    ClassProcessor(inputFile, classpath, bootClasspath, outputFile, sourcePath).processClasses()
     logger.info("DONE")
   }
 }

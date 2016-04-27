@@ -87,8 +87,8 @@ private fun validateParameters(parameters: LightsaberParameters) {
     }
   }
 
-  if (parameters.gen == null) {
-    parameters.gen = File("gen$DEFAULT_SUFFIX")
+  if (parameters.source == null) {
+    parameters.source = File("src$DEFAULT_SUFFIX")
   }
 
   validateLibraries(parameters.classpath)

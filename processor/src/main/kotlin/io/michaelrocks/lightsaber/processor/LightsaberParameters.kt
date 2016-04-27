@@ -40,8 +40,8 @@ class LightsaberParameters {
   @Parameter(names = arrayOf("--output"), description = "Output jar file or classes directory")
   var output: File? = null
 
-  @Parameter(names = arrayOf("--gen"), description = "Output directory for .java files")
-  var gen: File? = null
+  @Parameter(names = arrayOf("--source"), description = "Output directory for .java files")
+  var source: File? = null
 
   @Parameter(names = arrayOf("-i", "--info"), description = "Use verbose output")
   var info = false
@@ -70,7 +70,7 @@ class LightsaberParameters {
         append("classpath", classpath)
         append("bootClasspath", bootClasspath)
         append("output", output)
-        append("gen", gen)
+        append("gen", source)
         append("info", info)
         append("debug", debug)
         append("printStacktrace", printStacktrace)
