@@ -104,6 +104,15 @@ class Generator(
                   }
               )
           )
+          .mergeWith(
+              context.injectableTargets.groupNotNullByTo(
+                  HashMap(),
+                  { target -> Types.getPackageName(target.type) },
+                  { target ->
+                    given (!classRegistry.getClassMirror(target.type).isPublic) { target.type }
+                  }
+              )
+          )
           .map {
             val (packageName, types) = it
             val type = Type.getObjectType("$packageName/Lightsaber\$PackageInvader")
