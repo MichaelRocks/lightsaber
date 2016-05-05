@@ -21,6 +21,7 @@ import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier
+import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
@@ -36,6 +37,7 @@ class SanityChecker(
     checkStaticInjectionPoints(context)
     checkProvidableTargetsAreConstructable(context)
     checkProviderMethodsReturnValues(context)
+    checkComponentsAndModulesExtendObject(context)
   }
 
   private fun checkStaticInjectionPoints(context: InjectionContext) {
@@ -85,6 +87,22 @@ class SanityChecker(
     if ((mirror.access and flag) != 0) {
       errorReporter.reportError(
           "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${mirror.type}")
+    }
+  }
+
+  private fun checkComponentsAndModulesExtendObject(context: InjectionContext) {
+    for (component in context.components) {
+      checkClassExtendsObject(component.type)
+      for (module in component.modules) {
+        checkClassExtendsObject(module.type)
+      }
+    }
+  }
+
+  private fun checkClassExtendsObject(type: Type) {
+    val mirror = classRegistry.getClassMirror(type)
+    if (mirror.superType != Types.OBJECT_TYPE) {
+      errorReporter.reportError("${type.className} has a super type of ${mirror.type.className} instead of Object")
     }
   }
 }
