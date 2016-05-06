@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.graph
+package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.Injector
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.ProcessingException
+import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
+import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.Module
 import io.michaelrocks.lightsaber.processor.model.ProvisionPoint

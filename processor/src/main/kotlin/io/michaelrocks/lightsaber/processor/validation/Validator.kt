@@ -20,7 +20,6 @@ import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
 import io.michaelrocks.lightsaber.processor.graph.MissingVerticesSearcher
-import io.michaelrocks.lightsaber.processor.graph.buildDependencyGraph
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 
 class Validator(
