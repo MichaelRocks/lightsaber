@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.processor.graph
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import java.util.*
 
-class CycleSearcher(private val graph: DependencyGraph) {
+class CycleSearcher(private val graph: DirectedGraph<Dependency>) {
   fun findCycles(): Collection<Dependency> = findCycles(HashMap(), HashSet())
 
   private fun findCycles(
@@ -38,11 +38,11 @@ class CycleSearcher(private val graph: DependencyGraph) {
       }
 
       colors.put(type, VertexColor.GRAY)
-      graph.getTypeDependencies(type)?.forEach { traverse(it) }
+      graph.getAdjacentVertices(type)?.forEach { traverse(it) }
       colors.put(type, VertexColor.BLACK)
     }
 
-    graph.types.forEach { traverse(it) }
+    graph.vertices.forEach { traverse(it) }
     return Collections.unmodifiableSet(cycles)
   }
 

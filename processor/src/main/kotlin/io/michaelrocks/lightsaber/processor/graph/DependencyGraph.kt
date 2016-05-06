@@ -26,15 +26,10 @@ import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import org.objectweb.asm.Type
 import java.util.*
 
-class DependencyGraph(errorReporter: ErrorReporter, modules: Collection<Module>) {
-  private val typeGraph = HashMap<Dependency, List<Dependency>>()
-
-  val types: Collection<Dependency>
-    get() = typeGraph.keys
-
-  init {
+fun buildDependencyGraph(errorReporter: ErrorReporter, modules: Collection<Module>): DirectedGraph<Dependency> {
+  return HashDirectedGraph<Dependency>().apply {
     val rootType = Dependency(GenericType.RawType(Type.getType(Injector::class.java)))
-    typeGraph.put(rootType, emptyList<Dependency>())
+    put(rootType, emptyList<Dependency>())
     for (module in modules) {
       val providableModuleTypes = HashSet<Dependency>()
       for (provider in module.providers) {
@@ -43,7 +38,7 @@ class DependencyGraph(errorReporter: ErrorReporter, modules: Collection<Module>)
           val injectees =
               (provider.provisionPoint as? ProvisionPoint.AbstractMethod)?.injectionPoint?.injectees.orEmpty()
           val dependencies = injectees.map { it.dependency }
-          typeGraph.put(returnType, dependencies)
+          put(returnType, dependencies)
         } else {
           val message = "Module %s provides %s multiple times".format(module.type.internalName, returnType)
           errorReporter.reportError(ProcessingException(message))
@@ -51,6 +46,4 @@ class DependencyGraph(errorReporter: ErrorReporter, modules: Collection<Module>)
       }
     }
   }
-
-  fun getTypeDependencies(type: Dependency): Collection<Dependency>? = typeGraph[type]
 }

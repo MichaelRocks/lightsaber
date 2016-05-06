@@ -23,8 +23,8 @@ import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.compiler.JavaToolsCompiler
 import io.michaelrocks.lightsaber.processor.generation.Generator
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
-import io.michaelrocks.lightsaber.processor.graph.DependencyGraph
 import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
+import io.michaelrocks.lightsaber.processor.graph.buildDependencyGraph
 import io.michaelrocks.lightsaber.processor.injection.Patcher
 import io.michaelrocks.lightsaber.processor.io.DirectoryFileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
@@ -73,18 +73,20 @@ class ClassProcessor(
   }
 
   private fun validateDependencyGraph(context: InjectionContext) {
-    val dependencyGraph = DependencyGraph(errorReporter, context.allComponents.flatMap { it.modules })
+    val dependencyGraph = buildDependencyGraph(errorReporter, context.allComponents.flatMap { it.modules })
 
-    val unresolvedDependenciesSearcher = UnresolvedDependenciesSearcher(dependencyGraph)
-    val unresolvedDependencies = unresolvedDependenciesSearcher.findUnresolvedDependencies()
-    for (unresolvedDependency in unresolvedDependencies) {
-      errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
+    UnresolvedDependenciesSearcher(dependencyGraph).let {
+      val unresolvedDependencies = it.findUnresolvedDependencies()
+      for (unresolvedDependency in unresolvedDependencies) {
+        errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
+      }
     }
 
-    val cycleSearcher = CycleSearcher(dependencyGraph)
-    val cycles = cycleSearcher.findCycles()
-    for (cycle in cycles) {
-      errorReporter.reportError("Cycled dependency: $cycle")
+    CycleSearcher(dependencyGraph).let {
+      val cycles = it.findCycles()
+      for (cycle in cycles) {
+        errorReporter.reportError("Cycled dependency: $cycle")
+      }
     }
 
     checkErrors()
