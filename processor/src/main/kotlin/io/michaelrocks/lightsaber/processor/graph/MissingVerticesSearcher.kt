@@ -16,21 +16,20 @@
 
 package io.michaelrocks.lightsaber.processor.graph
 
-import io.michaelrocks.lightsaber.processor.model.Dependency
 import java.util.*
 
-class UnresolvedDependenciesSearcher(private val graph: DirectedGraph<Dependency>) {
-  fun findUnresolvedDependencies(): Collection<Dependency> = findUnresolvedDependencies(HashSet(), HashSet())
+class MissingVerticesSearcher<T>(private val graph: DirectedGraph<T>) {
+  fun findMissingVertices(): Collection<T> = findMissingVertices(HashSet(), HashSet())
 
-  private fun findUnresolvedDependencies(
-      visitedTypes: MutableCollection<Dependency>,
-      unresolvedTypes: MutableCollection<Dependency>
-  ): Collection<Dependency> {
-    fun traverse(type: Dependency) {
-      if (visitedTypes.add(type)) {
-        val dependencies = graph.getAdjacentVertices(type)
+  private fun findMissingVertices(
+      visitedVertices: MutableCollection<T>,
+      missingVertices: MutableCollection<T>
+  ): Collection<T> {
+    fun traverse(vertex: T) {
+      if (visitedVertices.add(vertex)) {
+        val dependencies = graph.getAdjacentVertices(vertex)
         if (dependencies == null) {
-          unresolvedTypes.add(type)
+          missingVertices.add(vertex)
         } else {
           dependencies.forEach { traverse(it) }
         }
@@ -38,6 +37,6 @@ class UnresolvedDependenciesSearcher(private val graph: DirectedGraph<Dependency
     }
 
     graph.vertices.forEach { traverse(it) }
-    return unresolvedTypes
+    return missingVertices
   }
 }

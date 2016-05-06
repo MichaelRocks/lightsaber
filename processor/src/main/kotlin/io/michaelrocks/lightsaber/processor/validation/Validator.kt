@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.processor.validation
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
-import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
+import io.michaelrocks.lightsaber.processor.graph.MissingVerticesSearcher
 import io.michaelrocks.lightsaber.processor.graph.buildDependencyGraph
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 
@@ -39,8 +39,8 @@ class Validator(
   private fun validateDependencyGraph(context: InjectionContext) {
     val dependencyGraph = buildDependencyGraph(errorReporter, context.allComponents.flatMap { it.modules })
 
-    UnresolvedDependenciesSearcher(dependencyGraph).let {
-      val unresolvedDependencies = it.findUnresolvedDependencies()
+    MissingVerticesSearcher(dependencyGraph).let {
+      val unresolvedDependencies = it.findMissingVertices()
       for (unresolvedDependency in unresolvedDependencies) {
         errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
       }
