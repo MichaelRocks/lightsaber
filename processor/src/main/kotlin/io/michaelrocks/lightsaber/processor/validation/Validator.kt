@@ -29,6 +29,7 @@ class Validator(
   fun validate(context: InjectionContext) {
     performSanityChecks(context)
     validateDependencyGraph(context)
+    validateComponentGraph(context)
   }
 
   private fun performSanityChecks(context: InjectionContext) {
@@ -49,6 +50,16 @@ class Validator(
       val cycles = it.findCycles()
       for (cycle in cycles) {
         errorReporter.reportError("Cycled dependency: ${cycle.joinToString(" -> ")}")
+      }
+    }
+  }
+
+  private fun validateComponentGraph(context: InjectionContext) {
+    val componentGraph = buildComponentGraph(context.components)
+    CycleSearcher(componentGraph).let {
+      val cycles = it.findCycles()
+      for (cycle in cycles) {
+        errorReporter.reportError("Cycled component: ${cycle.joinToString(" -> ")}")
       }
     }
   }
