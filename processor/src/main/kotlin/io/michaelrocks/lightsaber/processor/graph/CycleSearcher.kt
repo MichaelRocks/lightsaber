@@ -42,7 +42,7 @@ class CycleSearcher<T>(private val graph: DirectedGraph<T>) {
     }
 
     graph.vertices.forEach { traverse(it) }
-    return Collections.unmodifiableSet(cycles)
+    return cycles
   }
 
   private enum class VertexColor {
