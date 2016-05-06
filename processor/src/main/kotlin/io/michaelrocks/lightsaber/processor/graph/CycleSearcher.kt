@@ -16,30 +16,29 @@
 
 package io.michaelrocks.lightsaber.processor.graph
 
-import io.michaelrocks.lightsaber.processor.model.Dependency
 import java.util.*
 
-class CycleSearcher(private val graph: DirectedGraph<Dependency>) {
-  fun findCycles(): Collection<Dependency> = findCycles(HashMap(), HashSet())
+class CycleSearcher<T>(private val graph: DirectedGraph<T>) {
+  fun findCycles(): Collection<T> = findCycles(HashMap(), HashSet())
 
   private fun findCycles(
-      colors: MutableMap<Dependency, VertexColor>,
-      cycles: MutableSet<Dependency>
-  ): Collection<Dependency> {
-    fun traverse(type: Dependency) {
-      val color = colors[type]
+      colors: MutableMap<T, VertexColor>,
+      cycles: MutableSet<T>
+  ): Collection<T> {
+    fun traverse(vertex: T) {
+      val color = colors[vertex]
       if (color == VertexColor.BLACK) {
         return
       }
 
       if (color == VertexColor.GRAY) {
-        cycles.add(type)
+        cycles.add(vertex)
         return
       }
 
-      colors.put(type, VertexColor.GRAY)
-      graph.getAdjacentVertices(type)?.forEach { traverse(it) }
-      colors.put(type, VertexColor.BLACK)
+      colors.put(vertex, VertexColor.GRAY)
+      graph.getAdjacentVertices(vertex)?.forEach { traverse(it) }
+      colors.put(vertex, VertexColor.BLACK)
     }
 
     graph.vertices.forEach { traverse(it) }
