@@ -18,8 +18,10 @@ package io.michaelrocks.lightsaber.processor.graph
 
 import java.util.*
 
-class HashDirectedGraph<T> : MutableDirectedGraph<T> {
-  private val edges = HashMap<T, MutableList<T>>()
+class HashDirectedGraph<T>(
+    private val collection: () -> MutableCollection<T> = { ArrayList() }
+) : MutableDirectedGraph<T> {
+  private val edges = HashMap<T, MutableCollection<T>>()
 
   override val vertices: Collection<T>
     get() = edges.keys
@@ -69,6 +71,6 @@ class HashDirectedGraph<T> : MutableDirectedGraph<T> {
   }
 
   private fun getOrCreateAdjacentVertices(vertex: T): MutableCollection<T> {
-    return edges.getOrPut(vertex) { ArrayList() }
+    return edges.getOrPut(vertex) { collection() }
   }
 }
