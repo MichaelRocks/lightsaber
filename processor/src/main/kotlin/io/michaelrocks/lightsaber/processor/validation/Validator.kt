@@ -49,7 +49,7 @@ class Validator(
     CycleSearcher(dependencyGraph).let {
       val cycles = it.findCycles()
       for (cycle in cycles) {
-        errorReporter.reportError("Cycled dependency: $cycle")
+        errorReporter.reportError("Cycled dependency: ${cycle.joinToString(" -> ")}")
       }
     }
   }

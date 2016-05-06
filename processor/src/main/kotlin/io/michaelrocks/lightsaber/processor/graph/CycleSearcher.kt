@@ -19,29 +19,35 @@ package io.michaelrocks.lightsaber.processor.graph
 import java.util.*
 
 class CycleSearcher<T>(private val graph: DirectedGraph<T>) {
-  fun findCycles(): Collection<T> = findCycles(HashMap(), HashSet())
+  fun findCycles(): Collection<Collection<T>> = findCycles(HashMap(), HashSet())
 
   private fun findCycles(
       colors: MutableMap<T, VertexColor>,
-      cycles: MutableSet<T>
-  ): Collection<T> {
-    fun traverse(vertex: T) {
+      cycles: MutableSet<Collection<T>>
+  ): Collection<Collection<T>> {
+    fun traverse(vertex: T, cycle: MutableList<T>) {
       val color = colors[vertex]
       if (color == VertexColor.BLACK) {
         return
       }
 
-      if (color == VertexColor.GRAY) {
-        cycles.add(vertex)
-        return
-      }
+      try {
+        cycle.add(vertex)
 
-      colors.put(vertex, VertexColor.GRAY)
-      graph.getAdjacentVertices(vertex)?.forEach { traverse(it) }
-      colors.put(vertex, VertexColor.BLACK)
+        if (color == VertexColor.GRAY) {
+          cycles.add(cycle.toList())
+          return
+        }
+
+        colors.put(vertex, VertexColor.GRAY)
+        graph.getAdjacentVertices(vertex)?.forEach { traverse(it, cycle) }
+        colors.put(vertex, VertexColor.BLACK)
+      } finally {
+        cycle.removeAt(cycle.lastIndex)
+      }
     }
 
-    graph.vertices.forEach { traverse(it) }
+    graph.vertices.forEach { traverse(it, ArrayList()) }
     return cycles
   }
 
