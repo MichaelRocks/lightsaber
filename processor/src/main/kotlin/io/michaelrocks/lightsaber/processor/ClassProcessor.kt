@@ -22,16 +22,13 @@ import io.michaelrocks.lightsaber.processor.analysis.Analyzer
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.compiler.JavaToolsCompiler
 import io.michaelrocks.lightsaber.processor.generation.Generator
-import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
-import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
-import io.michaelrocks.lightsaber.processor.graph.buildDependencyGraph
 import io.michaelrocks.lightsaber.processor.injection.Patcher
 import io.michaelrocks.lightsaber.processor.io.DirectoryFileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
 import io.michaelrocks.lightsaber.processor.io.IoFactory
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import io.michaelrocks.lightsaber.processor.model.*
-import io.michaelrocks.lightsaber.processor.validation.SanityChecker
+import io.michaelrocks.lightsaber.processor.validation.Validator
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
@@ -56,40 +53,19 @@ class ClassProcessor(
   private val compiler = JavaToolsCompiler(classpath, bootClasspath, errorReporter)
 
   fun processClasses() {
-    val context = performAnalysis()
+    val context = performAnalysisAndValidation()
     context.dump()
-    validateDependencyGraph(context)
     copyAndPatchClasses(context)
     performGeneration(context)
     performCompilation()
   }
 
-  private fun performAnalysis(): InjectionContext {
+  private fun performAnalysisAndValidation(): InjectionContext {
     val analyzer = Analyzer(grip, errorReporter)
     val context = analyzer.analyze(listOf(inputPath))
-    SanityChecker(grip.classRegistry, errorReporter).performSanityChecks(context)
+    Validator(grip.classRegistry, errorReporter).validate(context)
     checkErrors()
     return context
-  }
-
-  private fun validateDependencyGraph(context: InjectionContext) {
-    val dependencyGraph = buildDependencyGraph(errorReporter, context.allComponents.flatMap { it.modules })
-
-    UnresolvedDependenciesSearcher(dependencyGraph).let {
-      val unresolvedDependencies = it.findUnresolvedDependencies()
-      for (unresolvedDependency in unresolvedDependencies) {
-        errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
-      }
-    }
-
-    CycleSearcher(dependencyGraph).let {
-      val cycles = it.findCycles()
-      for (cycle in cycles) {
-        errorReporter.reportError("Cycled dependency: $cycle")
-      }
-    }
-
-    checkErrors()
   }
 
   private fun copyAndPatchClasses(context: InjectionContext) {
