@@ -18,8 +18,8 @@ package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.ErrorReporter
-import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
-import io.michaelrocks.lightsaber.processor.graph.MissingVerticesSearcher
+import io.michaelrocks.lightsaber.processor.graph.findCycles
+import io.michaelrocks.lightsaber.processor.graph.findMissingVertices
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 
 class Validator(
@@ -39,28 +39,22 @@ class Validator(
   private fun validateDependencyGraph(context: InjectionContext) {
     val dependencyGraph = buildDependencyGraph(errorReporter, context.allComponents.flatMap { it.modules })
 
-    MissingVerticesSearcher(dependencyGraph).let {
-      val unresolvedDependencies = it.findMissingVertices()
-      for (unresolvedDependency in unresolvedDependencies) {
-        errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
-      }
+    val unresolvedDependencies = findMissingVertices(dependencyGraph)
+    for (unresolvedDependency in unresolvedDependencies) {
+      errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
     }
 
-    CycleSearcher(dependencyGraph).let {
-      val cycles = it.findCycles()
-      for (cycle in cycles) {
-        errorReporter.reportError("Cycled dependency: ${cycle.joinToString(" -> ")}")
-      }
+    val cycles = findCycles(dependencyGraph)
+    for (cycle in cycles) {
+      errorReporter.reportError("Cycled dependency: ${cycle.joinToString(" -> ")}")
     }
   }
 
   private fun validateComponentGraph(context: InjectionContext) {
     val componentGraph = buildComponentGraph(context.components)
-    CycleSearcher(componentGraph).let {
-      val cycles = it.findCycles()
-      for (cycle in cycles) {
-        errorReporter.reportError("Cycled component: ${cycle.joinToString(" -> ")}")
-      }
+    val cycles = findCycles(componentGraph)
+    for (cycle in cycles) {
+      errorReporter.reportError("Cycled component: ${cycle.joinToString(" -> ")}")
     }
   }
 }

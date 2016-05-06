@@ -18,40 +18,36 @@ package io.michaelrocks.lightsaber.processor.graph
 
 import java.util.*
 
-class CycleSearcher<T>(private val graph: DirectedGraph<T>) {
-  fun findCycles(): Collection<Collection<T>> = findCycles(HashMap(), HashSet())
+fun <T> findCycles(graph: DirectedGraph<T>): Collection<Collection<T>> {
+  val colors = HashMap<T, VertexColor>()
+  val cycles = HashSet<Collection<T>>()
 
-  private fun findCycles(
-      colors: MutableMap<T, VertexColor>,
-      cycles: MutableSet<Collection<T>>
-  ): Collection<Collection<T>> {
-    fun traverse(vertex: T, cycle: MutableList<T>) {
-      val color = colors[vertex]
-      if (color == VertexColor.BLACK) {
+  fun traverse(vertex: T, cycle: MutableList<T>) {
+    val color = colors[vertex]
+    if (color == VertexColor.BLACK) {
+      return
+    }
+
+    try {
+      cycle.add(vertex)
+
+      if (color == VertexColor.GRAY) {
+        cycles.add(cycle.toList())
         return
       }
 
-      try {
-        cycle.add(vertex)
-
-        if (color == VertexColor.GRAY) {
-          cycles.add(cycle.toList())
-          return
-        }
-
-        colors.put(vertex, VertexColor.GRAY)
-        graph.getAdjacentVertices(vertex)?.forEach { traverse(it, cycle) }
-        colors.put(vertex, VertexColor.BLACK)
-      } finally {
-        cycle.removeAt(cycle.lastIndex)
-      }
+      colors.put(vertex, VertexColor.GRAY)
+      graph.getAdjacentVertices(vertex)?.forEach { traverse(it, cycle) }
+      colors.put(vertex, VertexColor.BLACK)
+    } finally {
+      cycle.removeAt(cycle.lastIndex)
     }
-
-    graph.vertices.forEach { traverse(it, ArrayList()) }
-    return cycles
   }
 
-  private enum class VertexColor {
-    GRAY, BLACK
-  }
+  graph.vertices.forEach { traverse(it, ArrayList()) }
+  return cycles
+}
+
+private enum class VertexColor {
+  GRAY, BLACK
 }
