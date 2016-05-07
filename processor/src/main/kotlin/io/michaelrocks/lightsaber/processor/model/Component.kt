@@ -20,6 +20,7 @@ import org.objectweb.asm.Type
 
 data class Component(
     val type: Type,
+    val root: Boolean,
     val providers: Collection<ModuleProvider>,
     val subcomponents: Collection<Type>
 ) {
