@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.sample
 import io.michaelrocks.lightsaber.Component
 import io.michaelrocks.lightsaber.Provides
 
-@Component
+@Component(root = true)
 internal class LightsaberComponent {
   @Provides
   private fun provideLightsaberModule(): LightsaberModule {

@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.sample;
 import io.michaelrocks.lightsaber.Component;
 import io.michaelrocks.lightsaber.Provides;
 
-@Component
+@Component(root = true)
 class LightsaberComponent {
   @Provides
   private LightsaberModule provideLightsaberModule() {
