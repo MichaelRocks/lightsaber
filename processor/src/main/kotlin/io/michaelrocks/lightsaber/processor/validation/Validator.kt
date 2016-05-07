@@ -51,7 +51,7 @@ class Validator(
   }
 
   private fun validateComponentGraph(context: InjectionContext) {
-    val componentGraph = buildComponentGraph(context.components)
+    val componentGraph = buildComponentGraph(context.allComponents)
     val cycles = findCycles(componentGraph)
     for (cycle in cycles) {
       errorReporter.reportError("Cycled component: ${cycle.joinToString(" -> ")}")
