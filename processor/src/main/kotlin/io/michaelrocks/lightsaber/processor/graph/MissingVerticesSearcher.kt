@@ -19,20 +19,15 @@ package io.michaelrocks.lightsaber.processor.graph
 import java.util.*
 
 fun <T> findMissingVertices(graph: DirectedGraph<T>): Collection<T>  {
-  val visitedVertices = HashSet<T>(graph.vertices.size)
-  val missingVertices = HashSet<T>()
+  val missing = HashSet<T>()
 
-  fun traverse(vertex: T) {
-    if (visitedVertices.add(vertex)) {
-      val dependencies = graph.getAdjacentVertices(vertex)
-      if (dependencies == null) {
-        missingVertices.add(vertex)
-      } else {
-        dependencies.forEach { traverse(it) }
+  graph.traverseDepthFirst(
+      beforeAdjacent = { vertex ->
+        if (graph.getAdjacentVertices(vertex) == null) {
+          missing.add(vertex)
+        }
       }
-    }
-  }
+  )
 
-  graph.vertices.forEach { traverse(it) }
-  return missingVertices
+  return missing
 }
