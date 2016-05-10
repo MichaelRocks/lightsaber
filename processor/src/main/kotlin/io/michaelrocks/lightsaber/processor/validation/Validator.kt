@@ -39,12 +39,12 @@ class Validator(
   private fun validateDependencyGraph(context: InjectionContext) {
     val dependencyGraph = buildDependencyGraph(errorReporter, context.allComponents.flatMap { it.modules })
 
-    val unresolvedDependencies = findMissingVertices(dependencyGraph)
+    val unresolvedDependencies = dependencyGraph.findMissingVertices()
     for (unresolvedDependency in unresolvedDependencies) {
       errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
     }
 
-    val cycles = findCycles(dependencyGraph)
+    val cycles = dependencyGraph.findCycles()
     for (cycle in cycles) {
       errorReporter.reportError("Cycled dependency: ${cycle.joinToString(" -> ")}")
     }
@@ -52,7 +52,7 @@ class Validator(
 
   private fun validateComponentGraph(context: InjectionContext) {
     val componentGraph = buildComponentGraph(context.allComponents)
-    val cycles = findCycles(componentGraph)
+    val cycles = componentGraph.findCycles()
     for (cycle in cycles) {
       errorReporter.reportError("Cycled component: ${cycle.joinToString(" -> ")}")
     }

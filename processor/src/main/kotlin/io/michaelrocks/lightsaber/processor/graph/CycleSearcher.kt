@@ -18,12 +18,12 @@ package io.michaelrocks.lightsaber.processor.graph
 
 import java.util.*
 
-fun <T> findCycles(graph: DirectedGraph<T>): Collection<Collection<T>> {
+fun <T> DirectedGraph<T>.findCycles(): Collection<Collection<T>> {
   val gray = HashSet<T>()
   val cycles = HashSet<Collection<T>>()
   val cycle = ArrayList<T>()
 
-  graph.traverseDepthFirst(
+  traverseDepthFirst(
       beforeAdjacent = { vertex ->
         cycle.add(vertex)
 
