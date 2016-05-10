@@ -23,8 +23,6 @@ import org.objectweb.asm.Type
 
 fun buildComponentGraph(components: Collection<Component>): DirectedGraph<Type> {
   return HashDirectedGraph<Type>().apply {
-    for (component in components) {
-      put(component.type, component.subcomponents)
-    }
+    components.forEach { put(it.type, it.subcomponents) }
   }
 }
