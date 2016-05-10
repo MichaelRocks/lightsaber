@@ -32,6 +32,7 @@ interface MutableDirectedGraph<T> : DirectedGraph<T> {
   fun put(from: T, to: T)
   fun put(from: T, to: Collection<T>)
   fun putAll(from: Map<T, Collection<T>>)
+  fun putAll(graph: DirectedGraph<T>)
   fun remove(from: T, to: T)
   fun removeAll(from: T, to: T)
   fun removeAll(from: T)

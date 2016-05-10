@@ -18,6 +18,13 @@ package io.michaelrocks.lightsaber.processor.graph
 
 import java.util.*
 
+fun <T> HashDirectedGraph(
+    graph: DirectedGraph<T>,
+    collection: () -> MutableCollection<T> = { ArrayList() }
+): HashDirectedGraph<T> {
+  return HashDirectedGraph(collection).apply { putAll(graph) }
+}
+
 class HashDirectedGraph<T>(
     private val collection: () -> MutableCollection<T> = { ArrayList() }
 ) : MutableDirectedGraph<T> {
@@ -41,6 +48,12 @@ class HashDirectedGraph<T>(
   override fun putAll(from: Map<T, Collection<T>>) {
     for ((vertex, vertices) in from) {
       getOrCreateAdjacentVertices(vertex).addAll(vertices)
+    }
+  }
+
+  override fun putAll(graph: DirectedGraph<T>) {
+    for (vertex in graph.vertices) {
+      put(vertex, graph.getAdjacentVertices(vertex)!!)
     }
   }
 
