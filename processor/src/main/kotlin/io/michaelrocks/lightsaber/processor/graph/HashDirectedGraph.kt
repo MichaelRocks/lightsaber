@@ -52,9 +52,7 @@ class HashDirectedGraph<T>(
   }
 
   override fun putAll(graph: DirectedGraph<T>) {
-    for (vertex in graph.vertices) {
-      put(vertex, graph.getAdjacentVertices(vertex)!!)
-    }
+    putAll(graph.asMap())
   }
 
   override fun remove(from: T, to: T) {
