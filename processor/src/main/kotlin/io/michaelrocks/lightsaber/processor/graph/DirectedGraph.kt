@@ -36,7 +36,6 @@ interface MutableDirectedGraph<T> : DirectedGraph<T> {
   fun put(from: T, to: T)
   fun put(from: T, to: Collection<T>)
   fun putAll(from: Map<T, Collection<T>>)
-  fun putAll(graph: DirectedGraph<T>)
   fun remove(from: T, to: T)
   fun removeAll(from: T, to: T)
   fun removeAll(from: T)
@@ -45,3 +44,7 @@ interface MutableDirectedGraph<T> : DirectedGraph<T> {
 }
 
 fun <T> DirectedGraph<T>.toMap(): Map<T, Collection<T>> = HashMap(asMap())
+
+fun <T> MutableDirectedGraph<T>.putAll(graph: DirectedGraph<T>) {
+  putAll(graph.asMap())
+}

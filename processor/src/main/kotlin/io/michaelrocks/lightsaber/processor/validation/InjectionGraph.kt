@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
 import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
+import io.michaelrocks.lightsaber.processor.graph.putAll
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
