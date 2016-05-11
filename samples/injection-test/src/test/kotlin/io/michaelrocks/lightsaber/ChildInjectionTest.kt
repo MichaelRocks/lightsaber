@@ -91,13 +91,13 @@ class ChildInjectionTest {
     fun provideNamedString(): String = StringBuilder("Child String").toString()
   }
 
-  @Component(subcomponents = arrayOf(ChildComponent::class))
+  @Component(root = true, subcomponents = arrayOf(ChildComponent::class))
   private class ParentComponent {
     @Provides
     private fun provideParentModule(): ParentModule = ParentModule()
   }
 
-  @Component(root = true)
+  @Component
   private class ChildComponent {
     @Provides
     private fun provideChildModule(): ChildModule = ChildModule()
