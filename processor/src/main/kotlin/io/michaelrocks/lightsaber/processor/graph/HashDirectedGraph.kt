@@ -83,6 +83,10 @@ class HashDirectedGraph<T>(
     return edges[vertex]
   }
 
+  override fun asMap(): Map<T, Collection<T>> {
+    return edges
+  }
+
   private fun getOrCreateAdjacentVertices(vertex: T): MutableCollection<T> {
     return edges.getOrPut(vertex) { collection() }
   }

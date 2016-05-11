@@ -16,6 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.graph
 
+import java.util.*
+
 interface DirectedGraph<T> {
   val size: Int
     get() = vertices.size
@@ -25,6 +27,8 @@ interface DirectedGraph<T> {
   operator fun contains(vertex: T): Boolean = vertex in vertices
 
   fun getAdjacentVertices(vertex: T): Collection<T>?
+
+  fun asMap(): Map<T, Collection<T>>
 }
 
 interface MutableDirectedGraph<T> : DirectedGraph<T> {
@@ -39,3 +43,5 @@ interface MutableDirectedGraph<T> : DirectedGraph<T> {
 
   override fun getAdjacentVertices(vertex: T): MutableCollection<T>?
 }
+
+fun <T> DirectedGraph<T>.toMap(): Map<T, Collection<T>> = HashMap(asMap())
