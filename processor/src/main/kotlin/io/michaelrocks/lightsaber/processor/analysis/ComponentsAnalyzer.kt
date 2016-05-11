@@ -53,15 +53,80 @@ class ComponentsAnalyzerImpl(
   private val moduleRegistry: ModuleRegistry = ModuleRegistryImpl(grip, analyzerHelper, errorReporter)
 
   override fun analyze(files: Collection<File>, providableTargets: Collection<InjectionTarget>): Result {
-    val packageComponent = composePackageComponent(providableTargets)
     val components = analyzeComponents(files)
+    val packageComponent = composePackageComponent(providableTargets, components)
     return Result(packageComponent, components)
   }
 
-  private fun composePackageComponent(providableTargets: Iterable<InjectionTarget>): Component {
+  private fun analyzeComponents(files: Collection<File>): Collection<Component> {
+    val componentsQuery = grip select classes from files where annotatedWith(Types.COMPONENT_TYPE)
+    return componentsQuery.execute().keys.map { it.toComponent() }
+  }
+
+  private fun Type.toComponent(): Component =
+      convertToComponent(grip.classRegistry.getClassMirror(this))
+
+  private fun convertToComponent(mirror: ClassMirror): Component {
+    if (mirror.signature.typeParameters.isNotEmpty()) {
+      errorReporter.reportError("Component cannot have a type parameters: $mirror")
+      return Component(mirror.type, false, emptyList(), emptyList())
+    }
+
+    val annotation = mirror.annotations[Types.COMPONENT_TYPE]
+    if (annotation == null) {
+      errorReporter.reportError("Class $mirror is not a component")
+      return Component(mirror.type, false, emptyList(), emptyList())
+    }
+
+    val root = annotation.values["root"] as Boolean
+
+    val methodsQuery = grip select methods from mirror where
+        (annotatedWith(Types.PROVIDES_TYPE) and type(not(returns(Type.VOID_TYPE))) and not(isStatic()))
+    val fieldsQuery = grip select fields from mirror where
+        (annotatedWith(Types.PROVIDES_TYPE) and not(isStatic()))
+
+    logger.debug("Component: {}", mirror)
+    val methods = methodsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, method ->
+      logger.debug("  Method: {}", method)
+      ModuleProvider(method.toModule(), ModuleProvisionPoint.Method(method))
+    }
+
+    val fields = fieldsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, field ->
+      logger.debug("  Field: {}", field)
+      ModuleProvider(field.toModule(), ModuleProvisionPoint.Field(field))
+    }
+
+    val subcomponents = mirror
+        .annotations[Types.COMPONENT_TYPE]!!
+        .values["subcomponents"]!!
+        .cast<List<Type>>()
+
+    return Component(mirror.type, root, methods + fields, subcomponents)
+  }
+
+  private fun MethodMirror.toModule(): Module =
+      signature.returnType.toModule()
+
+  private fun FieldMirror.toModule(): Module =
+      signature.type.toModule()
+
+  private fun GenericType.toModule(): Module {
+    if (this !is GenericType.RawType) {
+      errorReporter.reportError("Module provider cannot have a generic type: $this")
+      return Module(Types.OBJECT_TYPE, emptyList())
+    }
+
+    return moduleRegistry.getOrCreateModule(type)
+  }
+
+  private fun composePackageComponent(
+      providableTargets: Iterable<InjectionTarget>,
+      components: Collection<Component>
+  ): Component {
     val providers = composePackageModules(providableTargets)
         .map { ModuleProvider(it, ModuleProvisionPoint.Null) }
-    return Component(PACKAGE_COMPONENT_TYPE, providers, emptyList())
+    val subcomponents = components.filter { it.root }.map { it.type }
+    return Component(PACKAGE_COMPONENT_TYPE, true, providers, subcomponents)
   }
 
   private fun composePackageModules(providableTargets: Iterable<InjectionTarget>): List<Module> {
@@ -88,63 +153,5 @@ class ComponentsAnalyzerImpl(
   private fun composePackageModuleType(packageName: String): Type {
     val name = if (packageName.isEmpty()) PACKAGE_MODULE_CLASS_NAME else "$packageName/$PACKAGE_MODULE_CLASS_NAME"
     return Type.getObjectType(name)
-  }
-
-  private fun analyzeComponents(files: Collection<File>): Collection<Component> {
-    val componentsQuery = grip select classes from files where annotatedWith(Types.COMPONENT_TYPE)
-    return componentsQuery.execute().keys.map { it.toComponent() }
-  }
-
-  private fun Type.toComponent(): Component =
-      convertToComponent(grip.classRegistry.getClassMirror(this))
-
-  private fun convertToComponent(mirror: ClassMirror): Component {
-    if (mirror.signature.typeParameters.isNotEmpty()) {
-      errorReporter.reportError("Component cannot have a type parameters: $mirror")
-      return Component(mirror.type, emptyList(), emptyList())
-    }
-
-    if (Types.COMPONENT_TYPE !in mirror.annotations) {
-      errorReporter.reportError("Class $mirror is not a component")
-      return Component(mirror.type, emptyList(), emptyList())
-    }
-
-    val methodsQuery = grip select methods from mirror where
-        (annotatedWith(Types.PROVIDES_TYPE) and type(not(returns(Type.VOID_TYPE))) and not(isStatic()))
-    val fieldsQuery = grip select fields from mirror where
-        (annotatedWith(Types.PROVIDES_TYPE) and not(isStatic()))
-
-    logger.debug("Component: {}", mirror)
-    val methods = methodsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, method ->
-      logger.debug("  Method: {}", method)
-      ModuleProvider(method.toModule(), ModuleProvisionPoint.Method(method))
-    }
-
-    val fields = fieldsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, field ->
-      logger.debug("  Field: {}", field)
-      ModuleProvider(field.toModule(), ModuleProvisionPoint.Field(field))
-    }
-
-    val subcomponents = mirror
-        .annotations[Types.COMPONENT_TYPE]!!
-        .values["subcomponents"]!!
-        .cast<List<Type>>()
-
-    return Component(mirror.type, methods + fields, subcomponents)
-  }
-
-  private fun MethodMirror.toModule(): Module =
-      signature.returnType.toModule()
-
-  private fun FieldMirror.toModule(): Module =
-      signature.type.toModule()
-
-  private fun GenericType.toModule(): Module {
-    if (this !is GenericType.RawType) {
-      errorReporter.reportError("Module provider cannot have a generic type: $this")
-      return Module(Types.OBJECT_TYPE, emptyList())
-    }
-
-    return moduleRegistry.getOrCreateModule(type)
   }
 }

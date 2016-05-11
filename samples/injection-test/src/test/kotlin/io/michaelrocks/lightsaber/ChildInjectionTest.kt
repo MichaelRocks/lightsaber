@@ -97,7 +97,7 @@ class ChildInjectionTest {
     private fun provideParentModule(): ParentModule = ParentModule()
   }
 
-  @Component
+  @Component(root = true)
   private class ChildComponent {
     @Provides
     private fun provideChildModule(): ChildModule = ChildModule()

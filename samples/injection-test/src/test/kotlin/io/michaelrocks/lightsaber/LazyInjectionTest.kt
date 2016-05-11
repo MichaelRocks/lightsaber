@@ -60,7 +60,7 @@ class LazyInjectionTest {
     fun provideString(): String = StringBuilder("String").toString()
   }
 
-  @Component
+  @Component(root = true)
   private class LazyComponent {
     @Provides
     fun provideLazyModule(): LazyModule = LazyModule()

@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.model
+package io.michaelrocks.lightsaber.processor.graph
 
-import org.objectweb.asm.Type
-
-data class Component(
-    val type: Type,
-    val root: Boolean,
-    val providers: Collection<ModuleProvider>,
-    val subcomponents: Collection<Type>
-) {
-  val modules: Collection<Module> = providers.map { it.module }
+fun <T> DirectedGraph<T>.reversed(): DirectedGraph<T> {
+  val reversed = HashDirectedGraph<T>()
+  for (vertex in vertices) {
+    for (adjacentVertex in getAdjacentVertices(vertex)!!) {
+      reversed.put(adjacentVertex, vertex)
+    }
+  }
+  return reversed
 }

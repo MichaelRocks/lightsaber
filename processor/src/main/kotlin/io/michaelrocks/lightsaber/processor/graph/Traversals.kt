@@ -14,15 +14,26 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.model
+package io.michaelrocks.lightsaber.processor.graph
 
-import org.objectweb.asm.Type
+import java.util.*
 
-data class Component(
-    val type: Type,
-    val root: Boolean,
-    val providers: Collection<ModuleProvider>,
-    val subcomponents: Collection<Type>
+fun <T> DirectedGraph<T>.traverseDepthFirst(
+    beforeAdjacent: (T) -> Unit = {},
+    afterAdjacent: (T) -> Unit = {}
 ) {
-  val modules: Collection<Module> = providers.map { it.module }
+  val visited = HashSet<T>(size)
+
+  fun traverse(vertex: T) {
+    if (visited.add(vertex)) {
+      beforeAdjacent(vertex)
+      try {
+        getAdjacentVertices(vertex)?.forEach { traverse(it) }
+      } finally {
+        afterAdjacent(vertex)
+      }
+    }
+  }
+
+  vertices.forEach { traverse(it) }
 }

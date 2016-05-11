@@ -302,7 +302,7 @@ class QualifiedInjectionTest {
     fun provideAnnotationArrayQualifierExplicit(): String = "AnnotationArrayQualifierExplicit"
   }
 
-  @Component
+  @Component(root = true)
   private class QualifiedComponent {
     @Provides
     fun provideQualifiedModule(): QualifiedModule = QualifiedModule()

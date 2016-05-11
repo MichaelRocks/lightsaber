@@ -57,7 +57,7 @@ class GenericInjectionTest {
     fun provideIntList(): List<Int> = listOf(42, 43)
   }
 
-  @Component
+  @Component(root = true)
   private class GenericComponent {
     @Provides
     fun provideGenericModule(): GenericModule = GenericModule()

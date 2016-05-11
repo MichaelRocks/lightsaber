@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.model
+package io.michaelrocks.lightsaber.processor.validation
 
+import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
+import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
+import io.michaelrocks.lightsaber.processor.model.Component
 import org.objectweb.asm.Type
 
-data class Component(
-    val type: Type,
-    val root: Boolean,
-    val providers: Collection<ModuleProvider>,
-    val subcomponents: Collection<Type>
-) {
-  val modules: Collection<Module> = providers.map { it.module }
+fun buildComponentGraph(components: Collection<Component>): DirectedGraph<Type> {
+  return HashDirectedGraph<Type>().apply {
+    components.forEach { put(it.type, it.subcomponents) }
+  }
 }

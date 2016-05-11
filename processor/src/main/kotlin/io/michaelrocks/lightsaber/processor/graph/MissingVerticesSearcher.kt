@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.model
+package io.michaelrocks.lightsaber.processor.graph
 
-import org.objectweb.asm.Type
+import java.util.*
 
-data class Component(
-    val type: Type,
-    val root: Boolean,
-    val providers: Collection<ModuleProvider>,
-    val subcomponents: Collection<Type>
-) {
-  val modules: Collection<Module> = providers.map { it.module }
+fun <T> DirectedGraph<T>.findMissingVertices(): Collection<T>  {
+  val missing = HashSet<T>()
+
+  traverseDepthFirst(
+      beforeAdjacent = { vertex ->
+        if (getAdjacentVertices(vertex) == null) {
+          missing.add(vertex)
+        }
+      }
+  )
+
+  return missing
 }

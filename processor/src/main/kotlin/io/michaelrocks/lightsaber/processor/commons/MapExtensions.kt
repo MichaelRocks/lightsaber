@@ -25,8 +25,16 @@ fun <K, V> Map<K, Collection<V>>.mergeWith(
   val result = mapValuesTo(HashMap()) { entry ->
     collection().apply { addAll(entry.value) }
   }
-  for ((key, value) in map) {
-    result.getOrPut(key, collection).addAll(value)
-  }
+  map.mergeTo(result, collection)
   return result
+}
+
+fun <K, V> Map<K, Collection<V>>.mergeTo(
+    destination: MutableMap<K, MutableCollection<V>>,
+    collection: () -> MutableCollection<V> = { ArrayList() }
+): Map<K, Collection<V>> {
+  for ((key, value) in this) {
+    destination.getOrPut(key, collection).addAll(value)
+  }
+  return destination
 }

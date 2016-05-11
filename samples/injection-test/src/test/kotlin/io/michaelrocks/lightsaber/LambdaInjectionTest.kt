@@ -63,7 +63,7 @@ class LambdaInjectionTest {
     fun provideGreeting3(): (String, String) -> String = { greeting, name -> "$greeting, $name!" }
   }
 
-  @Component
+  @Component(root = true)
   private class LambdaComponent {
     @Provides
     fun provideLambdaModule(): LambdaModule = LambdaModule()

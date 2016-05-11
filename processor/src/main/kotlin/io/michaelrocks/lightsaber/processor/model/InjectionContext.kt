@@ -26,13 +26,13 @@ data class InjectionContext(
 ) {
   val allComponents: Collection<Component> = components + packageComponent
 
-  private val compoentnsByType = components.associateBy { it.type }
+  private val componentsByType = components.associateBy { it.type }
   private val modulesByType = components.flatMap { it.modules }.associateBy { it.type }
   private val injectableTargetsByType = injectableTargets.associateBy { it.type }
   private val providableTargetsByType = providableTargets.associateBy { it.type }
 
   fun findComponentByType(componentType: Type): Component? =
-      compoentnsByType[componentType]
+      componentsByType[componentType]
 
   fun findModuleByType(moduleType: Type): Module? =
       modulesByType[moduleType]
