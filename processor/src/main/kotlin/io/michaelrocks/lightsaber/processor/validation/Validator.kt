@@ -40,7 +40,7 @@ class Validator(
   }
 
   private fun validateDependencyGraph(context: InjectionContext) {
-    val dependencyGraph = buildDependencyGraph(errorReporter, context.allComponents.flatMap { it.modules })
+    val dependencyGraph = buildDependencyGraph(context.allComponents.flatMap { it.modules })
 
     val unresolvedDependencies = dependencyGraph.findMissingVertices()
     for (unresolvedDependency in unresolvedDependencies) {
