@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,7 @@ object IoFactory : FileSource.Factory, FileSink.Factory {
 
   private val File.fileType: FileType
     get() = when {
-      !exists() -> FileType.EMPTY
-      isDirectory -> FileType.DIRECTORY
+      !exists() || isDirectory -> FileType.DIRECTORY
       extension.endsWith("jar", ignoreCase = true) -> FileType.JAR
       else -> error("Unknown file type for file $this")
     }
