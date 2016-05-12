@@ -34,17 +34,23 @@ fun buildInjectionGraph(graphs: Collection<DirectedGraph<InjectionGraphVertex>>)
 fun buildInjectionGraphs(injectionContext: InjectionContext): Collection<DirectedGraph<InjectionGraphVertex>> {
   val graphs = ArrayList<DirectedGraph<InjectionGraphVertex>>()
   val graph = HashDirectedGraph<InjectionGraphVertex>()
-  buildInjectionGraphs(injectionContext, injectionContext.packageComponent, graph, graphs)
+  buildInjectionGraphs(injectionContext, injectionContext.packageComponent, null, graph, graphs)
   return graphs
 }
 
 private fun buildInjectionGraphs(
     injectionContext: InjectionContext,
     component: Component,
+    parentComponent: Component?,
     base: DirectedGraph<InjectionGraphVertex>,
     graphs: MutableList<DirectedGraph<InjectionGraphVertex>>
 ) {
-  val graph = base.withComponent(component)
+  if (InjectionGraphVertex.ComponentVertex(component) in base) {
+    graphs += base.withComponentEdge(component, parentComponent)
+    return
+  }
+
+  val graph = base.withComponent(component, parentComponent)
 
   if (component.subcomponents.isEmpty()) {
     graphs += graph
@@ -52,13 +58,36 @@ private fun buildInjectionGraphs(
 
   component.subcomponents.forEach {
     val childComponent = injectionContext.findComponentByType(it)!!
-    buildInjectionGraphs(injectionContext, childComponent, graph, graphs)
+    buildInjectionGraphs(injectionContext, childComponent, component, graph, graphs)
   }
 }
 
-private fun DirectedGraph<InjectionGraphVertex>.withComponent(component: Component): DirectedGraph<InjectionGraphVertex> {
+private fun DirectedGraph<InjectionGraphVertex>.withComponentEdge(
+    component: Component,
+    parentComponent: Component?
+): DirectedGraph<InjectionGraphVertex> {
+  if (parentComponent == null) {
+    return this
+  } else {
+    val componentVertex = InjectionGraphVertex.ComponentVertex(component)
+    val parentComponentVertex = InjectionGraphVertex.ComponentVertex(parentComponent)
+    val graph = HashDirectedGraph(this)
+    graph.put(parentComponentVertex, componentVertex)
+    return graph
+  }
+}
+
+private fun DirectedGraph<InjectionGraphVertex>.withComponent(
+    component: Component,
+    parentComponent: Component?
+): DirectedGraph<InjectionGraphVertex> {
   val graph = HashDirectedGraph(this)
   val componentVertex = InjectionGraphVertex.ComponentVertex(component)
+  parentComponent?.let {
+    val parentComponentVertex = InjectionGraphVertex.ComponentVertex(parentComponent)
+    graph.put(parentComponentVertex, componentVertex)
+  }
+
   component.modules.forEach { module ->
     val moduleVertex = InjectionGraphVertex.ModuleVertex(module)
     graph.put(componentVertex, moduleVertex)
