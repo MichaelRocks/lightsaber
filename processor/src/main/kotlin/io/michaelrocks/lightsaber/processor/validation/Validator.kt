@@ -30,27 +30,12 @@ class Validator(
 ) {
   fun validate(context: InjectionContext) {
     performSanityChecks(context)
-    validateDependencyGraph(context)
     validateComponentGraph(context)
     validateInjectionGraph(context)
   }
 
   private fun performSanityChecks(context: InjectionContext) {
     SanityChecker(classRegistry, errorReporter).performSanityChecks(context)
-  }
-
-  private fun validateDependencyGraph(context: InjectionContext) {
-    val dependencyGraph = buildDependencyGraph(context.allComponents.flatMap { it.modules })
-
-    val unresolvedDependencies = dependencyGraph.findMissingVertices()
-    for (unresolvedDependency in unresolvedDependencies) {
-      errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
-    }
-
-    val cycles = dependencyGraph.findCycles()
-    for (cycle in cycles) {
-      errorReporter.reportError("Cycled dependency: ${cycle.joinToString(" -> ")}")
-    }
   }
 
   private fun validateComponentGraph(context: InjectionContext) {
@@ -63,13 +48,31 @@ class Validator(
 
   private fun validateInjectionGraph(context: InjectionContext) {
     val injectionGraphs = buildInjectionGraphs(context)
-    injectionGraphs.forEach { validateNoDuplicatesInInjectionGraph(it) }
+    injectionGraphs.forEach {
+      validateNoDuplicatesInInjectionGraph(it)
+      validateDependencyGraph(it)
+    }
 
     val injectionGraph = buildInjectionGraph(injectionGraphs)
     context.components.forEach { component ->
       if (InjectionGraphVertex.ComponentVertex(component) !in injectionGraph) {
         errorReporter.reportError("Abandoned component: ${component.type.className}")
       }
+    }
+  }
+
+  private fun validateDependencyGraph(injectionGraph: DirectedGraph<InjectionGraphVertex>) {
+    val modules = injectionGraph.vertices.mapNotNull { (it as? InjectionGraphVertex.ModuleVertex)?.module }
+    val dependencyGraph = buildDependencyGraph(modules)
+
+    val unresolvedDependencies = dependencyGraph.findMissingVertices()
+    for (unresolvedDependency in unresolvedDependencies) {
+      errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
+    }
+
+    val cycles = dependencyGraph.findCycles()
+    for (cycle in cycles) {
+      errorReporter.reportError("Cycled dependency: ${cycle.joinToString(" -> ")}")
     }
   }
 
