@@ -19,39 +19,30 @@ package io.michaelrocks.lightsaber.processor
 import ch.qos.logback.classic.Level
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.converters.FileConverter
-import org.apache.commons.lang3.builder.ToStringBuilder
 import java.io.File
 
-class LightsaberParameters {
-  @Parameter(names = arrayOf("--jar"), description = "Jar file to process")
-  var jar: File? = null
-
-  @Parameter(names = arrayOf("--classes"), description = "Classes directory to process")
-  var classes: File? = null
-
-  @Parameter(names = arrayOf("--classpath"), listConverter = FileConverter::class, description = "Classpath",
-      variableArity = true)
-  var classpath = emptyList<File>()
-
-  @Parameter(names = arrayOf("--bootclasspath"), listConverter = FileConverter::class, description = "Boot classpath",
-      variableArity = true)
-  var bootClasspath = emptyList<File>()
-
-  @Parameter(names = arrayOf("--output"), description = "Output jar file or classes directory")
-  var output: File? = null
-
-  @Parameter(names = arrayOf("--source"), description = "Output directory for .java files")
-  var source: File? = null
-
-  @Parameter(names = arrayOf("-i", "--info"), description = "Use verbose output")
-  var info = false
-
-  @Parameter(names = arrayOf("-d", "--debug"), description = "Use verbose output")
-  var debug = false
-
-  @Parameter(names = arrayOf("--stacktrace"), description = "Print stack traces")
-  var printStacktrace = false
-
+data class LightsaberParameters(
+    @Parameter(names = arrayOf("--jar"), description = "Jar file to process")
+    var jar: File? = null,
+    @Parameter(names = arrayOf("--classes"), description = "Classes directory to process")
+    var classes: File? = null,
+    @Parameter(names = arrayOf("--classpath"), listConverter = FileConverter::class, description = "Classpath",
+        variableArity = true)
+    var classpath: List<File> = emptyList<File>(),
+    @Parameter(names = arrayOf("--bootclasspath"), listConverter = FileConverter::class, description = "Boot classpath",
+        variableArity = true)
+    var bootClasspath: List<File> = emptyList<File>(),
+    @Parameter(names = arrayOf("--output"), description = "Output jar file or classes directory")
+    var output: File? = null,
+    @Parameter(names = arrayOf("--source"), description = "Output directory for .java files")
+    var source: File? = null,
+    @Parameter(names = arrayOf("-i", "--info"), description = "Use verbose output")
+    var info: Boolean = false,
+    @Parameter(names = arrayOf("-d", "--debug"), description = "Use verbose output")
+    var debug: Boolean = false,
+    @Parameter(names = arrayOf("--stacktrace"), description = "Print stack traces")
+    var printStacktrace: Boolean = false
+) {
   val loggingLevel: Level
     get() {
       if (debug) {
@@ -62,18 +53,4 @@ class LightsaberParameters {
         return Level.WARN
       }
     }
-
-  override fun toString(): String =
-      ToStringBuilder(this).run {
-        append("jar", jar)
-        append("classes", classes)
-        append("classpath", classpath)
-        append("bootClasspath", bootClasspath)
-        append("output", output)
-        append("gen", source)
-        append("info", info)
-        append("debug", debug)
-        append("printStacktrace", printStacktrace)
-        build()
-      }
 }
