@@ -23,7 +23,6 @@ import io.michaelrocks.grip.mirrors.EnumMirror
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer
-import org.apache.commons.collections4.IteratorUtils
 import org.objectweb.asm.Type
 import java.lang.reflect.Array
 import java.util.*
@@ -84,9 +83,10 @@ class AnnotationCreator(
     // TODO: Check if the value class corresponds to fieldType.
     val elementType = fieldType.elementType
     if (value.javaClass.isArray) {
-      generator.newArray(elementType, Array.getLength(value))
-      val iterable = IteratorUtils.asIterable(IteratorUtils.arrayIterator<Any>(value))
-      populateArray(generator, elementType, iterable)
+      val arrayLength = Array.getLength(value)
+      generator.newArray(elementType, arrayLength)
+      val values = (0 until arrayLength).map { index -> Array.get(value, index) }
+      populateArray(generator, elementType, values)
     } else {
       @Suppress("UNCHECKED_CAST")
       val list = value as List<Any>
