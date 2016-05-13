@@ -29,7 +29,6 @@ import io.michaelrocks.lightsaber.processor.io.IoFactory
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import io.michaelrocks.lightsaber.processor.model.*
 import io.michaelrocks.lightsaber.processor.validation.Validator
-import org.apache.commons.lang3.exception.ExceptionUtils
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import java.io.File
@@ -108,8 +107,6 @@ class ClassProcessor(
     return buildString {
       for (error in errorReporter.getErrors()) {
         append(error.message)
-        append('\n')
-        append(ExceptionUtils.getStackTrace(error))
       }
     }
   }
