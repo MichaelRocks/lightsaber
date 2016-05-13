@@ -27,7 +27,6 @@ dependencies {
   compile "org.ow2.asm:asm-commons:$asmVersion"
   compile "io.michaelrocks:grip:$gripVersion"
   compile "io.michaelrocks:bimap:$bimapVersion"
-  compile "org.apache.commons:commons-lang3:$commonsLangVersion"
   compile "ch.qos.logback:logback-classic:$logbackVersion"
 
   testCompile project(':tests:mockito-extensions')
