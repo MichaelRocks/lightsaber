@@ -18,11 +18,13 @@ package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.ErrorReporter
-import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
-import io.michaelrocks.lightsaber.processor.graph.findCycles
-import io.michaelrocks.lightsaber.processor.graph.findMissingVertices
-import io.michaelrocks.lightsaber.processor.graph.reversed
+import io.michaelrocks.lightsaber.processor.commons.cast
+import io.michaelrocks.lightsaber.processor.generation.box
+import io.michaelrocks.lightsaber.processor.graph.*
+import io.michaelrocks.lightsaber.processor.model.Component
+import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
+import java.util.*
 
 class Validator(
     private val classRegistry: ClassRegistry,
@@ -50,7 +52,7 @@ class Validator(
     val injectionGraphs = buildInjectionGraphs(context)
     injectionGraphs.forEach {
       validateNoDuplicatesInInjectionGraph(it)
-      validateDependencyGraph(it)
+      validateDependencyGraph(context, it)
     }
 
     val injectionGraph = buildInjectionGraph(injectionGraphs)
@@ -61,13 +63,19 @@ class Validator(
     }
   }
 
-  private fun validateDependencyGraph(injectionGraph: DirectedGraph<InjectionGraphVertex>) {
+  private fun validateDependencyGraph(context: InjectionContext, injectionGraph: DirectedGraph<InjectionGraphVertex>) {
     val modules = injectionGraph.vertices.mapNotNull { (it as? InjectionGraphVertex.ModuleVertex)?.module }
     val dependencyGraph = buildDependencyGraph(modules)
 
-    val unresolvedDependencies = dependencyGraph.findMissingVertices()
-    for (unresolvedDependency in unresolvedDependencies) {
-      errorReporter.reportError("Unresolved dependency: $unresolvedDependency")
+    val packageComponent = InjectionGraphVertex.ComponentVertex(context.packageComponent)
+    val componentChain = extractComponentChain(injectionGraph, packageComponent)
+    val unresolvedDependencies =
+        dependencyGraph.findUnresolvedDependencies(componentChain.subList(1, componentChain.size))
+    if (unresolvedDependencies.isNotEmpty()) {
+      val componentChainString = componentChain.joinToString(" -> ") { it.type.className }
+      for (unresolvedDependency in unresolvedDependencies) {
+        errorReporter.reportError("Unresolved dependency: $unresolvedDependency in $componentChainString")
+      }
     }
 
     val cycles = dependencyGraph.findCycles()
@@ -106,5 +114,49 @@ class Validator(
         }
       }
     }
+  }
+
+  private fun extractComponentChain(
+      graph: DirectedGraph<InjectionGraphVertex>,
+      componentVertex: InjectionGraphVertex.ComponentVertex
+  ): List<Component> {
+    val chain = ArrayList<Component>()
+    val traversal = DepthFirstTraversal<InjectionGraphVertex>()
+    val delegate = object : AbstractMarkingTraversal.SimpleDelegate<InjectionGraphVertex>() {
+      override fun isVisited(vertex: InjectionGraphVertex): Boolean {
+        return vertex !is InjectionGraphVertex.ComponentVertex || super.isVisited(vertex)
+      }
+
+      override fun onBeforeAdjacentVertices(vertex: InjectionGraphVertex) {
+        chain += vertex.cast<InjectionGraphVertex.ComponentVertex>().component
+      }
+    }
+    traversal.traverse(graph, delegate, componentVertex)
+    return chain
+  }
+
+  private fun DirectedGraph<Dependency>.findUnresolvedDependencies(
+      components: Collection<Component>
+  ): Collection<Dependency> {
+    val unresolvedDependencies = HashSet<Dependency>()
+
+    val traversal = DepthFirstTraversal<Dependency>()
+    val delegate = object : AbstractMarkingTraversal.SimpleDelegate<Dependency>() {
+      override fun onBeforeAdjacentVertices(vertex: Dependency) {
+        if (getAdjacentVertices(vertex) == null) {
+          unresolvedDependencies.add(vertex)
+        }
+      }
+    }
+
+    components.forEach { component ->
+      component.modules.forEach { module ->
+        module.providers.forEach { provider ->
+          traversal.traverse(this, delegate, provider.dependency.box())
+        }
+      }
+    }
+
+    return unresolvedDependencies
   }
 }
