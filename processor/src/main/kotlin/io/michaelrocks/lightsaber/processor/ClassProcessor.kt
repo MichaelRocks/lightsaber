@@ -107,6 +107,7 @@ class ClassProcessor(
     return buildString {
       for (error in errorReporter.getErrors()) {
         append(error.message)
+        appendln()
       }
     }
   }
