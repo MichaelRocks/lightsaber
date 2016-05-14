@@ -37,6 +37,7 @@ class SanityChecker(
     checkStaticInjectionPoints(context)
     checkProvidableTargetsAreConstructable(context)
     checkProviderMethodsReturnValues(context)
+    checkSubcomponentsAreComponents(context)
     checkComponentsAndModulesExtendObject(context)
   }
 
@@ -87,6 +88,16 @@ class SanityChecker(
     if ((mirror.access and flag) != 0) {
       errorReporter.reportError(
           "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${mirror.type}")
+    }
+  }
+
+  private fun checkSubcomponentsAreComponents(context: InjectionContext) {
+    for (component in context.components) {
+      for (subcomponent in component.subcomponents) {
+        if (context.findComponentByType(subcomponent) == null) {
+          errorReporter.reportError("Subcomponent is not annotated with @Component: ${subcomponent.className}")
+        }
+      }
     }
   }
 
