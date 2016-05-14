@@ -116,6 +116,12 @@ class ComponentsAnalyzerImpl(
       return Module(Types.OBJECT_TYPE, emptyList())
     }
 
+    val mirror = grip.classRegistry.getClassMirror(type)
+    if (Types.MODULE_TYPE !in mirror.annotations) {
+      errorReporter.reportError("Module is not annotated with @Module: $this")
+      return Module(type, emptyList())
+    }
+
     return moduleRegistry.getOrCreateModule(type)
   }
 
