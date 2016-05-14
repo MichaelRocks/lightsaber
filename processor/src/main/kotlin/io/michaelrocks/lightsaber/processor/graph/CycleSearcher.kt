@@ -18,37 +18,73 @@ package io.michaelrocks.lightsaber.processor.graph
 
 import java.util.*
 
-fun <T> DirectedGraph<T>.findCycles(): Collection<Collection<T>> {
-  val colors = HashMap<T, VertexColor>()
-  val cycles = HashSet<Collection<T>>()
+fun <T> DirectedGraph<T>.findCycles(): Collection<List<T>> {
+  val cycles = HashSet<List<T>>()
+  val delegate = object : CycleSearcherTraversal.Delegate<T>() {
+    override fun onCycle(cycle: List<T>) {
+      cycles += cycle
+    }
+  }
 
-  fun traverse(vertex: T, cycle: MutableList<T>) {
-    val color = colors[vertex]
+  val traversal = CycleSearcherTraversal<T>()
+  traversal.traverse(this, delegate)
+  return cycles
+}
+
+
+class CycleSearcherTraversal<T> : AbstractTraversal<T, CycleSearcherTraversal.Delegate<T>>() {
+  override fun performTraversal(graph: DirectedGraph<T>, delegate: Delegate<T>, vertex: T) {
+    val color = delegate.getVertexColor(vertex)
     if (color == VertexColor.BLACK) {
       return
     }
 
     try {
-      cycle.add(vertex)
+      delegate.pushVertexToPath(vertex)
 
       if (color == VertexColor.GRAY) {
-        val cycleStartIndex = cycle.indexOf(vertex)
-        cycles.add(cycle.subList(cycleStartIndex, cycle.size).toList())
+        delegate.extractCycle(vertex)
         return
       }
 
-      colors.put(vertex, VertexColor.GRAY)
-      getAdjacentVertices(vertex)?.forEach { traverse(it, cycle) }
-      colors.put(vertex, VertexColor.BLACK)
+      delegate.setVertexColor(vertex, VertexColor.GRAY)
+      graph.getAdjacentVertices(vertex)?.forEach { performTraversal(graph, delegate, it) }
+      delegate.setVertexColor(vertex, VertexColor.BLACK)
     } finally {
-      cycle.removeAt(cycle.lastIndex)
+      delegate.popVertexFromPath()
     }
   }
 
-  vertices.forEach { traverse(it, ArrayList()) }
-  return cycles
-}
+  abstract class Delegate<T> : Traversal.Delegate<T> {
+    private val colors = HashMap<T, VertexColor>()
+    private val path = ArrayList<T>()
 
-private enum class VertexColor {
-  GRAY, BLACK
+    fun getVertexColor(vertex: T): VertexColor {
+      return colors[vertex] ?: VertexColor.WHITE
+    }
+
+    fun setVertexColor(vertex: T, color: VertexColor) {
+      colors[vertex] = color
+    }
+
+    fun pushVertexToPath(vertex: T) {
+      path.add(vertex)
+    }
+
+    fun popVertexFromPath() {
+      path.removeAt(path.lastIndex)
+    }
+
+    fun extractCycle(vertex: T) {
+      val cycleStartIndex = path.indexOf(vertex)
+      val cycle = path.subList(cycleStartIndex, path.size).toList()
+      onCycle(cycle)
+    }
+
+    abstract fun onCycle(cycle: List<T>)
+  }
+
+  enum class VertexColor {
+    WHITE, GRAY, BLACK
+  }
 }
