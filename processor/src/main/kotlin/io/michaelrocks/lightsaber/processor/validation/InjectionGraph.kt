@@ -57,8 +57,9 @@ private fun buildInjectionGraphs(
   }
 
   component.subcomponents.forEach {
-    val childComponent = injectionContext.findComponentByType(it)!!
-    buildInjectionGraphs(injectionContext, childComponent, component, graph, graphs)
+    injectionContext.findComponentByType(it)?.let { childComponent ->
+      buildInjectionGraphs(injectionContext, childComponent, component, graph, graphs)
+    }
   }
 }
 
