@@ -104,12 +104,7 @@ class ClassProcessor(
   }
 
   private fun composeErrorMessage(): String {
-    return buildString {
-      for (error in errorReporter.getErrors()) {
-        append(error.message)
-        appendln()
-      }
-    }
+    return errorReporter.getErrors().joinToString("\n") { it.message.orEmpty() }
   }
 
   private fun InjectionContext.dump() {
