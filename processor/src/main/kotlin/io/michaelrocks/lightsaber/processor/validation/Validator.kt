@@ -46,6 +46,12 @@ class Validator(
     for (cycle in cycles) {
       errorReporter.reportError("Cycled component: ${cycle.joinToString(" -> ")}")
     }
+
+    val reachableComponents = componentGraph.findReachableVertices(context.packageComponent.type)
+    val unreachableComponents = context.components.filterNot { it.type in reachableComponents }
+    for (unreachableComponent in unreachableComponents) {
+      errorReporter.reportError("Abandoned component: ${unreachableComponent.type.className}")
+    }
   }
 
   private fun validateInjectionGraph(context: InjectionContext) {
@@ -53,13 +59,6 @@ class Validator(
     injectionGraphs.forEach {
       validateNoDuplicatesInInjectionGraph(it)
       validateDependencyGraph(context, it)
-    }
-
-    val injectionGraph = buildInjectionGraph(injectionGraphs)
-    context.components.forEach { component ->
-      if (InjectionGraphVertex.ComponentVertex(component) !in injectionGraph) {
-        errorReporter.reportError("Abandoned component: ${component.type.className}")
-      }
     }
   }
 
