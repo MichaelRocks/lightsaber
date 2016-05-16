@@ -117,14 +117,14 @@ class InjectorConfiguratorClassGenerator(
     getKey(keyRegistry, provider.dependency)
 
     when (provider.scope) {
-      is Scope.Class -> newDelegator(provider, provider.scope.scopeType, providerCreator)
+      is Scope.Class -> newDelegator(provider.scope.scopeType, providerCreator)
       is Scope.None -> providerCreator()
     }
 
     invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD)
   }
 
-  private fun GeneratorAdapter.newDelegator(provider: Provider, scopeType: Type, providerCreator: () -> Unit) {
+  private fun GeneratorAdapter.newDelegator(scopeType: Type, providerCreator: () -> Unit) {
     newInstance(scopeType)
     dup()
     providerCreator()
