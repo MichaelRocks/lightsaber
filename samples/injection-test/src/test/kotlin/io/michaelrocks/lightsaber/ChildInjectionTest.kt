@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
+import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -72,6 +73,14 @@ class ChildInjectionTest {
     assertNotSame(childObject1, childObject2)
   }
 
+  @Test
+  fun testCreateUnboundDependencyWithChildComponentDependency() {
+    val parentInjector = lightsaber.createInjector(ParentComponent())
+    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val target = childInjector.getInstance<PackageDependencyTarget>()
+    assertEquals("Child String", target.packageDependency.namedString)
+  }
+
   @Module
   private class ParentModule {
     @Provides
@@ -89,6 +98,10 @@ class ChildInjectionTest {
     @Singleton
     @Named("Child String")
     fun provideNamedString(): String = StringBuilder("Child String").toString()
+
+    @Provides
+    @Named("Package Dependency")
+    fun provideNamedPackageDependency(packageDependency: PackageDependency): PackageDependency = packageDependency
   }
 
   @Component(root = true, subcomponents = arrayOf(ChildComponent::class))
@@ -102,4 +115,14 @@ class ChildInjectionTest {
     @Provides
     private fun provideChildModule(): ChildModule = ChildModule()
   }
+
+  class PackageDependency @Inject private constructor(
+      @Named("Child String")
+      val namedString: String
+  )
+
+  class PackageDependencyTarget @Inject private constructor(
+      @Named("Package Dependency")
+      val packageDependency: PackageDependency
+  )
 }
