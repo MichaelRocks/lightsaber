@@ -16,38 +16,19 @@
 
 package io.michaelrocks.lightsaber;
 
+import io.michaelrocks.lightsaber.internal.AbstractInjectingProvider;
 import io.michaelrocks.lightsaber.internal.InjectingProvider;
 
-class SingletonProvider<T> implements InjectingProvider<T> {
+class InjectorOverridingProvider<T> extends AbstractInjectingProvider<T> {
   private final InjectingProvider<T> provider;
-  private volatile T instance;
-  private final Object instanceLock = new Object();
 
-  public SingletonProvider(final InjectingProvider<T> provider) {
+  InjectorOverridingProvider(final InjectingProvider<T> provider, final Injector injector) {
+    super(injector);
     this.provider = provider;
   }
 
   @Override
-  public T get() {
-    if (instance == null) {
-      synchronized (instanceLock) {
-        if (instance == null) {
-          instance = provider.get();
-        }
-      }
-    }
-    return instance;
-  }
-
-  @Override
   public T getWithInjector(final Injector injector) {
-    if (instance == null) {
-      synchronized (instanceLock) {
-        if (instance == null) {
-          instance = provider.getWithInjector(injector);
-        }
-      }
-    }
-    return instance;
+    return provider.getWithInjector(injector);
   }
 }

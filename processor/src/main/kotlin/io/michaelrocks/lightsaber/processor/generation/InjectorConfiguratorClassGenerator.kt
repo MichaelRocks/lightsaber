@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.LightsaberTypes
+import io.michaelrocks.lightsaber.internal.InjectingProvider
 import io.michaelrocks.lightsaber.processor.commons.*
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
@@ -34,13 +35,15 @@ class InjectorConfiguratorClassGenerator(
     private val injectorConfigurator: InjectorConfigurator
 ) {
   companion object {
+    private val INJECTING_PROVIDER_TYPE = getType<InjectingProvider<*>>()
+
     private val CONFIGURE_INJECTOR_METHOD =
         MethodDescriptor.forMethod("configureInjector",
             Type.VOID_TYPE, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, Types.OBJECT_TYPE)
     private val REGISTER_PROVIDER_METHOD =
-        MethodDescriptor.forMethod("registerProvider", Type.VOID_TYPE, Types.KEY_TYPE, Types.PROVIDER_TYPE)
+        MethodDescriptor.forMethod("registerProvider", Type.VOID_TYPE, Types.KEY_TYPE, INJECTING_PROVIDER_TYPE)
 
-    private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
+    private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(INJECTING_PROVIDER_TYPE)
 
     private val INVALID_LOCAL = -1
   }

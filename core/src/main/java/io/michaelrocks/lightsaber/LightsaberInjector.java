@@ -16,27 +16,28 @@
 
 package io.michaelrocks.lightsaber;
 
+import io.michaelrocks.lightsaber.internal.InjectingProvider;
+
 import javax.inject.Provider;
 import java.util.HashMap;
 import java.util.Map;
 
 class LightsaberInjector implements Injector {
-  private static final Key<Injector> INJECTOR_KEY = new Key<Injector>(Injector.class);
+  static final Key<Injector> INJECTOR_KEY = new Key<Injector>(Injector.class);
 
   private final Lightsaber lightsaber;
-  private final LightsaberInjector parentInjector;
-  private final Map<Key<?>, Provider<?>> providers = new HashMap<Key<?>, Provider<?>>();
+  private final Map<Key<?>, InjectingProvider<?>> providers = new HashMap<Key<?>, InjectingProvider<?>>();
 
   public LightsaberInjector(final Lightsaber lightsaber) {
-    this(lightsaber, null);
-  }
-
-  public LightsaberInjector(final Lightsaber lightsaber, final LightsaberInjector parentInjector) {
     this.lightsaber = lightsaber;
-    this.parentInjector = parentInjector;
-    registerProvider(INJECTOR_KEY, new Provider<Injector>() {
+    registerProvider(INJECTOR_KEY, new InjectingProvider<Injector>() {
       @Override
       public Injector get() {
+        return LightsaberInjector.this;
+      }
+
+      @Override
+      public Injector getWithInjector(final Injector injector) {
         return LightsaberInjector.this;
       }
     });
@@ -57,19 +58,19 @@ class LightsaberInjector implements Injector {
     // noinspection unchecked
     final Provider<T> provider = (Provider<T>) providers.get(key);
     if (provider == null) {
-      if (parentInjector == null) {
-        throw new ConfigurationException("Provider for " + key + " not found");
-      } else {
-        return parentInjector.getProvider(key);
-      }
+      throw new ConfigurationException("Provider for " + key + " not found in " + this);
     }
     return provider;
   }
 
-  public <T> void registerProvider(final Key<T> key, final Provider<T> provider) {
+  public Map<Key<?>, InjectingProvider<?>> getProviders() {
+    return providers;
+  }
+
+  public <T> void registerProvider(final Key<T> key, final InjectingProvider<? extends T> provider) {
     final Provider<?> oldProvider = providers.put(key, provider);
     if (oldProvider != null) {
-      throw new ConfigurationException("Provider for " + key + " already registered");
+      throw new ConfigurationException("Provider for " + key + " already registered in " + this);
     }
   }
 }
