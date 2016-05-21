@@ -19,8 +19,6 @@ package io.michaelrocks.lightsaber.internal;
 import io.michaelrocks.lightsaber.Injector;
 
 public abstract class AbstractInjectingProvider<T> implements InjectingProvider<T> {
-  private static final ThreadLocal<Injector> currentInjector = new ThreadLocal<Injector>();
-
   private final Injector injector;
 
   protected AbstractInjectingProvider(final Injector injector) {
@@ -29,20 +27,6 @@ public abstract class AbstractInjectingProvider<T> implements InjectingProvider<
 
   @Override
   public final T get() {
-    boolean ownsCurrentInjector = false;
-    Injector contextInjector = currentInjector.get();
-    if (contextInjector == null) {
-      contextInjector = injector;
-      currentInjector.set(contextInjector);
-      ownsCurrentInjector = true;
-    }
-
-    try {
-      return getWithInjector(contextInjector);
-    } finally {
-      if (ownsCurrentInjector) {
-        currentInjector.remove();
-      }
-    }
+    return getWithInjector(injector);
   }
 }
