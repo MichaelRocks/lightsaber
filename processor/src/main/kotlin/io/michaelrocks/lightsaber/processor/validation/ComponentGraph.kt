@@ -16,13 +16,13 @@
 
 package io.michaelrocks.lightsaber.processor.validation
 
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
 import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
 import io.michaelrocks.lightsaber.processor.model.Component
-import org.objectweb.asm.Type
 
-fun buildComponentGraph(components: Collection<Component>): DirectedGraph<Type> {
-  return HashDirectedGraph<Type>().apply {
+fun buildComponentGraph(components: Collection<Component>): DirectedGraph<Type.Object> {
+  return HashDirectedGraph<Type.Object>().apply {
     components.forEach { put(it.type, it.subcomponents) }
   }
 }

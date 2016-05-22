@@ -20,18 +20,19 @@ import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.AnnotationMirror
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.EnumMirror
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.ClassProducer
-import org.objectweb.asm.Type
 import java.lang.reflect.Array
-import java.util.*
+import java.util.HashSet
 
 class AnnotationCreator(
     private val classProducer: ClassProducer,
     private val classRegistry: ClassRegistry
 ) {
-  private val generatedAnnotationProxies = HashSet<Type>()
+  private val generatedAnnotationProxies = HashSet<Type.Object>()
 
   fun newAnnotation(generator: GeneratorAdapter, data: AnnotationMirror) {
     val annotationProxyType = composeAnnotationProxyType(data.type)
@@ -41,10 +42,10 @@ class AnnotationCreator(
     }
   }
 
-  private fun composeAnnotationProxyType(annotationType: Type): Type =
-      Type.getObjectType(annotationType.internalName + "\$Lightsaber\$Proxy")
+  private fun composeAnnotationProxyType(annotationType: Type.Object): Type.Object =
+      getObjectTypeByInternalName(annotationType.internalName + "\$Lightsaber\$Proxy")
 
-  private fun generateAnnotationProxyClassIfNecessary(annotation: ClassMirror, annotationProxyType: Type) {
+  private fun generateAnnotationProxyClassIfNecessary(annotation: ClassMirror, annotationProxyType: Type.Object) {
     if (generatedAnnotationProxies.add(annotationProxyType)) {
       val generator = AnnotationProxyGenerator(classRegistry, annotation, annotationProxyType)
       val annotationProxyClassData = generator.generate()
@@ -68,18 +69,18 @@ class AnnotationCreator(
   }
 
   private fun createValue(generator: GeneratorAdapter, fieldType: Type, value: Any) {
-    when (fieldType.sort) {
-      Type.BOOLEAN, Type.CHAR, Type.BYTE, Type.SHORT, Type.INT, Type.FLOAT, Type.LONG, Type.DOUBLE -> {
+    when (fieldType) {
+      is Type.Primitive -> {
         // TODO: Check if the value class corresponds to fieldType.
         generator.visitLdcInsn(value)
       }
-      Type.ARRAY -> createArray(generator, fieldType, value)
-      Type.OBJECT -> createObject(generator, fieldType, value)
+      is Type.Array -> createArray(generator, fieldType, value)
+      is Type.Object -> createObject(generator, fieldType, value)
       else -> throw IllegalArgumentException("Unsupported annotation field type: $fieldType")
     }
   }
 
-  private fun createArray(generator: GeneratorAdapter, fieldType: Type, value: Any) {
+  private fun createArray(generator: GeneratorAdapter, fieldType: Type.Array, value: Any) {
     // TODO: Check if the value class corresponds to fieldType.
     val elementType = fieldType.elementType
     if (value.javaClass.isArray) {

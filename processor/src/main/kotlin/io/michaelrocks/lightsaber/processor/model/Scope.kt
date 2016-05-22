@@ -16,9 +16,9 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
 
 sealed class Scope {
   object None : Scope()
-  class Class(val scopeType: Type) : Scope()
+  class Class(val scopeType: Type.Object) : Scope()
 }

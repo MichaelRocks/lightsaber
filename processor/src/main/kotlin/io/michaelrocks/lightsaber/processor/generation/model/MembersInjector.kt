@@ -16,10 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.generation.model
 
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.processor.model.InjectionTarget
-import org.objectweb.asm.Type
 
 data class MembersInjector(
-    val type: Type,
+    val type: Type.Object,
     val target: InjectionTarget
 )

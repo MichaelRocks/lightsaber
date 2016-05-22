@@ -16,11 +16,11 @@
 
 package io.michaelrocks.lightsaber.processor.generation.model
 
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
-import org.objectweb.asm.Type
 
 data class PackageInvader(
-    val type: Type,
+    val type: Type.Object,
     val packageName: String,
     val fields: Map<Type, FieldDescriptor>
 )

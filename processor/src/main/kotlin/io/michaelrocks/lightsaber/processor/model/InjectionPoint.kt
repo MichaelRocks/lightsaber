@@ -18,19 +18,19 @@ package io.michaelrocks.lightsaber.processor.model
 
 import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
 
 sealed class InjectionPoint {
-  abstract val containerType: Type
+  abstract val containerType: Type.Object
 
   class Method(
-      override val containerType: Type,
+      override val containerType: Type.Object,
       val method: MethodMirror,
       val injectees: List<Injectee>
   ) : InjectionPoint()
 
   class Field(
-      override val containerType: Type,
+      override val containerType: Type.Object,
       val field: FieldMirror,
       val injectee: Injectee
   ) : InjectionPoint()

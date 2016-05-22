@@ -16,13 +16,13 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
 
 data class Component(
-    val type: Type,
+    val type: Type.Object,
     val root: Boolean,
     val providers: Collection<ModuleProvider>,
-    val subcomponents: Collection<Type>
+    val subcomponents: Collection<Type.Object>
 ) {
   val modules: Collection<Module> = providers.map { it.module }
 }

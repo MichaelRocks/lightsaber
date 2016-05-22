@@ -16,8 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.templates
 
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.processor.logging.getLogger
-import org.objectweb.asm.Type
 import java.io.StringReader
 
 private const val TEMPLATES_PREFIX = "/templates/"
@@ -25,10 +25,6 @@ private val PARAMETER_PATTERN = Regex("^(\\s*)/\\*%([a-zA-Z0-9_]+)%\\*/\\s*$")
 
 class TemplateLoader {
   private val logger = getLogger()
-
-  fun loadTemplate(type: Type): Template {
-    return loadTemplate("$TEMPLATES_PREFIX${type.internalName}.java")
-  }
 
   fun loadTemplate(path: String): Template {
     logger.info("Loading a template from $path")
@@ -49,4 +45,8 @@ class TemplateLoader {
       builder.parameter(name, prefix)
     }
   }
+}
+
+fun TemplateLoader.loadTemplate(type: Type.Object): Template {
+  return loadTemplate("$TEMPLATES_PREFIX${type.internalName}.java")
 }

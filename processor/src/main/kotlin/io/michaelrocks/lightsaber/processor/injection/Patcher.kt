@@ -16,10 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
+import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
 
 class Patcher(
     classVisitor: ClassVisitor,
@@ -28,7 +28,7 @@ class Patcher(
 
   override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
       interfaces: Array<String>?) {
-    val type = Type.getObjectType(name)
+    val type = getObjectTypeByInternalName(name)
 
     context.findComponentByType(type)?.let {
       cv = ComponentPatcher(cv, it)

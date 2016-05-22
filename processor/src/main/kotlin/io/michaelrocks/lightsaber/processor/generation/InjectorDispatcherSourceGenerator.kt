@@ -16,14 +16,16 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.templates.TemplateLoader
-import org.objectweb.asm.Type
+import io.michaelrocks.lightsaber.processor.templates.loadTemplate
 
-private val INJECTION_DISPATCHER_TYPE = Type.getObjectType("io/michaelrocks/lightsaber/InjectionDispatcher")
+private val INJECTION_DISPATCHER_TYPE = getObjectTypeByInternalName("io/michaelrocks/lightsaber/InjectionDispatcher")
 private const val STATIC_INITIALIZER_PARAMETER = "STATIC_INITIALIZER"
 
 class InjectorDispatcherSourceGenerator(
@@ -81,7 +83,7 @@ class InjectorDispatcherSourceGenerator(
     appendln("membersInjectors.put($key, $value);")
   }
 
-  private fun Type.getClassReference(packageInvader: PackageInvader?): String {
+  private fun Type.Object.getClassReference(packageInvader: PackageInvader?): String {
     val componentField = packageInvader?.fields?.get(this)
     if (componentField == null) {
       return "$className.class"

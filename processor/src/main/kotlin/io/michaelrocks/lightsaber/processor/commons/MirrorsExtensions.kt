@@ -18,24 +18,24 @@ package io.michaelrocks.lightsaber.processor.commons
 
 import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import org.objectweb.asm.Type
 
 val GenericType.isParameterized: Boolean
-  get() = this is GenericType.ParameterizedType
+  get() = this is GenericType.Parameterized
 
 val GenericType.rawType: Type
   get() = when (this) {
-    is GenericType.RawType -> type
-    is GenericType.ParameterizedType -> type
+    is GenericType.Raw -> type
+    is GenericType.Parameterized -> type
     else -> throw IllegalArgumentException("Unsupported generic type: $this")
   }
 val GenericType.parameterType: Type?
   get() = when (this) {
-    is GenericType.ParameterizedType -> typeArguments[0].rawType
-    is GenericType.RawType -> null
+    is GenericType.Parameterized -> typeArguments[0].rawType
+    is GenericType.Raw -> null
     else -> throw IllegalArgumentException("Unsupported generic type: $this")
   }
 

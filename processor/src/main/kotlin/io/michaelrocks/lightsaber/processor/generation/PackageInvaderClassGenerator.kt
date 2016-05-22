@@ -20,14 +20,18 @@ import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes.*
+import org.objectweb.asm.Opcodes.ACC_FINAL
+import org.objectweb.asm.Opcodes.ACC_PUBLIC
+import org.objectweb.asm.Opcodes.ACC_STATIC
+import org.objectweb.asm.Opcodes.ACC_SUPER
+import org.objectweb.asm.Opcodes.V1_6
 
 class PackageInvaderClassGenerator(
     private val classRegistry: ClassRegistry,
@@ -79,7 +83,7 @@ class PackageInvaderClassGenerator(
     generator.visitCode()
 
     for ((type, field) in packageInvader.fields.entries) {
-      generator.push(type.box())
+      generator.push(type.boxed())
       generator.putStatic(packageInvader.type, field)
     }
 

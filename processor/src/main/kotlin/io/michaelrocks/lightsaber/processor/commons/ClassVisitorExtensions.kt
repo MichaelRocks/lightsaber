@@ -16,10 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
 
 fun ClassVisitor.newMethod(access: Int, method: MethodDescriptor, body: GeneratorAdapter.() -> Unit) {
   GeneratorAdapter(this, access, method).apply {
@@ -30,7 +30,7 @@ fun ClassVisitor.newMethod(access: Int, method: MethodDescriptor, body: Generato
   }
 }
 
-fun ClassVisitor.newDefaultConstructor(access: Int = Opcodes.ACC_PUBLIC, superType: Type = Types.OBJECT_TYPE) {
+fun ClassVisitor.newDefaultConstructor(access: Int = Opcodes.ACC_PUBLIC, superType: Type.Object = Types.OBJECT_TYPE) {
   newMethod(access, MethodDescriptor.forDefaultConstructor()) {
     loadThis()
     invokeConstructor(superType, MethodDescriptor.forDefaultConstructor())

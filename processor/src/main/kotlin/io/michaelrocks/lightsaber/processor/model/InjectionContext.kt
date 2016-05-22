@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
 
 data class InjectionContext(
     val packageComponent: Component,
@@ -31,15 +31,15 @@ data class InjectionContext(
   private val injectableTargetsByType = injectableTargets.associateBy { it.type }
   private val providableTargetsByType = providableTargets.associateBy { it.type }
 
-  fun findComponentByType(componentType: Type): Component? =
+  fun findComponentByType(componentType: Type.Object): Component? =
       componentsByType[componentType]
 
-  fun findModuleByType(moduleType: Type): Module? =
+  fun findModuleByType(moduleType: Type.Object): Module? =
       modulesByType[moduleType]
 
-  fun findInjectableTargetByType(injectableTargetType: Type): InjectionTarget? =
+  fun findInjectableTargetByType(injectableTargetType: Type.Object): InjectionTarget? =
       injectableTargetsByType[injectableTargetType]
 
-  fun findProvidableTargetByType(providableTargetType: Type): InjectionTarget? =
+  fun findProvidableTargetByType(providableTargetType: Type.Object): InjectionTarget? =
       providableTargetsByType[providableTargetType]
 }

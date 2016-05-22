@@ -16,12 +16,12 @@
 
 package io.michaelrocks.lightsaber.processor.analysis
 
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.commons.Types
-import org.objectweb.asm.Type
 
 class ScopeRegistry {
-  fun findScopeProviderByAnnotationType(annotationType: Type): Type? {
+  fun findScopeProviderByAnnotationType(annotationType: Type.Object): Type.Object? {
     return when (annotationType) {
       Types.SINGLETON_TYPE -> LightsaberTypes.SINGLETON_PROVIDER_TYPE
       else -> null

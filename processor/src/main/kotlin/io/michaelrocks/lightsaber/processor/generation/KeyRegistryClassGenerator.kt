@@ -17,11 +17,17 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectType
 import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.grip.mirrors.toArrayType
 import io.michaelrocks.lightsaber.internal.GenericArrayTypeImpl
 import io.michaelrocks.lightsaber.internal.ParameterizedTypeImpl
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.commons.*
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
+import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
+import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
@@ -29,13 +35,16 @@ import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes.*
-import org.objectweb.asm.Type
+import org.objectweb.asm.Opcodes.ACC_FINAL
+import org.objectweb.asm.Opcodes.ACC_PUBLIC
+import org.objectweb.asm.Opcodes.ACC_STATIC
+import org.objectweb.asm.Opcodes.ACC_SUPER
+import org.objectweb.asm.Opcodes.V1_6
 
 private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.TYPE_TYPE, Types.ANNOTATION_TYPE)
 
-private val PARAMETERIZED_TYPE_IMPL_TYPE = getType<ParameterizedTypeImpl>()
-private val GENERIC_ARRAY_TYPE_IMPL_TYPE = getType<GenericArrayTypeImpl>()
+private val PARAMETERIZED_TYPE_IMPL_TYPE = getObjectType<ParameterizedTypeImpl>()
+private val GENERIC_ARRAY_TYPE_IMPL_TYPE = getObjectType<GenericArrayTypeImpl>()
 
 private val PARAMETERIZED_TYPE_IMPL_CONSTRUCTOR =
     MethodDescriptor.forConstructor(Types.TYPE_TYPE, Types.TYPE_TYPE, Types.TYPE_TYPE.toArrayType())
@@ -121,14 +130,14 @@ class KeyRegistryClassGenerator(
 
   private fun GeneratorAdapter.push(type: GenericType) {
     when (type) {
-      is GenericType.RawType -> pushType(type.type.box())
-      is GenericType.ParameterizedType -> newParameterizedType(type)
-      is GenericType.GenericArrayType -> newGenericArrayType(type)
+      is GenericType.Raw -> pushType(type.type.boxed())
+      is GenericType.Parameterized -> newParameterizedType(type)
+      is GenericType.Array -> newGenericArrayType(type)
       else -> error("Unsupported generic type $type")
     }
   }
 
-  private fun GeneratorAdapter.newParameterizedType(type: GenericType.ParameterizedType) {
+  private fun GeneratorAdapter.newParameterizedType(type: GenericType.Parameterized) {
     newInstance(PARAMETERIZED_TYPE_IMPL_TYPE)
     dup()
     pushNull()
@@ -143,7 +152,7 @@ class KeyRegistryClassGenerator(
     invokeConstructor(PARAMETERIZED_TYPE_IMPL_TYPE, PARAMETERIZED_TYPE_IMPL_CONSTRUCTOR)
   }
 
-  private fun GeneratorAdapter.newGenericArrayType(type: GenericType.GenericArrayType) {
+  private fun GeneratorAdapter.newGenericArrayType(type: GenericType.Array) {
     newInstance(GENERIC_ARRAY_TYPE_IMPL_TYPE)
     dup()
     push(type.elementType)
@@ -151,7 +160,7 @@ class KeyRegistryClassGenerator(
   }
 
   private fun GeneratorAdapter.pushType(rawType: Type) {
-    val type = rawType.box()
+    val type = rawType.boxed() as Type.Object
     val packageInvader = generationContext.findPackageInvaderByTargetType(type)
     val field = packageInvader?.fields?.get(type)
 

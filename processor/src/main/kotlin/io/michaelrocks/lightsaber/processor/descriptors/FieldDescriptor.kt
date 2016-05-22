@@ -16,9 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getType
 
-fun FieldDescriptor(name: String, desc: String): FieldDescriptor = FieldDescriptor(name, Type.getType(desc))
+fun FieldDescriptor(name: String, desc: String): FieldDescriptor = FieldDescriptor(name, getType(desc))
 
 data class FieldDescriptor(
     val name: String,

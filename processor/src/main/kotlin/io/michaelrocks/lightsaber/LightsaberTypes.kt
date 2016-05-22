@@ -16,12 +16,12 @@
 
 package io.michaelrocks.lightsaber
 
-import io.michaelrocks.lightsaber.processor.commons.getType
+import io.michaelrocks.grip.mirrors.getObjectType
 
 object LightsaberTypes {
-  val INJECTOR_CONFIGURATOR_TYPE = getType<InjectorConfigurator>()
-  val MEMBERS_INJECTOR_TYPE = getType<MembersInjector<*>>()
-  val LIGHTSABER_INJECTOR_TYPE = getType<LightsaberInjector>()
-  val SINGLETON_PROVIDER_TYPE = getType<SingletonProvider<*>>()
-  val LAZY_ADAPTER_TYPE = getType<LazyAdapter<*>>()
+  val INJECTOR_CONFIGURATOR_TYPE = getObjectType<InjectorConfigurator>()
+  val MEMBERS_INJECTOR_TYPE = getObjectType<MembersInjector<*>>()
+  val LIGHTSABER_INJECTOR_TYPE = getObjectType<LightsaberInjector>()
+  val SINGLETON_PROVIDER_TYPE = getObjectType<SingletonProvider<*>>()
+  val LAZY_ADAPTER_TYPE = getObjectType<LazyAdapter<*>>()
 }

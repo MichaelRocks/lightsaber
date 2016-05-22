@@ -16,16 +16,16 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.isConstructor
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
 import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import org.objectweb.asm.Type
-import java.util.*
+import java.util.HashSet
 
 data class InjectionTarget(
-    val type: Type,
+    val type: Type.Object,
     val injectionPoints: Collection<InjectionPoint>
 ) {
   private val fields: Set<FieldDescriptor>
@@ -41,7 +41,7 @@ data class InjectionTarget(
       when (injectionPoint) {
         is InjectionPoint.Field -> fields += injectionPoint.field.toFieldDescriptor()
         is InjectionPoint.Method ->
-          if (injectionPoint.method.isConstructor()) constructors += injectionPoint.method.toMethodDescriptor()
+          if (injectionPoint.method.isConstructor) constructors += injectionPoint.method.toMethodDescriptor()
           else methods += injectionPoint.method.toMethodDescriptor()
       }
     }

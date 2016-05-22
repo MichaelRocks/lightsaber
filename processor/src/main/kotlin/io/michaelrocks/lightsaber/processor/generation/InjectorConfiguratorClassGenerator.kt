@@ -17,17 +17,31 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectType
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.internal.InjectingProvider
-import io.michaelrocks.lightsaber.processor.commons.*
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
+import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
+import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.newDefaultConstructor
+import io.michaelrocks.lightsaber.processor.commons.newLocal
+import io.michaelrocks.lightsaber.processor.commons.newMethod
+import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
+import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
-import io.michaelrocks.lightsaber.processor.model.*
+import io.michaelrocks.lightsaber.processor.model.ModuleProvider
+import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
+import io.michaelrocks.lightsaber.processor.model.Provider
+import io.michaelrocks.lightsaber.processor.model.Scope
+import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes.*
-import org.objectweb.asm.Type
+import org.objectweb.asm.Opcodes.ACC_PUBLIC
+import org.objectweb.asm.Opcodes.ACC_SUPER
+import org.objectweb.asm.Opcodes.V1_6
 
 class InjectorConfiguratorClassGenerator(
     private val classRegistry: ClassRegistry,
@@ -35,13 +49,13 @@ class InjectorConfiguratorClassGenerator(
     private val injectorConfigurator: InjectorConfigurator
 ) {
   companion object {
-    private val INJECTING_PROVIDER_TYPE = getType<InjectingProvider<*>>()
+    private val INJECTING_PROVIDER_TYPE = getObjectType<InjectingProvider<*>>()
 
     private val CONFIGURE_INJECTOR_METHOD =
         MethodDescriptor.forMethod("configureInjector",
-            Type.VOID_TYPE, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, Types.OBJECT_TYPE)
+            Type.Primitive.Void, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, Types.OBJECT_TYPE)
     private val REGISTER_PROVIDER_METHOD =
-        MethodDescriptor.forMethod("registerProvider", Type.VOID_TYPE, Types.KEY_TYPE, INJECTING_PROVIDER_TYPE)
+        MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.KEY_TYPE, INJECTING_PROVIDER_TYPE)
 
     private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(INJECTING_PROVIDER_TYPE)
 

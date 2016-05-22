@@ -17,8 +17,17 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectType
+import io.michaelrocks.grip.mirrors.isPrimitive
 import io.michaelrocks.lightsaber.internal.AbstractInjectingProvider
-import io.michaelrocks.lightsaber.processor.commons.*
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
+import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
+import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.cast
+import io.michaelrocks.lightsaber.processor.commons.rawType
+import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
+import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
 import io.michaelrocks.lightsaber.processor.model.Injectee
@@ -28,8 +37,11 @@ import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes.*
-import org.objectweb.asm.Type
+import org.objectweb.asm.Opcodes.ACC_FINAL
+import org.objectweb.asm.Opcodes.ACC_PRIVATE
+import org.objectweb.asm.Opcodes.ACC_PUBLIC
+import org.objectweb.asm.Opcodes.ACC_SUPER
+import org.objectweb.asm.Opcodes.V1_6
 
 class ProviderClassGenerator(
     private val classRegistry: ClassRegistry,
@@ -39,15 +51,17 @@ class ProviderClassGenerator(
   companion object {
     private const val MODULE_FIELD_NAME = "module"
 
-    private val ABSTRACT_INJECTING_PROVIDER_TYPE = getType<AbstractInjectingProvider<*>>()
-    private val NULL_POINTER_EXCEPTION_TYPE = getType<NullPointerException>()
+    private val ABSTRACT_INJECTING_PROVIDER_TYPE = getObjectType<AbstractInjectingProvider<*>>()
+    private val NULL_POINTER_EXCEPTION_TYPE = getObjectType<NullPointerException>()
 
     private val SUPER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
 
     private val GET_WITH_INJECTOR_METHOD =
         MethodDescriptor.forMethod("getWithInjector", Types.OBJECT_TYPE, Types.INJECTOR_TYPE)
-    private val GET_PROVIDER_METHOD = MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE)
-    private val INJECT_MEMBERS_METHOD = MethodDescriptor.forMethod("injectMembers", Type.VOID_TYPE, Types.OBJECT_TYPE)
+    private val GET_PROVIDER_METHOD =
+        MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE)
+    private val INJECT_MEMBERS_METHOD =
+        MethodDescriptor.forMethod("injectMembers", Type.Primitive.Void, Types.OBJECT_TYPE)
   }
 
   private val providerConstructor: MethodDescriptor
@@ -157,7 +171,7 @@ class ProviderClassGenerator(
     val method = provider.provisionPoint.cast<ProvisionPoint.AbstractMethod>().method.toMethodDescriptor()
     generator.invokeVirtual(provider.moduleType, method)
 
-    if (Types.isPrimitive(provider.dependency.type.rawType)) {
+    if (provider.dependency.type.rawType.isPrimitive) {
       return
     }
 

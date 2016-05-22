@@ -18,11 +18,12 @@ package io.michaelrocks.lightsaber.processor.commons
 
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.ClassMirror
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Type
-import java.util.*
+import java.util.HashSet
 
 class StandaloneClassWriter : ClassWriter {
   private val logger = getLogger()
@@ -38,11 +39,11 @@ class StandaloneClassWriter : ClassWriter {
 
   override fun getCommonSuperClass(type1: String, type2: String): String {
     val hierarchy = HashSet<Type>()
-    for (mirror in classRegistry.findClassHierarchy(Type.getObjectType(type1))) {
+    for (mirror in classRegistry.findClassHierarchy(getObjectTypeByInternalName(type1))) {
       hierarchy.add(mirror.type)
     }
 
-    for (mirror in classRegistry.findClassHierarchy(Type.getObjectType(type2))) {
+    for (mirror in classRegistry.findClassHierarchy(getObjectTypeByInternalName(type2))) {
       if (mirror.type in hierarchy) {
         logger.debug("[getCommonSuperClass]: {} & {} = {}", type1, type2, mirror.access)
         return mirror.type.internalName
@@ -53,7 +54,7 @@ class StandaloneClassWriter : ClassWriter {
     return Types.OBJECT_TYPE.internalName
   }
 
-  private fun ClassRegistry.findClassHierarchy(type: Type): Sequence<ClassMirror> {
+  private fun ClassRegistry.findClassHierarchy(type: Type.Object): Sequence<ClassMirror> {
     return generateSequence(getClassMirror(type)) {
       it.superType?.let { getClassMirror(it) }
     }

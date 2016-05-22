@@ -16,10 +16,10 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
 
 sealed class Converter {
   object Identity : Converter()
   object Instance : Converter()
-  class Adapter(val adapterType: Type) : Converter()
+  class Adapter(val adapterType: Type.Object) : Converter()
 }

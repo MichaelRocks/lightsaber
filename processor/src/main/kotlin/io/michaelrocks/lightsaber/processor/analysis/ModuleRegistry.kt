@@ -16,10 +16,20 @@
 
 package io.michaelrocks.lightsaber.processor.analysis
 
-import io.michaelrocks.grip.*
+import io.michaelrocks.grip.Grip
+import io.michaelrocks.grip.and
+import io.michaelrocks.grip.annotatedWith
+import io.michaelrocks.grip.fields
+import io.michaelrocks.grip.isStatic
+import io.michaelrocks.grip.methodType
+import io.michaelrocks.grip.methods
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
+import io.michaelrocks.grip.not
+import io.michaelrocks.grip.returns
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.logging.getLogger
@@ -27,11 +37,10 @@ import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.Module
 import io.michaelrocks.lightsaber.processor.model.Provider
 import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
-import org.objectweb.asm.Type
-import java.util.*
+import java.util.HashMap
 
 interface ModuleRegistry {
-  fun getOrCreateModule(type: Type): Module
+  fun getOrCreateModule(type: Type.Object): Module
 }
 
 class ModuleRegistryImpl(
@@ -41,9 +50,9 @@ class ModuleRegistryImpl(
 ) : ModuleRegistry {
   private val logger = getLogger()
 
-  private val modulesByType = HashMap<Type, Module>()
+  private val modulesByType = HashMap<Type.Object, Module>()
 
-  override fun getOrCreateModule(type: Type): Module {
+  override fun getOrCreateModule(type: Type.Object): Module {
     return modulesByType.getOrPut(type) { convertToModule(grip.classRegistry.getClassMirror(type)) }
   }
 
@@ -59,7 +68,7 @@ class ModuleRegistryImpl(
     }
 
     val methodsQuery = grip select methods from mirror where
-        (annotatedWith(Types.PROVIDES_TYPE) and type(not(returns(Type.VOID_TYPE))) and not(isStatic()))
+        (annotatedWith(Types.PROVIDES_TYPE) and methodType(not(returns(Type.Primitive.Void))) and not(isStatic()))
     val fieldsQuery = grip select fields from mirror where
         (annotatedWith(Types.PROVIDES_TYPE) and not(isStatic()))
 
@@ -78,8 +87,8 @@ class ModuleRegistryImpl(
   }
 
 
-  private fun MethodMirror.toProvider(container: Type, index: Int): Provider {
-    val providerType = Type.getObjectType("${container.internalName}\$MethodProvider\$$index")
+  private fun MethodMirror.toProvider(container: Type.Object, index: Int): Provider {
+    val providerType = getObjectTypeByInternalName("${container.internalName}\$MethodProvider\$$index")
     val injectionPoint = analyzerHelper.convertToInjectionPoint(this, container)
     val dependency = Dependency(signature.returnType, analyzerHelper.findQualifier(this))
     val provisionPoint = ProvisionPoint.Method(dependency, injectionPoint)
@@ -87,8 +96,8 @@ class ModuleRegistryImpl(
     return Provider(providerType, provisionPoint, container, scope)
   }
 
-  private fun FieldMirror.toProvider(container: Type, index: Int): Provider {
-    val providerType = Type.getObjectType("${container.internalName}\$FieldProvider\$$index")
+  private fun FieldMirror.toProvider(container: Type.Object, index: Int): Provider {
+    val providerType = getObjectTypeByInternalName("${container.internalName}\$FieldProvider\$$index")
     val dependency = Dependency(signature.type, analyzerHelper.findQualifier(this))
     val provisionPoint = ProvisionPoint.Field(container, dependency, this)
     val scope = analyzerHelper.findScope(this)

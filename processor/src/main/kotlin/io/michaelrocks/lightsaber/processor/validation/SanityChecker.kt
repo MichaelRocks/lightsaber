@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.ClassMirror
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier
@@ -27,7 +28,6 @@ import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
 
 class SanityChecker(
     private val classRegistry: ClassRegistry,
@@ -68,7 +68,7 @@ class SanityChecker(
     for (component in context.components) {
       for (module in component.modules) {
         for (provider in module.providers) {
-          if (!provider.isConstructorProvider && provider.dependency.type.rawType == Type.VOID_TYPE) {
+          if (!provider.isConstructorProvider && provider.dependency.type.rawType == Type.Primitive.Void) {
             errorReporter.reportError("Provider returns void: " + provider.provisionPoint)
           }
         }
@@ -76,7 +76,7 @@ class SanityChecker(
     }
   }
 
-  private fun checkProvidableTargetIsConstructable(providableTarget: Type) {
+  private fun checkProvidableTargetIsConstructable(providableTarget: Type.Object) {
     val mirror = classRegistry.getClassMirror(providableTarget)
     checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_INTERFACE)
     checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ABSTRACT)
@@ -110,7 +110,7 @@ class SanityChecker(
     }
   }
 
-  private fun checkClassExtendsObject(type: Type) {
+  private fun checkClassExtendsObject(type: Type.Object) {
     val mirror = classRegistry.getClassMirror(type)
     if (mirror.superType != Types.OBJECT_TYPE) {
       errorReporter.reportError("${type.className} has a super type of ${mirror.type.className} instead of Object")

@@ -16,7 +16,13 @@
 
 package io.michaelrocks.lightsaber.processor.analysis
 
-import io.michaelrocks.grip.*
+import io.michaelrocks.grip.FieldsResult
+import io.michaelrocks.grip.Grip
+import io.michaelrocks.grip.MethodsResult
+import io.michaelrocks.grip.annotatedWith
+import io.michaelrocks.grip.fields
+import io.michaelrocks.grip.methods
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.isConstructor
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -25,9 +31,9 @@ import io.michaelrocks.lightsaber.processor.commons.given
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.model.InjectionTarget
-import org.objectweb.asm.Type
 import java.io.File
-import java.util.*
+import java.util.ArrayList
+import java.util.HashSet
 
 interface InjectionTargetsAnalyzer {
   fun analyze(files: Collection<File>): Result
@@ -59,7 +65,7 @@ class InjectionTargetsAnalyzerImpl(
     val methodsResult = methodsQuery.execute()
     val fieldsResult = fieldsQuery.execute()
 
-    val types = HashSet<Type>(methodsResult.size + fieldsResult.size).apply {
+    val types = HashSet<Type.Object>(methodsResult.size + fieldsResult.size).apply {
       addAll(methodsResult.types)
       addAll(fieldsResult.types)
     }
@@ -74,7 +80,7 @@ class InjectionTargetsAnalyzerImpl(
 
       context.methods[type]?.mapNotNullTo(injectionPoints) { method ->
         logger.debug("  Method: {}", method)
-        if (method.isConstructor()) null else analyzerHelper.convertToInjectionPoint(method, type)
+        if (method.isConstructor) null else analyzerHelper.convertToInjectionPoint(method, type)
       }
 
       context.fields[type]?.mapTo(injectionPoints) { field ->
@@ -91,7 +97,7 @@ class InjectionTargetsAnalyzerImpl(
       logger.debug("Target: {}", type)
       val constructors = context.methods[type].orEmpty().mapNotNull { method ->
         logger.debug("  Method: {}", method)
-        given(method.isConstructor()) { analyzerHelper.convertToInjectionPoint(method, type) }
+        given(method.isConstructor) { analyzerHelper.convertToInjectionPoint(method, type) }
       }
 
       given(constructors.isNotEmpty()) {
@@ -107,7 +113,7 @@ class InjectionTargetsAnalyzerImpl(
   }
 
   private class InjectionTargetsContext(
-      val types: Collection<Type>,
+      val types: Collection<Type.Object>,
       val methods: MethodsResult,
       val fields: FieldsResult
   )

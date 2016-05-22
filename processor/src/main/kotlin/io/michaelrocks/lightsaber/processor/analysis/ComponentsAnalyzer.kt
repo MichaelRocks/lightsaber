@@ -16,20 +16,38 @@
 
 package io.michaelrocks.lightsaber.processor.analysis
 
-import io.michaelrocks.grip.*
+import io.michaelrocks.grip.Grip
+import io.michaelrocks.grip.and
+import io.michaelrocks.grip.annotatedWith
+import io.michaelrocks.grip.classes
+import io.michaelrocks.grip.fields
+import io.michaelrocks.grip.isStatic
+import io.michaelrocks.grip.methodType
+import io.michaelrocks.grip.methods
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.grip.not
+import io.michaelrocks.grip.returns
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.analysis.ComponentsAnalyzer.Result
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.cast
 import io.michaelrocks.lightsaber.processor.logging.getLogger
-import io.michaelrocks.lightsaber.processor.model.*
-import org.objectweb.asm.Type
+import io.michaelrocks.lightsaber.processor.model.Component
+import io.michaelrocks.lightsaber.processor.model.Dependency
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
+import io.michaelrocks.lightsaber.processor.model.InjectionTarget
+import io.michaelrocks.lightsaber.processor.model.Module
+import io.michaelrocks.lightsaber.processor.model.ModuleProvider
+import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
+import io.michaelrocks.lightsaber.processor.model.Provider
+import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import java.io.File
-import java.util.*
+import java.util.HashMap
 
 private val PACKAGE_COMPONENT_TYPE = Types.BOXED_VOID_TYPE
 private val PACKAGE_MODULE_CLASS_NAME = "Lightsaber\$PackageModule"
@@ -63,7 +81,7 @@ class ComponentsAnalyzerImpl(
     return componentsQuery.execute().keys.map { it.toComponent() }
   }
 
-  private fun Type.toComponent(): Component =
+  private fun Type.Object.toComponent(): Component =
       convertToComponent(grip.classRegistry.getClassMirror(this))
 
   private fun convertToComponent(mirror: ClassMirror): Component {
@@ -71,7 +89,7 @@ class ComponentsAnalyzerImpl(
       errorReporter.reportError("Component cannot have a type parameters: $mirror")
       return Component(mirror.type, false, emptyList(), emptyList())
     }
-
+2
     val annotation = mirror.annotations[Types.COMPONENT_TYPE]
     if (annotation == null) {
       errorReporter.reportError("Class $mirror is not a component")
@@ -81,7 +99,7 @@ class ComponentsAnalyzerImpl(
     val root = annotation.values["root"] as Boolean
 
     val methodsQuery = grip select methods from mirror where
-        (annotatedWith(Types.PROVIDES_TYPE) and type(not(returns(Type.VOID_TYPE))) and not(isStatic()))
+        (annotatedWith(Types.PROVIDES_TYPE) and methodType(not(returns(Type.Primitive.Void))) and not(isStatic()))
     val fieldsQuery = grip select fields from mirror where
         (annotatedWith(Types.PROVIDES_TYPE) and not(isStatic()))
 
@@ -99,7 +117,7 @@ class ComponentsAnalyzerImpl(
     val subcomponents = mirror
         .annotations[Types.COMPONENT_TYPE]!!
         .values["subcomponents"]!!
-        .cast<List<Type>>()
+        .cast<List<Type.Object>>()
 
     return Component(mirror.type, root, methods + fields, subcomponents)
   }
@@ -111,11 +129,12 @@ class ComponentsAnalyzerImpl(
       signature.type.toModule()
 
   private fun GenericType.toModule(): Module {
-    if (this !is GenericType.RawType) {
+    if (this !is GenericType.Raw) {
       errorReporter.reportError("Module provider cannot have a generic type: $this")
       return Module(Types.OBJECT_TYPE, emptyList())
     }
 
+    val type = type as Type.Object
     val mirror = grip.classRegistry.getClassMirror(type)
     if (Types.MODULE_TYPE !in mirror.annotations) {
       errorReporter.reportError("Module is not annotated with @Module: $this")
@@ -150,14 +169,14 @@ class ComponentsAnalyzerImpl(
   }
 
   private fun InjectionPoint.toProvider(container: ClassMirror): Provider {
-    val providerType = Type.getObjectType("${containerType.internalName}\$ConstructorProvider")
-    val dependency = Dependency(GenericType.RawType(containerType), null)
+    val providerType = getObjectTypeByInternalName("${containerType.internalName}\$ConstructorProvider")
+    val dependency = Dependency(GenericType.Raw(containerType), null)
     val provisionPoint = ProvisionPoint.Constructor(dependency, cast<InjectionPoint.Method>())
     return Provider(providerType, provisionPoint, container.type, analyzerHelper.findScope(container))
   }
 
-  private fun composePackageModuleType(packageName: String): Type {
+  private fun composePackageModuleType(packageName: String): Type.Object {
     val name = if (packageName.isEmpty()) PACKAGE_MODULE_CLASS_NAME else "$packageName/$PACKAGE_MODULE_CLASS_NAME"
-    return Type.getObjectType(name)
+    return getObjectTypeByInternalName(name)
   }
 }

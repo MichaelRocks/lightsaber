@@ -17,11 +17,11 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.mirrors.signature.GenericType
-import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.model.Dependency
 
 fun Dependency.box(): Dependency =
     when (type) {
-      is GenericType.RawType -> Dependency(GenericType.RawType(type.type.box()), qualifier)
+      is GenericType.Raw -> Dependency(GenericType.Raw(type.type.boxed()), qualifier)
       else -> this
     }

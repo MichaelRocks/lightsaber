@@ -16,12 +16,12 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
 
 data class Provider(
-    val type: Type,
+    val type: Type.Object,
     val provisionPoint: ProvisionPoint,
-    val moduleType: Type,
+    val moduleType: Type.Object,
     val scope: Scope
 ) {
   val dependency: Dependency

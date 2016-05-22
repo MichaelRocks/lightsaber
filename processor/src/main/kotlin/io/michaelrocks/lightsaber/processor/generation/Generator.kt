@@ -17,17 +17,29 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.grip.mirrors.isPublic
+import io.michaelrocks.grip.mirrors.packageName
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.commons.*
+import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.associateByIndexedTo
+import io.michaelrocks.lightsaber.processor.commons.boxedOrElementType
+import io.michaelrocks.lightsaber.processor.commons.given
+import io.michaelrocks.lightsaber.processor.commons.groupNotNullByTo
+import io.michaelrocks.lightsaber.processor.commons.mergeWith
+import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
-import io.michaelrocks.lightsaber.processor.generation.model.*
+import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
+import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
+import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
+import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
+import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.io.FileSink
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
-import org.objectweb.asm.Type
-import java.util.*
+import java.util.HashMap
 
 class Generator(
     private val classRegistry: ClassRegistry,
@@ -71,16 +83,17 @@ class Generator(
         }
   }
 
-  private fun composeConfiguratorType(component: Component): Type {
+  private fun composeConfiguratorType(component: Component): Type.Object {
     val componentNameWithDollars = component.type.internalName.replace('/', '$')
-    return Type.getObjectType("io/michaelrocks/lightsaber/InjectorConfigurator\$$componentNameWithDollars")
+    return getObjectTypeByInternalName("io/michaelrocks/lightsaber/InjectorConfigurator\$$componentNameWithDollars")
   }
 
-  private fun composeMembersInjectors(context: InjectionContext) =
-      context.injectableTargets.map { injectableTarget ->
-        val injectorType = Type.getObjectType(injectableTarget.type.internalName + "\$MembersInjector")
-        MembersInjector(injectorType, injectableTarget)
-      }
+  private fun composeMembersInjectors(context: InjectionContext): Collection<MembersInjector> {
+    return context.injectableTargets.map { injectableTarget ->
+      val injectorType = getObjectTypeByInternalName(injectableTarget.type.internalName + "\$MembersInjector")
+      MembersInjector(injectorType, injectableTarget)
+    }
+  }
 
   private fun composePackageInvaders(context: InjectionContext): Collection<PackageInvader> =
       context.allComponents.asSequence()
@@ -89,16 +102,16 @@ class Generator(
           .asIterable()
           .groupNotNullByTo(
               HashMap(),
-              { provider -> Types.getPackageName(provider.moduleType) },
+              { provider -> provider.moduleType.packageName },
               { provider ->
-                val type = provider.dependency.type.rawType.box()
-                given (!classRegistry.getClassMirror(type).isPublic) { type }
+                val type = provider.dependency.type.rawType
+                given (!classRegistry.getClassMirror(type.boxedOrElementType()).isPublic) { type }
               }
           )
           .mergeWith(
               context.components.groupNotNullByTo(
                   HashMap<String, MutableList<Type>>(),
-                  { component -> Types.getPackageName(component.type) },
+                  { component -> component.type.packageName },
                   { component ->
                     given (!classRegistry.getClassMirror(component.type).isPublic) { component.type }
                   }
@@ -107,7 +120,7 @@ class Generator(
           .mergeWith(
               context.injectableTargets.groupNotNullByTo(
                   HashMap(),
-                  { target -> Types.getPackageName(target.type) },
+                  { target -> target.type.packageName },
                   { target ->
                     given (!classRegistry.getClassMirror(target.type).isPublic) { target.type }
                   }
@@ -115,16 +128,16 @@ class Generator(
           )
           .map {
             val (packageName, types) = it
-            val type = Type.getObjectType("$packageName/Lightsaber\$PackageInvader")
+            val type = getObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader")
             val fields = types.associateByIndexedTo(HashMap(),
-                { index, type -> type.box() },
+                { index, type -> type },
                 { index, type -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
             )
             PackageInvader(type, packageName, fields)
           }
 
   private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {
-    val type = Type.getObjectType("io/michaelrocks/lightsaber/KeyRegistry")
+    val type = getObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry")
     val fields = context.allComponents.asSequence()
         .flatMap { it.modules.asSequence() }
         .flatMap { it.providers.asSequence() }

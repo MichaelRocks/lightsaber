@@ -16,9 +16,9 @@
 
 package io.michaelrocks.lightsaber.processor.generation.model
 
-import io.michaelrocks.lightsaber.processor.commons.Types
-import org.objectweb.asm.Type
-import java.util.*
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.packageName
+import java.util.HashMap
 
 data class GenerationContext(
     val packageInjectorConfigurator: InjectorConfigurator,
@@ -36,6 +36,6 @@ data class GenerationContext(
     packageInvaders.associateByTo(packageInvadersByPackageName) { it.packageName }
   }
 
-  fun findPackageInvaderByTargetType(targetType: Type): PackageInvader? =
-      packageInvadersByPackageName[Types.getPackageName(targetType)]
+  fun findPackageInvaderByTargetType(targetType: Type.Object): PackageInvader? =
+      packageInvadersByPackageName[targetType.packageName]
 }

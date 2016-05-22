@@ -21,18 +21,22 @@ import io.michaelrocks.grip.mirrors.Annotated
 import io.michaelrocks.grip.mirrors.AnnotationMirror
 import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.rawType
-import io.michaelrocks.lightsaber.processor.model.*
-import org.objectweb.asm.Type
-import java.util.*
+import io.michaelrocks.lightsaber.processor.model.Converter
+import io.michaelrocks.lightsaber.processor.model.Dependency
+import io.michaelrocks.lightsaber.processor.model.Injectee
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
+import io.michaelrocks.lightsaber.processor.model.Scope
+import java.util.ArrayList
 
 interface AnalyzerHelper {
-  fun convertToInjectionPoint(method: MethodMirror, container: Type): InjectionPoint.Method
-  fun convertToInjectionPoint(mirror: FieldMirror, container: Type): InjectionPoint.Field
+  fun convertToInjectionPoint(method: MethodMirror, container: Type.Object): InjectionPoint.Method
+  fun convertToInjectionPoint(mirror: FieldMirror, container: Type.Object): InjectionPoint.Field
   fun findQualifier(annotated: Annotated): AnnotationMirror?
   fun findScope(annotated: Annotated): Scope
 }
@@ -43,13 +47,11 @@ class AnalyzerHelperImpl(
     private val errorReporter: ErrorReporter
 ) : AnalyzerHelper {
 
-  override fun convertToInjectionPoint(method: MethodMirror,
-      container: Type): InjectionPoint.Method {
+  override fun convertToInjectionPoint(method: MethodMirror, container: Type.Object): InjectionPoint.Method {
     return InjectionPoint.Method(container, method, method.getInjectees())
   }
 
-  override fun convertToInjectionPoint(mirror: FieldMirror,
-      container: Type): InjectionPoint.Field {
+  override fun convertToInjectionPoint(mirror: FieldMirror, container: Type.Object): InjectionPoint.Field {
     return InjectionPoint.Field(container, mirror, mirror.getInjectee())
   }
 
@@ -85,7 +87,7 @@ class AnalyzerHelperImpl(
     when (rawType) {
       Types.PROVIDER_TYPE,
       Types.LAZY_TYPE ->
-        if (this is GenericType.ParameterizedType) {
+        if (this is GenericType.Parameterized) {
           return Dependency(typeArguments[0], qualifier)
         } else {
           errorReporter.reportError("Type $this must be parameterized")
@@ -97,7 +99,7 @@ class AnalyzerHelperImpl(
   }
 
   override fun findQualifier(annotated: Annotated): AnnotationMirror? {
-    fun isQualifier(annotationType: Type): Boolean {
+    fun isQualifier(annotationType: Type.Object): Boolean {
       return classRegistry.getClassMirror(annotationType).annotations.contains(Types.QUALIFIER_TYPE)
     }
 

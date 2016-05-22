@@ -16,9 +16,9 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
 
 data class Module(
-    val type: Type,
+    val type: Type.Object,
     val providers: Collection<Provider>
 )

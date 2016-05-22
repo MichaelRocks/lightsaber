@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
 
 inline fun GeneratorAdapter.newLocal(type: Type, valueProvider: () -> Unit): Int {
   val local = newLocal(type)

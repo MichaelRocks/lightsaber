@@ -16,11 +16,11 @@
 
 package io.michaelrocks.lightsaber.processor.generation.model
 
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.model.Dependency
-import org.objectweb.asm.Type
 
 data class KeyRegistry(
-    val type: Type,
+    val type: Type.Object,
     val fields: Map<Dependency, FieldDescriptor>
 )

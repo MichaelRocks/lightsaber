@@ -18,14 +18,14 @@ package io.michaelrocks.lightsaber.processor.model
 
 import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
 
 sealed class ProvisionPoint {
-  abstract val containerType: Type
+  abstract val containerType: Type.Object
   abstract val dependency: Dependency
 
   abstract class AbstractMethod : ProvisionPoint() {
-    override val containerType: Type
+    override val containerType: Type.Object
       get() = injectionPoint.containerType
 
     abstract val injectionPoint: InjectionPoint.Method
@@ -45,7 +45,7 @@ sealed class ProvisionPoint {
   ) : AbstractMethod()
 
   class Field(
-      override val containerType: Type,
+      override val containerType: Type.Object,
       override val dependency: Dependency,
       val field: FieldMirror
   ) : ProvisionPoint()

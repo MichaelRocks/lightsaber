@@ -17,8 +17,13 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.processor.commons.*
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
+import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
+import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
+import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
 import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
@@ -26,9 +31,10 @@ import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes.*
-import org.objectweb.asm.Type
-import java.util.*
+import org.objectweb.asm.Opcodes.ACC_PUBLIC
+import org.objectweb.asm.Opcodes.ACC_SUPER
+import org.objectweb.asm.Opcodes.V1_6
+import java.util.ArrayList
 
 class MembersInjectorClassGenerator(
     private val classRegistry: ClassRegistry,
@@ -37,9 +43,9 @@ class MembersInjectorClassGenerator(
 ) {
   companion object {
     private val INJECT_FIELDS_METHOD =
-        MethodDescriptor.forMethod("injectFields", Type.VOID_TYPE, Types.INJECTOR_TYPE, Types.OBJECT_TYPE)
+        MethodDescriptor.forMethod("injectFields", Type.Primitive.Void, Types.INJECTOR_TYPE, Types.OBJECT_TYPE)
     private val INJECT_METHODS_METHOD =
-        MethodDescriptor.forMethod("injectMethods", Type.VOID_TYPE, Types.INJECTOR_TYPE, Types.OBJECT_TYPE)
+        MethodDescriptor.forMethod("injectMethods", Type.Primitive.Void, Types.INJECTOR_TYPE, Types.OBJECT_TYPE)
     private val GET_PROVIDER_METHOD = MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE)
   }
 
