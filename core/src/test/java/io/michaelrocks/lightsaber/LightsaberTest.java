@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber;
 
+import io.michaelrocks.lightsaber.internal.AbstractInjectingProvider;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -23,7 +24,6 @@ import org.mockito.stubbing.Answer;
 
 import javax.annotation.Nonnull;
 import javax.inject.Named;
-import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 
 import static org.junit.Assert.assertEquals;
@@ -40,9 +40,9 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) throws Throwable {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(Key.of(String.class), new Provider<String>() {
+        injector.registerProvider(Key.of(String.class), new AbstractInjectingProvider<String>(injector) {
           @Override
-          public String get() {
+          public String getWithInjector(final Injector injector) {
             return "Parent String";
           }
         });
@@ -54,9 +54,9 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) throws Throwable {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(Key.of(Object.class), new Provider<Object>() {
+        injector.registerProvider(Key.of(Object.class), new AbstractInjectingProvider<Object>(injector) {
           @Override
-          public Object get() {
+          public Object getWithInjector(final Injector injector) {
             return "Child Object";
           }
         });
@@ -69,9 +69,9 @@ public class LightsaberTest {
       public Object answer(final InvocationOnMock invocation) throws Throwable {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
         injector.registerProvider(Key.of(String.class, new NamedProxy("Annotated")),
-            new Provider<String>() {
+            new AbstractInjectingProvider<String>(injector) {
               @Override
-              public String get() {
+              public String getWithInjector(final Injector injector) {
                 return "Child Annotated String";
               }
             });;
