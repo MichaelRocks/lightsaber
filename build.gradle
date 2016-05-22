@@ -35,8 +35,8 @@ ext {
   javaxInjectVersion = '1'
   jsr305Version = '3.0.0'
   jcommanderVersion = '1.47'
-  asmVersion = '5.0.4'
   gripVersion = '0.2.2-alpha'
+  asmVersion = '5.1'
   bimapVersion = '1.0.1'
   logbackVersion = '1.1.3'
 
