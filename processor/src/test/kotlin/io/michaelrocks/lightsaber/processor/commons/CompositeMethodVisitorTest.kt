@@ -137,7 +137,7 @@ class CompositeMethodVisitorTest {
 
   @Test
   fun testVisitInvokeDynamicInsn() {
-    val bootstrapMethod = Handle(Opcodes.H_INVOKEINTERFACE, "Owner", "Name", "Desc")
+    val bootstrapMethod = Handle(Opcodes.H_INVOKEINTERFACE, "Owner", "Name", "Desc", true)
     val arguments = arrayOf<Any>("Argument")
     verifyMethodInvocations(CompositeMethodVisitor::class) {
       visitInvokeDynamicInsn("Name", "Desc", bootstrapMethod, *arguments)
