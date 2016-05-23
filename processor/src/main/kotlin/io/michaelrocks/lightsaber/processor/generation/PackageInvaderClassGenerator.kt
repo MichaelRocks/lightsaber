@@ -21,6 +21,7 @@ import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.boxed
+import io.michaelrocks.lightsaber.processor.commons.newDefaultConstructor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
@@ -50,7 +51,7 @@ class PackageInvaderClassGenerator(
 
     generateFields(classVisitor)
     generateStaticInitializer(classVisitor)
-    generateConstructor(classVisitor)
+    classVisitor.newDefaultConstructor()
 
     classVisitor.visitEnd()
     return classWriter.toByteArray()
@@ -66,15 +67,6 @@ class PackageInvaderClassGenerator(
           null)
       fieldVisitor.visitEnd()
     }
-  }
-
-  private fun generateConstructor(classVisitor: ClassVisitor) {
-    val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, MethodDescriptor.forDefaultConstructor())
-    generator.visitCode()
-    generator.loadThis()
-    generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forDefaultConstructor())
-    generator.returnValue()
-    generator.endMethod()
   }
 
   private fun generateStaticInitializer(classVisitor: ClassVisitor) {
