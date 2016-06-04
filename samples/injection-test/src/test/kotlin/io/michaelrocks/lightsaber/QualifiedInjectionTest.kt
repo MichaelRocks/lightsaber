@@ -16,7 +16,31 @@
 
 package io.michaelrocks.lightsaber
 
-import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.*
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.AnnotationArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.AnnotationQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.BooleanArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.BooleanQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ByteArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ByteQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.CharArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.CharQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ClassArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ClassQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.DoubleArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.DoubleQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.EmptyQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.EnumArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.EnumQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.FloatArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.FloatQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.IntArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.IntQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.LongArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.LongQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ShortArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ShortQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.StringArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.StringQualifier
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import javax.inject.Inject
@@ -302,7 +326,7 @@ class QualifiedInjectionTest {
     fun provideAnnotationArrayQualifierExplicit(): String = "AnnotationArrayQualifierExplicit"
   }
 
-  @Component(root = true)
+  @Component
   private class QualifiedComponent {
     @Provides
     fun provideQualifiedModule(): QualifiedModule = QualifiedModule()

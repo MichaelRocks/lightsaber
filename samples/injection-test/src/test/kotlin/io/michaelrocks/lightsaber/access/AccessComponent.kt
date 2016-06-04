@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.access
 import io.michaelrocks.lightsaber.Component
 import io.michaelrocks.lightsaber.Provides
 
-@Component(root = true)
+@Component
 internal class AccessComponent {
   @Provides
   private fun provideAccessModule(): AccessModule = AccessModule()

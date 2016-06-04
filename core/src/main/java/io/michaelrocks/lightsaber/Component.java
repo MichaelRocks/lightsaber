@@ -27,6 +27,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 public @interface Component {
-  boolean root() default false;
-  Class<?>[] subcomponents() default {};
+  Class<?>[] parents() default {};
 }

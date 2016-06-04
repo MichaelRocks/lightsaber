@@ -16,7 +16,9 @@
 
 package io.michaelrocks.lightsaber
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Test
 import javax.inject.Inject
 
@@ -60,7 +62,7 @@ class LazyInjectionTest {
     fun provideString(): String = StringBuilder("String").toString()
   }
 
-  @Component(root = true)
+  @Component
   private class LazyComponent {
     @Provides
     fun provideLazyModule(): LazyModule = LazyModule()

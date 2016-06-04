@@ -377,13 +377,13 @@ class PrimitiveInjectionTest {
     }
   }
 
-  @Component(root = true)
+  @Component
   private class UnboxedPrimitiveComponent {
     @Provides
     private fun provideUnboxedPrimitiveModule(): UnboxedPrimitiveModule = UnboxedPrimitiveModule()
   }
 
-  @Component(root = true)
+  @Component
   private class BoxedPrimitiveComponent {
     @Provides
     private fun provideBoxedPrimitiveModule(): BoxedPrimitiveModule = BoxedPrimitiveModule()

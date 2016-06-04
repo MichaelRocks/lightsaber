@@ -16,7 +16,9 @@
 
 package io.michaelrocks.lightsaber
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
 import javax.inject.Inject
@@ -104,13 +106,13 @@ class ChildInjectionTest {
     fun provideNamedPackageDependency(packageDependency: PackageDependency): PackageDependency = packageDependency
   }
 
-  @Component(root = true, subcomponents = arrayOf(ChildComponent::class))
+  @Component
   private class ParentComponent {
     @Provides
     private fun provideParentModule(): ParentModule = ParentModule()
   }
 
-  @Component
+  @Component(parents = arrayOf(ParentComponent::class))
   private class ChildComponent {
     @Provides
     private fun provideChildModule(): ChildModule = ChildModule()
