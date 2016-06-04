@@ -20,6 +20,7 @@ import io.michaelrocks.grip.Grip
 import io.michaelrocks.grip.and
 import io.michaelrocks.grip.annotatedWith
 import io.michaelrocks.grip.fields
+import io.michaelrocks.grip.from
 import io.michaelrocks.grip.isStatic
 import io.michaelrocks.grip.methodType
 import io.michaelrocks.grip.methods
