@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.graph
 
-import java.util.*
+import java.util.HashMap
 
 interface DirectedGraph<T> {
   val size: Int
@@ -33,6 +33,7 @@ interface DirectedGraph<T> {
 
 interface MutableDirectedGraph<T> : DirectedGraph<T> {
   fun clear()
+  fun put(vertex: T)
   fun put(from: T, to: T)
   fun put(from: T, to: Collection<T>)
   fun putAll(from: Map<T, Collection<T>>)

@@ -16,7 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.graph
 
-import java.util.*
+import java.util.ArrayList
+import java.util.HashMap
 
 fun <T> HashDirectedGraph(
     graph: DirectedGraph<T>,
@@ -37,17 +38,23 @@ class HashDirectedGraph<T>(
     edges.clear()
   }
 
+  override fun put(vertex: T) {
+    getOrCreateAdjacentVertices(vertex)
+  }
+
   override fun put(from: T, to: T) {
+    put(to)
     getOrCreateAdjacentVertices(from).add(to)
   }
 
   override fun put(from: T, to: Collection<T>) {
+    to.forEach { put(it) }
     getOrCreateAdjacentVertices(from).addAll(to)
   }
 
   override fun putAll(from: Map<T, Collection<T>>) {
     for ((vertex, vertices) in from) {
-      getOrCreateAdjacentVertices(vertex).addAll(vertices)
+      put(vertex, vertices)
     }
   }
 
