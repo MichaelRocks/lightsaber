@@ -37,6 +37,8 @@ import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.analysis.ComponentsAnalyzer.Result
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.cast
+import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
+import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency
@@ -72,33 +74,58 @@ class ComponentsAnalyzerImpl(
   private val moduleRegistry: ModuleRegistry = ModuleRegistryImpl(grip, analyzerHelper, errorReporter)
 
   override fun analyze(files: Collection<File>, providableTargets: Collection<InjectionTarget>): Result {
-    val components = analyzeComponents(files)
-    val packageComponent = composePackageComponent(providableTargets, components)
+    val componentsQuery = grip select classes from files where annotatedWith(Types.COMPONENT_TYPE)
+    val graph = buildComponentGraph(componentsQuery.execute().types)
+    val components = graph.vertices
+        .filterNot { it == PACKAGE_COMPONENT_TYPE }
+        .map { type -> type.toComponent(graph.getAdjacentVertices(type).orEmpty()) }
+    val packageComponent = composePackageComponent(
+        providableTargets,
+        graph.getAdjacentVertices(PACKAGE_COMPONENT_TYPE).orEmpty().toList()
+    )
     return Result(packageComponent, components)
   }
 
-  private fun analyzeComponents(files: Collection<File>): Collection<Component> {
-    val componentsQuery = grip select classes from files where annotatedWith(Types.COMPONENT_TYPE)
-    return componentsQuery.execute().keys.map { it.toComponent() }
+  private fun buildComponentGraph(types: Collection<Type.Object>): DirectedGraph<Type.Object> {
+    val graph = HashDirectedGraph<Type.Object>()
+
+    for (type in types) {
+      val mirror = grip.classRegistry.getClassMirror(type)
+      if (mirror.signature.typeParameters.isNotEmpty()) {
+        errorReporter.reportError("Component cannot have a type parameters: $mirror")
+        continue
+      }
+
+      val annotation = mirror.annotations[Types.COMPONENT_TYPE]
+      if (annotation == null) {
+        errorReporter.reportError("Class $mirror is not a component")
+        continue
+      }
+
+      val parents = annotation
+          .values["parents"]!!
+          .cast<List<Type>>()
+
+      if (parents.isNotEmpty()) {
+        for (parent in parents) {
+          if (parent is Type.Object) {
+            graph.put(parent, type)
+          } else {
+            errorReporter.reportError("Parent component of ${type.className} is not a class")
+          }
+        }
+      } else {
+        graph.put(PACKAGE_COMPONENT_TYPE, type)
+      }
+    }
+
+    return graph
   }
 
-  private fun Type.Object.toComponent(): Component =
-      convertToComponent(grip.classRegistry.getClassMirror(this))
+  private fun Type.Object.toComponent(subcomponents: Iterable<Type.Object>): Component =
+      convertToComponent(grip.classRegistry.getClassMirror(this), subcomponents.toList())
 
-  private fun convertToComponent(mirror: ClassMirror): Component {
-    if (mirror.signature.typeParameters.isNotEmpty()) {
-      errorReporter.reportError("Component cannot have a type parameters: $mirror")
-      return Component(mirror.type, false, emptyList(), emptyList())
-    }
-2
-    val annotation = mirror.annotations[Types.COMPONENT_TYPE]
-    if (annotation == null) {
-      errorReporter.reportError("Class $mirror is not a component")
-      return Component(mirror.type, false, emptyList(), emptyList())
-    }
-
-    val root = annotation.values["root"] as Boolean
-
+  private fun convertToComponent(mirror: ClassMirror, subcomponents: List<Type.Object>): Component {
     val methodsQuery = grip select methods from mirror where
         (annotatedWith(Types.PROVIDES_TYPE) and methodType(not(returns(Type.Primitive.Void))) and not(isStatic()))
     val fieldsQuery = grip select fields from mirror where
@@ -115,12 +142,7 @@ class ComponentsAnalyzerImpl(
       ModuleProvider(field.toModule(), ModuleProvisionPoint.Field(field))
     }
 
-    val subcomponents = mirror
-        .annotations[Types.COMPONENT_TYPE]!!
-        .values["subcomponents"]!!
-        .cast<List<Type.Object>>()
-
-    return Component(mirror.type, root, methods + fields, subcomponents)
+    return Component(mirror.type, methods + fields, subcomponents)
   }
 
   private fun MethodMirror.toModule(): Module =
@@ -147,12 +169,11 @@ class ComponentsAnalyzerImpl(
 
   private fun composePackageComponent(
       providableTargets: Iterable<InjectionTarget>,
-      components: Collection<Component>
+      subcomponents: List<Type.Object>
   ): Component {
     val providers = composePackageModules(providableTargets)
         .map { ModuleProvider(it, ModuleProvisionPoint.Null) }
-    val subcomponents = components.filter { it.root }.map { it.type }
-    return Component(PACKAGE_COMPONENT_TYPE, true, providers, subcomponents)
+    return Component(PACKAGE_COMPONENT_TYPE, providers, subcomponents)
   }
 
   private fun composePackageModules(providableTargets: Iterable<InjectionTarget>): List<Module> {

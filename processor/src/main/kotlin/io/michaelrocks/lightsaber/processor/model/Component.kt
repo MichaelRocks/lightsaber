@@ -20,7 +20,6 @@ import io.michaelrocks.grip.mirrors.Type
 
 data class Component(
     val type: Type.Object,
-    val root: Boolean,
     val providers: Collection<ModuleProvider>,
     val subcomponents: Collection<Type.Object>
 ) {
