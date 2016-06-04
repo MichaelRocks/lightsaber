@@ -70,11 +70,6 @@ public class LightsaberTransform extends Transform {
 
   @Override
   Set<QualifiedContent.ContentType> getInputTypes() {
-    return Collections.singleton(QualifiedContent.DefaultContentType.CLASSES)
-  }
-
-  @Override
-  Set<QualifiedContent.ContentType> getOutputTypes() {
     return EnumSet.of(QualifiedContent.DefaultContentType.CLASSES)
   }
 
@@ -90,27 +85,8 @@ public class LightsaberTransform extends Transform {
         QualifiedContent.Scope.SUB_PROJECTS,
         QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
         QualifiedContent.Scope.EXTERNAL_LIBRARIES,
-        QualifiedContent.Scope.PROVIDED_ONLY)
-  }
-
-  @Override
-  Collection<File> getSecondaryFileInputs() {
-    return Collections.emptyList()
-  }
-
-  @Override
-  Collection<File> getSecondaryFileOutputs() {
-    return Collections.emptyList()
-  }
-
-  @Override
-  Collection<File> getSecondaryDirectoryOutputs() {
-    return super.getSecondaryDirectoryOutputs()
-  }
-
-  @Override
-  Map<String, Object> getParameterInputs() {
-    return Collections.emptyMap()
+        QualifiedContent.Scope.PROVIDED_ONLY
+    )
   }
 
   @Override
