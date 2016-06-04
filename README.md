@@ -2,7 +2,8 @@ Lightsaber
 ==========
 
 A compile time IoC container for JVM-based languages.
-The project has recently passed the proof-of-concept stage so please do not use it in production.
+
+Documentation is coming…
 
 License
 -------
