@@ -16,9 +16,8 @@
 
 package io.michaelrocks.lightsaber.processor.validation
 
-import io.michaelrocks.grip.mirrors.getObjectType
 import io.michaelrocks.grip.mirrors.signature.GenericType
-import io.michaelrocks.lightsaber.Injector
+import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.generation.box
 import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
 import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
@@ -28,7 +27,7 @@ import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 
 fun buildDependencyGraph(modules: Collection<Module>): DirectedGraph<Dependency> {
   return HashDirectedGraph<Dependency>().apply {
-    val rootType = Dependency(GenericType.Raw(getObjectType<Injector>()))
+    val rootType = Dependency(GenericType.Raw(Types.INJECTOR_TYPE))
     put(rootType, emptyList<Dependency>())
     for (module in modules) {
       for (provider in module.providers) {
