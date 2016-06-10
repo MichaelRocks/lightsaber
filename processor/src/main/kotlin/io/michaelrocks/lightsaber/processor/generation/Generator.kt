@@ -180,7 +180,7 @@ class Generator(
   }
 
   private fun generateInjectionDispatcher(generationContext: GenerationContext) {
-    val generator = InjectorDispatcherSourceGenerator(sourceProducer)
+    val generator = InjectorDispatcherSourceGenerator(sourceProducer, classRegistry)
     generator.generate(generationContext)
   }
 }

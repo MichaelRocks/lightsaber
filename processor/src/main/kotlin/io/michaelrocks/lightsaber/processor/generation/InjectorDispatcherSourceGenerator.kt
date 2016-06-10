@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
@@ -29,7 +30,8 @@ private val INJECTION_DISPATCHER_TYPE = getObjectTypeByInternalName("io/michaelr
 private const val STATIC_INITIALIZER_PARAMETER = "STATIC_INITIALIZER"
 
 class InjectorDispatcherSourceGenerator(
-    private val sourceProducer: SourceProducer
+    private val sourceProducer: SourceProducer,
+    private val classRegistry: ClassRegistry
 ) {
   private val InjectorConfigurator.className: String
     get() = type.internalName.substringAfterLast('/')
@@ -86,9 +88,13 @@ class InjectorDispatcherSourceGenerator(
   private fun Type.Object.getClassReference(packageInvader: PackageInvader?): String {
     val componentField = packageInvader?.fields?.get(this)
     if (componentField == null) {
-      return "$className.class"
+      return "${getJavaClassName()}.class"
     } else {
       return "${packageInvader!!.type.className}.${componentField.name}"
     }
+  }
+
+  private fun Type.Object.getJavaClassName(): String {
+    return classRegistry.getClassMirror(this).name
   }
 }
