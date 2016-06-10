@@ -21,6 +21,7 @@ import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.grip.mirrors.isPublic
 import io.michaelrocks.grip.mirrors.packageName
+import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -38,6 +39,7 @@ import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.io.FileSink
 import io.michaelrocks.lightsaber.processor.model.Component
+import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import java.util.HashMap
 
@@ -147,6 +149,8 @@ class Generator(
             { index, provider -> provider.dependency.box() },
             { index, provider -> FieldDescriptor("key$index", Types.KEY_TYPE) }
         )
+    val injectorDependency = Dependency(GenericType.Raw(Types.INJECTOR_TYPE))
+    fields.put(injectorDependency, FieldDescriptor("injectorKey", Types.KEY_TYPE))
     return KeyRegistry(type, fields)
   }
 
