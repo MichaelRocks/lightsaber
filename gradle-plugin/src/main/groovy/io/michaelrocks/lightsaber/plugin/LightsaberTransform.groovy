@@ -32,18 +32,16 @@ public class LightsaberTransform extends Transform {
   }
 
   @Override
-  void transform(final Context context, final Collection<TransformInput> inputs,
-      final Collection<TransformInput> referencedInputs, final TransformOutputProvider outputProvider,
-      final boolean isIncremental) throws IOException, TransformException, InterruptedException {
+  void transform(final TransformInvocation invocation) throws IOException, TransformException, InterruptedException {
     final def parameters = new LightsaberParameters()
-    final DirectoryInput directoryInput = inputs.first().directoryInputs.first()
-    final File output = outputProvider.getContentLocation(
+    final DirectoryInput directoryInput = invocation.inputs.first().directoryInputs.first()
+    final File output = invocation.outputProvider.getContentLocation(
         directoryInput.name, EnumSet.of(QualifiedContent.DefaultContentType.CLASSES),
         EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
     parameters.classes = directoryInput.file
     parameters.output = output
-    parameters.source = new File(context.temporaryDir, "src")
-    parameters.classpath = referencedInputs.collectMany {
+    parameters.source = new File(invocation.context.temporaryDir, "src")
+    parameters.classpath = invocation.referencedInputs.collectMany {
       it.directoryInputs.collect { it.file } + it.jarInputs.collect { it.file }
     }
     parameters.bootClasspath = project.android.bootClasspath.toList()
