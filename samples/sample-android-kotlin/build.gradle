@@ -20,6 +20,8 @@ android {
     targetSdkVersion 23
     versionCode 1
     versionName version
+
+    testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
   }
 
   buildTypes {
@@ -46,7 +48,8 @@ dependencies {
   // Kotlin
   compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
-  // Android support
-  compile "com.android.support:support-v13:$supportVersion"
-  compile "com.android.support:appcompat-v7:$supportVersion"
+  // Testing
+  androidTestCompile "com.android.support.test.espresso:espresso-core:$espressoVersion"
+  androidTestCompile "com.android.support.test.espresso:espresso-contrib:$espressoVersion"
+  androidTestCompile "com.android.support.test:runner:$testRunnerVersion"
 }
