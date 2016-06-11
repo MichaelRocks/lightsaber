@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.lang.reflect.ParameterizedType
 import javax.inject.Inject
 
 class GenericInjectionTest {
@@ -42,6 +43,15 @@ class GenericInjectionTest {
     val target = MethodInjectionTarget()
     injector.injectMembers(target)
     validateTarget(GenericModule(), target)
+  }
+
+  @Test
+  fun testGetGenericInstanceWithKey() {
+    val injector = lightsaber.createInjector(GenericComponent())
+    val token = object : TypeToken<List<@JvmSuppressWildcards String>>() {}
+    val type = (token.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0]
+    val key = Key.of<List<String>>(type)
+    assertEquals(listOf("Hello", "world"), injector.getInstance(key))
   }
 
   private fun validateTarget(module: GenericModule, target: Target) {
@@ -86,4 +96,6 @@ class GenericInjectionTest {
     @set:Inject
     override var intList: List<Int> = inject()
   }
+
+  open class TypeToken<T>
 }
