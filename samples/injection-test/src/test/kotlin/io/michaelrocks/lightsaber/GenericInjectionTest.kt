@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber
 
-import org.junit.Assert
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import javax.inject.Inject
 
@@ -45,8 +45,8 @@ class GenericInjectionTest {
   }
 
   private fun validateTarget(module: GenericModule, target: Target) {
-    Assert.assertEquals(module.provideStringList(), target.stringList)
-    Assert.assertEquals(module.provideIntList(), target.intList)
+    assertEquals(module.provideStringList(), target.stringList)
+    assertEquals(module.provideIntList(), target.intList)
   }
 
   @Module
