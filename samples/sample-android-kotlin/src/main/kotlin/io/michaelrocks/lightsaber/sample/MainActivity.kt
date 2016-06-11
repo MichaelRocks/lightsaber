@@ -24,7 +24,7 @@ import io.michaelrocks.lightsaber.kotlin.R
 import javax.inject.Inject
 import javax.inject.Provider
 
-public class MainActivity : Activity() {
+class MainActivity : Activity() {
   @Inject
   private lateinit var wookiee: Wookiee
   @Inject
