@@ -20,11 +20,19 @@ import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.cast
 import io.michaelrocks.lightsaber.processor.generation.box
-import io.michaelrocks.lightsaber.processor.graph.*
+import io.michaelrocks.lightsaber.processor.graph.AbstractMarkingTraversal
+import io.michaelrocks.lightsaber.processor.graph.DepthFirstTraversal
+import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
+import io.michaelrocks.lightsaber.processor.graph.findCycles
+import io.michaelrocks.lightsaber.processor.graph.findReachableVertices
+import io.michaelrocks.lightsaber.processor.graph.reversed
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency
+import io.michaelrocks.lightsaber.processor.model.Injectee
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
-import java.util.*
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
+import java.util.ArrayList
+import java.util.HashSet
 
 class Validator(
     private val classRegistry: ClassRegistry,
@@ -60,27 +68,9 @@ class Validator(
       validateNoDuplicatesInInjectionGraph(it)
       validateDependencyGraph(context, it)
     }
-  }
 
-  private fun validateDependencyGraph(context: InjectionContext, injectionGraph: DirectedGraph<InjectionGraphVertex>) {
-    val modules = injectionGraph.vertices.mapNotNull { (it as? InjectionGraphVertex.ModuleVertex)?.module }
-    val dependencyGraph = buildDependencyGraph(modules)
-
-    val packageComponent = InjectionGraphVertex.ComponentVertex(context.packageComponent)
-    val componentChain = extractComponentChain(injectionGraph, packageComponent)
-    val unresolvedDependencies =
-        dependencyGraph.findUnresolvedDependencies(componentChain.subList(1, componentChain.size))
-    if (unresolvedDependencies.isNotEmpty()) {
-      val componentChainString = componentChain.joinToString(" -> ") { it.type.className }
-      for (unresolvedDependency in unresolvedDependencies) {
-        errorReporter.reportError("Unresolved dependency: $unresolvedDependency in $componentChainString")
-      }
-    }
-
-    val cycles = dependencyGraph.findCycles()
-    for (cycle in cycles) {
-      errorReporter.reportError("Cycled dependency: ${cycle.joinToString(" -> ")}")
-    }
+    val fullInjectionGraph = buildInjectionGraph(injectionGraphs)
+    validateInjectionPointsAreResolved(context, fullInjectionGraph)
   }
 
   private fun validateNoDuplicatesInInjectionGraph(graph: DirectedGraph<InjectionGraphVertex>) {
@@ -89,7 +79,7 @@ class Validator(
       val adjacent = reversed.getAdjacentVertices(vertex)
       if (adjacent != null && adjacent.size > 1) {
         when (vertex) {
-          is InjectionGraphVertex.ComponentVertex -> {}
+          is InjectionGraphVertex.ComponentVertex -> Unit
           is InjectionGraphVertex.ModuleVertex -> {
             val module = vertex.module.type.className
             val components =
@@ -112,6 +102,27 @@ class Validator(
           }
         }
       }
+    }
+  }
+
+  private fun validateDependencyGraph(context: InjectionContext, injectionGraph: DirectedGraph<InjectionGraphVertex>) {
+    val modules = injectionGraph.vertices.mapNotNull { (it as? InjectionGraphVertex.ModuleVertex)?.module }
+    val dependencyGraph = buildDependencyGraph(modules)
+
+    val packageComponent = InjectionGraphVertex.ComponentVertex(context.packageComponent)
+    val componentChain = extractComponentChain(injectionGraph, packageComponent)
+    val unresolvedDependencies =
+        dependencyGraph.findUnresolvedDependencies(componentChain.subList(1, componentChain.size))
+    if (unresolvedDependencies.isNotEmpty()) {
+      val componentChainString = componentChain.joinToString(" -> ") { it.type.className }
+      for (unresolvedDependency in unresolvedDependencies) {
+        errorReporter.reportError("Unresolved dependency: $unresolvedDependency in $componentChainString")
+      }
+    }
+
+    val cycles = dependencyGraph.findCycles()
+    for (cycle in cycles) {
+      errorReporter.reportError("Cycled dependency: ${cycle.joinToString(" -> ")}")
     }
   }
 
@@ -157,5 +168,37 @@ class Validator(
     }
 
     return unresolvedDependencies
+  }
+
+  private fun validateInjectionPointsAreResolved(context: InjectionContext,
+      injectionGraph: DirectedGraph<InjectionGraphVertex>) {
+    fun Injectee.isResolved(): Boolean {
+      return injectionGraph.contains(InjectionGraphVertex.DependencyVertex(dependency))
+    }
+
+    fun InjectionPoint.checkResolved() {
+      when (this) {
+        is InjectionPoint.Field ->
+          if (!injectee.isResolved()) {
+            errorReporter.reportError(
+                "Unresolved dependency ${injectee.dependency} in $field at ${containerType.className}"
+            )
+          }
+        is InjectionPoint.Method ->
+          injectees.forEach { injectee ->
+            if (!injectee.isResolved()) {
+              errorReporter.reportError(
+                  "Unresolved dependency ${injectee.dependency} in $method at ${containerType.className}"
+              )
+            }
+          }
+      }
+    }
+
+    context.injectableTargets.forEach { injectableTarget ->
+      injectableTarget.injectionPoints.forEach { injectionPoint ->
+        injectionPoint.checkResolved()
+      }
+    }
   }
 }
