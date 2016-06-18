@@ -13,6 +13,8 @@ cache:
     - $HOME/.gradle/wrapper/
     - $HOME/.m2
 
+install: true
+
 script:
   - ./gradlew publishToMavenLocal -Pbootstrap=true
   - ./gradlew check -PenableAndroid=false
