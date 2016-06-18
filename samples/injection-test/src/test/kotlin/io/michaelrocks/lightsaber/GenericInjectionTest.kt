@@ -65,6 +65,8 @@ class GenericInjectionTest {
     fun provideStringList(): List<String> = listOf("Hello", "world")
     @Provides
     fun provideIntList(): List<Int> = listOf(42, 43)
+    @Provides
+    fun provideIntArrayList(): List<IntArray> = listOf(intArrayOf(42, 43))
   }
 
   @Component
@@ -76,11 +78,13 @@ class GenericInjectionTest {
   private interface Target {
     val stringList: List<String>
     val intList: List<Int>
+    val intArrayList: List<IntArray>
   }
 
   private class ConstructorInjectionTarget @Inject constructor(
       override val stringList: List<String>,
-      override val intList: List<Int>
+      override val intList: List<Int>,
+      override val intArrayList: List<IntArray>
   ) : Target
 
   private class FieldInjectionTarget : Target {
@@ -88,6 +92,8 @@ class GenericInjectionTest {
     override val stringList: List<String> = inject()
     @Inject
     override val intList: List<Int> = inject()
+    @Inject
+    override val intArrayList: List<IntArray> = inject()
   }
 
   private class MethodInjectionTarget : Target {
@@ -95,6 +101,8 @@ class GenericInjectionTest {
     override var stringList: List<String> = inject()
     @set:Inject
     override var intList: List<Int> = inject()
+    @set:Inject
+    override var intArrayList: List<IntArray> = inject()
   }
 
   open class TypeToken<T>
