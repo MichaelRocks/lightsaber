@@ -28,13 +28,17 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
   void apply(final Project project) {
     super.apply(project)
 
+    project.extensions.create('lightsaber', JavaLightsaberPluginExtension)
+
     addDependencies('compile')
     addDependencies('testCompile')
 
     project.afterEvaluate {
       if (project.plugins.hasPlugin('java')) {
         setupLightsaberForJava()
-        setupLightsaberForJavaTest()
+        if (project.lightsaber.processTest) {
+          setupLightsaberForJavaTest()
+        }
       } else {
         throw new GradleException("Project should use Java plugin")
       }
