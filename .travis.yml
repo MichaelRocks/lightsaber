@@ -1,0 +1,20 @@
+language: java
+
+jdk:
+  - openjdk6
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -rf $HOME/.m2/io/michaelrocks
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.m2
+
+script:
+  - ./gradlew publishToMavenLocal -Pbootstrap=true
+  - ./gradlew check -PenableAndroid=false
+
+sudo: false
