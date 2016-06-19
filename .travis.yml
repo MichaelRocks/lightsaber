@@ -13,10 +13,10 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
-install: true
+install:
+  - ./gradlew assemble publishToMavenLocal -Pbootstrap=true --no-daemon --rerun-tasks
 
 script:
-  - ./gradlew assemble publishToMavenLocal -Pbootstrap=true --no-daemon --rerun-tasks
   - ./gradlew check -PenableAndroid=false --no-daemon
 
 sudo: false
