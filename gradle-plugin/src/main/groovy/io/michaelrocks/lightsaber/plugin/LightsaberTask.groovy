@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber.plugin
 
 import groovy.io.FileVisitResult
+import groovy.transform.CompileStatic
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkChecker
@@ -28,6 +29,7 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
+@CompileStatic
 public class LightsaberTask extends DefaultTask {
   @InputDirectory
   File backupDir
@@ -72,7 +74,7 @@ public class LightsaberTask extends DefaultTask {
     }
 
     classesDir.traverse(
-        postDir: { final File dir -> FileMethods.deleteDirectoryIfEmpty(dir) }
+        postDir: { final File dir -> FileMethods.deleteDirectoryIfEmpty(dir) } as Object
     ) { final file ->
       if (file.isDirectory()) {
         return FileVisitResult.CONTINUE

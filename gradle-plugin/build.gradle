@@ -35,6 +35,9 @@ task generateBuildClass {
     buildClassFile.text = "" +
         "package io.michaelrocks.lightsaber.plugin\n" +
         "\n" +
+        "import groovy.transform.CompileStatic\n" +
+        "\n" +
+        "@CompileStatic"
         "public class Build {\n" +
         "    public static final String VERSION = \"$version\"\n" +
         "}\n"

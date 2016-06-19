@@ -16,6 +16,9 @@
 
 package io.michaelrocks.lightsaber.plugin
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class JavaLightsaberPluginExtension {
   boolean processTest = true
 }

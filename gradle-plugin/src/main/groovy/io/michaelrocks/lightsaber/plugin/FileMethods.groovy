@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 package io.michaelrocks.lightsaber.plugin
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 public class FileMethods {
   public static String relativize(final File parent, final File child) {
     final URI relativeUri = parent.toURI().relativize(child.toURI())
