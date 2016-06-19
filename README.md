@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/MichaelRocks/lightsaber.svg?branch=develop)](https://travis-ci.org/MichaelRocks/lightsaber)
+
 Lightsaber
 ==========
 
