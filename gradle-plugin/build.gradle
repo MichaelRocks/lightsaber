@@ -37,7 +37,7 @@ task generateBuildClass {
         "\n" +
         "import groovy.transform.CompileStatic\n" +
         "\n" +
-        "@CompileStatic\n"
+        "@CompileStatic\n" +
         "public class Build {\n" +
         "    public static final String VERSION = \"$version\"\n" +
         "}\n"
