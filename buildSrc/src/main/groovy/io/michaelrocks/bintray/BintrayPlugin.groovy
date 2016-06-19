@@ -43,15 +43,17 @@ class BintrayPlugin implements Plugin<Project> {
   }
 
   private void configureBintrayPublishing() {
-    configureArtifacts()
+    final String artifactName = project.maven.artifactName ?: project.rootProject.name + '-' + project.name
+
+    configureArtifacts(artifactName)
 
     final boolean hasCredentials = project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')
     if (hasCredentials) {
-      configureBintray()
+      configureBintray(artifactName)
     }
   }
 
-  private void configureBintray() {
+  private void configureBintray(final String artifactName) {
     project.bintray {
       user = project.property('bintrayUser')
       key = project.property('bintrayKey')
@@ -62,7 +64,7 @@ class BintrayPlugin implements Plugin<Project> {
       publish = project.publish
       pkg {
         repo = getRepositoryName()
-        name = project.maven.artifactName ?: project.rootProject.name + '-' + project.name
+        name = artifactName
 
         version {
           released = new Date()
@@ -72,7 +74,7 @@ class BintrayPlugin implements Plugin<Project> {
     }
   }
 
-  private void configureArtifacts() {
+  private void configureArtifacts(final String artifactName) {
     project.task('sourcesJar', type: Jar, dependsOn: project.classes) {
       from project.sourceSets.main.allSource
     }
@@ -88,7 +90,7 @@ class BintrayPlugin implements Plugin<Project> {
     project.publishing {
       publications {
         mavenJava(MavenPublication) {
-          artifactId project.bintray.pkg.name
+          artifactId artifactName
           if (project.plugins.hasPlugin('war')) {
             from project.components.web
           } else {
