@@ -16,7 +16,7 @@ cache:
 install: true
 
 script:
-  - ./gradlew publishToMavenLocal -Pbootstrap=true
-  - ./gradlew check -PenableAndroid=false
+  - ./gradlew clean publishToMavenLocal -Pbootstrap=true
+  - ./gradlew check -PenableAndroid=false --no-daemon
 
 sudo: false
