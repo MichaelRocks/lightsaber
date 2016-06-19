@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,147 +16,152 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
+import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectType
 import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.processor.ProcessorContext
-import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
+import io.michaelrocks.lightsaber.internal.InjectingProvider
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.commons.newDefaultConstructor
+import io.michaelrocks.lightsaber.processor.commons.newLocal
+import io.michaelrocks.lightsaber.processor.commons.newMethod
+import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
+import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.ProviderDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.isConstructorProvider
+import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
+import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
+import io.michaelrocks.lightsaber.processor.model.ModuleProvider
+import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
+import io.michaelrocks.lightsaber.processor.model.Provider
+import io.michaelrocks.lightsaber.processor.model.Scope
+import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
-import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes.*
-import org.objectweb.asm.Type
+import org.objectweb.asm.Opcodes.ACC_PUBLIC
+import org.objectweb.asm.Opcodes.ACC_SUPER
+import org.objectweb.asm.Opcodes.V1_6
 
 class InjectorConfiguratorClassGenerator(
-    private val processorContext: ProcessorContext,
-    private val annotationCreator: AnnotationCreator,
-    private val module: ModuleDescriptor
+    private val classRegistry: ClassRegistry,
+    private val keyRegistry: KeyRegistry,
+    private val injectorConfigurator: InjectorConfigurator
 ) {
   companion object {
-    private val KEY_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.CLASS_TYPE, Types.ANNOTATION_TYPE)
+    private val INJECTING_PROVIDER_TYPE = getObjectType<InjectingProvider<*>>()
+
     private val CONFIGURE_INJECTOR_METHOD =
         MethodDescriptor.forMethod("configureInjector",
-            Type.VOID_TYPE, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, Types.OBJECT_TYPE)
+            Type.Primitive.Void, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, Types.OBJECT_TYPE)
     private val REGISTER_PROVIDER_METHOD =
-        MethodDescriptor.forMethod("registerProvider", Type.VOID_TYPE, Types.KEY_TYPE, Types.PROVIDER_TYPE)
+        MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.KEY_TYPE, INJECTING_PROVIDER_TYPE)
 
-    private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
+    private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(INJECTING_PROVIDER_TYPE)
 
     private val INVALID_LOCAL = -1
   }
 
   fun generate(): ByteArray {
     val classWriter =
-        StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, processorContext.classRegistry)
+        StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
         V1_6,
         ACC_PUBLIC or ACC_SUPER,
-        module.configuratorType.internalName,
+        injectorConfigurator.type.internalName,
         null,
         Types.OBJECT_TYPE.internalName,
         arrayOf(LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE.internalName))
 
-    generateConstructor(classVisitor)
-    generateConfigureInjectorMethod(classVisitor)
+    classVisitor.newDefaultConstructor()
+    classVisitor.newMethod(ACC_PUBLIC, CONFIGURE_INJECTOR_METHOD) { configureInjector() }
 
     classVisitor.visitEnd()
     return classWriter.toByteArray()
   }
 
-  private fun generateConstructor(classVisitor: ClassVisitor) {
-    val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, MethodDescriptor.forDefaultConstructor())
-    generator.visitCode()
-    generator.loadThis()
-    generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forDefaultConstructor())
-    generator.returnValue()
-    generator.endMethod()
+  private fun GeneratorAdapter.configureInjector() {
+    loadArg(1)
+    checkCast(injectorConfigurator.component.type)
+    injectorConfigurator.component.providers.forEach { provider ->
+      dup()
+      configureInjectorWithModule(provider)
+    }
+    pop()
   }
 
-  private fun generateConfigureInjectorMethod(classVisitor: ClassVisitor) {
-    val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, CONFIGURE_INJECTOR_METHOD)
-    generator.visitCode()
+  private fun GeneratorAdapter.configureInjectorWithModule(moduleProvider: ModuleProvider) {
+    val moduleLocal = getModule(moduleProvider.provisionPoint)
 
-    val moduleLocal: Int
-    if (isModuleArgumentUsed()) {
-      generator.loadArg(1)
-      generator.checkCast(module.moduleType)
-      moduleLocal = generator.newLocal(module.moduleType)
-      generator.storeLocal(moduleLocal)
-    } else {
-      moduleLocal = INVALID_LOCAL
+    moduleProvider.module.providers.forEach { provider ->
+      registerProvider(provider) {
+        if (moduleLocal == INVALID_LOCAL) {
+          check(provider.isConstructorProvider)
+          newConstructorProvider(provider)
+        } else {
+          check(!provider.isConstructorProvider)
+          newModuleProvider(provider) {
+            loadLocal(moduleLocal)
+          }
+        }
+      }
     }
-
-    for (provider in module.providers) {
-      generateRegisterProviderInvocation(generator, provider, moduleLocal)
-    }
-
-    generator.returnValue()
-    generator.endMethod()
   }
 
-  private fun isModuleArgumentUsed(): Boolean = module.providers.any { !it.isConstructorProvider }
-
-  private fun generateRegisterProviderInvocation(generator: GeneratorAdapter,
-      provider: ProviderDescriptor, moduleLocal: Int) {
-    generator.loadArg(0)
-    generateKeyConstruction(generator, provider)
-
-    if (provider.delegatorType != null) {
-      generateDelegatorConstruction(generator, provider, moduleLocal)
-    } else {
-      generateProviderConstruction(generator, provider, moduleLocal)
+  private fun GeneratorAdapter.getModule(provisionPoint: ModuleProvisionPoint): Int {
+    return when (provisionPoint) {
+      is ModuleProvisionPoint.Method -> getModule(provisionPoint)
+      is ModuleProvisionPoint.Field -> getModule(provisionPoint)
+      is ModuleProvisionPoint.Null -> INVALID_LOCAL
     }
-
-    generator.invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD)
   }
 
-  private fun generateKeyConstruction(generator: GeneratorAdapter, provider: ProviderDescriptor) {
-    generator.newInstance(Types.KEY_TYPE)
-    generator.dup()
-    val providableType = provider.qualifiedProvidableType
-    val packageInvader = processorContext.findPackageInvaderByTargetType(module.moduleType)!!
-    val classField = packageInvader.getClassField(providableType.type.box()) ?:
-        error("Cannot find class field for type: %s".format(providableType.type))
-
-    generator.getStatic(packageInvader.type, classField)
-    val qualifier = providableType.qualifier
-    if (qualifier == null) {
-      generator.pushNull()
-    } else {
-      annotationCreator.newAnnotation(generator, qualifier)
+  private fun GeneratorAdapter.getModule(provisionPoint: ModuleProvisionPoint.Method): Int {
+    return newLocal(provisionPoint.method.type.returnType) {
+      invokeVirtual(injectorConfigurator.component.type, provisionPoint.method.toMethodDescriptor())
     }
-    generator.invokeConstructor(Types.KEY_TYPE, KEY_CONSTRUCTOR)
   }
 
-  private fun generateDelegatorConstruction(generator: GeneratorAdapter, provider: ProviderDescriptor,
-      moduleLocal: Int) {
-    val delegatorType = provider.delegatorType!!
-    generator.newInstance(delegatorType)
-    generator.dup()
-    generateProviderConstruction(generator, provider, moduleLocal)
-    generator.invokeConstructor(delegatorType, DELEGATE_PROVIDER_CONSTRUCTOR)
+  private fun GeneratorAdapter.getModule(provisionPoint: ModuleProvisionPoint.Field): Int {
+    return newLocal(provisionPoint.field.type) {
+      getField(injectorConfigurator.component.type, provisionPoint.field.toFieldDescriptor())
+    }
   }
 
-  private fun generateProviderConstruction(generator: GeneratorAdapter, provider: ProviderDescriptor,
-      moduleLocal: Int) {
-    generator.newInstance(provider.providerType)
-    generator.dup()
-    if (moduleLocal == INVALID_LOCAL) {
-      generator.loadArg(0)
-      val constructor = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
-      generator.invokeConstructor(provider.providerType, constructor)
-    } else {
-      generator.loadLocal(moduleLocal)
-      generator.loadArg(0)
-      val constructor = MethodDescriptor.forConstructor(provider.moduleType, Types.INJECTOR_TYPE)
-      generator.invokeConstructor(provider.providerType, constructor)
+  private fun GeneratorAdapter.registerProvider(provider: Provider, providerCreator: () -> Unit) {
+    loadArg(0)
+    getKey(keyRegistry, provider.dependency)
+
+    when (provider.scope) {
+      is Scope.Class -> newDelegator(provider.scope.scopeType, providerCreator)
+      is Scope.None -> providerCreator()
     }
+
+    invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD)
+  }
+
+  private fun GeneratorAdapter.newDelegator(scopeType: Type, providerCreator: () -> Unit) {
+    newInstance(scopeType)
+    dup()
+    providerCreator()
+    invokeConstructor(scopeType, DELEGATE_PROVIDER_CONSTRUCTOR)
+  }
+
+  private fun GeneratorAdapter.newModuleProvider(provider: Provider, moduleRetriever: () -> Unit) {
+    newInstance(provider.type)
+    dup()
+    moduleRetriever()
+    loadArg(0)
+    val constructor = MethodDescriptor.forConstructor(provider.moduleType, Types.INJECTOR_TYPE)
+    invokeConstructor(provider.type, constructor)
+  }
+
+  private fun GeneratorAdapter.newConstructorProvider(provider: Provider) {
+    newInstance(provider.type)
+    dup()
+    loadArg(0)
+    val constructor = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
+    invokeConstructor(provider.type, constructor)
   }
 }

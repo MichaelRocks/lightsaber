@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,3 +29,12 @@ inline fun <T : Closeable, R> using(closeable: T, block: (T) -> R): R {
     }
   }
 }
+
+inline fun <reified T> Any.cast(): T =
+    this as T
+
+inline fun <T : Any> given(condition: Boolean, body: () -> T): T? =
+    if (condition) body() else null
+
+infix inline fun <T : Any> T?.or(body: () -> T): T =
+    this ?: body()

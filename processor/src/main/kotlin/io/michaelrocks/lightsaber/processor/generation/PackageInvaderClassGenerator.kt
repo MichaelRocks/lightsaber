@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,27 @@
 
 package io.michaelrocks.lightsaber.processor.generation
 
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.commons.boxed
+import io.michaelrocks.lightsaber.processor.commons.newDefaultConstructor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.PackageInvaderDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
-import io.michaelrocks.lightsaber.processor.files.ClassRegistry
+import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes.*
+import org.objectweb.asm.Opcodes.ACC_FINAL
+import org.objectweb.asm.Opcodes.ACC_PUBLIC
+import org.objectweb.asm.Opcodes.ACC_STATIC
+import org.objectweb.asm.Opcodes.ACC_SUPER
+import org.objectweb.asm.Opcodes.V1_6
 
 class PackageInvaderClassGenerator(
     private val classRegistry: ClassRegistry,
-    private val packageInvader: PackageInvaderDescriptor
+    private val packageInvader: PackageInvader
 ) {
   fun generate(): ByteArray {
     val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
@@ -46,14 +51,14 @@ class PackageInvaderClassGenerator(
 
     generateFields(classVisitor)
     generateStaticInitializer(classVisitor)
-    generateConstructor(classVisitor)
+    classVisitor.newDefaultConstructor()
 
     classVisitor.visitEnd()
     return classWriter.toByteArray()
   }
 
   private fun generateFields(classVisitor: ClassVisitor) {
-    for (field in packageInvader.classFields.values) {
+    for (field in packageInvader.fields.values) {
       val fieldVisitor = classVisitor.visitField(
           ACC_PUBLIC or ACC_STATIC or ACC_FINAL,
           field.name,
@@ -64,22 +69,13 @@ class PackageInvaderClassGenerator(
     }
   }
 
-  private fun generateConstructor(classVisitor: ClassVisitor) {
-    val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, MethodDescriptor.forDefaultConstructor())
-    generator.visitCode()
-    generator.loadThis()
-    generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forDefaultConstructor())
-    generator.returnValue()
-    generator.endMethod()
-  }
-
   private fun generateStaticInitializer(classVisitor: ClassVisitor) {
     val staticInitializer = MethodDescriptor.forStaticInitializer()
     val generator = GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer)
     generator.visitCode()
 
-    for ((type, field) in packageInvader.classFields.entries) {
-      generator.push(type.box())
+    for ((type, field) in packageInvader.fields.entries) {
+      generator.push(type.boxed())
       generator.putStatic(packageInvader.type, field)
     }
 

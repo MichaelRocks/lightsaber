@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,36 +16,37 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
-import io.michaelrocks.lightsaber.processor.signature.MethodSignature
-import io.michaelrocks.lightsaber.processor.signature.TypeSignature
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getMethodType
+import org.objectweb.asm.Type as AsmType
 
-private val DEFAULT_CONSTRUCTOR_DESCRIPTOR = MethodDescriptor.forConstructor()
-private val STATIC_INITIALIZER_DESCRIPTOR =
-    MethodDescriptor.forMethod(MethodDescriptor.STATIC_INITIALIZER_NAME, Type.VOID_TYPE)
+private val DEFAULT_CONSTRUCTOR_DESCRIPTOR = AsmType.getMethodDescriptor(AsmType.VOID_TYPE)
 
-fun MethodDescriptor(name: String, desc: String): MethodDescriptor = MethodDescriptor(name, Type.getType(desc))
-fun MethodDescriptor(name: String, type: Type): MethodDescriptor = MethodDescriptor(name, MethodSignature(type))
+private val DEFAULT_CONSTRUCTOR = MethodDescriptor.forConstructor()
+private val STATIC_INITIALIZER =
+    MethodDescriptor.forMethod(MethodDescriptor.STATIC_INITIALIZER_NAME, Type.Primitive.Void)
 
-data class MethodDescriptor(val name: String, val signature: MethodSignature) {
+fun MethodDescriptor(name: String, desc: String) = MethodDescriptor(name, getMethodType(desc))
+
+data class MethodDescriptor(val name: String, val type: Type.Method) {
   companion object {
     const val CONSTRUCTOR_NAME = "<init>"
     const val STATIC_INITIALIZER_NAME = "<clinit>"
 
     fun forMethod(name: String, returnType: Type, vararg argumentTypes: Type): MethodDescriptor {
-      return MethodDescriptor(name, Type.getMethodType(returnType, *argumentTypes))
+      return MethodDescriptor(name, getMethodType(returnType, *argumentTypes))
     }
 
     fun forConstructor(vararg argumentTypes: Type): MethodDescriptor {
-      return MethodDescriptor(CONSTRUCTOR_NAME, Type.getMethodType(Type.VOID_TYPE, *argumentTypes))
+      return MethodDescriptor(CONSTRUCTOR_NAME, getMethodType(Type.Primitive.Void, *argumentTypes))
     }
 
     fun forDefaultConstructor(): MethodDescriptor {
-      return DEFAULT_CONSTRUCTOR_DESCRIPTOR
+      return DEFAULT_CONSTRUCTOR
     }
 
     fun forStaticInitializer(): MethodDescriptor {
-      return STATIC_INITIALIZER_DESCRIPTOR
+      return STATIC_INITIALIZER
     }
 
     fun isConstructor(methodName: String): Boolean {
@@ -53,7 +54,7 @@ data class MethodDescriptor(val name: String, val signature: MethodSignature) {
     }
 
     fun isDefaultConstructor(methodName: String, methodDesc: String): Boolean {
-      return isConstructor(methodName) && Type.getMethodDescriptor(Type.VOID_TYPE) == methodDesc
+      return isConstructor(methodName) && DEFAULT_CONSTRUCTOR_DESCRIPTOR == methodDesc
     }
 
     fun isStaticInitializer(methodName: String): Boolean {
@@ -62,23 +63,20 @@ data class MethodDescriptor(val name: String, val signature: MethodSignature) {
   }
 }
 
-val MethodDescriptor.type: Type
-  get() = signature.methodType
-
 val MethodDescriptor.descriptor: String
-  get() = signature.methodType.descriptor
+  get() = type.descriptor
 
-val MethodDescriptor.returnType: TypeSignature
-  get() = signature.returnType
+val MethodDescriptor.returnType: Type
+  get() = type.returnType
 
-val MethodDescriptor.argumentTypes: List<TypeSignature>
-  get() = signature.argumentTypes
+val MethodDescriptor.argumentTypes: List<Type>
+  get() = type.argumentTypes
 
 val MethodDescriptor.isConstructor: Boolean
   get() = MethodDescriptor.isConstructor(name)
 
 val MethodDescriptor.isDefaultConstructor: Boolean
-  get() = MethodDescriptor.isDefaultConstructor(name, signature.methodType.descriptor)
+  get() = MethodDescriptor.isDefaultConstructor(name, descriptor)
 
 val MethodDescriptor.isStaticInitializer: Boolean
-  get() = STATIC_INITIALIZER_DESCRIPTOR == this
+  get() = STATIC_INITIALIZER == this

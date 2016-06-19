@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,37 +16,75 @@
 
 package io.michaelrocks.lightsaber.processor.graph
 
-import io.michaelrocks.lightsaber.processor.descriptors.QualifiedType
 import java.util.*
 
-class CycleSearcher(private val graph: DependencyGraph) {
-  fun findCycles(): Collection<QualifiedType> = findCycles(HashMap(), HashSet())
-
-  private fun findCycles(
-      colors: MutableMap<QualifiedType, VertexColor>,
-      cycles: MutableSet<QualifiedType>
-  ): Collection<QualifiedType> {
-    fun traverse(type: QualifiedType) {
-      val color = colors[type]
-      if (color == VertexColor.BLACK) {
-        return
-      }
-
-      if (color == VertexColor.GRAY) {
-        cycles.add(type)
-        return
-      }
-
-      colors.put(type, VertexColor.GRAY)
-      graph.getTypeDependencies(type)?.forEach { traverse(it) }
-      colors.put(type, VertexColor.BLACK)
+fun <T> DirectedGraph<T>.findCycles(): Collection<List<T>> {
+  val cycles = HashSet<List<T>>()
+  val delegate = object : CycleSearcherTraversal.Delegate<T>() {
+    override fun onCycle(cycle: List<T>) {
+      cycles += cycle
     }
-
-    graph.types.forEach { traverse(it) }
-    return Collections.unmodifiableSet(cycles)
   }
 
-  private enum class VertexColor {
-    GRAY, BLACK
+  val traversal = CycleSearcherTraversal<T>()
+  traversal.traverse(this, delegate)
+  return cycles
+}
+
+
+class CycleSearcherTraversal<T> : AbstractTraversal<T, CycleSearcherTraversal.Delegate<T>>() {
+  override fun performTraversal(graph: DirectedGraph<T>, delegate: Delegate<T>, vertex: T) {
+    val color = delegate.getVertexColor(vertex)
+    if (color == VertexColor.BLACK) {
+      return
+    }
+
+    try {
+      delegate.pushVertexToPath(vertex)
+
+      if (color == VertexColor.GRAY) {
+        delegate.extractCycle(vertex)
+        return
+      }
+
+      delegate.setVertexColor(vertex, VertexColor.GRAY)
+      graph.getAdjacentVertices(vertex)?.forEach { performTraversal(graph, delegate, it) }
+      delegate.setVertexColor(vertex, VertexColor.BLACK)
+    } finally {
+      delegate.popVertexFromPath()
+    }
+  }
+
+  abstract class Delegate<T> : Traversal.Delegate<T> {
+    private val colors = HashMap<T, VertexColor>()
+    private val path = ArrayList<T>()
+
+    fun getVertexColor(vertex: T): VertexColor {
+      return colors[vertex] ?: VertexColor.WHITE
+    }
+
+    fun setVertexColor(vertex: T, color: VertexColor) {
+      colors[vertex] = color
+    }
+
+    fun pushVertexToPath(vertex: T) {
+      path.add(vertex)
+    }
+
+    fun popVertexFromPath() {
+      path.removeAt(path.lastIndex)
+    }
+
+    fun extractCycle(vertex: T) {
+      val cycleStartIndex = path.indexOf(vertex)
+      val cycle = path.subList(cycleStartIndex, path.size).toList()
+      onCycle(cycle)
+    }
+
+    abstract fun onCycle(cycle: List<T>)
+  }
+
+  enum class VertexColor {
+    WHITE, GRAY, BLACK
   }
 }

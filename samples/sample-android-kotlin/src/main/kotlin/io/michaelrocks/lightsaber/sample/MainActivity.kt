@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import io.michaelrocks.lightsaber.kotlin.R
 import javax.inject.Inject
 import javax.inject.Provider
 
-public class MainActivity : Activity() {
+class MainActivity : Activity() {
   @Inject
   private lateinit var wookiee: Wookiee
   @Inject
@@ -47,7 +47,7 @@ public class MainActivity : Activity() {
 
     val afterInjectionTextView = findViewById(R.id.afterInjectionTextView) as TextView
 
-    val injector = Lightsaber.get().createInjector(LightsaberModule())
+    val injector = Lightsaber.get().createInjector(LightsaberComponent())
     injector.injectMembers(this)
 
     print(afterInjectionTextView, "Wookiee: $wookiee from ${wookiee.planet}")

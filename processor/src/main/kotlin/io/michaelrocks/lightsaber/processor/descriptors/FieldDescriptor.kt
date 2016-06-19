@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,15 @@
 
 package io.michaelrocks.lightsaber.processor.descriptors
 
-import io.michaelrocks.lightsaber.processor.signature.TypeSignature
-import org.objectweb.asm.Type
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getType
 
-fun FieldDescriptor(name: String, desc: String): FieldDescriptor = FieldDescriptor(name, Type.getType(desc))
-fun FieldDescriptor(name: String, type: Type): FieldDescriptor = FieldDescriptor(name, TypeSignature(type))
+fun FieldDescriptor(name: String, desc: String): FieldDescriptor = FieldDescriptor(name, getType(desc))
 
 data class FieldDescriptor(
     val name: String,
-    val signature: TypeSignature
+    val type: Type
 )
 
-val FieldDescriptor.parameterized: Boolean
-  get() = signature.parameterType != null
-
-val FieldDescriptor.rawType: Type
-  get() = signature.rawType
-
-val FieldDescriptor.parameterType: Type?
-  get() = signature.parameterType
-
 val FieldDescriptor.descriptor: String
-  get() = signature.rawType.descriptor
+  get() = type.descriptor

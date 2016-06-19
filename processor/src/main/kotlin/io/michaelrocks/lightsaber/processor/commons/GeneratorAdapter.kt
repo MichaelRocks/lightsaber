@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,27 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.isArray
+import io.michaelrocks.grip.mirrors.toAsmType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
-import io.michaelrocks.lightsaber.processor.descriptors.rawType
 import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.Label
 import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes.*
-import org.objectweb.asm.Type
-import java.util.*
+import org.objectweb.asm.Opcodes.ACONST_NULL
+import org.objectweb.asm.Opcodes.ASM5
+import org.objectweb.asm.Opcodes.DOUBLE
+import org.objectweb.asm.Opcodes.FLOAT
+import org.objectweb.asm.Opcodes.INTEGER
+import org.objectweb.asm.Opcodes.INVOKEINTERFACE
+import org.objectweb.asm.Opcodes.INVOKESPECIAL
+import org.objectweb.asm.Opcodes.INVOKESTATIC
+import org.objectweb.asm.Opcodes.INVOKEVIRTUAL
+import org.objectweb.asm.Opcodes.LONG
+import org.objectweb.asm.Opcodes.TOP
+import java.util.ArrayList
 
 class GeneratorAdapter(
     methodVisitor: MethodVisitor,
@@ -39,29 +51,41 @@ class GeneratorAdapter(
         access: Int,
         method: MethodDescriptor,
         signature: String?,
-        exceptions: Array<Type>?
+        exceptions: Array<Type.Object>?
     ): MethodVisitor =
         classVisitor.visitMethod(access, method.name, method.descriptor, signature, exceptions?.toInternalNames())
 
-    private fun Array<Type>.toInternalNames(): Array<String>? =
+    private fun Array<Type.Object>.toInternalNames(): Array<String>? =
         this.mapToArray { it.internalName }
   }
 
   constructor(
-      methodVisitor: MethodVisitor, access: Int, method: MethodDescriptor
+      methodVisitor: MethodVisitor,
+      access: Int,
+      method: MethodDescriptor
   ) : this(methodVisitor, access, method.name, method.descriptor)
 
   constructor(
-      classVisitor: ClassVisitor, access: Int, method: MethodDescriptor
+      classVisitor: ClassVisitor,
+      access: Int,
+      method: MethodDescriptor
   ) : this(visitMethod(classVisitor, access, method, null, null), access, method)
 
   constructor(
-      classVisitor: ClassVisitor, access: Int, method: MethodDescriptor, signature: String?, exceptions: Array<Type>?
+      classVisitor: ClassVisitor,
+      access: Int,
+      method: MethodDescriptor,
+      signature: String?,
+      exceptions: Array<Type.Object>?
   ) : this(visitMethod(classVisitor, access, method, signature, exceptions), access, method)
 
   fun newArray(type: Type, size: Int) {
     push(size)
-    super.newArray(type)
+    super.newArray(type.toAsmType())
+  }
+
+  fun newInstance(type: Type) {
+    newInstance(type.toAsmType())
   }
 
   fun invokeVirtual(owner: Type, method: MethodDescriptor) {
@@ -81,28 +105,96 @@ class GeneratorAdapter(
   }
 
   private fun invoke(opcode: Int, type: Type, method: MethodDescriptor, ownerIsInterface: Boolean) {
-    val owner = if (type.sort == Type.ARRAY) type.descriptor else type.internalName
+    val owner = if (type.isArray) type.descriptor else type.internalName
     visitMethodInsn(opcode, owner, method.name, method.descriptor, ownerIsInterface)
   }
 
   fun getField(owner: Type, field: FieldDescriptor) {
-    getField(owner, field.name, field.rawType)
+    getField(owner.toAsmType(), field.name, field.type.toAsmType())
   }
 
   fun putField(owner: Type, field: FieldDescriptor) {
-    putField(owner, field.name, field.rawType)
+    putField(owner.toAsmType(), field.name, field.type.toAsmType())
+  }
+
+  fun getField(owner: Type, name: String, type: Type) {
+    getField(owner.toAsmType(), name, type.toAsmType())
+  }
+
+  fun putField(owner: Type, name: String, type: Type) {
+    putField(owner.toAsmType(), name, type.toAsmType())
   }
 
   fun getStatic(owner: Type, field: FieldDescriptor) {
-    getStatic(owner, field.name, field.rawType)
+    getStatic(owner.toAsmType(), field.name, field.type.toAsmType())
   }
 
   fun putStatic(owner: Type, field: FieldDescriptor) {
-    putStatic(owner, field.name, field.rawType)
+    putStatic(owner.toAsmType(), field.name, field.type.toAsmType())
+  }
+
+  fun getStatic(owner: Type, name: String, type: Type) {
+    getStatic(owner.toAsmType(), name, type.toAsmType())
+  }
+
+  fun putStatic(owner: Type, name: String, type: Type) {
+    putStatic(owner.toAsmType(), name, type.toAsmType())
   }
 
   fun pushNull() {
     visitInsn(ACONST_NULL)
+  }
+
+  fun push(type: Type) {
+    push(type.toAsmType())
+  }
+
+  fun arrayLoad(type: Type) {
+    arrayLoad(type.toAsmType())
+  }
+
+  fun arrayStore(type: Type) {
+    arrayStore(type.toAsmType())
+  }
+
+  fun ifCmp(type: Type, mode: Int, label: Label) {
+    ifCmp(type.toAsmType(), mode, label)
+  }
+
+  fun swap(prev: Type, type: Type) {
+    swap(prev.toAsmType(), type.toAsmType())
+  }
+
+  fun math(op: Int, type: Type) {
+    math(op, type.toAsmType())
+  }
+
+  fun throwException(type: Type, msg: String) {
+    throwException(type.toAsmType(), msg)
+  }
+
+  fun checkCast(type: Type.Object) {
+    checkCast(type.toAsmType())
+  }
+
+  fun box(type: Type) {
+    box(type.toAsmType())
+  }
+
+  fun valueOf(type: Type) {
+    valueOf(type.toAsmType())
+  }
+
+  fun unbox(type: Type) {
+    unbox(type.toAsmType())
+  }
+
+  fun instanceOf(type: Type) {
+    instanceOf(type.toAsmType())
+  }
+
+  fun newLocal(type: Type): Int {
+    return newLocal(type.toAsmType())
   }
 
   fun visitFrame(type: Int, nLocal: Int, local: Array<Type>?, nStack: Int, stack: Array<Type>?) {
@@ -114,19 +206,31 @@ class GeneratorAdapter(
   private fun Array<Type>.toFrameObjectArray(): Array<Any>? {
     val objects = ArrayList<Any>(size * 2)
     forEach { type ->
-      when (type.sort) {
-        Type.BOOLEAN, Type.CHAR, Type.BYTE, Type.SHORT, Type.INT -> objects.add(INTEGER)
-        Type.FLOAT -> objects.add(FLOAT)
-        Type.LONG -> {
-          objects.add(LONG)
-          objects.add(TOP)
+      when (type) {
+        is Type.Primitive -> {
+          when (type) {
+            is Type.Primitive.Boolean,
+            is Type.Primitive.Char,
+            is Type.Primitive.Byte,
+            is Type.Primitive.Short,
+            is Type.Primitive.Int -> {
+              objects.add(INTEGER)
+            }
+            is Type.Primitive.Float -> {
+              objects.add(FLOAT)
+            }
+            Type.Primitive.Long -> {
+              objects.add(LONG)
+              objects.add(TOP)
+            }
+            Type.Primitive.Double -> {
+              objects.add(DOUBLE)
+              objects.add(TOP)
+            }
+          }
         }
-        Type.DOUBLE -> {
-          objects.add(DOUBLE)
-          objects.add(TOP)
-        }
-        Type.ARRAY -> objects.add(type.descriptor)
-        Type.OBJECT -> objects.add(type.internalName)
+        is Type.Array -> objects.add(type.descriptor)
+        is Type.Object -> objects.add(type.internalName)
         else -> throw IllegalArgumentException("Illegal type used in frame: " + type)
       }
     }

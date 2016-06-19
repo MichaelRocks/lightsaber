@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,35 +16,34 @@
 
 package io.michaelrocks.lightsaber
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Test
 import javax.inject.Inject
 
 class LazyInjectionTest {
   @Test
   fun testLazyConstructorInjection() {
-    val module = LazyModule()
-    val injector = lightsaber.createInjector(module)
+    val injector = lightsaber.createInjector(LazyComponent())
     val target = injector.getInstance<ConstructorInjectionTarget>()
-    validateTarget(module, target)
+    validateTarget(LazyModule(), target)
   }
 
   @Test
   fun testLazyFieldInjection() {
-    val module = LazyModule()
-    val injector = lightsaber.createInjector(module)
+    val injector = lightsaber.createInjector(LazyComponent())
     val target = FieldInjectionTarget()
     injector.injectMembers(target)
-    validateTarget(module, target)
+    validateTarget(LazyModule(), target)
   }
 
   @Test
   fun testLazyMethodInjection() {
-    val module = LazyModule()
-    val injector = lightsaber.createInjector(module)
+    val injector = lightsaber.createInjector(LazyComponent())
     val target = MethodInjectionTarget()
     injector.injectMembers(target)
-    validateTarget(module, target)
+    validateTarget(LazyModule(), target)
   }
 
   private fun validateTarget(module: LazyModule, target: Target) {
@@ -61,6 +60,12 @@ class LazyInjectionTest {
   private class LazyModule {
     @Provides
     fun provideString(): String = StringBuilder("String").toString()
+  }
+
+  @Component
+  private class LazyComponent {
+    @Provides
+    fun provideLazyModule(): LazyModule = LazyModule()
   }
 
   private interface Target {

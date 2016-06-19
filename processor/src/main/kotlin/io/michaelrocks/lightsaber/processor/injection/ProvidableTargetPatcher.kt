@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,16 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
-import io.michaelrocks.lightsaber.processor.descriptors.InjectionTargetDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.isInjectableConstructor
+import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
-
 import org.objectweb.asm.Opcodes.*
 
 class ProvidableTargetPatcher(
-    processorContext: ProcessorContext,
     classVisitor: ClassVisitor,
-    private val providableTarget: InjectionTargetDescriptor
-) : BaseInjectionClassVisitor(processorContext, classVisitor) {
+    private val providableTarget: InjectionTarget
+) : BaseInjectionClassVisitor(classVisitor) {
 
   override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
       interfaces: Array<String>?) {
@@ -42,8 +38,8 @@ class ProvidableTargetPatcher(
 
   override fun visitMethod(access: Int, name: String, desc: String, signature: String?,
       exceptions: Array<String>?): MethodVisitor? {
-    val methodDescriptor = MethodDescriptor(name, desc)
-    if (providableTarget.isInjectableConstructor(methodDescriptor)) {
+    val method = MethodDescriptor(name, desc)
+    if (providableTarget.isInjectableConstructor(method)) {
       val newAccess = access and ACC_PRIVATE.inv()
       if (newAccess != access) {
         isDirty = true

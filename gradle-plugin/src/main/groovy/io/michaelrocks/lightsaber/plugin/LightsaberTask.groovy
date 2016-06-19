@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber.plugin
 
 import groovy.io.FileVisitResult
+import groovy.transform.CompileStatic
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkChecker
@@ -28,13 +29,18 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
+@CompileStatic
 public class LightsaberTask extends DefaultTask {
   @InputDirectory
   File backupDir
   @OutputDirectory
   File classesDir
+  @OutputDirectory
+  File sourceDir
   @InputFiles
   List<File> classpath
+  @InputFiles
+  List<File> bootClasspath
 
   LightsaberTask() {
     logging.captureStandardOutput LogLevel.INFO
@@ -45,7 +51,9 @@ public class LightsaberTask extends DefaultTask {
     final def parameters = new LightsaberParameters()
     parameters.classes = backupDir
     parameters.output = classesDir
-    parameters.libs = classpath
+    parameters.classpath = classpath
+    parameters.bootClasspath = bootClasspath
+    parameters.source = sourceDir
     parameters.debug = logger.isDebugEnabled()
     parameters.info = logger.isInfoEnabled()
     logger.info("Starting Lightsaber processor: $parameters")
@@ -66,7 +74,7 @@ public class LightsaberTask extends DefaultTask {
     }
 
     classesDir.traverse(
-        postDir: { final File dir -> FileMethods.deleteDirectoryIfEmpty(dir) }
+        postDir: { final File dir -> FileMethods.deleteDirectoryIfEmpty(dir) } as Object
     ) { final file ->
       if (file.isDirectory()) {
         return FileVisitResult.CONTINUE

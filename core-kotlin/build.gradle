@@ -14,7 +14,7 @@ targetCompatibility = JavaVersion.VERSION_1_6
 dependencies {
   compile project(':core')
 
-  provided "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
   testCompile "junit:junit:$junitVersion"
 }

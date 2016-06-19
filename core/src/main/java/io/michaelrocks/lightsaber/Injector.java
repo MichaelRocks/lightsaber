@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package io.michaelrocks.lightsaber;
 
 import javax.inject.Provider;
-import java.util.Map;
 
 public interface Injector {
   void injectMembers(Object target);
@@ -25,6 +24,4 @@ public interface Injector {
   <T> T getInstance(Key<? extends T> type);
 
   <T> Provider<T> getProvider(Key<? extends T> key);
-
-  Map<Key<?>, Provider<?>> getAllProviders();
 }

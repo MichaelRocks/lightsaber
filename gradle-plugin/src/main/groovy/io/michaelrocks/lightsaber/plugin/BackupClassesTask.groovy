@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@
 package io.michaelrocks.lightsaber.plugin
 
 import groovy.io.FileVisitResult
+import groovy.transform.CompileStatic
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkChecker
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
+@CompileStatic
 class BackupClassesTask extends DefaultTask {
   @InputDirectory
   File classesDir
@@ -92,7 +94,7 @@ class BackupClassesTask extends DefaultTask {
     }
 
     backupDir.traverse(
-        postDir: { final File dir -> FileMethods.deleteDirectoryIfEmpty(dir) }
+        postDir: { final File dir -> FileMethods.deleteDirectoryIfEmpty(dir) } as Object
     ) { final file ->
       if (file.isDirectory()) {
         return FileVisitResult.CONTINUE

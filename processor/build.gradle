@@ -25,12 +25,12 @@ dependencies {
   compile "com.beust:jcommander:$jcommanderVersion"
   compile "org.ow2.asm:asm:$asmVersion"
   compile "org.ow2.asm:asm-commons:$asmVersion"
-  compile "org.apache.commons:commons-lang3:$commonsLangVersion"
-  compile "org.apache.commons:commons-collections4:$commonsCollectionsVersion"
+  compile "io.michaelrocks:grip:$gripVersion"
+  compile "io.michaelrocks:bimap:$bimapVersion"
   compile "ch.qos.logback:logback-classic:$logbackVersion"
 
+  testCompile project(':tests:mockito-extensions')
   testCompile "junit:junit:$junitVersion"
-  testCompile "org.mockito:mockito-core:$mockitoVersion"
 }
 
 jar {

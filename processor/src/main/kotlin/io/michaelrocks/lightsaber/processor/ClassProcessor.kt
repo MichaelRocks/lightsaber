@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,195 +16,65 @@
 
 package io.michaelrocks.lightsaber.processor
 
+import io.michaelrocks.grip.Grip
+import io.michaelrocks.grip.GripFactory
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer
-import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
-import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.box
-import io.michaelrocks.lightsaber.processor.descriptors.*
-import io.michaelrocks.lightsaber.processor.generation.*
-import io.michaelrocks.lightsaber.processor.graph.CycleSearcher
-import io.michaelrocks.lightsaber.processor.graph.DependencyGraph
-import io.michaelrocks.lightsaber.processor.graph.UnresolvedDependenciesSearcher
-import io.michaelrocks.lightsaber.processor.injection.InjectionDispatcher
+import io.michaelrocks.lightsaber.processor.compiler.JavaToolsCompiler
+import io.michaelrocks.lightsaber.processor.generation.Generator
+import io.michaelrocks.lightsaber.processor.injection.Patcher
+import io.michaelrocks.lightsaber.processor.io.DirectoryFileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
-import io.michaelrocks.lightsaber.processor.validation.SanityChecker
-import org.apache.commons.lang3.exception.ExceptionUtils
+import io.michaelrocks.lightsaber.processor.io.IoFactory
+import io.michaelrocks.lightsaber.processor.logging.getLogger
+import io.michaelrocks.lightsaber.processor.model.*
+import io.michaelrocks.lightsaber.processor.validation.Validator
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Type
 import java.io.File
-import java.io.IOException
-import java.util.*
 
 class ClassProcessor(
-    private val inputFile: File,
-    private val outputFile: File,
-    libraries: List<File>
+    private val inputPath: File,
+    private val sourcePath: File,
+    private val outputPath: File,
+    classpath: List<File>,
+    bootClasspath: List<File>
 ) {
-  private val processorContext = ProcessorContext()
+  private val logger = getLogger()
 
-  private val fileSource = processorContext.fileSourceFactory.createFileSource(inputFile)
-  private val fileSink = processorContext.fileSinkFactory.createFileSink(inputFile, outputFile)
+  private val grip: Grip = GripFactory.create(listOf(inputPath) + classpath + bootClasspath)
+  private val errorReporter = ErrorReporter()
 
-  private val libraries = libraries.toMutableList()
+  private val fileSource = IoFactory.createFileSource(inputPath)
+  private val fileSink = IoFactory.createFileSink(inputPath, outputPath)
+  private val sourceSink = DirectoryFileSink(sourcePath)
 
-  private val classProducer = ProcessorClassProducer(fileSink, processorContext)
-  private val annotationCreator = AnnotationCreator(processorContext, classProducer)
+  private val compiler = JavaToolsCompiler(classpath, bootClasspath, errorReporter)
 
-  @Throws(IOException::class)
   fun processClasses() {
-    buildFileRegistry()
-    performAnalysis()
-    composePackageModules()
-    composeInjectors()
-    composePackageInvaders()
-    processorContext.dump()
-    validateDependencyGraph()
-    generateProviders()
-    generateLightsaberConfigurator()
-    generateInjectorConfigurators()
-    generateInjectors()
-    generatePackageInvaders()
-    copyAndPatchClasses()
+    val context = performAnalysisAndValidation()
+    context.dump()
+    copyAndPatchClasses(context)
+    performGeneration(context)
+    performCompilation()
   }
 
-  private fun buildFileRegistry() {
-    with(processorContext.fileRegistry) {
-      add(inputFile)
-      add(libraries)
-    }
+  private fun performAnalysisAndValidation(): InjectionContext {
+    val analyzer = Analyzer(grip, errorReporter)
+    val context = analyzer.analyze(listOf(inputPath))
+    Validator(grip.classRegistry, errorReporter).validate(context)
     checkErrors()
+    return context
   }
 
-  @Throws(IOException::class)
-  private fun performAnalysis() {
-    val analyzer = Analyzer(processorContext)
-    analyzer.analyze(fileSource)
-    SanityChecker(processorContext).performSanityChecks()
-    checkErrors()
-  }
-
-  private fun composePackageModules() {
-    val moduleBuilders = HashMap<String, ModuleDescriptor.Builder>()
-    for (providableTarget in processorContext.getProvidableTargets()) {
-      val providableTargetType = providableTarget.targetType
-      val providableTargetConstructor = providableTarget.injectableConstructor!!
-
-      val packageName = providableTargetType.internalName.substringBeforeLast('/', "")
-      val moduleBuilder = moduleBuilders[packageName] ?:
-          ModuleDescriptor.Builder(processorContext.getPackageModuleType(packageName)).apply {
-            moduleBuilders.put(packageName, this)
-          }
-
-      val providerType = Type.getObjectType(
-          providableTargetType.internalName + "\$Provider")
-      val providableType = QualifiedType(providableTarget.targetType)
-      val scope = providableTarget.scope
-      val delegatorType = scope?.providerType
-      val provider = ProviderDescriptor(
-          providerType, providableType, providableTargetConstructor, moduleBuilder.moduleType, delegatorType)
-
-      moduleBuilder.addProvider(provider)
-    }
-
-    for (moduleBuilder in moduleBuilders.values) {
-      processorContext.addPackageModule(moduleBuilder.build())
-    }
-  }
-
-  private fun composeInjectors() {
-    for (injectableTarget in processorContext.getInjectableTargets()) {
-      val injectorType = Type.getObjectType(injectableTarget.targetType.internalName + "\$MembersInjector")
-      val injector = InjectorDescriptor(injectorType, injectableTarget)
-      processorContext.addInjector(injector)
-    }
-  }
-
-  private fun composePackageInvaders() {
-    val builders = HashMap<String, PackageInvaderDescriptor.Builder>()
-    for (module in processorContext.allModules) {
-      for (provider in module.providers) {
-        val providableType = provider.providableType.box()
-        val packageName = Types.getPackageName(module.moduleType)
-        val builder = builders[packageName] ?: PackageInvaderDescriptor.Builder(packageName).apply {
-          builders.put(packageName, this)
-        }
-        builder.addClass(providableType)
-      }
-    }
-
-    for (builder in builders.values) {
-      processorContext.addPackageInvader(builder.build())
-    }
-  }
-
-  @Throws(ProcessingException::class)
-  private fun validateDependencyGraph() {
-    val dependencyGraph = DependencyGraph(processorContext, processorContext.allModules)
-
-    val unresolvedDependenciesSearcher = UnresolvedDependenciesSearcher(dependencyGraph)
-    val unresolvedDependencies = unresolvedDependenciesSearcher.findUnresolvedDependencies()
-    for (unresolvedDependency in unresolvedDependencies) {
-      processorContext.reportError(
-          ProcessingException("Unresolved dependency: " + unresolvedDependency))
-    }
-
-    val cycleSearcher = CycleSearcher(dependencyGraph)
-    val cycles = cycleSearcher.findCycles()
-    for (cycle in cycles) {
-      processorContext.reportError(
-          ProcessingException("Cycled dependency: " + cycle))
-    }
-
-    checkErrors()
-  }
-
-  @Throws(ProcessingException::class)
-  private fun generateProviders() {
-    val providersGenerator = ProvidersGenerator(classProducer, processorContext, annotationCreator)
-    providersGenerator.generateProviders()
-    checkErrors()
-  }
-
-  @Throws(ProcessingException::class)
-  private fun generateLightsaberConfigurator() {
-    val lightsaberRegistryClassGenerator = LightsaberRegistryClassGenerator(classProducer, processorContext)
-    lightsaberRegistryClassGenerator.generateLightsaberRegistry()
-    checkErrors()
-  }
-
-  @Throws(ProcessingException::class)
-  private fun generateInjectorConfigurators() {
-    val injectorConfiguratorsGenerator = InjectorConfiguratorsGenerator(classProducer, processorContext,
-        annotationCreator)
-    injectorConfiguratorsGenerator.generateInjectorConfigurators()
-    checkErrors()
-  }
-
-  @Throws(ProcessingException::class)
-  private fun generateInjectors() {
-    val typeAgentsGenerator = TypeAgentsGenerator(classProducer, processorContext, annotationCreator)
-    typeAgentsGenerator.generateInjectors()
-    checkErrors()
-  }
-
-  @Throws(ProcessingException::class)
-  private fun generatePackageInvaders() {
-    val packageInvadersGenerator = PackageInvadersGenerator(classProducer, processorContext)
-    packageInvadersGenerator.generatePackageInvaders()
-    checkErrors()
-  }
-
-  @Throws(IOException::class)
-  private fun copyAndPatchClasses() {
+  private fun copyAndPatchClasses(context: InjectionContext) {
     fileSource.listFiles { path, type ->
       when (type) {
         FileSource.EntryType.CLASS -> {
           val classReader = ClassReader(fileSource.readFile(path))
           val classWriter = StandaloneClassWriter(
-              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, processorContext.classRegistry)
-          val classVisitor = InjectionDispatcher(classWriter, processorContext)
+              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry)
+          val classVisitor = Patcher(classWriter, context)
           classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
           fileSink.createFile(path, classWriter.toByteArray())
         }
@@ -216,25 +86,60 @@ class ClassProcessor(
     checkErrors()
   }
 
-  @Throws(ProcessingException::class)
+  private fun performGeneration(context: InjectionContext) {
+    val generator = Generator(grip.classRegistry, errorReporter, fileSink, sourceSink)
+    generator.generate(context)
+    checkErrors()
+  }
+
+  private fun performCompilation() {
+    compiler.compile(sourcePath, outputPath)
+    checkErrors()
+  }
+
   private fun checkErrors() {
-    if (processorContext.hasErrors()) {
+    if (errorReporter.hasErrors()) {
       throw ProcessingException(composeErrorMessage())
     }
   }
 
   private fun composeErrorMessage(): String {
-    return buildString {
-      for (entry in processorContext.errors.entries) {
-        val path = entry.key
-        for (error in entry.value) {
-          append('\n')
-          append(path)
-          append(": ")
-          append(error.message)
-          append('\n')
-          append(ExceptionUtils.getStackTrace(error))
+    return errorReporter.getErrors().joinToString("\n") { it.message.orEmpty() }
+  }
+
+  private fun InjectionContext.dump() {
+    packageComponent.dump()
+    components.forEach { it.dump() }
+    injectableTargets.forEach { it.dump("Injectable") }
+    providableTargets.forEach { it.dump("Providable") }
+  }
+
+  private fun Component.dump() {
+    logger.debug("Component: {}", type)
+    for (module in modules) {
+      logger.debug("  Module: {}", module.type)
+      for (provider in module.providers) {
+        if (provider.provisionPoint is ProvisionPoint.AbstractMethod) {
+          logger.debug("   Provides: {}", provider.provisionPoint.method)
+        } else if (provider.provisionPoint is ProvisionPoint.Field) {
+          logger.debug("   Provides: {}", provider.provisionPoint.field)
+        } else {
+          logger.debug("   Provides: {}", provider.provisionPoint)
         }
+      }
+    }
+
+    for (subcomponent in subcomponents) {
+      logger.debug("  Subcomponent: {}", subcomponent)
+    }
+  }
+
+  private fun InjectionTarget.dump(name: String) {
+    logger.debug("{}: {}", name, type)
+    for (injectionPoint in injectionPoints) {
+      when (injectionPoint) {
+        is InjectionPoint.Field -> logger.debug("  Field: {}", injectionPoint.field)
+        is InjectionPoint.Method -> logger.debug("  Method: {}", injectionPoint.method)
       }
     }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,59 +16,104 @@
 
 package io.michaelrocks.lightsaber.processor.validation
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.ClassMirror
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.isStatic
+import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.AccessFlagStringifier
-import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.providableType
+import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.rawType
+import io.michaelrocks.lightsaber.processor.model.InjectionContext
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
+import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
 
-class SanityChecker(private val processorContext: ProcessorContext) {
-  fun performSanityChecks() {
-    checkStaticInjectionPoints()
-    checkProvidableTargetsAreConstructable()
-    checkProviderMethodsReturnValues()
+class SanityChecker(
+    private val classRegistry: ClassRegistry,
+    private val errorReporter: ErrorReporter
+) {
+  fun performSanityChecks(context: InjectionContext) {
+    checkStaticInjectionPoints(context)
+    checkProvidableTargetsAreConstructable(context)
+    checkProviderMethodsReturnValues(context)
+    checkSubcomponentsAreComponents(context)
+    checkComponentsAndModulesExtendObject(context)
   }
 
-  private fun checkStaticInjectionPoints() {
-    for (injectableTarget in processorContext.getInjectableTargets()) {
-      for (field in injectableTarget.injectableStaticFields.values) {
-        processorContext.reportError("Static field injection is not supported yet: " + field)
-      }
-      for (method in injectableTarget.injectableStaticMethods.values) {
-        processorContext.reportError("Static method injection is not supported yet: " + method)
-      }
-    }
-  }
-
-  private fun checkProvidableTargetsAreConstructable() {
-    for (providableTarget in processorContext.getProvidableTargets()) {
-      checkProvidableTargetIsConstructable(providableTarget.targetType)
-    }
-  }
-
-  private fun checkProviderMethodsReturnValues() {
-    for (module in processorContext.getModules()) {
-      for (provider in module.providers) {
-        if (provider.providableType == Type.VOID_TYPE) {
-          processorContext.reportError("Provider method returns void: " + provider.providerMethod)
+  private fun checkStaticInjectionPoints(context: InjectionContext) {
+    for (injectableTarget in context.injectableTargets) {
+      injectableTarget.injectionPoints.forEach { injectionPoint ->
+        when (injectionPoint) {
+          is InjectionPoint.Field ->
+              if (injectionPoint.field.isStatic) {
+                errorReporter.reportError("Static field injection is not supported yet: " + injectionPoint.field)
+              }
+          is InjectionPoint.Method ->
+            if (injectionPoint.method.isStatic) {
+              errorReporter.reportError("Static method injection is not supported yet: " + injectionPoint.method)
+            }
         }
       }
     }
   }
 
-  private fun checkProvidableTargetIsConstructable(providableTarget: Type) {
-    val targetClass = processorContext.classRegistry.findClass(providableTarget)
-    checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_INTERFACE)
-    checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ABSTRACT)
-    checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ENUM)
-    checkProvidableTargetAccessFlagNotSet(targetClass, Opcodes.ACC_ANNOTATION)
+  private fun checkProvidableTargetsAreConstructable(context: InjectionContext) {
+    for (providableTarget in context.providableTargets) {
+      checkProvidableTargetIsConstructable(providableTarget.type)
+    }
   }
 
-  private fun checkProvidableTargetAccessFlagNotSet(targetClass: ClassDescriptor, flag: Int) {
-    if ((targetClass.access and flag) != 0) {
-      processorContext.reportError(
-          "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${targetClass.classType}")
+  private fun checkProviderMethodsReturnValues(context: InjectionContext) {
+    for (component in context.components) {
+      for (module in component.modules) {
+        for (provider in module.providers) {
+          if (!provider.isConstructorProvider && provider.dependency.type.rawType == Type.Primitive.Void) {
+            errorReporter.reportError("Provider returns void: " + provider.provisionPoint)
+          }
+        }
+      }
+    }
+  }
+
+  private fun checkProvidableTargetIsConstructable(providableTarget: Type.Object) {
+    val mirror = classRegistry.getClassMirror(providableTarget)
+    checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_INTERFACE)
+    checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ABSTRACT)
+    checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ENUM)
+    checkProvidableTargetAccessFlagNotSet(mirror, Opcodes.ACC_ANNOTATION)
+  }
+
+  private fun checkProvidableTargetAccessFlagNotSet(mirror: ClassMirror, flag: Int) {
+    if ((mirror.access and flag) != 0) {
+      errorReporter.reportError(
+          "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${mirror.type}")
+    }
+  }
+
+  private fun checkSubcomponentsAreComponents(context: InjectionContext) {
+    for (component in context.components) {
+      for (subcomponent in component.subcomponents) {
+        if (context.findComponentByType(subcomponent) == null) {
+          errorReporter.reportError("Subcomponent is not annotated with @Component: ${subcomponent.className}")
+        }
+      }
+    }
+  }
+
+  private fun checkComponentsAndModulesExtendObject(context: InjectionContext) {
+    for (component in context.components) {
+      checkClassExtendsObject(component.type)
+      for (module in component.modules) {
+        checkClassExtendsObject(module.type)
+      }
+    }
+  }
+
+  private fun checkClassExtendsObject(type: Type.Object) {
+    val mirror = classRegistry.getClassMirror(type)
+    if (mirror.superType != Types.OBJECT_TYPE) {
+      errorReporter.reportError("${type.className} has a super type of ${mirror.type.className} instead of Object")
     }
   }
 }

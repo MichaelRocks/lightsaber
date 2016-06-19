@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,62 @@
 
 package io.michaelrocks.lightsaber.processor.annotations.proxy
 
-import io.michaelrocks.lightsaber.mockito.*
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptor
-import io.michaelrocks.lightsaber.processor.annotations.AnnotationDescriptorBuilder
-import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.*
+import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.ClassMirror
+import io.michaelrocks.grip.mirrors.MethodMirror
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getMethodType
+import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
+import io.michaelrocks.grip.mirrors.internalName
+import io.michaelrocks.grip.mirrors.toType
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.AnnotationAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.AnnotationArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.BooleanAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.BooleanArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.ByteAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.ByteArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.CharAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.CharArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.ClassAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.ClassArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.CompositeAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.DoubleAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.DoubleArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.EmptyAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.EnumAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.EnumArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.FloatAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.FloatArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.IntAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.IntArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.LongAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.LongArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.Order
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.ShortAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.ShortArrayAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.StringAnnotation
+import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.StringArrayAnnotation
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.descriptors.ClassDescriptor
-import io.michaelrocks.lightsaber.processor.files.ClassRegistry
-import org.junit.Assert.*
+import io.michaelrocks.mockito.given
+import io.michaelrocks.mockito.mock
+import io.michaelrocks.mockito.notNull
+import io.michaelrocks.mockito.times
+import io.michaelrocks.mockito.verify
+import io.michaelrocks.mockito.verifyNoMoreInteractions
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.objectweb.asm.Opcodes
-import org.objectweb.asm.Type
 import java.lang.annotation.RetentionPolicy
 import java.lang.reflect.Constructor
 import java.lang.reflect.InvocationHandler
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
-import java.util.*
+import java.util.TreeMap
 
 class AnnotationProxyGeneratorTest {
   companion object {
@@ -69,7 +107,7 @@ class AnnotationProxyGeneratorTest {
       return annotationClass.simpleName + "Proxy"
     }
 
-    private fun getAnnotationDescriptor(annotationClass: Class<out Annotation>): AnnotationDescriptor {
+    private fun getAnnotationDescriptor(annotationClass: Class<out Annotation>): ClassMirror {
       val orderedMethods = TreeMap<Int, Method>()
       for (method in annotationClass.declaredMethods) {
         val orderAnnotation = method.getAnnotation(Order::class.java)
@@ -78,12 +116,19 @@ class AnnotationProxyGeneratorTest {
         assertNull("Method order must be distinct", oldMethod)
       }
 
-      val annotationType = Type.getType(annotationClass)
-      val builder = AnnotationDescriptorBuilder(annotationType)
-      for (method in orderedMethods.values) {
-        builder.addField(method.name, Type.getType(method.returnType))
-      }
-      return builder.build()
+      return ClassMirror.Builder()
+          .name(annotationClass.internalName)
+          .run {
+            for (method in orderedMethods.values) {
+              addMethod(
+                  MethodMirror.Builder()
+                      .name(method.name)
+                      .type(getMethodType(method.returnType.toType()))
+                      .build()
+              )
+            }
+            build()
+          }
     }
 
     private fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T {
@@ -430,11 +475,15 @@ class AnnotationProxyGeneratorTest {
 
   private fun addAnnotationProxy(annotationClass: Class<out Annotation>) {
     val classRegistry = mock<ClassRegistry>()
-    given(classRegistry.findClass(notNull())).thenAnswer { invocation ->
-      ClassDescriptor(Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER, invocation.arguments[0] as Type, Types.OBJECT_TYPE)
+    given(classRegistry.getClassMirror(notNull())).thenAnswer { invocation ->
+      mock<ClassMirror>().apply {
+        given(access).thenReturn(Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER)
+        given(type).thenReturn(invocation.arguments[0] as Type.Object)
+        given(superType).thenReturn(Types.OBJECT_TYPE)
+      }
     }
     val annotationDescriptor = getAnnotationDescriptor(annotationClass)
-    val annotationProxyType = Type.getObjectType(getAnnotationProxyClassName(annotationClass))
+    val annotationProxyType = getObjectTypeByInternalName(getAnnotationProxyClassName(annotationClass))
     val annotationProxyGenerator = AnnotationProxyGenerator(classRegistry, annotationDescriptor, annotationProxyType)
     classLoader.addClass(annotationProxyType.internalName, annotationProxyGenerator.generate())
   }

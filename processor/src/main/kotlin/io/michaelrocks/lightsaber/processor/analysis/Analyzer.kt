@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,39 +16,31 @@
 
 package io.michaelrocks.lightsaber.processor.analysis
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
-import io.michaelrocks.lightsaber.processor.commons.CompositeClassVisitor
-import io.michaelrocks.lightsaber.processor.io.FileSource
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassVisitor
-import java.io.IOException
+import io.michaelrocks.grip.Grip
+import io.michaelrocks.lightsaber.processor.ErrorReporter
+import io.michaelrocks.lightsaber.processor.model.InjectionContext
+import java.io.File
 
-class Analyzer(private val processorContext: ProcessorContext) {
-  @Throws(IOException::class)
-  fun analyze(fileSource: FileSource) {
-    analyzeInjectionTargets(fileSource)
+class Analyzer(
+    private val grip: Grip,
+    private val errorReporter: ErrorReporter
+) {
+  private val injectionTargetAnalyzer: InjectionTargetsAnalyzer
+  private val componentsAnalyzer: ComponentsAnalyzer
+
+  init {
+    val analyzerHelper = AnalyzerHelperImpl(grip.classRegistry, ScopeRegistry(), errorReporter)
+    injectionTargetAnalyzer = InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter)
+    componentsAnalyzer = ComponentsAnalyzerImpl(grip, analyzerHelper, errorReporter)
   }
 
-  @Throws(IOException::class)
-  private fun analyzeInjectionTargets(fileSource: FileSource) {
-    val compositeClassVisitor = CompositeClassVisitor()
-    compositeClassVisitor.addVisitor(ModuleClassAnalyzer(processorContext))
-    compositeClassVisitor.addVisitor(InjectionTargetAnalyzer(processorContext))
-    analyzeClasses(fileSource, compositeClassVisitor)
-  }
-
-  @Throws(IOException::class)
-  private fun analyzeClasses(fileSource: FileSource, classVisitor: ClassVisitor) {
-    fileSource.listFiles { path, type ->
-      if (type == FileSource.EntryType.CLASS) {
-        processorContext.classFilePath = path
-        try {
-          val classReader = ClassReader(fileSource.readFile(path))
-          classReader.accept(classVisitor, ClassReader.SKIP_FRAMES or ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG)
-        } finally {
-          processorContext.classFilePath = null
+  fun analyze(files: Collection<File>): InjectionContext {
+    val analyzerHelper: AnalyzerHelper = AnalyzerHelperImpl(grip.classRegistry, ScopeRegistry(), errorReporter)
+    val (injectableTargets, providableTargets) =
+        InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).let { analyzer ->
+          analyzer.analyze(files)
         }
-      }
-    }
+    val (packageComponent, components) = componentsAnalyzer.analyze(files, providableTargets)
+    return InjectionContext(packageComponent, components, injectableTargets, providableTargets)
   }
 }

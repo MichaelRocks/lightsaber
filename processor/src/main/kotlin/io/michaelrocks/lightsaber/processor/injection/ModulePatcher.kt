@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
-import io.michaelrocks.lightsaber.processor.ProcessorContext
+import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
+import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.ModuleDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.name
+import io.michaelrocks.lightsaber.processor.model.Module
+import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
@@ -27,22 +29,20 @@ import org.objectweb.asm.Opcodes.*
 import java.util.*
 
 class ModulePatcher(
-    processorContext: ProcessorContext,
     classVisitor: ClassVisitor,
-    module: ModuleDescriptor
-) : BaseInjectionClassVisitor(processorContext, classVisitor) {
-  private val providableFields: MutableSet<String>
+    module: Module
+) : BaseInjectionClassVisitor(classVisitor) {
+  private val providableFields: MutableSet<FieldDescriptor>
   private val providableMethods: MutableSet<MethodDescriptor>
 
   init {
-    providableFields = HashSet<String>(module.providers.size)
+    providableFields = HashSet<FieldDescriptor>(module.providers.size)
     providableMethods = HashSet<MethodDescriptor>(module.providers.size)
     for (provider in module.providers) {
-      if (provider.providerField != null) {
-        providableFields.add(provider.providerField.name)
-      }
-      if (provider.providerMethod != null) {
-        providableMethods.add(provider.providerMethod.method)
+      val provisionPoint = provider.provisionPoint
+      when (provisionPoint) {
+        is ProvisionPoint.Field -> providableFields.add(provisionPoint.field.toFieldDescriptor())
+        is ProvisionPoint.AbstractMethod -> providableMethods.add(provisionPoint.method.toMethodDescriptor())
       }
     }
   }
@@ -55,7 +55,8 @@ class ModulePatcher(
   }
 
   override fun visitField(access: Int, name: String, desc: String, signature: String?, value: Any?): FieldVisitor? {
-    if (providableFields.contains(name)) {
+    val field = FieldDescriptor(name, desc)
+    if (providableFields.contains(field)) {
       val newAccess = access and ACC_PRIVATE.inv()
       isDirty = isDirty or (newAccess != access)
       return super.visitField(newAccess, name, desc, signature, value)

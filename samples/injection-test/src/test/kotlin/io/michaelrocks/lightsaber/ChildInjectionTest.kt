@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@
 
 package io.michaelrocks.lightsaber
 
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotSame
+import org.junit.Assert.assertSame
 import org.junit.Before
 import org.junit.Test
+import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -32,18 +35,18 @@ class ChildInjectionTest {
 
   @Test
   fun testCreateSingletonBeforeChildInjector() {
-    val parentInjector = lightsaber.createInjector(ParentModule())
+    val parentInjector = lightsaber.createInjector(ParentComponent())
     val parentString = parentInjector.getInstance<String>()
     assertEquals("Parent String", parentString)
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildModule())
+    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
     assertSame(parentString, parentInjector.getInstance<String>())
     assertSame(parentString, childInjector.getInstance<String>())
   }
 
   @Test
   fun testCreateSingletonAfterChildInjector() {
-    val parentInjector = lightsaber.createInjector(ParentModule())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildModule())
+    val parentInjector = lightsaber.createInjector(ParentComponent())
+    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
     val parentString = parentInjector.getInstance<String>()
     assertEquals("Parent String", parentString)
     assertSame(parentString, parentInjector.getInstance<String>())
@@ -52,8 +55,8 @@ class ChildInjectionTest {
 
   @Test
   fun testCreateSingletonInChildInjector() {
-    val parentInjector = lightsaber.createInjector(ParentModule())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildModule())
+    val parentInjector = lightsaber.createInjector(ParentComponent())
+    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
     val childString = childInjector.getInstance<String>()
     assertEquals("Parent String", childString)
     assertSame(childString, parentInjector.getInstance<String>())
@@ -62,9 +65,9 @@ class ChildInjectionTest {
 
   @Test
   fun testCreateSingletonInTwoChildInjectors() {
-    val parentInjector = lightsaber.createInjector(ParentModule())
-    val childInjector1 = lightsaber.createChildInjector(parentInjector, ChildModule())
-    val childInjector2 = lightsaber.createChildInjector(parentInjector, ChildModule())
+    val parentInjector = lightsaber.createInjector(ParentComponent())
+    val childInjector1 = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector2 = lightsaber.createChildInjector(parentInjector, ChildComponent())
     val childObject1 = childInjector1.getInstance<Any>()
     val childObject2 = childInjector2.getInstance<Any>()
     assertEquals("Child Object", childObject1)
@@ -72,12 +75,12 @@ class ChildInjectionTest {
     assertNotSame(childObject1, childObject2)
   }
 
-  @Test(expected = ConfigurationException::class)
-  fun testCreateChildInjectorWithParentModule() {
-    val parentInjector = lightsaber.createInjector(ParentModule())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ParentModule())
-    val childString = childInjector.getInstance<String>()
-    assertEquals("Parent String", childString)
+  @Test
+  fun testCreateUnboundDependencyWithChildComponentDependency() {
+    val parentInjector = lightsaber.createInjector(ParentComponent())
+    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val target = childInjector.getInstance<PackageDependencyTarget>()
+    assertEquals("Child String", target.packageDependency.namedString)
   }
 
   @Module
@@ -97,5 +100,31 @@ class ChildInjectionTest {
     @Singleton
     @Named("Child String")
     fun provideNamedString(): String = StringBuilder("Child String").toString()
+
+    @Provides
+    @Named("Package Dependency")
+    fun provideNamedPackageDependency(packageDependency: PackageDependency): PackageDependency = packageDependency
   }
+
+  @Component
+  private class ParentComponent {
+    @Provides
+    private fun provideParentModule(): ParentModule = ParentModule()
+  }
+
+  @Component(parents = arrayOf(ParentComponent::class))
+  private class ChildComponent {
+    @Provides
+    private fun provideChildModule(): ChildModule = ChildModule()
+  }
+
+  class PackageDependency @Inject private constructor(
+      @Named("Child String")
+      val namedString: String
+  )
+
+  class PackageDependencyTarget @Inject private constructor(
+      @Named("Package Dependency")
+      val packageDependency: PackageDependency
+  )
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,31 @@
 
 package io.michaelrocks.lightsaber
 
-import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.*
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.AnnotationArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.AnnotationQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.BooleanArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.BooleanQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ByteArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ByteQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.CharArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.CharQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ClassArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ClassQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.DoubleArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.DoubleQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.EmptyQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.EnumArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.EnumQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.FloatArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.FloatQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.IntArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.IntQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.LongArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.LongQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ShortArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.ShortQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.StringArrayQualifier
+import io.michaelrocks.lightsaber.QualifiedInjectionTest.Qualifiers.StringQualifier
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import javax.inject.Inject
@@ -26,28 +50,25 @@ import kotlin.reflect.KClass
 class QualifiedInjectionTest {
   @Test
   fun testConstructionInjection() {
-    val module = QualifiedModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(QualifiedComponent())
     val container = injector.getInstance<ConstructorInjectionContainer>()
-    validateContainer(module, container)
+    validateContainer(QualifiedModule(), container)
   }
 
   @Test
   fun testFieldInjection() {
-    val module = QualifiedModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(QualifiedComponent())
     val container = FieldInjectionContainer()
     injector.injectMembers(container)
-    validateContainer(module, container)
+    validateContainer(QualifiedModule(), container)
   }
 
   @Test
   fun testMethodInjection() {
-    val module = QualifiedModule()
-    val injector = Lightsaber.get().createInjector(module)
+    val injector = Lightsaber.get().createInjector(QualifiedComponent())
     val container = MethodInjectionContainer()
     injector.injectMembers(container)
-    validateContainer(module, container)
+    validateContainer(QualifiedModule(), container)
   }
 
   private fun validateContainer(module: QualifiedModule, container: Container) {
@@ -303,6 +324,12 @@ class QualifiedInjectionTest {
     @Provides
     @AnnotationArrayQualifier(IntQualifier(-42))
     fun provideAnnotationArrayQualifierExplicit(): String = "AnnotationArrayQualifierExplicit"
+  }
+
+  @Component
+  private class QualifiedComponent {
+    @Provides
+    fun provideQualifiedModule(): QualifiedModule = QualifiedModule()
   }
 
   private interface Container {
@@ -985,6 +1012,6 @@ class QualifiedInjectionTest {
     @Target(AnnotationTarget.VALUE_PARAMETER, AnnotationTarget.FUNCTION, AnnotationTarget.FIELD)
     @Retention(AnnotationRetention.RUNTIME)
     @Qualifier
-    annotation class AnnotationArrayQualifier(vararg val value: IntQualifier = arrayOf(/* IntAnnotation() */))
+    annotation class AnnotationArrayQualifier(vararg val value: IntQualifier = arrayOf(IntQualifier()))
   }
 }

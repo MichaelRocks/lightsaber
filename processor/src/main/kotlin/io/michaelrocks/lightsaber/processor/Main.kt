@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
   val parser = JCommander(parameters)
 
   try {
-    parser.parse(*args)
+    parser.parse(*normalizeArguments(args))
     validateParameters(parameters)
   } catch (exception: ParameterException) {
     logger.error(exception.message)
@@ -55,6 +55,20 @@ fun main(args: Array<String>) {
   }
 }
 
+private fun normalizeArguments(arguments: Array<String>): Array<String> {
+  val result = arguments.copyOf()
+  var lastIndex = 0
+  for (i in 1..result.size - 1) {
+    if (result[lastIndex].endsWith('\\')) {
+      result[lastIndex] = "${result[lastIndex].substring(0, result[lastIndex].length - 1)} ${result[i]}"
+    } else {
+      lastIndex += 1
+      result[lastIndex] = result[i]
+    }
+  }
+  return result.copyOfRange(0, lastIndex + 1)
+}
+
 private fun validateParameters(parameters: LightsaberParameters) {
   val jar = parameters.jar?.absoluteFile
   val classes = parameters.classes?.absoluteFile
@@ -73,7 +87,12 @@ private fun validateParameters(parameters: LightsaberParameters) {
     }
   }
 
-  validateLibraries(parameters.libs)
+  if (parameters.source == null) {
+    parameters.source = File("src$DEFAULT_SUFFIX")
+  }
+
+  validateLibraries(parameters.classpath)
+  validateLibraries(parameters.bootClasspath)
 }
 
 private fun validateLibraries(libraries: List<File>?) {
@@ -84,9 +103,6 @@ private fun validateLibraries(libraries: List<File>?) {
   for (library in libraries) {
     if (!library.exists()) {
       throw ParameterException("Library doesn't exist: " + library)
-    }
-    if (!library.isFile) {
-      throw ParameterException("Library is not a file: " + library)
     }
   }
 }

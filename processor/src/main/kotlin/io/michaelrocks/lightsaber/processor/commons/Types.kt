@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,93 +16,78 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
+import io.michaelrocks.bimap.BiMap
+import io.michaelrocks.bimap.HashBiMap
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectType
+import io.michaelrocks.lightsaber.Component
 import io.michaelrocks.lightsaber.Injector
 import io.michaelrocks.lightsaber.Key
+import io.michaelrocks.lightsaber.Lazy
 import io.michaelrocks.lightsaber.Module
 import io.michaelrocks.lightsaber.Provides
-import org.apache.commons.collections4.BidiMap
-import org.apache.commons.collections4.bidimap.DualHashBidiMap
-import org.objectweb.asm.Type
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Qualifier
-import kotlin.reflect.KClass
+import javax.inject.Singleton
+import java.lang.reflect.Type as JavaType
 
 object Types {
-  val OBJECT_TYPE = getType<Any>()
-  val STRING_TYPE = getType<String>()
-  val INJECT_TYPE = getType<Inject>()
-  val PROVIDES_TYPE = getType<Provides>()
-  val MODULE_TYPE = getType<Module>()
-  val QUALIFIER_TYPE = getType<Qualifier>()
-  val INJECTOR_TYPE = getType<Injector>()
-  val PROVIDER_TYPE = getType<Provider<Any>>()
-  val KEY_TYPE = getType<Key<Any>>()
-  val CLASS_TYPE = getType<Class<Any>>()
-  val ANNOTATION_TYPE = getType<Annotation>()
+  val OBJECT_TYPE = getObjectType<Any>()
+  val STRING_TYPE = getObjectType<String>()
+  val INJECT_TYPE = getObjectType<Inject>()
+  val PROVIDES_TYPE = getObjectType<Provides>()
+  val COMPONENT_TYPE = getObjectType<Component>()
+  val MODULE_TYPE = getObjectType<Module>()
+  val QUALIFIER_TYPE = getObjectType<Qualifier>()
+  val SINGLETON_TYPE = getObjectType<Singleton>()
+  val INJECTOR_TYPE = getObjectType<Injector>()
+  val PROVIDER_TYPE = getObjectType<Provider<*>>()
+  val LAZY_TYPE = getObjectType<Lazy<*>>()
+  val KEY_TYPE = getObjectType<Key<*>>()
+  val CLASS_TYPE = getObjectType<Class<*>>()
+  val TYPE_TYPE = getObjectType<JavaType>()
+  val ANNOTATION_TYPE = getObjectType<Annotation>()
 
-  val BOXED_VOID_TYPE = getType<Byte>()
-  val BOXED_BOOLEAN_TYPE = getType<Boolean>()
-  val BOXED_BYTE_TYPE = getType<Byte>()
-  val BOXED_CHAR_TYPE = getType<Char>()
-  val BOXED_DOUBLE_TYPE = getType<Double>()
-  val BOXED_FLOAT_TYPE = getType<Float>()
-  val BOXED_INT_TYPE = getType<Int>()
-  val BOXED_LONG_TYPE = getType<Long>()
-  val BOXED_SHORT_TYPE = getType<Short>()
+  val BOXED_VOID_TYPE = getObjectType<Void>()
+  val BOXED_BOOLEAN_TYPE = getObjectType<Boolean>()
+  val BOXED_BYTE_TYPE = getObjectType<Byte>()
+  val BOXED_CHAR_TYPE = getObjectType<Char>()
+  val BOXED_DOUBLE_TYPE = getObjectType<Double>()
+  val BOXED_FLOAT_TYPE = getObjectType<Float>()
+  val BOXED_INT_TYPE = getObjectType<Int>()
+  val BOXED_LONG_TYPE = getObjectType<Long>()
+  val BOXED_SHORT_TYPE = getObjectType<Short>()
 
-  private val primitiveToBoxedMap: BidiMap<Type, Type>
+  private val primitiveToBoxedMap: BiMap<Type, Type.Object>
 
   init {
-    primitiveToBoxedMap = DualHashBidiMap<Type, Type>()
-    primitiveToBoxedMap.put(Type.VOID_TYPE, BOXED_VOID_TYPE)
-    primitiveToBoxedMap.put(Type.BOOLEAN_TYPE, BOXED_BOOLEAN_TYPE)
-    primitiveToBoxedMap.put(Type.BYTE_TYPE, BOXED_BYTE_TYPE)
-    primitiveToBoxedMap.put(Type.CHAR_TYPE, BOXED_CHAR_TYPE)
-    primitiveToBoxedMap.put(Type.DOUBLE_TYPE, BOXED_DOUBLE_TYPE)
-    primitiveToBoxedMap.put(Type.FLOAT_TYPE, BOXED_FLOAT_TYPE)
-    primitiveToBoxedMap.put(Type.INT_TYPE, BOXED_INT_TYPE)
-    primitiveToBoxedMap.put(Type.LONG_TYPE, BOXED_LONG_TYPE)
-    primitiveToBoxedMap.put(Type.SHORT_TYPE, BOXED_SHORT_TYPE)
+    primitiveToBoxedMap = HashBiMap<Type, Type.Object>()
+    primitiveToBoxedMap.put(Type.Primitive.Void, BOXED_VOID_TYPE)
+    primitiveToBoxedMap.put(Type.Primitive.Boolean, BOXED_BOOLEAN_TYPE)
+    primitiveToBoxedMap.put(Type.Primitive.Byte, BOXED_BYTE_TYPE)
+    primitiveToBoxedMap.put(Type.Primitive.Char, BOXED_CHAR_TYPE)
+    primitiveToBoxedMap.put(Type.Primitive.Double, BOXED_DOUBLE_TYPE)
+    primitiveToBoxedMap.put(Type.Primitive.Float, BOXED_FLOAT_TYPE)
+    primitiveToBoxedMap.put(Type.Primitive.Int, BOXED_INT_TYPE)
+    primitiveToBoxedMap.put(Type.Primitive.Long, BOXED_LONG_TYPE)
+    primitiveToBoxedMap.put(Type.Primitive.Short, BOXED_SHORT_TYPE)
   }
 
+  fun box(type: Type.Primitive): Type.Object = primitiveToBoxedMap[type]!!
   fun box(type: Type): Type = primitiveToBoxedMap[type] ?: type
-  fun unbox(type: Type): Type = primitiveToBoxedMap.getKey(type) ?: type
-
-  fun isPrimitive(type: Type): Boolean = primitiveToBoxedMap.containsKey(type)
-
-  fun getArrayType(type: Type): Type {
-    return Type.getType("[" + type.descriptor)
-  }
-
-  fun getPackageName(type: Type): String {
-    check(type.sort == Type.OBJECT)
-    return type.internalName.substringBeforeLast('/', "")
-  }
+  fun unbox(type: Type): Type = primitiveToBoxedMap.inverse[type] ?: type
 }
 
-inline fun <reified T : Any> getType(): Type = Type.getType(T::class.java)
+fun Type.Primitive.boxed(): Type.Object = Types.box(this)
+fun Type.boxed(): Type = Types.box(this)
+fun Type.unboxed(): Type = Types.unbox(this)
 
-val Type.isPrimitive: Boolean
-  get() = Types.isPrimitive(this)
-val Type.packageName: String
-  get() = Types.getPackageName(this)
-
-fun Type.box() = Types.box(this)
-fun Type.unbox() = Types.unbox(this)
-
-fun Type.toArrayType(): Type = Types.getArrayType(this)
-
-val Class<*>.type: Type
-  get() = Type.getType(this)
-val Class<*>.internalName: String
-  get() = Type.getInternalName(this)
-val Class<*>.descriptor: String
-  get() = Type.getDescriptor(this)
-
-val KClass<*>.type: Type
-  get() = Type.getType(java)
-val KClass<*>.internalName: String
-  get() = java.internalName
-val KClass<*>.descriptor: String
-  get() = java.descriptor
+fun Type.boxedOrElementType(): Type.Object {
+  return when (this) {
+    is Type.Primitive -> boxed()
+    is Type.Array -> elementType.boxedOrElementType()
+    is Type.Object -> this
+    is Type.Method -> throw IllegalArgumentException("Cannot extract an object type from $this")
+  }
+}

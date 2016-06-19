@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2016 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package io.michaelrocks.lightsaber.plugin
 
 import com.android.build.api.transform.*
-import com.google.common.collect.Iterables
 import io.michaelrocks.lightsaber.processor.LightsaberParameters
 import io.michaelrocks.lightsaber.processor.LightsaberProcessor
 import org.gradle.api.Project
@@ -33,20 +32,19 @@ public class LightsaberTransform extends Transform {
   }
 
   @Override
-  void transform(final Context context, final Collection<TransformInput> inputs,
-      final Collection<TransformInput> referencedInputs, final TransformOutputProvider outputProvider,
-      final boolean isIncremental) throws IOException, TransformException, InterruptedException {
+  void transform(final TransformInvocation invocation) throws IOException, TransformException, InterruptedException {
     final def parameters = new LightsaberParameters()
-    final TransformInput input = Iterables.getOnlyElement(inputs)
-    final DirectoryInput directoryInput = Iterables.getOnlyElement(input.directoryInputs)
-    final File output = outputProvider.getContentLocation(
+    final DirectoryInput directoryInput = invocation.inputs.first().directoryInputs.first()
+    final File output = invocation.outputProvider.getContentLocation(
         directoryInput.name, EnumSet.of(QualifiedContent.DefaultContentType.CLASSES),
         EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
     parameters.classes = directoryInput.file
     parameters.output = output
-    parameters.libs = project.android.bootClasspath.toList() +
-        referencedInputs.collect { it.directoryInputs }.flatten().collect { it.file }.flatten() +
-        referencedInputs.collect { it.jarInputs }.flatten().collect { it.file }.flatten()
+    parameters.source = new File(invocation.context.temporaryDir, "src")
+    parameters.classpath = invocation.referencedInputs.collectMany {
+      it.directoryInputs.collect { it.file } + it.jarInputs.collect { it.file }
+    }
+    parameters.bootClasspath = project.android.bootClasspath.toList()
     parameters.debug = logger.isDebugEnabled()
     parameters.info = logger.isInfoEnabled()
     logger.error("Starting Lightsaber processor: $parameters")
@@ -70,11 +68,6 @@ public class LightsaberTransform extends Transform {
 
   @Override
   Set<QualifiedContent.ContentType> getInputTypes() {
-    return Collections.singleton(QualifiedContent.DefaultContentType.CLASSES)
-  }
-
-  @Override
-  Set<QualifiedContent.ContentType> getOutputTypes() {
     return EnumSet.of(QualifiedContent.DefaultContentType.CLASSES)
   }
 
@@ -90,27 +83,9 @@ public class LightsaberTransform extends Transform {
         QualifiedContent.Scope.SUB_PROJECTS,
         QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
         QualifiedContent.Scope.EXTERNAL_LIBRARIES,
-        QualifiedContent.Scope.PROVIDED_ONLY)
-  }
-
-  @Override
-  Collection<File> getSecondaryFileInputs() {
-    return Collections.emptyList()
-  }
-
-  @Override
-  Collection<File> getSecondaryFileOutputs() {
-    return Collections.emptyList()
-  }
-
-  @Override
-  Collection<File> getSecondaryDirectoryOutputs() {
-    return super.getSecondaryDirectoryOutputs()
-  }
-
-  @Override
-  Map<String, Object> getParameterInputs() {
-    return Collections.emptyMap()
+        QualifiedContent.Scope.TESTED_CODE,
+        QualifiedContent.Scope.PROVIDED_ONLY
+    )
   }
 
   @Override

@@ -1,3 +1,4 @@
+apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'bintray'
 apply plugin: 'idea'
@@ -10,35 +11,41 @@ dependencies {
   compile localGroovy()
   compile project(':processor')
 
-  provided "com.android.tools.build:gradle-api:$androidToolsVersion"
+  compileOnly "com.android.tools.build:gradle-api:$androidToolsVersion"
 }
 
-ext {
-  generatedDir = new File(projectDir, "generated")
-  generatedJavaSourcesDir = new File(generatedDir, "main/groovy")
-  buildClassFile = new File(generatedJavaSourcesDir, "io/michaelrocks/lightsaber/plugin/Build.groovy")
-}
-
-sourceSets {
-  main {
-    output.dir(generatedJavaSourcesDir, builtBy: 'generateBuildClass')
-    groovy.srcDir generatedJavaSourcesDir
-  }
-}
+def generatedDir = new File(projectDir, "generated")
+def generatedJavaSourcesDir = new File(generatedDir, "main/java")
 
 task generateBuildClass {
   inputs.property('version', version)
   outputs.dir generatedDir
 
   doLast {
+    def buildClassFile = new File(generatedJavaSourcesDir, "io/michaelrocks/lightsaber/plugin/Build.java")
     buildClassFile.parentFile.mkdirs()
     buildClassFile.text = "" +
-        "package io.michaelrocks.lightsaber.plugin\n" +
+        "package io.michaelrocks.lightsaber.plugin;\n" +
         "\n" +
         "public class Build {\n" +
-        "    public static final String VERSION = \"$version\"\n" +
+        "    public static final String VERSION = \"$version\";\n" +
         "}\n"
   }
+}
+
+sourceSets {
+  main {
+    output.dir(builtBy: tasks.generateBuildClass, generatedJavaSourcesDir)
+    groovy.srcDirs += generatedJavaSourcesDir
+  }
+}
+
+tasks.withType(GroovyCompile) {
+  it.dependsOn tasks.generateBuildClass
+}
+
+clean.doFirst {
+  delete generatedDir
 }
 
 idea {
