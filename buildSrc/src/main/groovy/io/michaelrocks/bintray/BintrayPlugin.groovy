@@ -43,10 +43,11 @@ class BintrayPlugin implements Plugin<Project> {
   }
 
   private void configureBintrayPublishing() {
+    configureArtifacts()
+
     final boolean hasCredentials = project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')
     if (hasCredentials) {
       configureBintray()
-      configureArtifacts()
     }
   }
 
