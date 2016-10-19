@@ -27,7 +27,11 @@ import io.michaelrocks.lightsaber.processor.io.DirectoryFileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
 import io.michaelrocks.lightsaber.processor.io.IoFactory
 import io.michaelrocks.lightsaber.processor.logging.getLogger
-import io.michaelrocks.lightsaber.processor.model.*
+import io.michaelrocks.lightsaber.processor.model.Component
+import io.michaelrocks.lightsaber.processor.model.InjectionContext
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
+import io.michaelrocks.lightsaber.processor.model.InjectionTarget
+import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import io.michaelrocks.lightsaber.processor.validation.Validator
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
@@ -42,7 +46,7 @@ class ClassProcessor(
 ) {
   private val logger = getLogger()
 
-  private val grip: Grip = GripFactory.create(listOf(inputPath) + classpath + bootClasspath)
+  private val grip: Grip = GripFactory.create(setOf(inputPath) + classpath + bootClasspath)
   private val errorReporter = ErrorReporter()
 
   private val fileSource = IoFactory.createFileSource(inputPath)

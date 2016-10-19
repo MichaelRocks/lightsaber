@@ -35,10 +35,19 @@ public class LightsaberTransform extends Transform {
   void transform(final TransformInvocation invocation) throws IOException, TransformException, InterruptedException {
     final def parameters = new LightsaberParameters()
     final DirectoryInput directoryInput = invocation.inputs.first().directoryInputs.first()
+    final File input = directoryInput.file
     final File output = invocation.outputProvider.getContentLocation(
         directoryInput.name, EnumSet.of(QualifiedContent.DefaultContentType.CLASSES),
         EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
-    parameters.classes = directoryInput.file
+
+    // For now just skip tests.
+    if (invocation.context.path.endsWith("Test")) {
+      logger.info("Found a test project. Skipping...")
+      FileMethods.copyDirectoryTo(input, output, true)
+      return
+    }
+
+    parameters.classes = input
     parameters.output = output
     parameters.source = new File(invocation.context.temporaryDir, "src")
     parameters.classpath = invocation.referencedInputs.collectMany {
@@ -47,7 +56,7 @@ public class LightsaberTransform extends Transform {
     parameters.bootClasspath = project.android.bootClasspath.toList()
     parameters.debug = logger.isDebugEnabled()
     parameters.info = logger.isInfoEnabled()
-    logger.error("Starting Lightsaber processor: $parameters")
+    logger.info("Starting Lightsaber processor: $parameters")
     final def processor = new LightsaberProcessor(parameters)
     try {
       processor.process()

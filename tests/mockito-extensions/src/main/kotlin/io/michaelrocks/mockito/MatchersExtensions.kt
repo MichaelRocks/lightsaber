@@ -17,83 +17,82 @@
 package io.michaelrocks.mockito
 
 import org.mockito.ArgumentMatcher
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import kotlin.reflect.KClass
 
 @Suppress("CAST_NEVER_SUCCEEDS")
 fun <T> Any?.toNotNull(): T = null as T
 
-inline fun <reified T : Any> anyObject(): T =
-    Matchers.anyObject<T>().toNotNull()
-
-inline fun <reified T : Any> anyVararg(): T =
-    Matchers.anyVararg<T>().toNotNull()
-
 inline fun <reified T : Any> any(type: KClass<T>): T =
-    Matchers.any<T>(type.java).toNotNull()
+    ArgumentMatchers.any<T>(type.java).toNotNull()
 
 inline fun <reified T : Any> any(): T =
-    Matchers.any<T>().toNotNull()
+    ArgumentMatchers.any<T>().toNotNull()
+
+fun anyBoolean(): Boolean =
+    ArgumentMatchers.anyBoolean()
+fun anyByte(): Byte =
+    ArgumentMatchers.anyByte()
+fun anyChar(): Char =
+    ArgumentMatchers.anyChar()
+fun anyFloat(): Float =
+    ArgumentMatchers.anyFloat()
+fun anyDouble(): Double =
+    ArgumentMatchers.anyDouble()
+fun anyInt(): Int =
+    ArgumentMatchers.anyInt()
+fun anyLong(): Long =
+    ArgumentMatchers.anyLong()
+fun anyShort(): Short =
+    ArgumentMatchers.anyShort()
 
 fun anyString(): String =
-    Matchers.anyString().toNotNull()
+    ArgumentMatchers.anyString().toNotNull()
 
-fun anyList(): List<*> =
-    Matchers.anyList().toNotNull()
+inline fun <reified T> anyIterable(): Iterable<T> =
+    ArgumentMatchers.anyIterable<T>().toNotNull()
 
-inline fun <reified T : Any> anyListOf(): List<T> =
-    Matchers.anyListOf(T::class.java).toNotNull()
+inline fun <reified T> anyList(): List<T> =
+    ArgumentMatchers.anyList<T>().toNotNull()
 
-inline fun <reified T : Any> anySet(): Set<*> =
-    Matchers.anySet().toNotNull()
+inline fun <reified T : Any> anySet(): Set<T> =
+    ArgumentMatchers.anySet<T>().toNotNull()
 
-inline fun <reified T : Any> anySetOf(): Set<T> =
-    Matchers.anySetOf(T::class.java).toNotNull()
+inline fun <reified K : Any, reified V : Any> anyMap(): Map<*, *> =
+    ArgumentMatchers.anyMap<K, V>().toNotNull()
 
-inline fun <reified T : Any> anyMap(): Map<*, *> =
-    Matchers.anyMap().toNotNull()
-
-inline fun <reified K : Any, reified V : Any> anyMapOf(): Map<K, V> =
-    Matchers.anyMapOf(K::class.java, V::class.java).toNotNull()
-
-inline fun <reified T : Any> anyCollection(): Collection<*> =
-    Matchers.anyCollection().toNotNull()
-
-inline fun <reified T : Any> anyCollectionOf(): Collection<T> =
-    Matchers.anyCollectionOf(T::class.java).toNotNull()
+inline fun <reified T : Any> anyCollection(): Collection<T> =
+    ArgumentMatchers.anyCollection<T>().toNotNull()
 
 inline fun <reified T : Any> isA(): T =
-    Matchers.isA(T::class.java).toNotNull()
+    ArgumentMatchers.isA(T::class.java).toNotNull()
 
 inline fun <reified T : Any> eq(value: T): T =
-    Matchers.eq(value).toNotNull()
+    ArgumentMatchers.eq(value).toNotNull()
 
 inline fun <reified T : Any> refEq(value: T, vararg excludeFields: String): T =
-    Matchers.refEq(value, *excludeFields).toNotNull()
+    ArgumentMatchers.refEq(value, *excludeFields).toNotNull()
 
 inline fun <reified T : Any> same(value: T): T =
-    Matchers.same(value).toNotNull()
+    ArgumentMatchers.same(value).toNotNull()
 
 inline fun <reified T : Any> isNull(): T =
-    Matchers.isNull(T::class.java).toNotNull()
-
-inline fun <reified T : Any> notNull(): T =
-    Matchers.notNull().toNotNull()
+    ArgumentMatchers.isNull<T>().toNotNull()
 
 inline fun <reified T : Any> isNotNull(): T =
-    Matchers.isNotNull(T::class.java).toNotNull()
+    ArgumentMatchers.isNotNull<T>().toNotNull()
 
 fun contains(substring: String): String =
-    Matchers.contains(substring).toNotNull()
+    ArgumentMatchers.contains(substring).toNotNull()
 
 fun matches(regex: String): String =
-    Matchers.matches(regex).toNotNull()
+    ArgumentMatchers.matches(regex).toNotNull()
 
 fun endsWith(suffix: String): String =
-    Matchers.endsWith(suffix).toNotNull()
+    ArgumentMatchers.endsWith(suffix).toNotNull()
 
 fun startsWith(prefix: String): String =
-    Matchers.startsWith(prefix).toNotNull()
+    ArgumentMatchers.startsWith(prefix).toNotNull()
 
 inline fun <reified T : Any> argThat(matcher: ArgumentMatcher<T>): T =
-    Matchers.argThat(matcher).toNotNull()
+    ArgumentMatchers.argThat(matcher).toNotNull()

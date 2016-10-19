@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.plugin
 
+import groovy.io.FileVisitResult
 import groovy.transform.CompileStatic
 
 @CompileStatic
@@ -45,6 +46,18 @@ public class FileMethods {
     }
 
     destination.lastModified = source.lastModified()
+  }
+
+  public static void copyDirectoryTo(final File source, final File destination, final boolean replaceExisting = false) {
+    source.traverse { final inputFile ->
+      if (!inputFile.isDirectory()) {
+        final String relativePath = relativize(source, inputFile)
+        final File outputFile = resolve(destination, relativePath)
+        createParentDirectories(outputFile)
+        copyTo(inputFile, outputFile, true)
+      }
+      return FileVisitResult.CONTINUE
+    }
   }
 
   public static void deleteDirectoryIfEmpty(final File directory) {
