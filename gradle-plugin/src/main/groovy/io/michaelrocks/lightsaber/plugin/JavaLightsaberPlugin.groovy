@@ -21,7 +21,6 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.compile.JavaCompile
-import org.gradle.internal.jvm.Jvm
 
 class JavaLightsaberPlugin extends BaseLightsaberPlugin {
   @Override
@@ -65,7 +64,8 @@ class JavaLightsaberPlugin extends BaseLightsaberPlugin {
     final File backupDir = new File(project.buildDir, "lightsaber/classes$suffix")
     final File sourceDir = new File(project.buildDir, "lightsaber/src$suffix")
     final List<File> classpath = compileTask.classpath.toList();
-    final List<File> bootClasspath = Jvm.current().runtimeJar != null ? [Jvm.current().runtimeJar] : null
+    final String bootClasspathString = compileTask.options.bootClasspath ?: System.getProperty("sun.boot.class.path")
+    final List<File> bootClasspath = bootClasspathString?.split(File.pathSeparator)?.collect { new File(it) } ?: []
     final LightsaberTask lightsaberTask =
         createLightsaberProcessTask(
             "lightsaberProcess$suffix", classesDir, backupDir, sourceDir, classpath, bootClasspath)
