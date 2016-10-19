@@ -53,8 +53,8 @@ import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.String
 import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.StringArrayAnnotation
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.mockito.given
+import io.michaelrocks.mockito.isNotNull
 import io.michaelrocks.mockito.mock
-import io.michaelrocks.mockito.notNull
 import io.michaelrocks.mockito.times
 import io.michaelrocks.mockito.verify
 import io.michaelrocks.mockito.verifyNoMoreInteractions
@@ -475,7 +475,7 @@ class AnnotationProxyGeneratorTest {
 
   private fun addAnnotationProxy(annotationClass: Class<out Annotation>) {
     val classRegistry = mock<ClassRegistry>()
-    given(classRegistry.getClassMirror(notNull())).thenAnswer { invocation ->
+    given(classRegistry.getClassMirror(isNotNull())).thenAnswer { invocation ->
       mock<ClassMirror>().apply {
         given(access).thenReturn(Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER)
         given(type).thenReturn(invocation.arguments[0] as Type.Object)

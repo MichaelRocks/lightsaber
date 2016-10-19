@@ -20,6 +20,7 @@ import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.grip.mirrors.toArrayType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 
@@ -30,12 +31,14 @@ val GenericType.rawType: Type
   get() = when (this) {
     is GenericType.Raw -> type
     is GenericType.Parameterized -> type
+    is GenericType.Array -> elementType.rawType.toArrayType()
     else -> throw IllegalArgumentException("Unsupported generic type: $this")
   }
 val GenericType.parameterType: Type?
   get() = when (this) {
     is GenericType.Parameterized -> typeArguments[0].rawType
     is GenericType.Raw -> null
+    is GenericType.Array -> null
     else -> throw IllegalArgumentException("Unsupported generic type: $this")
   }
 

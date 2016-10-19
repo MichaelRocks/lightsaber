@@ -21,7 +21,6 @@ import org.mockito.MockSettings
 import org.mockito.MockingDetails
 import org.mockito.Mockito
 import org.mockito.stubbing.Answer
-import org.mockito.stubbing.DeprecatedOngoingStubbing
 import org.mockito.stubbing.OngoingStubbing
 import org.mockito.stubbing.Stubber
 import org.mockito.verification.VerificationAfterDelay
@@ -52,8 +51,6 @@ fun mockingDetails(toInspect: Any): MockingDetails = Mockito.mockingDetails(toIn
 
 fun <T> spy(instance: T): T = Mockito.spy(instance)
 inline fun <reified T : Any> spy(): T = Mockito.spy(T::class.java)
-
-fun <T> stub(methodCall: T): DeprecatedOngoingStubbing<T> = Mockito.stub(methodCall)
 
 fun <T> given(methodCall: T): OngoingStubbing<T> = Mockito.`when`(methodCall)
 
