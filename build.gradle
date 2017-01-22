@@ -1,5 +1,5 @@
 allprojects {
-  ext.kotlinVersion = '1.0.4'
+  ext.kotlinVersion = '1.0.6'
 
   buildscript {
     repositories {
@@ -35,16 +35,16 @@ ext {
   javaxInjectVersion = '1'
   jsr305Version = '3.0.1'
   jcommanderVersion = '1.58'
-  asmVersion = '5.1'
-  gripVersion = '0.5.0-beta'
+  asmVersion = '5.2'
+  gripVersion = '0.5.1-beta'
   bimapVersion = '1.0.2'
-  logbackVersion = '1.1.7'
+  logbackVersion = '1.1.9'
 
   junitVersion = '4.12'
-  mockitoVersion = '2.2.5'
+  mockitoVersion = '2.6.5'
   espressoVersion = '2.2.2'
   testRunnerVersion = '0.5'
 
-  androidToolsVersion = '2.2.0'
-  supportVersion = '24.2.1'
+  androidToolsVersion = '2.2.3'
+  supportVersion = '25.1.0'
 }

@@ -11,13 +11,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'io.michaelrocks.lightsaber.android'
 
 android {
-  compileSdkVersion 24
-  buildToolsVersion '24.0.3'
+  compileSdkVersion 25
+  buildToolsVersion '25.0.2'
 
   defaultConfig {
     applicationId 'io.michaelrocks.lightsaber.sample'
     minSdkVersion 16
-    targetSdkVersion 24
+    targetSdkVersion 25
     versionCode 1
     versionName version
 
