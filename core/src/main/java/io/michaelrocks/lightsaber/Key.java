@@ -40,7 +40,7 @@ public class Key<T> {
     return new Key<T>(type);
   }
 
-  public static <T> Key<T> of(@Nonnull final Class<T> type, final Annotation annotation) {
+  public static <T> Key<T> of(@Nonnull final Class<T> type, @Nullable final Annotation annotation) {
     return new Key<T>(type, annotation);
   }
 
@@ -48,7 +48,7 @@ public class Key<T> {
     return new Key<T>(type);
   }
 
-  public static <T> Key<T> of(@Nonnull final Type type, final Annotation annotation) {
+  public static <T> Key<T> of(@Nonnull final Type type, @Nullable final Annotation annotation) {
     return new Key<T>(type, annotation);
   }
 

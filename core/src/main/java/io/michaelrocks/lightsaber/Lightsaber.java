@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber;
 import io.michaelrocks.lightsaber.internal.InjectingProvider;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -102,7 +103,7 @@ public class Lightsaber {
 
   @Nonnull
   public static <T> T getInstance(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type,
-      final Annotation annotation) {
+      @Nullable final Annotation annotation) {
     return injector.getInstance(Key.of(type, annotation));
   }
 
@@ -113,7 +114,7 @@ public class Lightsaber {
 
   @Nonnull
   public static <T> Provider<T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type,
-      @Nonnull final Annotation annotation) {
+      @Nullable final Annotation annotation) {
     return injector.getProvider(Key.of(type, annotation));
   }
 
