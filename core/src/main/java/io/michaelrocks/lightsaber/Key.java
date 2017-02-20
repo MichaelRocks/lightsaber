@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 
 package io.michaelrocks.lightsaber;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
@@ -25,41 +27,43 @@ public class Key<T> {
   private final Type type;
   private final Annotation qualifier;
 
-  public Key(final Type type) {
+  public Key(@Nonnull final Type type) {
     this(type, null);
   }
 
-  public Key(final Type type, final Annotation qualifier) {
+  public Key(@Nonnull final Type type, @Nullable final Annotation qualifier) {
     this.type = type;
     this.qualifier = qualifier;
   }
 
-  public static <T> Key<T> of(final Class<T> type) {
+  public static <T> Key<T> of(@Nonnull final Class<T> type) {
     return new Key<T>(type);
   }
 
-  public static <T> Key<T> of(final Class<T> type, final Annotation annotation) {
+  public static <T> Key<T> of(@Nonnull final Class<T> type, final Annotation annotation) {
     return new Key<T>(type, annotation);
   }
 
-  public static <T> Key<T> of(final Type type) {
+  public static <T> Key<T> of(@Nonnull final Type type) {
     return new Key<T>(type);
   }
 
-  public static <T> Key<T> of(final Type type, final Annotation annotation) {
+  public static <T> Key<T> of(@Nonnull final Type type, final Annotation annotation) {
     return new Key<T>(type, annotation);
   }
 
+  @Nonnull
   public Type getType() {
     return type;
   }
 
+  @Nullable
   public Annotation getQualifier() {
     return qualifier;
   }
 
   @Override
-  public boolean equals(final Object object) {
+  public boolean equals(@Nullable final Object object) {
     if (this == object) {
       return true;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 package io.michaelrocks.lightsaber;
 
+import javax.annotation.Nonnull;
+
 public interface Lazy<T> {
+  @Nonnull
   T get();
 }

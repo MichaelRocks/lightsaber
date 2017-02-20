@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber;
 
+import javax.annotation.Nonnull;
 import javax.inject.Provider;
 
 public class LazyAdapter<T> implements Lazy<T> {
@@ -23,10 +24,11 @@ public class LazyAdapter<T> implements Lazy<T> {
   private volatile T instance;
   private final Object instanceLock = new Object();
 
-  public LazyAdapter(final Provider<T> provider) {
+  public LazyAdapter(@Nonnull final Provider<T> provider) {
     this.provider = provider;
   }
 
+  @Nonnull
   @Override
   public T get() {
     if (instance == null) {

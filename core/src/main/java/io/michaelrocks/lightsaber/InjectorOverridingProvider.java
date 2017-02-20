@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,19 @@ package io.michaelrocks.lightsaber;
 import io.michaelrocks.lightsaber.internal.AbstractInjectingProvider;
 import io.michaelrocks.lightsaber.internal.InjectingProvider;
 
+import javax.annotation.Nonnull;
+
 class InjectorOverridingProvider<T> extends AbstractInjectingProvider<T> {
   private final InjectingProvider<T> provider;
 
-  InjectorOverridingProvider(final InjectingProvider<T> provider, final Injector injector) {
+  InjectorOverridingProvider(@Nonnull final InjectingProvider<T> provider, @Nonnull final Injector injector) {
     super(injector);
     this.provider = provider;
   }
 
+  @Nonnull
   @Override
-  public T getWithInjector(final Injector injector) {
+  public T getWithInjector(@Nonnull final Injector injector) {
     return provider.getWithInjector(injector);
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,21 @@
 
 package io.michaelrocks.lightsaber;
 
+import javax.annotation.Nullable;
+
 public class ConfigurationException extends RuntimeException {
   public ConfigurationException() {
   }
 
-  public ConfigurationException(final String message) {
+  public ConfigurationException(@Nullable final String message) {
     super(message);
   }
 
-  public ConfigurationException(final String message, final Throwable cause) {
+  public ConfigurationException(@Nullable final String message, @Nullable final Throwable cause) {
     super(message, cause);
   }
 
-  public ConfigurationException(final Throwable cause) {
+  public ConfigurationException(@Nullable final Throwable cause) {
     super(cause);
   }
 }

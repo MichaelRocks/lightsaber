@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,15 +18,18 @@ package io.michaelrocks.lightsaber;
 
 import io.michaelrocks.lightsaber.internal.InjectingProvider;
 
+import javax.annotation.Nonnull;
+
 class SingletonProvider<T> implements InjectingProvider<T> {
   private final InjectingProvider<T> provider;
   private volatile T instance;
   private final Object instanceLock = new Object();
 
-  public SingletonProvider(final InjectingProvider<T> provider) {
+  public SingletonProvider(@Nonnull final InjectingProvider<T> provider) {
     this.provider = provider;
   }
 
+  @Nonnull
   @Override
   public T get() {
     if (instance == null) {
@@ -39,8 +42,9 @@ class SingletonProvider<T> implements InjectingProvider<T> {
     return instance;
   }
 
+  @Nonnull
   @Override
-  public T getWithInjector(final Injector injector) {
+  public T getWithInjector(@Nonnull final Injector injector) {
     if (instance == null) {
       synchronized (instanceLock) {
         if (instance == null) {

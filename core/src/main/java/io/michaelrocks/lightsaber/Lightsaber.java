@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber;
 
 import io.michaelrocks.lightsaber.internal.InjectingProvider;
 
+import javax.annotation.Nonnull;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -35,17 +36,21 @@ public class Lightsaber {
     this.configurator = configurator;
   }
 
+  @Nonnull
   public static Lightsaber get() {
     return Holder.INSTANCE;
   }
 
-  public Injector createInjector(final Object component) {
+  @Nonnull
+  public Injector createInjector(@Nonnull final Object component) {
     final LightsaberInjector injector = createInjectorInternal(null, component);
     configurator.configureInjector(injector, null);
     return injector;
   }
 
-  public Injector createChildInjector(final Injector parentInjector, final Object component) {
+  @Nonnull
+  public Injector createChildInjector(@Nonnull final Injector parentInjector, @Nonnull final Object component) {
+    // noinspection ConstantConditions
     if (parentInjector == null) {
       throw new NullPointerException("Parent injector cannot be null");
     }
@@ -90,21 +95,25 @@ public class Lightsaber {
     configurator.injectMembers(injector, object);
   }
 
-  public static <T> T getInstance(final Injector injector, final Class<? extends T> type) {
+  @Nonnull
+  public static <T> T getInstance(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type) {
     return injector.getInstance(Key.of(type));
   }
 
-  public static <T> T getInstance(final Injector injector, final Class<? extends T> type,
+  @Nonnull
+  public static <T> T getInstance(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type,
       final Annotation annotation) {
     return injector.getInstance(Key.of(type, annotation));
   }
 
-  public static <T> Provider<T> getProvider(final Injector injector, final Class<? extends T> type) {
+  @Nonnull
+  public static <T> Provider<T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type) {
     return injector.getProvider(Key.of(type));
   }
 
-  public static <T> Provider<T> getProvider(final Injector injector, final Class<? extends T> type,
-      final Annotation annotation) {
+  @Nonnull
+  public static <T> Provider<T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type,
+      @Nonnull final Annotation annotation) {
     return injector.getProvider(Key.of(type, annotation));
   }
 
