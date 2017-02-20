@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,8 +41,9 @@ public class LightsaberTest {
       public Object answer(final InvocationOnMock invocation) throws Throwable {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
         injector.registerProvider(Key.of(String.class), new AbstractInjectingProvider<String>(injector) {
+          @Nonnull
           @Override
-          public String getWithInjector(final Injector injector) {
+          public String getWithInjector(@Nonnull final Injector injector) {
             return "Parent String";
           }
         });
@@ -55,8 +56,9 @@ public class LightsaberTest {
       public Object answer(final InvocationOnMock invocation) throws Throwable {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
         injector.registerProvider(Key.of(Object.class), new AbstractInjectingProvider<Object>(injector) {
+          @Nonnull
           @Override
-          public Object getWithInjector(final Injector injector) {
+          public Object getWithInjector(@Nonnull final Injector injector) {
             return "Child Object";
           }
         });
@@ -70,8 +72,9 @@ public class LightsaberTest {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
         injector.registerProvider(Key.of(String.class, new NamedProxy("Annotated")),
             new AbstractInjectingProvider<String>(injector) {
+              @Nonnull
               @Override
-              public String getWithInjector(final Injector injector) {
+              public String getWithInjector(@Nonnull final Injector injector) {
                 return "Child Annotated String";
               }
             });;
@@ -149,7 +152,7 @@ public class LightsaberTest {
     @Nonnull
     private final String value;
 
-    public NamedProxy(@Nonnull final String value) {
+    NamedProxy(@Nonnull final String value) {
       this.value = value;
     }
 
