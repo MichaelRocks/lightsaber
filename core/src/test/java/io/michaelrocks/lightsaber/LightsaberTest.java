@@ -40,7 +40,7 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) throws Throwable {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(Key.of(String.class), new AbstractInjectingProvider<String>(injector) {
+        injector.registerProvider(String.class, new AbstractInjectingProvider<String>(injector) {
           @Nonnull
           @Override
           public String getWithInjector(@Nonnull final Injector injector) {
@@ -95,6 +95,7 @@ public class LightsaberTest {
     verify(configurator).configureInjector((LightsaberInjector) injector, parentModule);
     verifyNoMoreInteractions(configurator);
     assertSame(injector, injector.getInstance(Key.of(Injector.class)));
+    assertEquals("Parent String", injector.getInstance(String.class));
     assertEquals("Parent String", injector.getInstance(Key.of(String.class)));
   }
 
@@ -113,7 +114,9 @@ public class LightsaberTest {
     verifyNoMoreInteractions(configurator);
     assertSame(injector, injector.getInstance(Key.of(Injector.class)));
     assertSame(childInjector, childInjector.getInstance(Key.of(Injector.class)));
+    assertEquals("Parent String", childInjector.getInstance(String.class));
     assertEquals("Parent String", childInjector.getInstance(Key.of(String.class)));
+    assertEquals("Child Object", childInjector.getInstance(Object.class));
     assertEquals("Child Object", childInjector.getInstance(Key.of(Object.class)));
   }
 
@@ -134,6 +137,7 @@ public class LightsaberTest {
     final Named annotation = new NamedProxy("Annotated");
     assertSame(injector, injector.getInstance(Key.of(Injector.class)));
     assertSame(childInjector, childInjector.getInstance(Key.of(Injector.class)));
+    assertEquals("Parent String", childInjector.getInstance(String.class));
     assertEquals("Parent String", childInjector.getInstance(Key.of(String.class)));
     assertEquals("Child Annotated String", childInjector.getInstance(Key.of(String.class, annotation)));
   }
