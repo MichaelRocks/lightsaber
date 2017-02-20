@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package io.michaelrocks.lightsaber;
 
 import io.michaelrocks.lightsaber.internal.InjectingProvider;
 
+import javax.annotation.Nonnull;
 import javax.inject.Provider;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +29,7 @@ class LightsaberInjector implements Injector {
   private final Lightsaber lightsaber;
   private final Map<Key<?>, InjectingProvider<?>> providers = new HashMap<Key<?>, InjectingProvider<?>>();
 
-  public LightsaberInjector(final Lightsaber lightsaber) {
+  LightsaberInjector(@Nonnull final Lightsaber lightsaber) {
     this.lightsaber = lightsaber;
     registerProvider(INJECTOR_KEY, new InjectingProvider<Injector>() {
       @Override
@@ -44,15 +45,17 @@ class LightsaberInjector implements Injector {
   }
 
   @Override
-  public void injectMembers(final Object target) {
+  public void injectMembers(@Nonnull final Object target) {
     lightsaber.injectMembers(this, target);
   }
 
+  @Nonnull
   @Override
   public <T> T getInstance(final Key<? extends T> key) {
     return getProvider(key).get();
   }
 
+  @Nonnull
   @Override
   public <T> Provider<T> getProvider(final Key<? extends T> key) {
     // noinspection unchecked
@@ -63,11 +66,12 @@ class LightsaberInjector implements Injector {
     return provider;
   }
 
+  @Nonnull
   public Map<Key<?>, InjectingProvider<?>> getProviders() {
     return providers;
   }
 
-  public <T> void registerProvider(final Key<T> key, final InjectingProvider<? extends T> provider) {
+  <T> void registerProvider(@Nonnull final Key<T> key, @Nonnull final InjectingProvider<? extends T> provider) {
     final Provider<?> oldProvider = providers.put(key, provider);
     if (oldProvider != null) {
       throw new ConfigurationException("Provider for " + key + " already registered in " + this);
