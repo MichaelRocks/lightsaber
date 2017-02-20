@@ -78,18 +78,18 @@ public class Lightsaber {
   }
 
   private static void overrideProviders(final LightsaberInjector injector, final LightsaberInjector parent) {
-    for (final Map.Entry<Key<?>, InjectingProvider<?>> entry : parent.getProviders().entrySet()) {
-      if (!LightsaberInjector.INJECTOR_KEY.equals(entry.getKey())) {
+    for (final Map.Entry<Object, InjectingProvider<?>> entry : parent.getProviders().entrySet()) {
+      if (!Injector.class.equals(entry.getKey())) {
         // noinspection unchecked
-        overrideProvider(injector, (Key<Object>) entry.getKey(), (InjectingProvider<Object>) entry.getValue());
+        overrideProvider(injector, entry.getKey(), (InjectingProvider<Object>) entry.getValue());
       }
     }
   }
 
-  private static <T> void overrideProvider(final LightsaberInjector injector, final Key<T> key,
+  private static <T> void overrideProvider(final LightsaberInjector injector, final Object key,
       final InjectingProvider<T> provider) {
     final InjectingProvider<T> overriddenProvider = new InjectorOverridingProvider<T>(provider, injector);
-    injector.registerProvider(key, overriddenProvider);
+    injector.registerProviderInternal(key, overriddenProvider);
   }
 
   void injectMembers(final Injector injector, final Object object) {

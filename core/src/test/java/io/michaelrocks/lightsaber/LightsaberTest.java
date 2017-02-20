@@ -77,7 +77,7 @@ public class LightsaberTest {
               public String getWithInjector(@Nonnull final Injector injector) {
                 return "Child Annotated String";
               }
-            });;
+            });
         return null;
       }
     })

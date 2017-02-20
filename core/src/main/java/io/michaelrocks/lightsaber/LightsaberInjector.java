@@ -20,18 +20,17 @@ import io.michaelrocks.lightsaber.internal.InjectingProvider;
 
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
 class LightsaberInjector implements Injector {
-  static final Key<Injector> INJECTOR_KEY = new Key<Injector>(Injector.class);
-
   private final Lightsaber lightsaber;
-  private final Map<Key<?>, InjectingProvider<?>> providers = new HashMap<Key<?>, InjectingProvider<?>>();
+  private final Map<Object, InjectingProvider<?>> providers = new HashMap<Object, InjectingProvider<?>>();
 
   LightsaberInjector(@Nonnull final Lightsaber lightsaber) {
     this.lightsaber = lightsaber;
-    registerProvider(INJECTOR_KEY, new InjectingProvider<Injector>() {
+    registerProvider(Injector.class, new InjectingProvider<Injector>() {
       @Override
       public Injector get() {
         return LightsaberInjector.this;
@@ -51,13 +50,46 @@ class LightsaberInjector implements Injector {
 
   @Nonnull
   @Override
-  public <T> T getInstance(final Key<? extends T> key) {
+  public <T> T getInstance(@Nonnull final Class<? extends T> type) {
+    return getProvider(type).get();
+  }
+
+  @Nonnull
+  @Override
+  public <T> T getInstance(@Nonnull final Type type) {
+    // noinspection unchecked
+    return (T) getProvider(type).get();
+  }
+
+  @Nonnull
+  @Override
+  public <T> T getInstance(@Nonnull final Key<? extends T> key) {
     return getProvider(key).get();
   }
 
   @Nonnull
   @Override
-  public <T> Provider<T> getProvider(final Key<? extends T> key) {
+  public <T> Provider<T> getProvider(@Nonnull final Class<? extends T> type) {
+    return getProviderInternal(type);
+  }
+
+  @Nonnull
+  @Override
+  public <T> Provider<T> getProvider(@Nonnull final Type type) {
+    return getProviderInternal(type);
+  }
+
+  @Nonnull
+  @Override
+  public <T> Provider<T> getProvider(@Nonnull final Key<? extends T> key) {
+    if (key.getQualifier() == null) {
+      return getProviderInternal(key.getType());
+    } else {
+      return getProviderInternal(key);
+    }
+  }
+
+  private <T> Provider<T> getProviderInternal(final Object key) {
     // noinspection unchecked
     final Provider<T> provider = (Provider<T>) providers.get(key);
     if (provider == null) {
@@ -67,11 +99,23 @@ class LightsaberInjector implements Injector {
   }
 
   @Nonnull
-  public Map<Key<?>, InjectingProvider<?>> getProviders() {
+  public Map<Object, InjectingProvider<?>> getProviders() {
     return providers;
   }
 
-  <T> void registerProvider(@Nonnull final Key<T> key, @Nonnull final InjectingProvider<? extends T> provider) {
+  <T> void registerProvider(final Type type, final InjectingProvider<? extends T> provider) {
+    registerProviderInternal(type, provider);
+  }
+
+  <T> void registerProvider(final Key<T> key, final InjectingProvider<? extends T> provider) {
+    if (key.getQualifier() == null) {
+      registerProviderInternal(key.getType(), provider);
+    } else {
+      registerProviderInternal(key, provider);
+    }
+  }
+
+  <T> void registerProviderInternal(final Object key, final InjectingProvider<? extends T> provider) {
     final Provider<?> oldProvider = providers.put(key, provider);
     if (oldProvider != null) {
       throw new ConfigurationException("Provider for " + key + " already registered in " + this);
