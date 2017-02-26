@@ -17,12 +17,12 @@
 package io.michaelrocks.lightsaber;
 
 import io.michaelrocks.lightsaber.internal.InjectingProvider;
+import io.michaelrocks.lightsaber.internal.MapIterator;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
-import java.util.Map;
 
 public class Lightsaber {
   private static final Configurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
@@ -78,10 +78,12 @@ public class Lightsaber {
   }
 
   private static void overrideProviders(final LightsaberInjector injector, final LightsaberInjector parent) {
-    for (final Map.Entry<Object, InjectingProvider<?>> entry : parent.getProviders().entrySet()) {
-      if (!Injector.class.equals(entry.getKey())) {
+    final MapIterator<Object, InjectingProvider<?>> iterator = parent.getProviders().iterator();
+    while (iterator.hasNext()) {
+      final Object key = iterator.next();
+      if (!Injector.class.equals(key)) {
         // noinspection unchecked
-        overrideProvider(injector, entry.getKey(), (InjectingProvider<Object>) entry.getValue());
+        overrideProvider(injector, key, iterator.getValue());
       }
     }
   }
