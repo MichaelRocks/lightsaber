@@ -174,13 +174,13 @@ class Generator(
   }
 
   private fun generateInjectors(generationContext: GenerationContext) {
-    val typeAgentsGenerator = MembersInjectorsGenerator(classProducer, classRegistry)
-    typeAgentsGenerator.generate(generationContext)
+    val generator = MembersInjectorsGenerator(classProducer, classRegistry)
+    generator.generate(generationContext)
   }
 
   private fun generatePackageInvaders(generationContext: GenerationContext) {
-    val packageInvadersGenerator = PackageInvadersGenerator(classProducer, classRegistry)
-    packageInvadersGenerator.generate(generationContext)
+    val generator = PackageInvadersGenerator(classProducer, classRegistry)
+    generator.generate(generationContext)
   }
 
   private fun generateKeyRegistry(generationContext: GenerationContext) {
