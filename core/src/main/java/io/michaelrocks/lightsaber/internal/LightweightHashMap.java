@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-public class FastHashMap<K, V> implements IterableMap<K, V> {
+public class LightweightHashMap<K, V> implements IterableMap<K, V> {
   private static final int DEFAULT_CAPACITY = 16;
   private static final float DEFAULT_LOAD_FACTOR = 0.7f;
   private static final int MAXIMUM_CAPACITY = 1 << 29;
@@ -35,15 +35,15 @@ public class FastHashMap<K, V> implements IterableMap<K, V> {
   private transient int threshold;
   private transient int modificationCount;
 
-  public FastHashMap() {
+  public LightweightHashMap() {
     this(DEFAULT_CAPACITY);
   }
 
-  public FastHashMap(final int initialCapacity) {
+  public LightweightHashMap(final int initialCapacity) {
     this(initialCapacity, DEFAULT_LOAD_FACTOR);
   }
 
-  public FastHashMap(final int initialCapacity, final float loadFactor) {
+  public LightweightHashMap(final int initialCapacity, final float loadFactor) {
     final int capacity = calculateNewCapacity(initialCapacity);
     this.loadFactor = loadFactor;
     this.data = new Object[capacity << 1];
@@ -241,7 +241,7 @@ public class FastHashMap<K, V> implements IterableMap<K, V> {
   }
 
   protected Object clone() throws CloneNotSupportedException {
-    final FastHashMap<?, ?> result = (FastHashMap<?, ?>) super.clone();
+    final LightweightHashMap<?, ?> result = (LightweightHashMap<?, ?>) super.clone();
     modificationCount = 0;
     return result;
   }
@@ -365,13 +365,13 @@ public class FastHashMap<K, V> implements IterableMap<K, V> {
     private static final int STATE_FINISHED = 1;
     private static final int STATE_CACHED = 2;
 
-    private final FastHashMap<K, V> map;
+    private final LightweightHashMap<K, V> map;
     private final int expectedModificationCount;
     private int index = -2;
     private int nextIndex;
     private int state = STATE_INITIAL;
 
-    private AddOnlyHashMapIterator(final FastHashMap<K, V> map) {
+    private AddOnlyHashMapIterator(final LightweightHashMap<K, V> map) {
       this.map = map;
       this.expectedModificationCount = map.modificationCount;
     }
