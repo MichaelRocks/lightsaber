@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ class InjectorDispatcherSourceGenerator(
       packageInvader: PackageInvader?) {
     val component = injectorConfigurator.component.type.getClassReference(packageInvader)
     val configurator = injectorConfigurator.className
-    putToInjectorConfigurators("$component", "new $configurator()")
+    putToInjectorConfigurators(component, "new $configurator()")
   }
 
   private fun StringBuilder.putToInjectorConfigurators(key: String, value: String) {
@@ -78,7 +78,7 @@ class InjectorDispatcherSourceGenerator(
   private fun StringBuilder.putMembersInjector(membersInjector: MembersInjector, packageInvader: PackageInvader?) {
     val target = membersInjector.target.type.getClassReference(packageInvader)
     val injector = membersInjector.type.className
-    putToMembersInjectors("$target", "new $injector()")
+    putToMembersInjectors(target, "new $injector()")
   }
 
   private fun StringBuilder.putToMembersInjectors(key: String, value: String) {
