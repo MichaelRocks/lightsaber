@@ -66,8 +66,9 @@ class LightsaberInjector implements Injector {
         return LightsaberInjector.this;
       }
 
+      @Nonnull
       @Override
-      public Injector getWithInjector(final Injector injector) {
+      public Injector getWithInjector(@Nonnull final Injector injector) {
         return LightsaberInjector.this;
       }
     });
