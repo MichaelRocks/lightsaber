@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,8 +58,6 @@ class ProviderClassGenerator(
 
     private val GET_WITH_INJECTOR_METHOD =
         MethodDescriptor.forMethod("getWithInjector", Types.OBJECT_TYPE, Types.INJECTOR_TYPE)
-    private val GET_PROVIDER_METHOD =
-        MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE)
     private val INJECT_MEMBERS_METHOD =
         MethodDescriptor.forMethod("injectMembers", Type.Primitive.Void, Types.OBJECT_TYPE)
   }
@@ -192,8 +190,7 @@ class ProviderClassGenerator(
 
   private fun generateProviderMethodArgument(generator: GeneratorAdapter, injectee: Injectee) {
     generator.loadArg(0)
-    generator.getKey(keyRegistry, injectee.dependency)
-    generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD)
+    generator.getProvider(keyRegistry, injectee.dependency)
     generator.convertDependencyToTargetType(injectee)
   }
 

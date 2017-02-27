@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ class MembersInjectorClassGenerator(
         MethodDescriptor.forMethod("injectFields", Type.Primitive.Void, Types.INJECTOR_TYPE, Types.OBJECT_TYPE)
     private val INJECT_METHODS_METHOD =
         MethodDescriptor.forMethod("injectMethods", Type.Primitive.Void, Types.INJECTOR_TYPE, Types.OBJECT_TYPE)
-    private val GET_PROVIDER_METHOD = MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE)
   }
 
   private val fields: Collection<InjectionPoint.Field>
@@ -118,8 +117,7 @@ class MembersInjectorClassGenerator(
       field: InjectionPoint.Field) {
     generator.loadLocal(injectableTargetLocal)
     generator.loadArg(0)
-    generator.getKey(keyRegistry, field.injectee.dependency)
-    generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD)
+    generator.getProvider(keyRegistry, field.injectee.dependency)
     generator.convertDependencyToTargetType(field.injectee)
     generator.putField(injector.target.type, field.field.toFieldDescriptor())
   }
@@ -147,8 +145,7 @@ class MembersInjectorClassGenerator(
 
     method.injectees.forEach { injectee ->
       generator.loadArg(0)
-      generator.getKey(keyRegistry, injectee.dependency)
-      generator.invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_METHOD)
+      generator.getProvider(keyRegistry, injectee.dependency)
       generator.convertDependencyToTargetType(injectee)
     }
     generator.invokeVirtual(injector.target.type, method.method.toMethodDescriptor())
