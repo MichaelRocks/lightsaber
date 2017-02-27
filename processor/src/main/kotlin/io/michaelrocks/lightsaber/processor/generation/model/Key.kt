@@ -16,10 +16,12 @@
 
 package io.michaelrocks.lightsaber.processor.generation.model
 
-import io.michaelrocks.grip.mirrors.Type
-import io.michaelrocks.lightsaber.processor.model.Dependency
+import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 
-data class KeyRegistry(
-    val type: Type.Object,
-    val keys: Map<Dependency, Key>
-)
+sealed class Key {
+  abstract val field: FieldDescriptor
+
+  class Class(override val field: FieldDescriptor) : Key()
+  class Type(override val field: FieldDescriptor) : Key()
+  class QualifiedType(override val field: FieldDescriptor) : Key()
+}

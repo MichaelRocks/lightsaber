@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,8 @@ class KeyRegistryClassGenerator(
   }
 
   private fun generateFields(classVisitor: ClassVisitor) {
-    for (field in keyRegistry.fields.values) {
+    for (key in keyRegistry.keys.values) {
+      val field = key.field
       val fieldVisitor = classVisitor.visitField(
           ACC_PUBLIC or ACC_STATIC or ACC_FINAL,
           field.name,
@@ -97,9 +98,9 @@ class KeyRegistryClassGenerator(
     val generator = GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer)
     generator.visitCode()
 
-    for ((dependency, field) in keyRegistry.fields.entries) {
+    for ((dependency, key) in keyRegistry.keys.entries) {
       generator.newKey(dependency)
-      generator.putStatic(keyRegistry.type, field)
+      generator.putStatic(keyRegistry.type, key.field)
     }
 
     generator.returnValue()

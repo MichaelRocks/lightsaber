@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,6 @@ fun GeneratorAdapter.convertDependencyToTargetType(injectee: Injectee) {
 }
 
 fun GeneratorAdapter.getKey(keyRegistry: KeyRegistry, dependency: Dependency) {
-  val field = keyRegistry.fields[dependency.box()] ?: error("Key for $dependency not found")
-  getStatic(keyRegistry.type, field)
+  val key = keyRegistry.keys[dependency.box()] ?: error("Key for $dependency not found")
+  getStatic(keyRegistry.type, key.field)
 }
