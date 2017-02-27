@@ -320,8 +320,9 @@ public class FastHashMap<K, V> implements IterableMap<K, V> {
       threshold = calculateThreshold(newCapacity, loadFactor);
 
       for (int i = 0, count = oldData.length; i < count; i += 2) {
-        final Object key = oldData[i];
-        if (key != null) {
+        final Object escapedKey = oldData[i];
+        if (escapedKey != null) {
+          final Object key = escapedKey == Null.VALUE ? null : escapedKey;
           final int index = findInTable(key);
           final int keyIndex = index << 1;
           data[keyIndex] = key;
