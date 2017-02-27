@@ -130,6 +130,10 @@ class LightsaberInjector implements Injector {
     return providers;
   }
 
+  <T> void registerProvider(final Class<? extends T> type, final InjectingProvider<? extends T> provider) {
+    registerProviderInternal(type, provider);
+  }
+
   <T> void registerProvider(final Type type, final InjectingProvider<? extends T> provider) {
     registerProviderInternal(type, provider);
   }
