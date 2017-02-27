@@ -117,8 +117,7 @@ class MembersInjectorClassGenerator(
       field: InjectionPoint.Field) {
     generator.loadLocal(injectableTargetLocal)
     generator.loadArg(0)
-    generator.getProvider(keyRegistry, field.injectee.dependency)
-    generator.convertDependencyToTargetType(field.injectee)
+    generator.getDependency(keyRegistry, field.injectee)
     generator.putField(injector.target.type, field.field.toFieldDescriptor())
   }
 
@@ -145,8 +144,7 @@ class MembersInjectorClassGenerator(
 
     method.injectees.forEach { injectee ->
       generator.loadArg(0)
-      generator.getProvider(keyRegistry, injectee.dependency)
-      generator.convertDependencyToTargetType(injectee)
+      generator.getDependency(keyRegistry, injectee)
     }
     generator.invokeVirtual(injector.target.type, method.method.toMethodDescriptor())
   }

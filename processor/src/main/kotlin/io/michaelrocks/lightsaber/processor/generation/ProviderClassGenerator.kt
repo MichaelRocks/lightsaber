@@ -190,8 +190,7 @@ class ProviderClassGenerator(
 
   private fun generateProviderMethodArgument(generator: GeneratorAdapter, injectee: Injectee) {
     generator.loadArg(0)
-    generator.getProvider(keyRegistry, injectee.dependency)
-    generator.convertDependencyToTargetType(injectee)
+    generator.getDependency(keyRegistry, injectee)
   }
 
   private fun generateInjectMembersInvocation(generator: GeneratorAdapter) {

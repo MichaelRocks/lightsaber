@@ -56,14 +56,17 @@ private val REGISTER_PROVIDER_FOR_KEY_METHOD =
 
 private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.INJECTING_PROVIDER_TYPE)
 
-fun GeneratorAdapter.convertDependencyToTargetType(injectee: Injectee) {
+fun GeneratorAdapter.getDependency(keyRegistry: KeyRegistry, injectee: Injectee) {
   when (injectee.converter) {
-    is Converter.Identity -> {} // Do nothing.
+    is Converter.Identity -> {
+      getProvider(keyRegistry, injectee.dependency)
+    }
     is Converter.Instance -> {
-      invokeInterface(Types.PROVIDER_TYPE, PROVIDER_GET_METHOD)
+      getInstance(keyRegistry, injectee.dependency)
       unbox(injectee.dependency.type.rawType)
     }
     is Converter.Adapter -> {
+      getProvider(keyRegistry, injectee.dependency)
       newInstance(injectee.converter.adapterType)
       dupX1()
       swap()
