@@ -17,12 +17,12 @@
 package io.michaelrocks.lightsaber;
 
 import io.michaelrocks.lightsaber.internal.InjectingProvider;
+import io.michaelrocks.lightsaber.internal.MapIterator;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
-import java.util.Map;
 
 public class Lightsaber {
   private static final Configurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
@@ -78,18 +78,20 @@ public class Lightsaber {
   }
 
   private static void overrideProviders(final LightsaberInjector injector, final LightsaberInjector parent) {
-    for (final Map.Entry<Key<?>, InjectingProvider<?>> entry : parent.getProviders().entrySet()) {
-      if (!LightsaberInjector.INJECTOR_KEY.equals(entry.getKey())) {
+    final MapIterator<Object, InjectingProvider<?>> iterator = parent.getProviders().iterator();
+    while (iterator.hasNext()) {
+      final Object key = iterator.next();
+      if (!Injector.class.equals(key)) {
         // noinspection unchecked
-        overrideProvider(injector, (Key<Object>) entry.getKey(), (InjectingProvider<Object>) entry.getValue());
+        overrideProvider(injector, key, iterator.getValue());
       }
     }
   }
 
-  private static <T> void overrideProvider(final LightsaberInjector injector, final Key<T> key,
+  private static <T> void overrideProvider(final LightsaberInjector injector, final Object key,
       final InjectingProvider<T> provider) {
     final InjectingProvider<T> overriddenProvider = new InjectorOverridingProvider<T>(provider, injector);
-    injector.registerProvider(key, overriddenProvider);
+    injector.registerProviderInternal(key, overriddenProvider);
   }
 
   void injectMembers(final Injector injector, final Object object) {

@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.generation.model
+package io.michaelrocks.lightsaber.internal;
 
-import io.michaelrocks.grip.mirrors.Type
-import io.michaelrocks.lightsaber.processor.model.Dependency
+import javax.annotation.Nonnull;
+import java.util.Map;
 
-data class KeyRegistry(
-    val type: Type.Object,
-    val keys: Map<Dependency, Key>
-)
+public interface IterableMap<K, V> extends Map<K, V>, Iterable<K> {
+  @Nonnull
+  @Override
+  MapIterator<K, V> iterator();
+}

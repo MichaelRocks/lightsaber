@@ -16,11 +16,11 @@
 
 package io.michaelrocks.lightsaber;
 
+import io.michaelrocks.lightsaber.internal.TypeUtils;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 public class Key<T> {
@@ -73,14 +73,14 @@ public class Key<T> {
     }
 
     final Key<?> key = (Key<?>) object;
-    return type.equals(key.type)
+    return TypeUtils.equals(type, key.type)
         && (qualifier != null ? qualifier.equals(key.qualifier) : key.qualifier == null);
   }
 
   @Override
   public int hashCode() {
     int result = 1;
-    result = 31 * result + hashCode(type);
+    result = 31 * result + TypeUtils.hashCode(type);
     result = 31 * result + (qualifier != null ? qualifier.hashCode() : 0);
     return result;
   }
@@ -88,40 +88,5 @@ public class Key<T> {
   @Override
   public String toString() {
     return "Key{type=" + type + ", qualifier=" + qualifier + '}';
-  }
-
-  private int hashCode(final Type type) {
-    if (type == null) {
-      return 0;
-    }
-
-    if (type instanceof Class<?>) {
-      return type.hashCode();
-    } else if (type instanceof ParameterizedType) {
-      final ParameterizedType parameterizedType = (ParameterizedType) type;
-      int result = 1;
-      result = 31 * result + hashCode(parameterizedType.getActualTypeArguments());
-      result = 31 * result + hashCode(parameterizedType.getOwnerType());
-      result = 31 * result + hashCode(parameterizedType.getRawType());
-      return result;
-    } else if (type instanceof GenericArrayType) {
-      final GenericArrayType genericArrayType = (GenericArrayType) type;
-      return 31 + hashCode(genericArrayType.getGenericComponentType());
-    } else {
-      return type.hashCode();
-    }
-  }
-
-  private int hashCode(final Type[] types) {
-    if (types == null) {
-      return 0;
-    }
-
-    int result = 1;
-    for (final Type type : types) {
-      result = 31 * result + (type == null ? 0 : hashCode(type));
-    }
-
-    return result;
   }
 }

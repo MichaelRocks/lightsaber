@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import io.michaelrocks.lightsaber.Key
 import io.michaelrocks.lightsaber.Lazy
 import io.michaelrocks.lightsaber.Module
 import io.michaelrocks.lightsaber.Provides
+import io.michaelrocks.lightsaber.internal.InjectingProvider
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Qualifier
@@ -48,6 +49,7 @@ object Types {
   val CLASS_TYPE = getObjectType<Class<*>>()
   val TYPE_TYPE = getObjectType<JavaType>()
   val ANNOTATION_TYPE = getObjectType<Annotation>()
+  val INJECTING_PROVIDER_TYPE = getObjectType<InjectingProvider<*>>()
 
   val BOXED_VOID_TYPE = getObjectType<Void>()
   val BOXED_BOOLEAN_TYPE = getObjectType<Boolean>()
