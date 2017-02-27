@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,15 @@
 
 package io.michaelrocks.lightsaber;
 
-import java.util.HashMap;
+import io.michaelrocks.lightsaber.internal.LightweightHashMap;
+
+import java.util.Map;
 
 public class InjectionDispatcher {
-  private static final HashMap<Class<?>, InjectorConfigurator> injectorConfigurators =
-      new HashMap<Class<?>, InjectorConfigurator>();
-  private static final HashMap<Class<?>, MembersInjector<?>> membersInjectors =
-      new HashMap<Class<?>, MembersInjector<?>>();
+  private static final Map<Class<?>, InjectorConfigurator> injectorConfigurators =
+      new LightweightHashMap<Class<?>, InjectorConfigurator>();
+  private static final Map<Class<?>, MembersInjector<?>> membersInjectors =
+      new LightweightHashMap<Class<?>, MembersInjector<?>>();
 
   static {
     /*%STATIC_INITIALIZER%*/
