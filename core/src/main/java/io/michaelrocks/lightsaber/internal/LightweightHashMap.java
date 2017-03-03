@@ -325,7 +325,7 @@ public class LightweightHashMap<K, V> implements IterableMap<K, V> {
           final Object key = escapedKey == Null.VALUE ? null : escapedKey;
           final int index = findInTable(key);
           final int keyIndex = index << 1;
-          data[keyIndex] = key;
+          data[keyIndex] = escapedKey;
           data[keyIndex + 1] = oldData[i + 1];
 
           oldData[i] = null;
