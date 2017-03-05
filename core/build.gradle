@@ -6,6 +6,7 @@ targetCompatibility = JavaVersion.VERSION_1_6
 
 dependencies {
   compile "javax.inject:javax.inject:$javaxInjectVersion"
+  compile "com.google.code.findbugs:jsr305:$jsr305Version"
   compileOnly project(':core-stub')
 
   testCompile "junit:junit:$junitVersion"

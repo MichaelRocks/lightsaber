@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,24 @@
 
 package io.michaelrocks.lightsaber;
 
+import javax.annotation.Nonnull;
 import javax.inject.Provider;
+import java.lang.reflect.Type;
 
 public interface Injector {
-  void injectMembers(Object target);
+  void injectMembers(@Nonnull Object target);
 
-  <T> T getInstance(Key<? extends T> type);
+  @Nonnull
+  <T> T getInstance(@Nonnull Class<? extends T> type);
+  @Nonnull
+  <T> T getInstance(@Nonnull Type type);
+  @Nonnull
+  <T> T getInstance(@Nonnull Key<? extends T> type);
 
-  <T> Provider<T> getProvider(Key<? extends T> key);
+  @Nonnull
+  <T> Provider<T> getProvider(@Nonnull Class<? extends T> type);
+  @Nonnull
+  <T> Provider<T> getProvider(@Nonnull Type type);
+  @Nonnull
+  <T> Provider<T> getProvider(@Nonnull Key<? extends T> key);
 }

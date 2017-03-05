@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.generation.model
+package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.grip.mirrors.Type
-import io.michaelrocks.lightsaber.processor.model.Dependency
+import javax.annotation.Nonnull;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
-data class KeyRegistry(
-    val type: Type.Object,
-    val keys: Map<Dependency, Key>
-)
+abstract class TypeReference<T> {
+  protected TypeReference() {
+  }
+
+  @Nonnull
+  public Type getType() {
+    final ParameterizedType referenceType = (ParameterizedType) getClass().getGenericSuperclass();
+    return referenceType.getActualTypeArguments()[0];
+  }
+}

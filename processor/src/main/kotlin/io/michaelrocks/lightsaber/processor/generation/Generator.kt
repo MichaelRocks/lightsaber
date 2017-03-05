@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
+import io.michaelrocks.lightsaber.processor.generation.model.Key
 import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
 import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
@@ -140,18 +141,26 @@ class Generator(
 
   private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {
     val type = getObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry")
-    val fields = context.allComponents.asSequence()
+    val keys = context.allComponents.asSequence()
         .flatMap { it.modules.asSequence() }
         .flatMap { it.providers.asSequence() }
         .asIterable()
         .associateByIndexedTo(
             HashMap(),
             { index, provider -> provider.dependency.box() },
-            { index, provider -> FieldDescriptor("key$index", Types.KEY_TYPE) }
+            { index, provider -> composeKey("key$index", provider.dependency) }
         )
     val injectorDependency = Dependency(GenericType.Raw(Types.INJECTOR_TYPE))
-    fields.put(injectorDependency, FieldDescriptor("injectorKey", Types.KEY_TYPE))
-    return KeyRegistry(type, fields)
+    keys.put(injectorDependency, composeKey("injectorKey", injectorDependency))
+    return KeyRegistry(type, keys)
+  }
+
+  private fun composeKey(name: String, dependency: Dependency): Key {
+    return when {
+      dependency.qualifier != null -> Key.QualifiedType(FieldDescriptor(name, Types.KEY_TYPE))
+      dependency.type is GenericType.Raw -> Key.Class(FieldDescriptor(name, Types.CLASS_TYPE))
+      else -> Key.Type(FieldDescriptor(name, Types.TYPE_TYPE))
+    }
   }
 
   private fun generateProviders(injectionContext: InjectionContext, generationContext: GenerationContext) {
@@ -165,13 +174,13 @@ class Generator(
   }
 
   private fun generateInjectors(generationContext: GenerationContext) {
-    val typeAgentsGenerator = MembersInjectorsGenerator(classProducer, classRegistry)
-    typeAgentsGenerator.generate(generationContext)
+    val generator = MembersInjectorsGenerator(classProducer, classRegistry)
+    generator.generate(generationContext)
   }
 
   private fun generatePackageInvaders(generationContext: GenerationContext) {
-    val packageInvadersGenerator = PackageInvadersGenerator(classProducer, classRegistry)
-    packageInvadersGenerator.generate(generationContext)
+    val generator = PackageInvadersGenerator(classProducer, classRegistry)
+    generator.generate(generationContext)
   }
 
   private fun generateKeyRegistry(generationContext: GenerationContext) {

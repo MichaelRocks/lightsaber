@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import io.michaelrocks.lightsaber.processor.commons.newDefaultConstructor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
+import io.michaelrocks.lightsaber.processor.generation.model.Key
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
@@ -81,7 +82,8 @@ class KeyRegistryClassGenerator(
   }
 
   private fun generateFields(classVisitor: ClassVisitor) {
-    for (field in keyRegistry.fields.values) {
+    for (key in keyRegistry.keys.values) {
+      val field = key.field
       val fieldVisitor = classVisitor.visitField(
           ACC_PUBLIC or ACC_STATIC or ACC_FINAL,
           field.name,
@@ -97,13 +99,20 @@ class KeyRegistryClassGenerator(
     val generator = GeneratorAdapter(classVisitor, ACC_STATIC, staticInitializer)
     generator.visitCode()
 
-    for ((dependency, field) in keyRegistry.fields.entries) {
-      generator.newKey(dependency)
-      generator.putStatic(keyRegistry.type, field)
+    for ((dependency, key) in keyRegistry.keys.entries) {
+      generator.pushInstanceOfKey(dependency, key)
+      generator.putStatic(keyRegistry.type, key.field)
     }
 
     generator.returnValue()
     generator.endMethod()
+  }
+
+  private fun GeneratorAdapter.pushInstanceOfKey(dependency: Dependency, key: Key) {
+    when (key) {
+      is Key.QualifiedType -> newKey(dependency)
+      is Key.Class, is Key.Type -> push(dependency.type)
+    }
   }
 
   private fun GeneratorAdapter.newKey(dependency: Dependency) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,7 @@ package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.Type
-import io.michaelrocks.grip.mirrors.getObjectType
 import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.internal.InjectingProvider
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -35,7 +33,6 @@ import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
 import io.michaelrocks.lightsaber.processor.model.ModuleProvider
 import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
 import io.michaelrocks.lightsaber.processor.model.Provider
-import io.michaelrocks.lightsaber.processor.model.Scope
 import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -49,15 +46,9 @@ class InjectorConfiguratorClassGenerator(
     private val injectorConfigurator: InjectorConfigurator
 ) {
   companion object {
-    private val INJECTING_PROVIDER_TYPE = getObjectType<InjectingProvider<*>>()
-
     private val CONFIGURE_INJECTOR_METHOD =
         MethodDescriptor.forMethod("configureInjector",
             Type.Primitive.Void, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, Types.OBJECT_TYPE)
-    private val REGISTER_PROVIDER_METHOD =
-        MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.KEY_TYPE, INJECTING_PROVIDER_TYPE)
-
-    private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(INJECTING_PROVIDER_TYPE)
 
     private val INVALID_LOCAL = -1
   }
@@ -95,7 +86,8 @@ class InjectorConfiguratorClassGenerator(
     val moduleLocal = getModule(moduleProvider.provisionPoint)
 
     moduleProvider.module.providers.forEach { provider ->
-      registerProvider(provider) {
+      loadArg(0)
+      registerProvider(keyRegistry, provider) {
         if (moduleLocal == INVALID_LOCAL) {
           check(provider.isConstructorProvider)
           newConstructorProvider(provider)
@@ -127,25 +119,6 @@ class InjectorConfiguratorClassGenerator(
     return newLocal(provisionPoint.field.type) {
       getField(injectorConfigurator.component.type, provisionPoint.field.toFieldDescriptor())
     }
-  }
-
-  private fun GeneratorAdapter.registerProvider(provider: Provider, providerCreator: () -> Unit) {
-    loadArg(0)
-    getKey(keyRegistry, provider.dependency)
-
-    when (provider.scope) {
-      is Scope.Class -> newDelegator(provider.scope.scopeType, providerCreator)
-      is Scope.None -> providerCreator()
-    }
-
-    invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_METHOD)
-  }
-
-  private fun GeneratorAdapter.newDelegator(scopeType: Type, providerCreator: () -> Unit) {
-    newInstance(scopeType)
-    dup()
-    providerCreator()
-    invokeConstructor(scopeType, DELEGATE_PROVIDER_CONSTRUCTOR)
   }
 
   private fun GeneratorAdapter.newModuleProvider(provider: Provider, moduleRetriever: () -> Unit) {
