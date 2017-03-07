@@ -188,19 +188,18 @@ the provided instance.
 ### Manual injection
 
 Manual injection is a way to create an instance of a provided type or to perform field and method injection into an
-existing object. An instance is provided by a `Provider` object that can be obtained by calling `getProvider()` method
-of an `Injector` and passing a `Key` describing a type of the object you want to get.
+existing object. An instance can be obtained by calling the `getInstance()` method of the `Injector`:
 
 ```
-Provider<Droid> droidProvider = injector.getProvider(Key.of(Droid.class));
+Droid droid = injector.getInstance(Droid.class);
+```
+
+If you need a factory that provides instances of a given type you can get a `Provider` object from the `Injector`.
+Then you'll be able to get an instance from the `Provider` by calling its `get()` method: 
+
+```
+Provider<Droid> droidProvider = injector.getProvider(Droid.class);
 Droid droid = droidProvider.get();
-```
-
-This code can be simplified by calling the `getInstance()` method of the `Injector` that gets a `Provider` internally
-and calls the `get()` method on the provider object.
-
-```
-Droid droid = injector.getInstance(Key.of(Droid.class));
 ```
 
 When creating an instance of a dependency manually Lightsaber performs field and method injection for this instance.
