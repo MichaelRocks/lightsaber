@@ -90,7 +90,7 @@ class InjectorDispatcherSourceGenerator(
     if (componentField == null) {
       return "${getJavaClassName()}.class"
     } else {
-      return "${packageInvader!!.type.className}.${componentField.name}"
+      return "${packageInvader.type.className}.${componentField.name}"
     }
   }
 

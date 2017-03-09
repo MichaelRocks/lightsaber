@@ -166,7 +166,7 @@ class KeyRegistryClassGenerator(
     val field = packageInvader?.fields?.get(type)
 
     if (field != null) {
-      getStatic(packageInvader!!.type, field)
+      getStatic(packageInvader.type, field)
     } else {
       push(type)
     }

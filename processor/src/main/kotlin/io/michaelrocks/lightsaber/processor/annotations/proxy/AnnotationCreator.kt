@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ class AnnotationCreator(
         generator.visitLdcInsn(value)
       }
       is Type.Array -> createArray(generator, fieldType, value)
-      is Type.Object -> createObject(generator, fieldType, value)
+      is Type.Object -> createObject(generator, value)
       else -> throw IllegalArgumentException("Unsupported annotation field type: $fieldType")
     }
   }
@@ -105,7 +105,7 @@ class AnnotationCreator(
     }
   }
 
-  private fun createObject(generator: GeneratorAdapter, fieldType: Type, value: Any) {
+  private fun createObject(generator: GeneratorAdapter, value: Any) {
     when (value) {
       is Type -> generator.push(value)
       is String -> generator.push(value)

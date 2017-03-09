@@ -133,8 +133,8 @@ class Generator(
             val (packageName, types) = it
             val type = getObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader")
             val fields = types.associateByIndexedTo(HashMap(),
-                { index, type -> type },
-                { index, type -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
+                { _, type -> type },
+                { index, _ -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
             )
             PackageInvader(type, packageName, fields)
           }
@@ -147,7 +147,7 @@ class Generator(
         .asIterable()
         .associateByIndexedTo(
             HashMap(),
-            { index, provider -> provider.dependency.box() },
+            { _, provider -> provider.dependency.box() },
             { index, provider -> composeKey("key$index", provider.dependency) }
         )
     val injectorDependency = Dependency(GenericType.Raw(Types.INJECTOR_TYPE))
