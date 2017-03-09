@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,17 +34,17 @@ sealed class ProvisionPoint {
       get() = injectionPoint.method
   }
 
-  class Constructor(
+  data class Constructor(
       override val dependency: Dependency,
       override val injectionPoint: InjectionPoint.Method
   ) : AbstractMethod()
 
-  class Method(
+  data class Method(
       override val dependency: Dependency,
       override val injectionPoint: InjectionPoint.Method
   ) : AbstractMethod()
 
-  class Field(
+  data class Field(
       override val containerType: Type.Object,
       override val dependency: Dependency,
       val field: FieldMirror

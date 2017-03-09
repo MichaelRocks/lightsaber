@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.Module
-import java.util.*
+import java.util.ArrayList
 
 fun buildInjectionGraph(graphs: Collection<DirectedGraph<InjectionGraphVertex>>): DirectedGraph<InjectionGraphVertex> {
   val graph = HashDirectedGraph<InjectionGraphVertex>()
@@ -102,54 +102,7 @@ private fun DirectedGraph<InjectionGraphVertex>.withComponent(
 }
 
 sealed class InjectionGraphVertex {
-  class ComponentVertex(val component: Component) : InjectionGraphVertex() {
-    override fun equals(other: Any?): Boolean {
-      if (this === other) {
-        return true
-      }
-
-      val that = other as? ComponentVertex ?: return false
-      return component == that.component
-    }
-
-    override fun hashCode(): Int {
-      return 17 + 31 * component.hashCode()
-    }
-
-    override fun toString(): String = component.toString()
-  }
-
-  class ModuleVertex(val module: Module) : InjectionGraphVertex() {
-    override fun equals(other: Any?): Boolean {
-      if (this === other) {
-        return true
-      }
-
-      val that = other as? ModuleVertex ?: return false
-      return module == that.module
-    }
-
-    override fun hashCode(): Int {
-      return 17 + 31 * module.hashCode()
-    }
-
-    override fun toString(): String = module.toString()
-  }
-
-  class DependencyVertex(val dependency: Dependency) : InjectionGraphVertex() {
-    override fun equals(other: Any?): Boolean {
-      if (this === other) {
-        return true
-      }
-
-      val that = other as? DependencyVertex ?: return false
-      return dependency == that.dependency
-    }
-
-    override fun hashCode(): Int {
-      return 17 + 31 * dependency.hashCode()
-    }
-
-    override fun toString(): String = dependency.toString()
-  }
+  data class ComponentVertex(val component: Component) : InjectionGraphVertex()
+  data class ModuleVertex(val module: Module) : InjectionGraphVertex()
+  data class DependencyVertex(val dependency: Dependency) : InjectionGraphVertex()
 }
