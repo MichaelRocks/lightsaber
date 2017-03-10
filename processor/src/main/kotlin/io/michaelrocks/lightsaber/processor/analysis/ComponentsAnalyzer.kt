@@ -52,7 +52,7 @@ import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import java.io.File
 import java.util.HashMap
 
-private val PACKAGE_COMPONENT_TYPE = Types.BOXED_VOID_TYPE
+private val PACKAGE_COMPONENT_TYPE = Types.COMPONENT_NONE_TYPE
 private val PACKAGE_MODULE_CLASS_NAME = "Lightsaber\$PackageModule"
 
 interface ComponentsAnalyzer {
@@ -102,17 +102,12 @@ class ComponentsAnalyzerImpl(
         continue
       }
 
-      val parents = annotation
-          .values["parents"]!!
-          .cast<List<Type>>()
-
-      if (parents.isNotEmpty()) {
-        for (parent in parents) {
-          if (parent is Type.Object) {
-            graph.put(parent, type)
-          } else {
-            errorReporter.reportError("Parent component of ${type.className} is not a class")
-          }
+      val parent = annotation.values["parent"] as Type?
+      if (parent != null && parent != Types.COMPONENT_NONE_TYPE) {
+        if (parent is Type.Object) {
+          graph.put(parent, type)
+        } else {
+          errorReporter.reportError("Parent component of ${type.className} is not a class")
         }
       } else {
         graph.put(PACKAGE_COMPONENT_TYPE, type)

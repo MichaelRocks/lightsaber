@@ -39,6 +39,7 @@ object Types {
   val INJECT_TYPE = getObjectType<Inject>()
   val PROVIDES_TYPE = getObjectType<Provides>()
   val COMPONENT_TYPE = getObjectType<Component>()
+  val COMPONENT_NONE_TYPE = getObjectType<Component.None>()
   val MODULE_TYPE = getObjectType<Module>()
   val QUALIFIER_TYPE = getObjectType<Qualifier>()
   val SINGLETON_TYPE = getObjectType<Singleton>()

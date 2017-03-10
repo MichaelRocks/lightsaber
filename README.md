@@ -557,7 +557,7 @@ public class BatteryModule {
 ```
 
 ```java
-@Component(parents = { DroidComponent.class })
+@Component(parent = DroidComponent.class)
 public class BatteryComponent {
   private String name;
 

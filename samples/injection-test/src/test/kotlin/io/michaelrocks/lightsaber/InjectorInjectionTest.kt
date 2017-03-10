@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ class InjectorInjectionTest {
   @Component
   private class ParentComponent
 
-  @Component(parents = arrayOf(ParentComponent::class))
+  @Component(parent = ParentComponent::class)
   private class ChildComponent
 
   private class InjectionTarget @Inject private constructor(val injector: Injector)
