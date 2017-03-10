@@ -18,8 +18,7 @@ package io.michaelrocks.lightsaber;
 
 import io.michaelrocks.lightsaber.internal.InjectingProvider;
 import io.michaelrocks.lightsaber.internal.IterableMap;
-import io.michaelrocks.lightsaber.internal.LightweightHashMap;
-import io.michaelrocks.lightsaber.internal.TypeUtils;
+import io.michaelrocks.lightsaber.internal.PolymorphicKeyHashMap;
 
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
@@ -27,36 +26,7 @@ import java.lang.reflect.Type;
 
 class LightsaberInjector implements Injector {
   private final Lightsaber lightsaber;
-  private final IterableMap<Object, InjectingProvider<?>> providers =
-      new LightweightHashMap<Object, InjectingProvider<?>>() {
-        @Override
-        protected int hashCode(final Object key) {
-          if (key instanceof Class<?>) {
-            return key.hashCode();
-          }
-          if (key instanceof Type) {
-            return TypeUtils.hashCode((Type) key);
-          } else {
-            return key.hashCode();
-          }
-        }
-
-        @Override
-        protected boolean areKeysEqual(final Object key1, final Object key2) {
-          if (key1 == key2) {
-            return true;
-          }
-
-          if (key1 instanceof Class<?> && key2 instanceof Class<?>) {
-            return key1.equals(key2);
-          }
-          if (key1 instanceof Type && key2 instanceof Type) {
-            return TypeUtils.equals((Type) key1, (Type) key2);
-          } else {
-            return key1.equals(key2);
-          }
-        }
-      };
+  private final IterableMap<Object, InjectingProvider<?>> providers = new PolymorphicKeyHashMap<InjectingProvider<?>>();
 
   LightsaberInjector(@Nonnull final Lightsaber lightsaber) {
     this.lightsaber = lightsaber;
