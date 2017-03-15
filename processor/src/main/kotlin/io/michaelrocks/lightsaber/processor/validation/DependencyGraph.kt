@@ -33,9 +33,9 @@ fun buildDependencyGraph(modules: Collection<Module>): DirectedGraph<Dependency>
       for (provider in module.providers) {
         val returnType = provider.dependency.box()
         val method = provider.provisionPoint as? ProvisionPoint.AbstractMethod
-        val injectees = method?.injectionPoint?.injectees.orEmpty()
-        val dependencies = injectees.map { it.dependency.box() }
-        put(returnType, dependencies)
+        val injectees = method?.injectionPoint?.injectees
+        val dependencies = injectees?.map { it.dependency.box() }
+        put(returnType, dependencies.orEmpty())
       }
     }
   }
