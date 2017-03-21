@@ -19,6 +19,17 @@ package io.michaelrocks.lightsaber.internal;
 import java.lang.reflect.Type;
 
 public class PolymorphicKeyHashMap<V> extends LightweightHashMap<Object, V> {
+  public PolymorphicKeyHashMap() {
+  }
+
+  public PolymorphicKeyHashMap(final int initialCapacity) {
+    super(initialCapacity);
+  }
+
+  public PolymorphicKeyHashMap(final int initialCapacity, final float loadFactor) {
+    super(initialCapacity, loadFactor);
+  }
+
   @Override
   protected int hashCode(final Object key) {
     if (key instanceof Class<?>) {
