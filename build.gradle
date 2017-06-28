@@ -38,7 +38,7 @@ ext {
   asmVersion = '5.2'
   gripVersion = '0.5.1-beta'
   bimapVersion = '1.0.2'
-  logbackVersion = '1.1.9'
+  logbackVersion = '1.2.2'
 
   junitVersion = '4.12'
   mockitoVersion = '2.6.5'
