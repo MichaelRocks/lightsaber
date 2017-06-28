@@ -52,4 +52,5 @@ dependencies {
   androidTestCompile "com.android.support.test.espresso:espresso-core:$espressoVersion"
   androidTestCompile "com.android.support.test:runner:$testRunnerVersion"
   androidTestCompile "com.android.support.test:rules:$testRunnerVersion"
+  androidTestCompile "com.google.code.findbugs:jsr305:$jsr305Version"
 }
