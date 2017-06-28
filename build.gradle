@@ -34,7 +34,7 @@ allprojects {
 ext {
   javaxInjectVersion = '1'
   jsr305Version = '3.0.1'
-  jcommanderVersion = '1.58'
+  jcommanderVersion = '1.72'
   asmVersion = '5.2'
   gripVersion = '0.5.1-beta'
   bimapVersion = '1.0.2'
