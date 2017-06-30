@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,29 +70,44 @@ private fun normalizeArguments(arguments: Array<String>): Array<String> {
 }
 
 private fun validateParameters(parameters: LightsaberParameters) {
-  val jar = parameters.jar?.absoluteFile
-  val classes = parameters.classes?.absoluteFile
-  if (jar == null && classes == null) {
-    throw ParameterException("Either --jar or --classes must be specified")
-  }
-  if (jar != null && classes != null) {
-    throw ParameterException("Either --jar or --classes can be specified but not both")
+  if (parameters.inputs.isEmpty()) {
+    throw ParameterException("Inputs mustn't be empty")
   }
 
-  if (parameters.output == null) {
-    if (jar != null) {
-      parameters.output = File("${jar.nameWithoutExtension}$DEFAULT_SUFFIX.${jar.extension}")
-    } else {
-      parameters.output = File("$classes$DEFAULT_SUFFIX")
-    }
+  if (parameters.outputs.isEmpty()) {
+    parameters.outputs = generateOutputs(parameters.inputs)
+  }
+
+  if (parameters.outputs.size != parameters.inputs.size) {
+    throw ParameterException("The number of output paths must be the same as the number of input paths")
   }
 
   if (parameters.source == null) {
     parameters.source = File("src$DEFAULT_SUFFIX")
   }
 
+  if (parameters.gen == null) {
+    parameters.gen = File("gen$DEFAULT_SUFFIX")
+  }
+
   validateLibraries(parameters.classpath)
   validateLibraries(parameters.bootClasspath)
+}
+
+private fun generateOutputs(inputs: List<File>): List<File> {
+  return inputs.map { file ->
+    if (file.isDirectory) {
+      File("${file.path}$DEFAULT_SUFFIX")
+    } else {
+      val extension = file.extension
+      val path = file.path.substringBeforeLast('.')
+      if (extension.isEmpty()) {
+        File("$path$DEFAULT_SUFFIX")
+      } else {
+        File("$path$DEFAULT_SUFFIX.$extension")
+      }
+    }
+  }
 }
 
 private fun validateLibraries(libraries: List<File>?) {

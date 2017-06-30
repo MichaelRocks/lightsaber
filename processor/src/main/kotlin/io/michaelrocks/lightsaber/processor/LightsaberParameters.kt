@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,23 +22,32 @@ import com.beust.jcommander.converters.FileConverter
 import java.io.File
 
 data class LightsaberParameters(
-    @Parameter(names = arrayOf("--jar"), description = "Jar file to process")
-    var jar: File? = null,
-    @Parameter(names = arrayOf("--classes"), description = "Classes directory to process")
-    var classes: File? = null,
-    @Parameter(names = arrayOf("--classpath"), listConverter = FileConverter::class, description = "Classpath",
-        variableArity = true)
+    @Parameter(names = arrayOf("--inputs"), description = "Jar files and/or class directories to process")
+    var inputs: List<File> = emptyList(),
+    @Parameter(
+        names = arrayOf("--outputs"),
+        description = "Output jar files and/or class directories matching inputs"
+    )
+    var outputs: List<File> = emptyList(),
+    @Parameter(
+        names = arrayOf("--classpath"),
+        listConverter = FileConverter::class, description = "Classpath",
+        variableArity = true
+    )
     var classpath: List<File> = emptyList<File>(),
-    @Parameter(names = arrayOf("--bootclasspath"), listConverter = FileConverter::class, description = "Boot classpath",
-        variableArity = true)
+    @Parameter(
+        names = arrayOf("--bootclasspath"),
+        listConverter = FileConverter::class, description = "Boot classpath",
+        variableArity = true
+    )
     var bootClasspath: List<File> = emptyList<File>(),
-    @Parameter(names = arrayOf("--output"), description = "Output jar file or classes directory")
-    var output: File? = null,
     @Parameter(names = arrayOf("--source"), description = "Output directory for .java files")
     var source: File? = null,
-    @Parameter(names = arrayOf("-i", "--info"), description = "Use verbose output")
+    @Parameter(names = arrayOf("--gen"), description = "Output directory for generated .class files")
+    var gen: File? = null,
+    @Parameter(names = arrayOf("-i", "--info"), description = "Enable detailed logging")
     var info: Boolean = false,
-    @Parameter(names = arrayOf("-d", "--debug"), description = "Use verbose output")
+    @Parameter(names = arrayOf("-d", "--debug"), description = "Enable verbose logging")
     var debug: Boolean = false,
     @Parameter(names = arrayOf("--stacktrace"), description = "Print stack traces")
     var printStacktrace: Boolean = false

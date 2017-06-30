@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,11 +49,12 @@ public class LightsaberTask extends DefaultTask {
   @TaskAction
   void process() {
     final def parameters = new LightsaberParameters()
-    parameters.classes = backupDir
-    parameters.output = classesDir
+    parameters.inputs = [backupDir]
+    parameters.outputs = [classesDir]
     parameters.classpath = classpath
     parameters.bootClasspath = bootClasspath
     parameters.source = sourceDir
+    parameters.gen = classesDir
     parameters.debug = logger.isDebugEnabled()
     parameters.info = logger.isInfoEnabled()
     logger.info("Starting Lightsaber processor: $parameters")

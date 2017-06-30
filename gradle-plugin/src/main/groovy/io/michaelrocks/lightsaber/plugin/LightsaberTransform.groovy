@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,19 @@ public class LightsaberTransform extends Transform {
 
   @Override
   void transform(final TransformInvocation invocation) throws IOException, TransformException, InterruptedException {
-    final def parameters = new LightsaberParameters()
-    final DirectoryInput directoryInput = invocation.inputs.first().directoryInputs.first()
-    final File input = directoryInput.file
-    final File output = invocation.outputProvider.getContentLocation(
-        directoryInput.name, EnumSet.of(QualifiedContent.DefaultContentType.CLASSES),
-        EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
+    final LightsaberParameters parameters = new LightsaberParameters()
+    final List<QualifiedContent> inputs = invocation.inputs.collectMany {
+      final List<QualifiedContent> content = new ArrayList<>(it.jarInputs.size() + it.directoryInputs.size())
+      content.addAll(it.jarInputs)
+      content.addAll(it.directoryInputs)
+      content
+    }
+    final List<File> outputs = inputs.collect { input ->
+      final Format format = input instanceof JarInput ? Format.JAR : Format.DIRECTORY
+      invocation.outputProvider.getContentLocation(
+          input.name, EnumSet.of(QualifiedContent.DefaultContentType.CLASSES),
+          EnumSet.of(QualifiedContent.Scope.PROJECT), format)
+    }
 
     // For now just skip tests.
     if (invocation.context.path.endsWith("Test")) {
@@ -47,9 +54,12 @@ public class LightsaberTransform extends Transform {
       return
     }
 
-    parameters.classes = input
-    parameters.output = output
+    parameters.inputs = inputs.collect { it.file }
+    parameters.outputs = outputs
     parameters.source = new File(invocation.context.temporaryDir, "src")
+    parameters.gen = invocation.outputProvider.getContentLocation(
+        "gen-lightsaber", EnumSet.of(QualifiedContent.DefaultContentType.CLASSES),
+        EnumSet.of(QualifiedContent.Scope.PROJECT), Format.DIRECTORY)
     parameters.classpath = invocation.referencedInputs.collectMany {
       it.directoryInputs.collect { it.file } + it.jarInputs.collect { it.file }
     }
@@ -57,7 +67,7 @@ public class LightsaberTransform extends Transform {
     parameters.debug = logger.isDebugEnabled()
     parameters.info = logger.isInfoEnabled()
     logger.info("Starting Lightsaber processor: $parameters")
-    final def processor = new LightsaberProcessor(parameters)
+    final LightsaberProcessor processor = new LightsaberProcessor(parameters)
     try {
       processor.process()
       logger.info("Lightsaber finished processing")
