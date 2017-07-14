@@ -20,6 +20,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.SourceSet
+import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.compile.JavaCompile
 import java.io.File
 
@@ -56,17 +57,47 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
 
   private fun createTasks(sourceSet: SourceSet, compileTask: JavaCompile, nameSuffix: String = "") {
     val suffix = nameSuffix.capitalize()
-    val classesDir = sourceSet.output.classesDir
-    val backupDir = File(project.buildDir, "lightsaber/classes$suffix")
-    val sourceDir = File(project.buildDir, "lightsaber/src$suffix")
+    val lightsaberDir = File(project.buildDir, getLightsaberRelativePath(nameSuffix))
+    val classesDirs = getClassesDirs(sourceSet.output)
+    val backupDirs = getBackupDirs(project.buildDir, lightsaberDir, classesDirs)
+    val sourceDir = File(lightsaberDir, "src")
     val classpath = compileTask.classpath.toList()
     val bootClasspathString = compileTask.options.bootClasspath ?: System.getProperty("sun.boot.class.path")
     val bootClasspath = bootClasspathString?.split(File.pathSeparator)?.map { File(it) } ?: emptyList()
     val lightsaberTask =
-        createLightsaberProcessTask("lightsaberProcess$suffix", classesDir, backupDir, sourceDir, classpath, bootClasspath)
+        createLightsaberProcessTask(
+            "lightsaberProcess$suffix",
+            classesDirs,
+            backupDirs,
+            sourceDir,
+            classpath,
+            bootClasspath
+        )
     val backupTask =
-        createBackupClassFilesTask("lightsaberBackupClasses$suffix", classesDir, backupDir)
+        createBackupClassFilesTask("lightsaberBackupClasses$suffix", classesDirs, backupDirs)
     configureTasks(lightsaberTask, backupTask, compileTask)
+  }
+
+  private fun getLightsaberRelativePath(suffix: String): String {
+    return if (suffix.isEmpty()) LIGHTSABER_PATH else LIGHTSABER_PATH + File.separatorChar + suffix
+  }
+
+  private fun getClassesDirs(output: SourceSetOutput): List<File> {
+    val version = GradleVersion.parse(project.gradle.gradleVersion)
+    if (version.isAtLeast(4,0, 0)) {
+      return output.classesDirs.files.toList()
+    } else {
+      @Suppress("DEPRECATION")
+      return listOf(output.classesDir)
+    }
+  }
+
+  private fun getBackupDirs(buildDir: File, lightsaberDir: File, classesDirs: List<File>): List<File> {
+    return classesDirs.map { classesDir ->
+      val relativeFile = classesDir.relativeToOrSelf(buildDir)
+      // XXX: What if relativeFile is rooted? Maybe we need to remove the root part from it.
+      File(lightsaberDir, relativeFile.path)
+    }
   }
 
   private fun configureTasks(lightsaberTask: LightsaberTask, backupTask: BackupClassesTask, compileTask: Task) {
@@ -92,31 +123,39 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
 
   private fun createLightsaberProcessTask(
       taskName: String,
-      classesDir: File,
-      backupDir: File,
+      classesDirs: List<File>,
+      backupDirs: List<File>,
       sourceDir: File,
       classpath: List<File>,
       bootClasspath: List<File>
   ): LightsaberTask {
     logger.info("Creating Lightsaber task {}...", taskName)
-    logger.info("  Source classes directory [{}]", backupDir)
-    logger.info("  Processed classes directory [{}]", classesDir)
+    logger.info("  Source classes directories: {}", backupDirs)
+    logger.info("  Processed classes directories: {}", classesDirs)
 
     return project.tasks.create(taskName, LightsaberTask::class.java) { task ->
       task.description = "Processes .class files with Lightsaber Processor."
-      task.backupDir = backupDir
-      task.classesDir = classesDir
+      task.backupDirs = backupDirs
+      task.classesDirs = classesDirs
       task.sourceDir = sourceDir
       task.classpath = classpath
       task.bootClasspath = bootClasspath
     }
   }
 
-  private fun createBackupClassFilesTask(taskName: String, classesDir: File, backupDir: File): BackupClassesTask {
+  private fun createBackupClassFilesTask(
+      taskName: String,
+      classesDirs: List<File>,
+      backupDirs: List<File>
+  ): BackupClassesTask {
     return project.tasks.create(taskName, BackupClassesTask::class.java) { task ->
       task.description = "Back up original .class files."
-      task.classesDir = classesDir
-      task.backupDir = backupDir
+      task.classesDirs = classesDirs
+      task.backupDirs = backupDirs
     }
+  }
+
+  companion object {
+    private const val LIGHTSABER_PATH = "lightsaber"
   }
 }

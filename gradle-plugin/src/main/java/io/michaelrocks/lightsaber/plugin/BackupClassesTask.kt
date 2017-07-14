@@ -18,35 +18,34 @@ package io.michaelrocks.lightsaber.plugin
 
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkChecker
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputDirectories
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
 open class BackupClassesTask : DefaultTask() {
-  @InputDirectory
-  var classesDir: File? = null
+  @InputFiles
+  var classesDirs: List<File> = emptyList()
 
-  @OutputDirectory
-  var backupDir: File? = null
+  @OutputDirectories
+  var backupDirs: List<File> = emptyList()
 
   @TaskAction
   fun backupClasses() {
-    val backupDir = checkNotNull(backupDir) { "backupDir is not set" }
-    val classesDir = checkNotNull(classesDir) { "classesDir is not set" }
-
+    validate()
     logger.info("Backing up classes...")
-    logger.info("  from [{}]", classesDir)
-    logger.info("    to [{}]", backupDir)
+    logger.info("  from {}", classesDirs)
+    logger.info("    to {}", backupDirs)
 
-    if (!classesDir.exists()) {
-      logger.info("Classes directory doesn't exists. Nothing to backup.")
-      backupDir.deleteRecursively()
-      return
+    forEach(classesDirs, backupDirs) { classesDir, backupDir ->
+      if (!classesDir.exists()) {
+        logger.info("Classes directory doesn't exists. Nothing to backup.")
+        backupDir.deleteRecursively()
+      } else {
+        val visitedFiles = copyUpdatedFiles(classesDir, backupDir)
+        removeUnvisitedFiles(backupDir, visitedFiles)
+      }
     }
-
-    val visitedFiles = copyUpdatedFiles(classesDir, backupDir)
-    removeUnvisitedFiles(backupDir, visitedFiles)
   }
 
   private fun copyUpdatedFiles(classesDir: File, backupDir: File): Set<String> {
@@ -100,25 +99,31 @@ open class BackupClassesTask : DefaultTask() {
   }
 
   fun clean() {
-    val backupDir = checkNotNull(backupDir) { "backupDir is not set" }
-    val classesDir = checkNotNull(classesDir) { "classesDir is not set" }
-
+    validate()
     logger.info("Restoring patched files...")
-    logger.info("  from [{}]", backupDir)
-    logger.info("    to [{}]", classesDir)
+    logger.info("  from {}", backupDirs)
+    logger.info("    to {}", classesDirs)
 
-    if (!classesDir.exists()) {
-      return
-    }
+    forEach(classesDirs, backupDirs) { classesDir, backupDir ->
+      if (!classesDir.exists()) {
+        return
+      }
 
-    backupDir.walk().forEach { file ->
-      if (!file.isDirectory) {
-        logger.debug("Reverting {}...", file)
-        val relativePath = file.toRelativeString(backupDir)
-        val classesFile = classesDir.resolve(relativePath)
-        file.copyToWithLastModified(classesFile, true)
+      backupDir.walk().forEach { file ->
+        if (!file.isDirectory) {
+          logger.debug("Reverting {}...", file)
+          val relativePath = file.toRelativeString(backupDir)
+          val classesFile = classesDir.resolve(relativePath)
+          file.copyToWithLastModified(classesFile, true)
+        }
       }
     }
+  }
+
+  private fun validate() {
+    require(classesDirs.isNotEmpty()) { "classesDirs is not set" }
+    require(backupDirs.isNotEmpty()) { "backupDirs is not set" }
+    require(classesDirs.size == backupDirs.size) { "classesDirs and backupDirs must have equal size" }
   }
 
   private fun File.copyToWithLastModified(target: File, overwrite: Boolean = false) {

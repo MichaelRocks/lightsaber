@@ -22,22 +22,25 @@ import io.michaelrocks.lightsaber.processor.watermark.WatermarkChecker
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleScriptException
 import org.gradle.api.logging.LogLevel
-import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.Classpath
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputDirectories
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
 open class LightsaberTask : DefaultTask() {
-  @InputDirectory
-  var backupDir: File? = null
-  @OutputDirectory
-  var classesDir: File? = null
+  @InputFiles
+  var backupDirs: List<File> = emptyList()
+  @OutputDirectories
+  var classesDirs: List<File> = emptyList()
   @OutputDirectory
   var sourceDir: File? = null
   @InputFiles
+  @Classpath
   var classpath: List<File> = emptyList()
   @InputFiles
+  @Classpath
   var bootClasspath: List<File> = emptyList()
 
   init {
@@ -46,15 +49,17 @@ open class LightsaberTask : DefaultTask() {
 
   @TaskAction
   fun process() {
+    validate()
+
     val parameters = LightsaberParameters(
-      inputs = listOfNotNull(backupDir),
-      outputs = listOfNotNull(classesDir),
-      classpath = classpath,
-      bootClasspath = bootClasspath,
-      source = sourceDir,
-      gen = classesDir,
-      debug = logger.isDebugEnabled,
-      info = logger.isInfoEnabled
+        inputs = backupDirs,
+        outputs = classesDirs,
+        classpath = classpath,
+        bootClasspath = bootClasspath,
+        source = sourceDir,
+        gen = classesDirs[0],
+        debug = logger.isDebugEnabled,
+        info = logger.isInfoEnabled
     )
 
     logger.info("Starting Lightsaber processor: {}", parameters)
@@ -67,27 +72,39 @@ open class LightsaberTask : DefaultTask() {
   }
 
   fun clean() {
-    val classesDir = classesDir ?: return
+    validate()
+    logger.info("Removing patched files from {}", classesDirs)
 
-    logger.info("Removing patched files...")
-    logger.info("  from [{}]", classesDir)
+    for (classesDir in classesDirs) {
+      if (!classesDir.exists()) {
+        continue
+      }
 
-    if (!classesDir.exists()) {
-      return
-    }
-
-    classesDir.walkBottomUp().forEach { file ->
-      if (file.isDirectory) {
-        file.delete()
-      } else {
-        logger.debug("Checking $file...")
-        if (WatermarkChecker.isLightsaberClass(file)) {
-          logger.debug("File was patched - removing")
+      classesDir.walkBottomUp().forEach { file ->
+        if (file.isDirectory) {
           file.delete()
         } else {
-          logger.debug("File wasn't patched - skipping")
+          logger.debug("Checking {}...", file)
+          if (WatermarkChecker.isLightsaberClass(file)) {
+            logger.debug("File was patched - removing")
+            file.delete()
+          } else {
+            logger.debug("File wasn't patched - skipping")
+          }
         }
       }
     }
+
+    sourceDir?.let { sourceDir ->
+      logger.info("Removing a directory with generated source files: {}", sourceDir)
+      sourceDir.deleteRecursively()
+    }
+  }
+
+  private fun validate() {
+    require(classesDirs.isNotEmpty()) { "classesDirs is not set" }
+    require(backupDirs.isNotEmpty()) { "backupDirs is not set" }
+    require(classesDirs.size == backupDirs.size) { "classesDirs and backupDirs must have equal size" }
+    requireNotNull(sourceDir) { "sourceDir is not set" }
   }
 }
