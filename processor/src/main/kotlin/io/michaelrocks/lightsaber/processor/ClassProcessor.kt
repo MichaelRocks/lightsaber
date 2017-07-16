@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,22 +38,27 @@ import org.objectweb.asm.ClassWriter
 import java.io.File
 
 class ClassProcessor(
-    private val inputPath: File,
+    private val inputs: List<File>,
+    private val outputs: List<File>,
     private val sourcePath: File,
-    private val outputPath: File,
+    private val genPath: File,
     classpath: List<File>,
     bootClasspath: List<File>
 ) {
   private val logger = getLogger()
 
-  private val grip: Grip = GripFactory.create(setOf(inputPath) + classpath + bootClasspath)
+  private val grip: Grip = GripFactory.create(inputs + classpath + bootClasspath)
   private val errorReporter = ErrorReporter()
 
-  private val fileSource = IoFactory.createFileSource(inputPath)
-  private val fileSink = IoFactory.createFileSink(inputPath, outputPath)
+  private val fileSourcesAndSinks = inputs.zip(outputs) { input, output ->
+    val source = IoFactory.createFileSource(input)
+    val sink = IoFactory.createFileSink(input, output)
+    source to sink
+  }
   private val sourceSink = DirectoryFileSink(sourcePath)
+  private val classSink = DirectoryFileSink(genPath)
 
-  private val compiler = JavaToolsCompiler(classpath, bootClasspath, errorReporter)
+  private val compiler = JavaToolsCompiler(inputs + classpath + genPath, bootClasspath, errorReporter)
 
   fun processClasses() {
     val context = performAnalysisAndValidation()
@@ -65,25 +70,27 @@ class ClassProcessor(
 
   private fun performAnalysisAndValidation(): InjectionContext {
     val analyzer = Analyzer(grip, errorReporter)
-    val context = analyzer.analyze(listOf(inputPath))
+    val context = analyzer.analyze(inputs)
     Validator(grip.classRegistry, errorReporter).validate(context)
     checkErrors()
     return context
   }
 
   private fun copyAndPatchClasses(context: InjectionContext) {
-    fileSource.listFiles { path, type ->
-      when (type) {
-        FileSource.EntryType.CLASS -> {
-          val classReader = ClassReader(fileSource.readFile(path))
-          val classWriter = StandaloneClassWriter(
-              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry)
-          val classVisitor = Patcher(classWriter, context)
-          classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
-          fileSink.createFile(path, classWriter.toByteArray())
+    fileSourcesAndSinks.forEach { (fileSource, fileSink) ->
+      fileSource.listFiles { path, type ->
+        when (type) {
+          FileSource.EntryType.CLASS -> {
+            val classReader = ClassReader(fileSource.readFile(path))
+            val classWriter = StandaloneClassWriter(
+                classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry)
+            val classVisitor = Patcher(classWriter, context)
+            classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
+            fileSink.createFile(path, classWriter.toByteArray())
+          }
+          FileSource.EntryType.FILE -> fileSink.createFile(path, fileSource.readFile(path))
+          FileSource.EntryType.DIRECTORY -> fileSink.createDirectory(path)
         }
-        FileSource.EntryType.FILE -> fileSink.createFile(path, fileSource.readFile(path))
-        FileSource.EntryType.DIRECTORY -> fileSink.createDirectory(path)
       }
     }
 
@@ -91,13 +98,13 @@ class ClassProcessor(
   }
 
   private fun performGeneration(context: InjectionContext) {
-    val generator = Generator(grip.classRegistry, errorReporter, fileSink, sourceSink)
+    val generator = Generator(grip.classRegistry, errorReporter, classSink, sourceSink)
     generator.generate(context)
     checkErrors()
   }
 
   private fun performCompilation() {
-    compiler.compile(sourcePath, outputPath)
+    compiler.compile(sourcePath, genPath)
     checkErrors()
   }
 

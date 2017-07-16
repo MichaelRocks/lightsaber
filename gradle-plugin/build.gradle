@@ -1,5 +1,11 @@
+buildscript {
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+  }
+}
+
 apply plugin: 'java'
-apply plugin: 'groovy'
+apply plugin: 'kotlin'
 apply plugin: 'bintray'
 apply plugin: 'idea'
 
@@ -8,9 +14,11 @@ sourceCompatibility = JavaVersion.VERSION_1_6
 
 dependencies {
   compile gradleApi()
-  compile localGroovy()
   compile project(':processor')
 
+  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+
+  compileOnly "com.android.tools.build:gradle:$androidToolsVersion"
   compileOnly "com.android.tools.build:gradle-api:$androidToolsVersion"
 }
 
@@ -36,11 +44,11 @@ task generateBuildClass {
 sourceSets {
   main {
     output.dir(builtBy: tasks.generateBuildClass, generatedJavaSourcesDir)
-    groovy.srcDirs += generatedJavaSourcesDir
+    java.srcDirs += generatedJavaSourcesDir
   }
 }
 
-tasks.withType(GroovyCompile) {
+tasks.matching { it instanceof AbstractCompile }.forEach {
   it.dependsOn tasks.generateBuildClass
 }
 

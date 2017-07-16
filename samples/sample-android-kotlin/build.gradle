@@ -12,7 +12,7 @@ apply plugin: 'io.michaelrocks.lightsaber.android'
 
 android {
   compileSdkVersion 25
-  buildToolsVersion '25.0.2'
+  buildToolsVersion '25.0.3'
 
   defaultConfig {
     applicationId 'io.michaelrocks.lightsaber.sample'
@@ -52,4 +52,5 @@ dependencies {
   androidTestCompile "com.android.support.test.espresso:espresso-core:$espressoVersion"
   androidTestCompile "com.android.support.test:runner:$testRunnerVersion"
   androidTestCompile "com.android.support.test:rules:$testRunnerVersion"
+  androidTestCompile "com.google.code.findbugs:jsr305:$jsr305Version"
 }
