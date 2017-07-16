@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchers
 import kotlin.reflect.KClass
 
-@Suppress("CAST_NEVER_SUCCEEDS")
+@Suppress("UNCHECKED_CAST")
 fun <T> Any?.toNotNull(): T = null as T
 
 inline fun <reified T : Any> any(type: KClass<T>): T =

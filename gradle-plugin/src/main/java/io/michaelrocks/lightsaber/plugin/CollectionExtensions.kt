@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,11 @@
 
 package io.michaelrocks.lightsaber.plugin
 
-import org.gradle.api.GradleException
-import org.gradle.api.Project
-
-class AndroidLightsaberPlugin extends BaseLightsaberPlugin {
-  @Override
-  void apply(final Project project) {
-    super.apply(project)
-
-    if (project.hasProperty('android')) {
-      addDependencies('compile')
-      project.android.registerTransform(new LightsaberTransform(project))
-    } else {
-      throw new GradleException("Lightsaber plugin must be applied *AFTER* Android plugin")
-    }
+inline fun <T, R> forEach(iterable1: Iterable<T>, iterable2: Iterable<R>, action: (T, R) -> Unit) {
+  val iterator1 = iterable1.iterator()
+  val iterator2 = iterable2.iterator()
+  while (iterator1.hasNext()) {
+    action(iterator1.next(), iterator2.next())
   }
+  check(!iterator2.hasNext())
 }
