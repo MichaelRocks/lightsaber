@@ -5,12 +5,14 @@ allprojects {
     repositories {
       mavenLocal()
       jcenter()
+      google()
     }
   }
 
   repositories {
     mavenLocal()
     jcenter()
+    google()
   }
 }
 
@@ -44,5 +46,5 @@ ext {
   testRunnerVersion = '0.5'
 
   androidToolsVersion = '2.3.3'
-  supportVersion = '25.1.0'
+  supportVersion = '25.4.0'
 }
