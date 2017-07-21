@@ -43,6 +43,6 @@ ext {
   espressoVersion = '2.2.2'
   testRunnerVersion = '0.5'
 
-  androidToolsVersion = '2.3.0'
+  androidToolsVersion = '2.3.3'
   supportVersion = '25.1.0'
 }
