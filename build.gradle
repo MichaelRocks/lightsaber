@@ -5,12 +5,14 @@ allprojects {
     repositories {
       mavenLocal()
       jcenter()
+      google()
     }
   }
 
   repositories {
     mavenLocal()
     jcenter()
+    google()
   }
 }
 
@@ -34,15 +36,15 @@ ext {
   jsr305Version = '3.0.2'
   jcommanderVersion = '1.72'
   asmVersion = '5.2'
-  gripVersion = '0.5.1-beta'
+  gripVersion = '0.5.3-beta'
   bimapVersion = '1.0.2'
-  logbackVersion = '1.2.2'
+  logbackVersion = '1.2.3'
 
   junitVersion = '4.12'
   mockitoVersion = '2.8.47'
   espressoVersion = '2.2.2'
   testRunnerVersion = '0.5'
 
-  androidToolsVersion = '2.3.0'
-  supportVersion = '25.1.0'
+  androidToolsVersion = '2.3.3'
+  supportVersion = '25.4.0'
 }
