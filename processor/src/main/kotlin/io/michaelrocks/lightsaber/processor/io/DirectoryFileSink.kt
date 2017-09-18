@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,9 @@ class DirectoryFileSink(private val directory: File) : FileSink {
 
   override fun createDirectory(path: String) {
     File(directory, path).mkdirs()
+  }
+
+  override fun flush() {
   }
 
   override fun close() {

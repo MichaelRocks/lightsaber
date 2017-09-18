@@ -38,6 +38,10 @@ internal class JarFileSink(jarFile: File) : FileSink {
     stream.closeEntry()
   }
 
+  override fun flush() {
+    stream.flush()
+  }
+
   override fun close() {
     stream.closeQuietly()
   }
