@@ -15,5 +15,6 @@ if (!properties['bootstrap'].toBoolean()) {
   include ':samples:sample-kotlin'
   if (properties['enableAndroid'].toBoolean()) {
     include ':samples:sample-android-kotlin'
+    include ':samples:sample-android-library'
   }
 }

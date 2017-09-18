@@ -95,13 +95,15 @@ class LightsaberTransform(private val project: Project) : Transform() {
   }
 
   override fun getScopes(): MutableSet<in QualifiedContent.Scope> {
-    return EnumSet.of(QualifiedContent.Scope.PROJECT)
+    return EnumSet.of(
+        QualifiedContent.Scope.PROJECT,
+        QualifiedContent.Scope.SUB_PROJECTS
+    )
   }
 
   override fun getReferencedScopes(): MutableSet<in QualifiedContent.Scope> {
     return EnumSet.of(
         QualifiedContent.Scope.PROJECT_LOCAL_DEPS,
-        QualifiedContent.Scope.SUB_PROJECTS,
         QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
         QualifiedContent.Scope.EXTERNAL_LIBRARIES,
         QualifiedContent.Scope.TESTED_CODE,

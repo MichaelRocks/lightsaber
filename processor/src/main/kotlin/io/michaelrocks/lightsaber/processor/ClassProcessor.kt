@@ -20,6 +20,7 @@ import io.michaelrocks.grip.Grip
 import io.michaelrocks.grip.GripFactory
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
+import io.michaelrocks.lightsaber.processor.commons.closeQuietly
 import io.michaelrocks.lightsaber.processor.compiler.JavaToolsCompiler
 import io.michaelrocks.lightsaber.processor.generation.Generator
 import io.michaelrocks.lightsaber.processor.injection.Patcher
@@ -35,6 +36,7 @@ import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import io.michaelrocks.lightsaber.processor.validation.Validator
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
+import java.io.Closeable
 import java.io.File
 
 class ClassProcessor(
@@ -44,7 +46,7 @@ class ClassProcessor(
     private val genPath: File,
     classpath: List<File>,
     bootClasspath: List<File>
-) {
+) : Closeable {
   private val logger = getLogger()
 
   private val grip: Grip = GripFactory.create(inputs + classpath + bootClasspath)
@@ -66,6 +68,16 @@ class ClassProcessor(
     copyAndPatchClasses(context)
     performGeneration(context)
     performCompilation()
+  }
+
+  override fun close() {
+    classSink.closeQuietly()
+    sourceSink.closeQuietly()
+
+    fileSourcesAndSinks.forEach {
+      it.first.closeQuietly()
+      it.second.closeQuietly()
+    }
   }
 
   private fun performAnalysisAndValidation(): InjectionContext {
@@ -92,6 +104,8 @@ class ClassProcessor(
           FileSource.EntryType.DIRECTORY -> fileSink.createDirectory(path)
         }
       }
+
+      fileSink.flush()
     }
 
     checkErrors()

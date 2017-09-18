@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.io.File
 interface FileSink : Closeable {
   fun createFile(path: String, data: ByteArray)
   fun createDirectory(path: String)
+  fun flush()
 
   interface Factory {
     fun createFileSink(inputFile: File, outputFile: File): FileSink

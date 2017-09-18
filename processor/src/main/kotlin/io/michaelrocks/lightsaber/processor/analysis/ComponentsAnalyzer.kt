@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -132,12 +132,12 @@ class ComponentsAnalyzerImpl(
         (annotatedWith(Types.PROVIDES_TYPE) and not(isStatic()))
 
     logger.debug("Component: {}", mirror)
-    val methods = methodsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, method ->
+    val methods = methodsQuery.execute()[mirror.type].orEmpty().map { method ->
       logger.debug("  Method: {}", method)
       ModuleProvider(method.toModule(), ModuleProvisionPoint.Method(method))
     }
 
-    val fields = fieldsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, field ->
+    val fields = fieldsQuery.execute()[mirror.type].orEmpty().map { field ->
       logger.debug("  Field: {}", field)
       ModuleProvider(field.toModule(), ModuleProvisionPoint.Field(field))
     }
@@ -193,7 +193,7 @@ class ComponentsAnalyzerImpl(
   private fun InjectionPoint.toProvider(container: ClassMirror): Provider {
     val providerType = getObjectTypeByInternalName("${containerType.internalName}\$ConstructorProvider")
     val dependency = Dependency(GenericType.Raw(containerType), null)
-    val provisionPoint = ProvisionPoint.Constructor(dependency, cast<InjectionPoint.Method>())
+    val provisionPoint = ProvisionPoint.Constructor(dependency, this as InjectionPoint.Method)
     return Provider(providerType, provisionPoint, container.type, analyzerHelper.findScope(container))
   }
 

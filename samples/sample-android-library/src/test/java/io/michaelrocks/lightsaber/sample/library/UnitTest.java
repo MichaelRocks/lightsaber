@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.sample
+package io.michaelrocks.lightsaber.sample.library;
 
-interface Planet {
-  val name: String
-  val sector: String
+import org.junit.Test;
+
+public class UnitTest {
+  @Test
+  public void emptyTest() throws Exception {
+  }
 }

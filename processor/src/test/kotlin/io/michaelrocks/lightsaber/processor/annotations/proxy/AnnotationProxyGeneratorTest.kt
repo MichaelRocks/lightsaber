@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -380,7 +380,7 @@ class AnnotationProxyGeneratorTest {
         arrayOf("Value1", "Value2"),
         arrayOf(RetentionPolicy.RUNTIME, RetentionPolicy.CLASS),
         arrayOf<Class<*>>(Any::class.java),
-        arrayOf(createAnnotationProxy<IntAnnotation>(42), createAnnotationProxy<IntAnnotation>(43)))
+        arrayOf(createAnnotationProxy<IntAnnotation>(42), createAnnotationProxy(43)))
 
     val expected = "@${CompositeAnnotation::class.java.name}(" +
         "booleanValue=true, " +

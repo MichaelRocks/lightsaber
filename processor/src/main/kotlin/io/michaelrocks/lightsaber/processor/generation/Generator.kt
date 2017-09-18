@@ -47,8 +47,8 @@ import java.util.HashMap
 class Generator(
     private val classRegistry: ClassRegistry,
     private val errorReporter: ErrorReporter,
-    fileSink: FileSink,
-    sourceSink: FileSink
+    private val fileSink: FileSink,
+    private val sourceSink: FileSink
 ) {
   private val classProducer = ProcessorClassProducer(fileSink, errorReporter)
   private val sourceProducer = ProcessorSourceProducer(sourceSink, errorReporter)
@@ -62,6 +62,9 @@ class Generator(
     generatePackageInvaders(generationContext)
     generateKeyRegistry(generationContext)
     generateInjectionDispatcher(generationContext)
+
+    fileSink.flush()
+    sourceSink.flush()
   }
 
   private fun composeGeneratorModel(context: InjectionContext) =
@@ -131,12 +134,12 @@ class Generator(
           )
           .map {
             val (packageName, types) = it
-            val type = getObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader")
+            val packageInvaderType = getObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader")
             val fields = types.associateByIndexedTo(HashMap(),
-                { index, type -> type },
-                { index, type -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
+                { _, type -> type },
+                { index, _ -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
             )
-            PackageInvader(type, packageName, fields)
+            PackageInvader(packageInvaderType, packageName, fields)
           }
 
   private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {

@@ -11,13 +11,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'io.michaelrocks.lightsaber.android'
 
 android {
-  compileSdkVersion 25
-  buildToolsVersion '25.0.3'
+  compileSdkVersion androidCompileSdkVersion
+  buildToolsVersion androidBuildToolsVersion
 
   defaultConfig {
     applicationId 'io.michaelrocks.lightsaber.sample'
-    minSdkVersion 16
-    targetSdkVersion 25
+    minSdkVersion androidMinSdkVersion
+    targetSdkVersion androidTargetSdkVersion
     versionCode 1
     versionName version
 
@@ -44,6 +44,7 @@ android {
 
 dependencies {
   compile fileTree(dir: 'libs', include: ['*.jar'])
+  compile project(':samples:sample-android-library')
 
   // Kotlin
   compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
@@ -52,5 +53,6 @@ dependencies {
   androidTestCompile "com.android.support.test.espresso:espresso-core:$espressoVersion"
   androidTestCompile "com.android.support.test:runner:$testRunnerVersion"
   androidTestCompile "com.android.support.test:rules:$testRunnerVersion"
+  androidTestCompile "com.android.support:support-annotations:$supportVersion"
   androidTestCompile "com.google.code.findbugs:jsr305:$jsr305Version"
 }

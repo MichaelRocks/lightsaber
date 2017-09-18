@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,35 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.sample
+package io.michaelrocks.lightsaber.sample.library;
 
-import javax.inject.Inject
-import javax.inject.Singleton
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
-internal class Kashyyyk @Inject private constructor() : Planet {
-  override val name = "Kashyyyk"
-  override val sector = "Mytaranor"
-
-  private var isSettled = false
+public class Kashyyyk implements Planet {
+  private boolean isSettled = false;
 
   @Inject
-  fun settle(droid1: Droid, droid2: Droid) {
+  private Kashyyyk() {
+  }
+
+  @Override
+  public String getName() {
+    return "Kashyyyk";
+  }
+
+  @Override
+  public String getSector() {
+    return "Mytaranor";
+  }
+
+  @Inject
+  private void settle(final Droid droid1, final Droid droid2) {
     if (isSettled) {
-      throw IllegalStateException("Already settled")
+      throw new IllegalStateException("Already settled");
     }
-    System.out.println("Settling Kashyyyk with $droid1 and $droid2")
-    isSettled = true
+    System.out.println("Settling Kashyyyk with $droid1 and $droid2");
+    isSettled = true;
   }
 }
