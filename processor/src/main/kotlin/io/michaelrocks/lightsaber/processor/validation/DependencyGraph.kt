@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 fun buildDependencyGraph(modules: Collection<Module>): DirectedGraph<Dependency> {
   return HashDirectedGraph<Dependency>().apply {
     val rootType = Dependency(GenericType.Raw(Types.INJECTOR_TYPE))
-    put(rootType, emptyList<Dependency>())
+    put(rootType, emptyList())
     for (module in modules) {
       for (provider in module.providers) {
         val returnType = provider.dependency.box()

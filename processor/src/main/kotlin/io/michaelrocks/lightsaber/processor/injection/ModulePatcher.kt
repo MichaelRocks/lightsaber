@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,10 @@ import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes.*
-import java.util.*
+import org.objectweb.asm.Opcodes.ACC_PRIVATE
+import org.objectweb.asm.Opcodes.ACC_PROTECTED
+import org.objectweb.asm.Opcodes.ACC_PUBLIC
+import java.util.HashSet
 
 class ModulePatcher(
     classVisitor: ClassVisitor,
@@ -36,8 +38,8 @@ class ModulePatcher(
   private val providableMethods: MutableSet<MethodDescriptor>
 
   init {
-    providableFields = HashSet<FieldDescriptor>(module.providers.size)
-    providableMethods = HashSet<MethodDescriptor>(module.providers.size)
+    providableFields = HashSet(module.providers.size)
+    providableMethods = HashSet(module.providers.size)
     for (provider in module.providers) {
       val provisionPoint = provider.provisionPoint
       when (provisionPoint) {
