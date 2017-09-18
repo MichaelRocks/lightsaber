@@ -134,12 +134,12 @@ class Generator(
           )
           .map {
             val (packageName, types) = it
-            val type = getObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader")
+            val packageInvaderType = getObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader")
             val fields = types.associateByIndexedTo(HashMap(),
-                { index, type -> type },
-                { index, type -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
+                { _, type -> type },
+                { index, _ -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
             )
-            PackageInvader(type, packageName, fields)
+            PackageInvader(packageInvaderType, packageName, fields)
           }
 
   private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {

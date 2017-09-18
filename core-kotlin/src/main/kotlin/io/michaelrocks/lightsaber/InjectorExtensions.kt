@@ -52,5 +52,5 @@ inline fun <reified T : Any> Injector.getProvider(): Provider<T> =
 inline fun <reified T : Any> Injector.getProvider(annotation: Annotation): Provider<T> =
     getProvider(T::class, annotation)
 
-@Suppress("NOTHING_TO_INLINE")
+@Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")
 inline fun <T> inject(): T = null as T
