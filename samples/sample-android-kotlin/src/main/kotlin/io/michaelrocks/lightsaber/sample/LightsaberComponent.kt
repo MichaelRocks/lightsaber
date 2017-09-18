@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,16 @@ package io.michaelrocks.lightsaber.sample
 
 import io.michaelrocks.lightsaber.Component
 import io.michaelrocks.lightsaber.Provides
+import io.michaelrocks.lightsaber.sample.library.LibraryModule
 
 @Component
 internal class LightsaberComponent {
   @Provides
   private fun provideLightsaberModule(): LightsaberModule {
     return LightsaberModule()
+  }
+
+  @Provides fun provideLibraryModule(): LibraryModule {
+    return LibraryModule()
   }
 }
