@@ -45,6 +45,10 @@ ext {
   espressoVersion = '2.2.2'
   testRunnerVersion = '0.5'
 
+  androidCompileSdkVersion = 26
+  androidTargetSdkVersion = 26
+  androidMinSdkVersion = 16
+  androidBuildToolsVersion = '26.0.1'
   androidToolsVersion = '2.3.3'
-  supportVersion = '25.4.0'
+  supportVersion = '26.1.0'
 }
