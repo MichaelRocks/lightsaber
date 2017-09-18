@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import android.os.Bundle
 import android.widget.TextView
 import io.michaelrocks.lightsaber.Lightsaber
 import io.michaelrocks.lightsaber.kotlin.R
+import io.michaelrocks.lightsaber.sample.library.Droid
+import io.michaelrocks.lightsaber.sample.library.Planet
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -45,7 +47,7 @@ class MainActivity : Activity() {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.main)
 
-    val afterInjectionTextView = findViewById(R.id.afterInjectionTextView) as TextView
+    val afterInjectionTextView = findViewById<TextView>(R.id.afterInjectionTextView)
 
     val injector = Lightsaber.get().createInjector(LightsaberComponent())
     injector.injectMembers(this)

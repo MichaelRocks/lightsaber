@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package io.michaelrocks.lightsaber.sample
 
 import io.michaelrocks.lightsaber.Module
 import io.michaelrocks.lightsaber.Provides
+import io.michaelrocks.lightsaber.sample.library.Droid
+import io.michaelrocks.lightsaber.sample.library.Kashyyyk
+import io.michaelrocks.lightsaber.sample.library.Planet
 import javax.inject.Provider
 import javax.inject.Singleton
 

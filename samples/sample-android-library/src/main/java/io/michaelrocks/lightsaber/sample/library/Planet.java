@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.sample
+package io.michaelrocks.lightsaber.sample.library;
 
-import io.michaelrocks.lightsaber.sample.library.Planet
-import javax.inject.Inject
-import javax.inject.Provider
-import javax.inject.Singleton
-
-@Singleton
-internal class Chewbacca @Inject private constructor(
-    planetProvider: Provider<Planet>
-) : Wookiee {
-  override val planet: Planet = planetProvider.get()
-
-  override fun roar() {
-    System.out.println("AULRGHHHGR")
-  }
+public interface Planet {
+  String getName();
+  String getSector();
 }
