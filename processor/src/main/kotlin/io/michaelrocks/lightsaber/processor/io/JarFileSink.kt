@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.io
 
-import io.michaelrocks.lightsaber.processor.commons.closeQuitely
+import io.michaelrocks.lightsaber.processor.commons.closeQuietly
 import java.io.File
 import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
@@ -39,7 +39,7 @@ internal class JarFileSink(jarFile: File) : FileSink {
   }
 
   override fun close() {
-    stream.closeQuitely()
+    stream.closeQuietly()
   }
 
   private fun createJarOutputStream(jarFile: File): JarOutputStream {
