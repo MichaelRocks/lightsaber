@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ import kotlin.reflect.KClass
 val lightsaber: Lightsaber
   get() = Lightsaber.get()
 
-fun <T : Any> Injector.getInstance(type: Class<out T>): T =
-    Lightsaber.getInstance(this, type)
-
 fun <T : Any> Injector.getInstance(type: Class<out T>, annotation: Annotation): T =
     Lightsaber.getInstance(this, type, annotation)
 
@@ -39,9 +36,6 @@ inline fun <reified T : Any> Injector.getInstance(): T =
 
 inline fun <reified T : Any> Injector.getInstance(annotation: Annotation): T =
     getInstance(T::class, annotation)
-
-fun <T : Any> Injector.getProvider(type: Class<out T>): Provider<T> =
-    Lightsaber.getProvider(this, type)
 
 fun <T : Any> Injector.getProvider(type: Class<out T>, annotation: Annotation): Provider<T> =
     Lightsaber.getProvider(this, type, annotation)
