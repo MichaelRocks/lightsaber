@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
-import java.util.*
+import java.util.ArrayList
 
 inline fun <T, K, V, M : MutableMap<in K, in V>> Iterable<T>.associateByIndexedTo(destination: M,
     keySelector: (Int, T) -> K, valueSelector: (Int, T) -> V): M {
@@ -31,7 +31,7 @@ inline fun <T, K, V, M : MutableMap<in K, MutableList<V>>> Iterable<T>.groupNotN
   for (element in this) {
     valueTransform(element)?.let { value ->
       val key = keySelector(element)
-      val list = destination.getOrPut(key) { ArrayList<V>() }
+      val list = destination.getOrPut(key) { ArrayList() }
       list.add(value)
     }
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,12 @@ package io.michaelrocks.lightsaber.processor.commons
 
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
-import org.mockito.Mockito.*
-import java.util.*
+import org.mockito.Mockito.RETURNS_DEEP_STUBS
+import org.mockito.Mockito.RETURNS_DEFAULTS
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.only
+import org.mockito.Mockito.verify
+import java.util.ArrayList
 import kotlin.reflect.KClass
 
 private val MAX_VISITOR_COUNT = 3
@@ -57,7 +61,7 @@ private fun <T, V> verifyMethodInvocation(compositeVisitor: T, action: V.() -> A
     where T : CompositeVisitor<V>, V : Any {
   val visitors = ArrayList<V>(visitorCount)
   for (i in 0 until visitorCount) {
-    @Suppress("CAST_NEVER_SUCCEEDS")
+    @Suppress("UNCHECKED_CAST")
     val visitor = mock(compositeVisitor.javaClass.superclass as Class<V>)
     visitors.add(visitor)
     compositeVisitor.addVisitor(visitor)
@@ -97,7 +101,7 @@ private fun <T, R, V> verifyCompositeMethodInvocation(compositeVisitor: T,
   val visitors = ArrayList<V>(empties.size)
   for (empty in empties) {
     val answer = if (empty) RETURNS_DEFAULTS else RETURNS_DEEP_STUBS
-    @Suppress("CAST_NEVER_SUCCEEDS")
+    @Suppress("UNCHECKED_CAST")
     val visitor = mock(compositeVisitor.javaClass.superclass as Class<V>, answer)
     visitors.add(visitor)
     compositeVisitor.addVisitor(visitor)

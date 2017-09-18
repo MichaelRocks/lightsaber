@@ -87,10 +87,10 @@ class InjectorDispatcherSourceGenerator(
 
   private fun Type.Object.getClassReference(packageInvader: PackageInvader?): String {
     val componentField = packageInvader?.fields?.get(this)
-    if (componentField == null) {
-      return "${getJavaClassName()}.class"
+    return if (componentField == null) {
+      "${getJavaClassName()}.class"
     } else {
-      return "${packageInvader.type.className}.${componentField.name}"
+      "${packageInvader.type.className}.${componentField.name}"
     }
   }
 

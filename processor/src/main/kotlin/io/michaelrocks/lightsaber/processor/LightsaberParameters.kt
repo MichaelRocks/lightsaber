@@ -34,13 +34,13 @@ data class LightsaberParameters(
         listConverter = FileConverter::class, description = "Classpath",
         variableArity = true
     )
-    var classpath: List<File> = emptyList<File>(),
+    var classpath: List<File> = emptyList(),
     @Parameter(
         names = arrayOf("--bootclasspath"),
         listConverter = FileConverter::class, description = "Boot classpath",
         variableArity = true
     )
-    var bootClasspath: List<File> = emptyList<File>(),
+    var bootClasspath: List<File> = emptyList(),
     @Parameter(names = arrayOf("--source"), description = "Output directory for .java files")
     var source: File? = null,
     @Parameter(names = arrayOf("--gen"), description = "Output directory for generated .class files")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -124,14 +124,13 @@ class AnnotationProxyGenerator(
   private fun generateConstructor(classVisitor: ClassVisitor) {
     val fieldTypes = annotation.methods.map { it.type.returnType }
     val argumentTypes = fieldTypes.toTypedArray()
-    val method = MethodDescriptor.forConstructor(*argumentTypes)
-    val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, method)
+    val constructor = MethodDescriptor.forConstructor(*argumentTypes)
+    val generator = GeneratorAdapter(classVisitor, ACC_PUBLIC, constructor)
     generator.visitCode()
 
     // Call the constructor of the super class.
     generator.loadThis()
-    val constructor = MethodDescriptor.forDefaultConstructor()
-    generator.invokeConstructor(Types.OBJECT_TYPE, constructor)
+    generator.invokeConstructor(Types.OBJECT_TYPE, MethodDescriptor.forDefaultConstructor())
 
     // Initialize fields with arguments passed to the constructor.
     annotation.methods.forEachIndexed { localPosition, method ->

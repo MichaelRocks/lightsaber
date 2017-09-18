@@ -64,7 +64,7 @@ object Types {
   private val primitiveToBoxedMap: BiMap<Type, Type.Object>
 
   init {
-    primitiveToBoxedMap = HashBiMap<Type, Type.Object>()
+    primitiveToBoxedMap = HashBiMap()
     primitiveToBoxedMap.put(Type.Primitive.Void, BOXED_VOID_TYPE)
     primitiveToBoxedMap.put(Type.Primitive.Boolean, BOXED_BOOLEAN_TYPE)
     primitiveToBoxedMap.put(Type.Primitive.Byte, BOXED_BYTE_TYPE)

@@ -193,7 +193,7 @@ class ComponentsAnalyzerImpl(
   private fun InjectionPoint.toProvider(container: ClassMirror): Provider {
     val providerType = getObjectTypeByInternalName("${containerType.internalName}\$ConstructorProvider")
     val dependency = Dependency(GenericType.Raw(containerType), null)
-    val provisionPoint = ProvisionPoint.Constructor(dependency, cast<InjectionPoint.Method>())
+    val provisionPoint = ProvisionPoint.Constructor(dependency, this as InjectionPoint.Method)
     return Provider(providerType, provisionPoint, container.type, analyzerHelper.findScope(container))
   }
 

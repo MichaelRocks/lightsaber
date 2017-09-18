@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package io.michaelrocks.lightsaber.sample
 
 import io.michaelrocks.lightsaber.Module
 import io.michaelrocks.lightsaber.Provides
-import javax.inject.Provider
-import javax.inject.Singleton
+import io.michaelrocks.lightsaber.sample.library.Droid
 
 @Module
 internal class LightsaberModule {
@@ -31,8 +30,4 @@ internal class LightsaberModule {
 
   @Provides
   private fun provideDroid(r2d2: R2D2): Droid = r2d2
-
-  @Provides
-  @Singleton
-  private fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet = kashyyykProvider.get()
 }

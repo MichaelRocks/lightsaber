@@ -144,10 +144,10 @@ class KeyRegistryClassGenerator(
     pushNull()
     pushType(type.type)
     newArray(Types.TYPE_TYPE, type.typeArguments.size)
-    type.typeArguments.forEachIndexed { index, type ->
+    type.typeArguments.forEachIndexed { index, typeArgument ->
       dup()
       push(index)
-      push(type)
+      push(typeArgument)
       arrayStore(Types.TYPE_TYPE)
     }
     invokeConstructor(PARAMETERIZED_TYPE_IMPL_TYPE, PARAMETERIZED_TYPE_IMPL_CONSTRUCTOR)

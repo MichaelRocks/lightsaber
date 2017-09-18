@@ -260,17 +260,21 @@ class GradleVersion private constructor(
     private val PREVIEW_PATTERN = Pattern.compile("([a-zA-Z]+)[\\-]?([\\d]+)?")
 
     fun create(major: Int, minor: Int, micro: Int): GradleVersion {
-      return GradleVersion(major.toString() + "." + minor + "." + micro,
+      return GradleVersion(
+          major.toString() + "." + minor + "." + micro,
           VersionSegment.create(major),
-          VersionSegment.create(minor), VersionSegment.create(micro),
-          emptyList<VersionSegment>(), QualifiersSegment.empty())
+          VersionSegment.create(minor),
+          VersionSegment.create(micro),
+          emptyList(),
+          QualifiersSegment.empty()
+      )
     }
 
     fun tryParse(value: String): GradleVersion? {
-      try {
-        return parse(value)
+      return try {
+        parse(value)
       } catch (exception: RuntimeException) {
-        return null
+        null
       }
     }
 
