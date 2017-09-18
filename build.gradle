@@ -41,7 +41,7 @@ ext {
   logbackVersion = '1.2.3'
 
   junitVersion = '4.12'
-  mockitoVersion = '2.8.47'
+  mockitoVersion = '2.10.0'
   espressoVersion = '2.2.2'
   testRunnerVersion = '0.5'
 
