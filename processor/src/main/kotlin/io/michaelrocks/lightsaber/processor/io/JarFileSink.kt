@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 
 internal class JarFileSink(jarFile: File) : FileSink {
-  private val stream = JarOutputStream(jarFile.outputStream().buffered())
+  private val stream = createJarOutputStream(jarFile)
 
   override fun createFile(path: String, data: ByteArray) {
     val entry = JarEntry(path)
@@ -40,5 +40,10 @@ internal class JarFileSink(jarFile: File) : FileSink {
 
   override fun close() {
     stream.closeQuitely()
+  }
+
+  private fun createJarOutputStream(jarFile: File): JarOutputStream {
+    jarFile.parentFile?.mkdirs()
+    return JarOutputStream(jarFile.outputStream().buffered())
   }
 }
