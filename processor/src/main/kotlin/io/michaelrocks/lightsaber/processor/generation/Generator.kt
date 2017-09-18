@@ -47,8 +47,8 @@ import java.util.HashMap
 class Generator(
     private val classRegistry: ClassRegistry,
     private val errorReporter: ErrorReporter,
-    fileSink: FileSink,
-    sourceSink: FileSink
+    private val fileSink: FileSink,
+    private val sourceSink: FileSink
 ) {
   private val classProducer = ProcessorClassProducer(fileSink, errorReporter)
   private val sourceProducer = ProcessorSourceProducer(sourceSink, errorReporter)
@@ -62,6 +62,9 @@ class Generator(
     generatePackageInvaders(generationContext)
     generateKeyRegistry(generationContext)
     generateInjectionDispatcher(generationContext)
+
+    fileSink.flush()
+    sourceSink.flush()
   }
 
   private fun composeGeneratorModel(context: InjectionContext) =
