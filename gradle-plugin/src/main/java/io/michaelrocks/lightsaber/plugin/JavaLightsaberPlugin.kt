@@ -74,8 +74,10 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
     val backupDirs = getBackupDirs(project.buildDir, lightsaberDir, classesDirs)
     val sourceDir = File(lightsaberDir, "src")
     val classpath = compileTask.classpath.toList()
-    val bootClasspathString = compileTask.options.bootClasspath ?: System.getProperty("sun.boot.class.path")
-    val bootClasspath = bootClasspathString?.split(File.pathSeparator)?.map { File(it) } ?: emptyList()
+    val bootClasspath =
+        compileTask.options.bootstrapClasspath?.toList()
+            ?: System.getProperty("sun.boot.class.path")?.split(File.pathSeparator)?.map { File(it) }
+            ?: emptyList()
     val lightsaberTask =
         createLightsaberProcessTask(
             "lightsaberProcess$suffix",
