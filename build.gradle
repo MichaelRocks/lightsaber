@@ -27,6 +27,10 @@ allprojects {
       jcenter()
       google()
     }
+
+    dependencies {
+      classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+    }
   }
 
   repositories {
