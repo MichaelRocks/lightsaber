@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,13 +102,25 @@ class LightsaberTransform(private val project: Project) : Transform() {
   }
 
   override fun getReferencedScopes(): MutableSet<in QualifiedContent.Scope> {
-    return EnumSet.of(
-        QualifiedContent.Scope.PROJECT_LOCAL_DEPS,
-        QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
-        QualifiedContent.Scope.EXTERNAL_LIBRARIES,
-        QualifiedContent.Scope.TESTED_CODE,
-        QualifiedContent.Scope.PROVIDED_ONLY
-    )
+    if (PluginVersion.major >= 3) {
+      return EnumSet.of(
+          QualifiedContent.Scope.PROJECT,
+          QualifiedContent.Scope.SUB_PROJECTS,
+          QualifiedContent.Scope.EXTERNAL_LIBRARIES,
+          QualifiedContent.Scope.TESTED_CODE,
+          QualifiedContent.Scope.PROVIDED_ONLY
+      )
+    } else {
+      @Suppress("DEPRECATION")
+      return EnumSet.of(
+          QualifiedContent.Scope.PROJECT,
+          QualifiedContent.Scope.PROJECT_LOCAL_DEPS,
+          QualifiedContent.Scope.SUB_PROJECTS,
+          QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
+          QualifiedContent.Scope.TESTED_CODE,
+          QualifiedContent.Scope.PROVIDED_ONLY
+      )
+    }
   }
 
   override fun isIncremental(): Boolean {
