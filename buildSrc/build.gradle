@@ -3,5 +3,5 @@ repositories {
 }
 
 dependencies {
-  compile "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6"
+  implementation "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.6"
 }

@@ -13,11 +13,10 @@ targetCompatibility = JavaVersion.VERSION_1_6
 sourceCompatibility = JavaVersion.VERSION_1_6
 
 dependencies {
-  compile gradleApi()
-  compile project(':processor')
+  implementation project(':processor')
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
-  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-
+  compileOnly gradleApi()
   compileOnly "com.android.tools.build:gradle:$androidToolsVersion"
   compileOnly "com.android.tools.build:gradle-api:$androidToolsVersion"
 }

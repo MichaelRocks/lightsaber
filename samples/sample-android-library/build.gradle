@@ -21,11 +21,11 @@ android {
 }
 
 dependencies {
-  compile "io.michaelrocks:lightsaber-core:$version"
-  compile "com.android.support:support-annotations:$supportVersion"
+  implementation "io.michaelrocks:lightsaber-core:$version"
+  implementation "com.android.support:support-annotations:$supportVersion"
 
-  androidTestCompile "com.android.support.test.espresso:espresso-core:$espressoVersion"
-  androidTestCompile "com.android.support:support-annotations:$supportVersion"
+  androidTestImplementation "com.android.support.test.espresso:espresso-core:$espressoVersion"
+  androidTestImplementation "com.android.support:support-annotations:$supportVersion"
 
-  testCompile "junit:junit:$junitVersion"
+  testImplementation "junit:junit:$junitVersion"
 }

@@ -4,7 +4,7 @@ buildscript {
   }
 }
 
-apply plugin: 'java'
+apply plugin: 'java-library'
 apply plugin: 'kotlin'
 apply plugin: 'bintray'
 
@@ -12,11 +12,11 @@ sourceCompatibility = JavaVersion.VERSION_1_6
 targetCompatibility = JavaVersion.VERSION_1_6
 
 dependencies {
-  compile project(':core')
+  api project(':core')
 
-  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
-  testCompile "junit:junit:$junitVersion"
+  testImplementation "junit:junit:$junitVersion"
 }
 
 

@@ -4,9 +4,11 @@ buildscript {
   }
 }
 
+apply plugin: 'java-library'
 apply plugin: 'kotlin'
 
 dependencies {
-  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-  compile "org.mockito:mockito-core:$mockitoVersion"
+  api "org.mockito:mockito-core:$mockitoVersion"
+
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 }

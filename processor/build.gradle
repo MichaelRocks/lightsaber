@@ -19,18 +19,18 @@ targetCompatibility = JavaVersion.VERSION_1_6
 mainClassName = 'io.michaelrocks.lightsaber.processor.LightsaberProcessor'
 
 dependencies {
-  compile project(':core')
-  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+  implementation project(':core')
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
-  compile "com.beust:jcommander:$jcommanderVersion"
-  compile "org.ow2.asm:asm:$asmVersion"
-  compile "org.ow2.asm:asm-commons:$asmVersion"
-  compile "io.michaelrocks:grip:$gripVersion"
-  compile "io.michaelrocks:bimap:$bimapVersion"
-  compile "ch.qos.logback:logback-classic:$logbackVersion"
+  implementation "com.beust:jcommander:$jcommanderVersion"
+  implementation "org.ow2.asm:asm:$asmVersion"
+  implementation "org.ow2.asm:asm-commons:$asmVersion"
+  implementation "io.michaelrocks:grip:$gripVersion"
+  implementation "io.michaelrocks:bimap:$bimapVersion"
+  implementation "ch.qos.logback:logback-classic:$logbackVersion"
 
-  testCompile project(':tests:mockito-extensions')
-  testCompile "junit:junit:$junitVersion"
+  testImplementation project(':tests:mockito-extensions')
+  testImplementation "junit:junit:$junitVersion"
 }
 
 jar {
