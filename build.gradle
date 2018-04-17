@@ -1,5 +1,5 @@
 allprojects {
-  ext.kotlinVersion = '1.1.4-3'
+  ext.kotlinVersion = '1.2.41'
 
   buildscript {
     repositories {
@@ -41,14 +41,14 @@ ext {
   logbackVersion = '1.2.3'
 
   junitVersion = '4.12'
-  mockitoVersion = '2.10.0'
-  espressoVersion = '2.2.2'
-  testRunnerVersion = '0.5'
+  mockitoVersion = '2.17.0'
+  espressoVersion = '3.0.1'
+  testRunnerVersion = '1.0.1'
 
-  androidCompileSdkVersion = 26
-  androidTargetSdkVersion = 26
+  androidCompileSdkVersion = 27
+  androidTargetSdkVersion = 27
   androidMinSdkVersion = 16
-  androidBuildToolsVersion = '26.0.1'
-  androidToolsVersion = '2.3.3'
-  supportVersion = '26.1.0'
+  androidBuildToolsVersion = '27.0.3'
+  androidToolsVersion = '3.1.1'
+  supportVersion = '27.1.1'
 }
