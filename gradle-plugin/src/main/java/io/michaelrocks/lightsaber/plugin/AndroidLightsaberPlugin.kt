@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,26 @@ package io.michaelrocks.lightsaber.plugin
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPlugin
 
 class AndroidLightsaberPlugin : BaseLightsaberPlugin() {
   override fun apply(project: Project) {
     super.apply(project)
 
     if (project.hasAndroid) {
-      addDependencies("compile")
+      addDependencies(getConfigurationName())
       project.android.registerTransform(LightsaberTransform(project))
     } else {
       throw GradleException("Lightsaber plugin must be applied *AFTER* Android plugin")
+    }
+  }
+
+  private fun getConfigurationName(): String {
+    return if (PluginVersion.major >= 3) {
+      JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME
+    } else {
+      @Suppress("DEPRECATION")
+      JavaPlugin.COMPILE_CONFIGURATION_NAME
     }
   }
 }
