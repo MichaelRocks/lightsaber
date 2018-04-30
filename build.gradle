@@ -30,6 +30,7 @@ allprojects {
 
     dependencies {
       classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+      classpath "com.android.tools.build:gradle:$androidToolsVersion"
     }
   }
 

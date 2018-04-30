@@ -1,6 +1,5 @@
 buildscript {
   dependencies {
-    classpath "com.android.tools.build:gradle:$androidToolsVersion"
     classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
   }
 }
