@@ -16,23 +16,14 @@
 
 package io.michaelrocks.lightsaber.internal;
 
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Type;
+import org.junit.Test;
 
-public final class GenericArrayTypeImpl implements GenericArrayType {
-  private final Type genericComponentType;
+import static org.junit.Assert.assertEquals;
 
-  public GenericArrayTypeImpl(final Type genericComponentType) {
-    this.genericComponentType = genericComponentType;
-  }
-
-  @Override
-  public Type getGenericComponentType() {
-    return genericComponentType;
-  }
-
-  @Override
-  public String toString() {
-    return TypeUtils.getTypeName(genericComponentType) + "[]";
+public class GenericArrayTypeImplTest {
+  @Test
+  public void testToString() {
+    final GenericArrayTypeImpl genericArrayType = new GenericArrayTypeImpl(NamedType.create("Type"));
+    assertEquals("Type[]", genericArrayType.toString());
   }
 }

@@ -16,23 +16,21 @@
 
 package io.michaelrocks.lightsaber.internal;
 
-import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Type;
 
-public final class GenericArrayTypeImpl implements GenericArrayType {
-  private final Type genericComponentType;
+class NamedType implements Type {
+  private final String name;
 
-  public GenericArrayTypeImpl(final Type genericComponentType) {
-    this.genericComponentType = genericComponentType;
+  private NamedType(final String name) {
+    this.name = name;
   }
 
-  @Override
-  public Type getGenericComponentType() {
-    return genericComponentType;
+  public static NamedType create(final String name) {
+    return new NamedType(name);
   }
 
   @Override
   public String toString() {
-    return TypeUtils.getTypeName(genericComponentType) + "[]";
+    return name;
   }
 }

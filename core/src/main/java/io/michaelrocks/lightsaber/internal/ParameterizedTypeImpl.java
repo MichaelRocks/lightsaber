@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import java.lang.reflect.Type;
 
 public final class ParameterizedTypeImpl implements ParameterizedType {
   private final Type ownerType;
-  private final Type rawType;
+  private final Class<?> rawType;
   private final Type[] typeArguments;
 
-  public ParameterizedTypeImpl(final Type ownerType, final Type rawType, final Type... typeArguments) {
+  public ParameterizedTypeImpl(final Type ownerType, final Class<?> rawType, final Type... typeArguments) {
     this.ownerType = ownerType;
     this.rawType = rawType;
     this.typeArguments = typeArguments;
@@ -43,5 +43,26 @@ public final class ParameterizedTypeImpl implements ParameterizedType {
   @Override
   public Type getOwnerType() {
     return ownerType;
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder builder = new StringBuilder();
+    builder
+        .append(rawType.getCanonicalName())
+        .append('<');
+
+    if (typeArguments.length > 0) {
+      builder.append(TypeUtils.getTypeName(typeArguments[0]));
+      for (int i = 1, count = typeArguments.length; i < count; ++i) {
+        builder
+            .append(", ")
+            .append(TypeUtils.getTypeName(typeArguments[i]));
+      }
+    }
+
+    return builder
+        .append('>')
+        .toString();
   }
 }

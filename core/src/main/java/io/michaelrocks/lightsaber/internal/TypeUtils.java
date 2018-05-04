@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,15 @@ import java.util.Arrays;
 
 public class TypeUtils {
   private TypeUtils() {
+  }
+
+  public static String getTypeName(final Type type) {
+    if (type instanceof Class<?>) {
+      final Class<?> type1 = (Class<?>) type;
+      return type1.getName();
+    } else {
+      return type.toString();
+    }
   }
 
   public static boolean equals(final Type type1, final Type type2) {
