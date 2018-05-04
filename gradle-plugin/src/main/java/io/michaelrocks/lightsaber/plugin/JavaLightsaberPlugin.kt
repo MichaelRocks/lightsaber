@@ -127,7 +127,6 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
       backupTask.clean()
     }
 
-    cleanLightsaberTask.deleteAllActions()
     cleanLightsaberTask.doFirst {
       lightsaberTask.clean()
     }
