@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,5 +49,9 @@ internal class JarFileSource(private val jarFile: File) : FileSource {
     } catch (exception: IOException) {
       // Ignore the exception.
     }
+  }
+
+  override fun toString(): String {
+    return "JarFileSource($jarFile)"
   }
 }
