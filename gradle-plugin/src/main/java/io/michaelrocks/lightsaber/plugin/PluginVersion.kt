@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.io
+package io.michaelrocks.lightsaber.plugin
 
-object EmptyFileSink : FileSink {
-  override fun createFile(path: String, data: ByteArray) {
-    throw UnsupportedOperationException()
-  }
+import com.android.builder.model.Version
 
-  override fun createDirectory(path: String) {
-    throw UnsupportedOperationException()
-  }
+object PluginVersion {
+  val major: Int
+  val minor: Int
+  val patch: Int
+  val suffix: String
 
-  override fun flush() {
-  }
-
-  override fun close() {
-  }
-
-  override fun toString(): String {
-    return "EmptyFileSink"
+  init {
+    val version = Version.ANDROID_GRADLE_PLUGIN_VERSION
+    suffix = version.substringAfter('-', "")
+    val prefix = version.substringBefore('-')
+    val parts = prefix.split('.', limit = 3)
+    major = parts.getOrNull(0)?.toIntOrNull() ?: 0
+    minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
+    patch = parts.getOrNull(2)?.toIntOrNull() ?: 0
   }
 }

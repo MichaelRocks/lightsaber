@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber.plugin
 import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.SourceSet
 import org.gradle.api.tasks.SourceSetOutput
 import org.gradle.api.tasks.compile.JavaCompile
@@ -30,8 +31,7 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
 
     val lightsaber = project.extensions.create("lightsaber", JavaLightsaberPluginExtension::class.java)
 
-    addDependencies("compile")
-    addDependencies("testCompile")
+    addDependencies()
 
     project.afterEvaluate {
       if (project.plugins.hasPlugin("java")) {
@@ -42,6 +42,18 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
       } else {
         throw GradleException("Project should use Java plugin")
       }
+    }
+  }
+
+  private fun addDependencies() {
+    val version = GradleVersion.parse(project.gradle.gradleVersion)
+    if (version >= GRADLE_VERSION_WITH_IMPLEMENTATION) {
+      addDependencies(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
+      addDependencies(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME)
+    } else {
+      @Suppress("DEPRECATION")
+      addDependencies(JavaPlugin.COMPILE_CONFIGURATION_NAME)
+      addDependencies(JavaPlugin.TEST_COMPILE_CONFIGURATION_NAME)
     }
   }
 
@@ -62,8 +74,10 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
     val backupDirs = getBackupDirs(project.buildDir, lightsaberDir, classesDirs)
     val sourceDir = File(lightsaberDir, "src")
     val classpath = compileTask.classpath.toList()
-    val bootClasspathString = compileTask.options.bootClasspath ?: System.getProperty("sun.boot.class.path")
-    val bootClasspath = bootClasspathString?.split(File.pathSeparator)?.map { File(it) } ?: emptyList()
+    val bootClasspath =
+        compileTask.options.bootstrapClasspath?.toList()
+            ?: System.getProperty("sun.boot.class.path")?.split(File.pathSeparator)?.map { File(it) }
+            ?: emptyList()
     val lightsaberTask =
         createLightsaberProcessTask(
             "lightsaberProcess$suffix",
@@ -113,7 +127,6 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
       backupTask.clean()
     }
 
-    cleanLightsaberTask.deleteAllActions()
     cleanLightsaberTask.doFirst {
       lightsaberTask.clean()
     }
@@ -157,5 +170,7 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
 
   companion object {
     private const val LIGHTSABER_PATH = "lightsaber"
+
+    private val GRADLE_VERSION_WITH_IMPLEMENTATION = GradleVersion.create(3, 4, 0)
   }
 }

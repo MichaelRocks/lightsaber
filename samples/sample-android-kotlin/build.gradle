@@ -1,7 +1,5 @@
 buildscript {
   dependencies {
-    classpath "com.android.tools.build:gradle:$androidToolsVersion"
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
     classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
   }
 }
@@ -43,16 +41,16 @@ android {
 }
 
 dependencies {
-  compile fileTree(dir: 'libs', include: ['*.jar'])
-  compile project(':samples:sample-android-library')
+  implementation fileTree(dir: 'libs', include: ['*.jar'])
+  implementation project(':samples:sample-android-library')
 
   // Kotlin
-  compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
   // Testing
-  androidTestCompile "com.android.support.test.espresso:espresso-core:$espressoVersion"
-  androidTestCompile "com.android.support.test:runner:$testRunnerVersion"
-  androidTestCompile "com.android.support.test:rules:$testRunnerVersion"
-  androidTestCompile "com.android.support:support-annotations:$supportVersion"
-  androidTestCompile "com.google.code.findbugs:jsr305:$jsr305Version"
+  androidTestImplementation "com.android.support.test.espresso:espresso-core:$espressoVersion"
+  androidTestImplementation "com.android.support.test:runner:$testRunnerVersion"
+  androidTestImplementation "com.android.support.test:rules:$testRunnerVersion"
+  androidTestImplementation "com.android.support:support-annotations:$supportVersion"
+  androidTestImplementation "com.google.code.findbugs:jsr305:$jsr305Version"
 }

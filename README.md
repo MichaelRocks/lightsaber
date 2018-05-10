@@ -28,7 +28,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'io.michaelrocks:lightsaber-gradle-plugin:0.8.3-beta'
+    classpath 'io.michaelrocks:lightsaber-gradle-plugin:0.8.4-beta'
   }
 }
 
@@ -42,7 +42,7 @@ apply plugin: 'io.michaelrocks.lightsaber'
 
 // Optional, just if you need Kotlin extension functions.
 dependencies {
-  compile 'io.michaelrocks:lightsaber-core-kotlin:0.8.3-beta'
+  implementation 'io.michaelrocks:lightsaber-core-kotlin:0.8.4-beta'
 }
 ```
 

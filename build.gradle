@@ -1,11 +1,36 @@
 allprojects {
-  ext.kotlinVersion = '1.1.4-3'
+  ext.kotlinVersion = '1.2.41'
+
+  ext.javaxInjectVersion = '1'
+  ext.jsr305Version = '3.0.2'
+  ext.jcommanderVersion = '1.72'
+  ext.asmVersion = '5.2'
+  ext.gripVersion = '0.5.3-beta'
+  ext.bimapVersion = '1.0.2'
+  ext.logbackVersion = '1.2.3'
+
+  ext.junitVersion = '4.12'
+  ext.mockitoVersion = '2.17.0'
+  ext.espressoVersion = '3.0.1'
+  ext.testRunnerVersion = '1.0.1'
+
+  ext.androidCompileSdkVersion = 27
+  ext.androidTargetSdkVersion = 27
+  ext.androidMinSdkVersion = 16
+  ext.androidBuildToolsVersion = '27.0.3'
+  ext.androidToolsVersion = '3.1.1'
+  ext.supportVersion = '27.1.1'
 
   buildscript {
     repositories {
       mavenLocal()
       jcenter()
       google()
+    }
+
+    dependencies {
+      classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+      classpath "com.android.tools.build:gradle:$androidToolsVersion"
     }
   }
 
@@ -29,26 +54,4 @@ allprojects {
 
   ext.dryRun = properties['version.dryRun'].toBoolean()
   ext.publish = properties['version.publish'].toBoolean()
-}
-
-ext {
-  javaxInjectVersion = '1'
-  jsr305Version = '3.0.2'
-  jcommanderVersion = '1.72'
-  asmVersion = '5.2'
-  gripVersion = '0.5.3-beta'
-  bimapVersion = '1.0.2'
-  logbackVersion = '1.2.3'
-
-  junitVersion = '4.12'
-  mockitoVersion = '2.10.0'
-  espressoVersion = '2.2.2'
-  testRunnerVersion = '0.5'
-
-  androidCompileSdkVersion = 26
-  androidTargetSdkVersion = 26
-  androidMinSdkVersion = 16
-  androidBuildToolsVersion = '26.0.1'
-  androidToolsVersion = '2.3.3'
-  supportVersion = '26.1.0'
 }
