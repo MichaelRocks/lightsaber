@@ -42,7 +42,7 @@ apply plugin: 'io.michaelrocks.lightsaber'
 
 // Optional, just if you need Kotlin extension functions.
 dependencies {
-  compile 'io.michaelrocks:lightsaber-core-kotlin:0.9.0-beta'
+  implementation 'io.michaelrocks:lightsaber-core-kotlin:0.9.0-beta'
 }
 ```
 

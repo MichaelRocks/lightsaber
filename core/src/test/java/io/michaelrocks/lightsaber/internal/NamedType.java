@@ -14,24 +14,23 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.io
+package io.michaelrocks.lightsaber.internal;
 
-object EmptyFileSink : FileSink {
-  override fun createFile(path: String, data: ByteArray) {
-    throw UnsupportedOperationException()
+import java.lang.reflect.Type;
+
+class NamedType implements Type {
+  private final String name;
+
+  private NamedType(final String name) {
+    this.name = name;
   }
 
-  override fun createDirectory(path: String) {
-    throw UnsupportedOperationException()
+  public static NamedType create(final String name) {
+    return new NamedType(name);
   }
 
-  override fun flush() {
-  }
-
-  override fun close() {
-  }
-
-  override fun toString(): String {
-    return "EmptyFileSink"
+  @Override
+  public String toString() {
+    return name;
   }
 }

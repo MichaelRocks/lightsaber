@@ -14,24 +14,16 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.io
+package io.michaelrocks.lightsaber.internal;
 
-object EmptyFileSink : FileSink {
-  override fun createFile(path: String, data: ByteArray) {
-    throw UnsupportedOperationException()
-  }
+import org.junit.Test;
 
-  override fun createDirectory(path: String) {
-    throw UnsupportedOperationException()
-  }
+import static org.junit.Assert.assertEquals;
 
-  override fun flush() {
-  }
-
-  override fun close() {
-  }
-
-  override fun toString(): String {
-    return "EmptyFileSink"
+public class GenericArrayTypeImplTest {
+  @Test
+  public void testToString() {
+    final GenericArrayTypeImpl genericArrayType = new GenericArrayTypeImpl(NamedType.create("Type"));
+    assertEquals("Type[]", genericArrayType.toString());
   }
 }

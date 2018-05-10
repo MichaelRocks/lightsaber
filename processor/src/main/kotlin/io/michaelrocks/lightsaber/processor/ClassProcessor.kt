@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,9 @@ class ClassProcessor(
 
   private fun copyAndPatchClasses(context: InjectionContext) {
     fileSourcesAndSinks.forEach { (fileSource, fileSink) ->
+      logger.debug("Copy from {} to {}", fileSource, fileSink)
       fileSource.listFiles { path, type ->
+        logger.debug("Copy file {} of type {}", path, type)
         when (type) {
           FileSource.EntryType.CLASS -> {
             val classReader = ClassReader(fileSource.readFile(path))
