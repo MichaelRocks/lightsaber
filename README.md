@@ -244,7 +244,7 @@ public class DroidModule {
   public Droid provideDroid(Injector injector) {
     Droid droid = new ElectircalDroid();
     injector.injectMemebers(droid);
-    return injector;
+    return droid;
   }
 }
 ```
