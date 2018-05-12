@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ public class Lightsaber {
 
   @Nonnull
   public static <T> T getInstance(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type) {
-    return injector.getInstance(Key.of(type));
+    return injector.getInstance(type);
   }
 
   @Nonnull
@@ -111,7 +111,7 @@ public class Lightsaber {
 
   @Nonnull
   public static <T> Provider<T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type) {
-    return injector.getProvider(Key.of(type));
+    return injector.getProvider(type);
   }
 
   @Nonnull
