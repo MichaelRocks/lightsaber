@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import io.michaelrocks.lightsaber.Provides
 import javax.inject.Provider
 import javax.inject.Singleton
 
-@Module
+@Module(isDefault = true)
 internal class LightsaberModule {
   @Provides
   private val darthVader = DarthVader

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,11 +88,9 @@ class InjectorConfiguratorClassGenerator(
     moduleProvider.module.providers.forEach { provider ->
       loadArg(0)
       registerProvider(keyRegistry, provider) {
-        if (moduleLocal == INVALID_LOCAL) {
-          check(provider.isConstructorProvider)
+        if (provider.isConstructorProvider) {
           newConstructorProvider(provider)
         } else {
-          check(!provider.isConstructorProvider)
           newModuleProvider(provider) {
             loadLocal(moduleLocal)
           }
@@ -105,7 +103,6 @@ class InjectorConfiguratorClassGenerator(
     return when (provisionPoint) {
       is ModuleProvisionPoint.Method -> getModule(provisionPoint)
       is ModuleProvisionPoint.Field -> getModule(provisionPoint)
-      is ModuleProvisionPoint.Null -> INVALID_LOCAL
     }
   }
 

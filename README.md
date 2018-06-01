@@ -174,13 +174,22 @@ A class may have one and only one injectable constructor. This constructor must 
 have any number of arguments. When instantiating a class with an injectable constructor via an injector the injector
 must be able to provide instances for every argument of the constructor.
 
+Classes with injectable constructors should be bound to a module and thus to a component that provides the module.
+This binding can be defined by annotating the class with `@ProvidedBy` annotation and specifying module classes in its
+default parameter.
+
 ```java
+@ProvidedBy(DroidModule.class)
 public class Droid {
   @Inject
   public Droid(Battery battery) {
   }
 }
 ```
+
+If you have a module that should provide most of the dependencies you can make this module default by setting
+`isDefault` parameter in the `@Module` annotation to `true` and avoid using `@ProvidedBy` annotation on classes that
+need to be provided by this module.
 
 When providing a dependency using an injectable constructor Lightsaber will perform field and method injection into
 the provided instance.

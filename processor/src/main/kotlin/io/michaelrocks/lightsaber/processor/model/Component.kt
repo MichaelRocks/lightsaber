@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import io.michaelrocks.grip.mirrors.Type
 data class Component(
     val type: Type.Object,
     val providers: Collection<ModuleProvider>,
+    val parent: Type.Object?,
     val subcomponents: Collection<Type.Object>
 ) {
   val modules: Collection<Module> = providers.map { it.module }

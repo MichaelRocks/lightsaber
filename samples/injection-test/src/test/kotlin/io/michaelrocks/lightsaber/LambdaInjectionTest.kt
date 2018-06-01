@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,7 @@ class LambdaInjectionTest {
   }
 
   @JvmSuppressWildcards
+  @ProvidedBy(LambdaModule::class)
   private class ConstructorInjectionTarget @Inject constructor(
       override val greeting1: () -> String,
       override val greeting2: (String) -> String,

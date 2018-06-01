@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import io.michaelrocks.lightsaber.Injector
 import io.michaelrocks.lightsaber.Key
 import io.michaelrocks.lightsaber.Lazy
 import io.michaelrocks.lightsaber.Module
+import io.michaelrocks.lightsaber.ProvidedBy
 import io.michaelrocks.lightsaber.Provides
 import io.michaelrocks.lightsaber.internal.InjectingProvider
 import javax.inject.Inject
@@ -38,6 +39,7 @@ object Types {
   val STRING_TYPE = getObjectType<String>()
   val INJECT_TYPE = getObjectType<Inject>()
   val PROVIDES_TYPE = getObjectType<Provides>()
+  val PROVIDED_BY_TYPE = getObjectType<ProvidedBy>()
   val COMPONENT_TYPE = getObjectType<Component>()
   val COMPONENT_NONE_TYPE = getObjectType<Component.None>()
   val MODULE_TYPE = getObjectType<Module>()

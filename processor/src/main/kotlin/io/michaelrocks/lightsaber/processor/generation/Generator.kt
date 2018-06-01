@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,17 +69,11 @@ class Generator(
 
   private fun composeGeneratorModel(context: InjectionContext) =
       GenerationContext(
-          composePackageInjectorConfigurator(context),
           composeInjectorConfigurators(context),
           composeMembersInjectors(context),
           composePackageInvaders(context),
           composeKeyRegistry(context)
       )
-
-  private fun composePackageInjectorConfigurator(context: InjectionContext): InjectorConfigurator {
-    val configuratorType = composeConfiguratorType(context.packageComponent)
-    return InjectorConfigurator(configuratorType, context.packageComponent)
-  }
 
   private fun composeInjectorConfigurators(context: InjectionContext): Collection<InjectorConfigurator> {
     return context.components
@@ -102,7 +96,7 @@ class Generator(
   }
 
   private fun composePackageInvaders(context: InjectionContext): Collection<PackageInvader> =
-      context.allComponents.asSequence()
+      context.components.asSequence()
           .flatMap { it.modules.asSequence() }
           .flatMap { it.providers.asSequence() }
           .asIterable()
@@ -144,7 +138,7 @@ class Generator(
 
   private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {
     val type = getObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry")
-    val keys = context.allComponents.asSequence()
+    val keys = context.components.asSequence()
         .flatMap { it.modules.asSequence() }
         .flatMap { it.providers.asSequence() }
         .asIterable()

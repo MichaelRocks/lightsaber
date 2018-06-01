@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class Analyzer(
         InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).let { analyzer ->
           analyzer.analyze(files)
         }
-    val (packageComponent, components) = componentsAnalyzer.analyze(files, providableTargets)
-    return InjectionContext(packageComponent, components, injectableTargets, providableTargets)
+    val components = componentsAnalyzer.analyze(files, providableTargets)
+    return InjectionContext(components, injectableTargets, providableTargets)
   }
 }

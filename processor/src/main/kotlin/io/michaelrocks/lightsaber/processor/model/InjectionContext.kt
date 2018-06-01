@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,10 @@ package io.michaelrocks.lightsaber.processor.model
 import io.michaelrocks.grip.mirrors.Type
 
 data class InjectionContext(
-    val packageComponent: Component,
     val components: Collection<Component>,
     val injectableTargets: Collection<InjectionTarget>,
     val providableTargets: Collection<InjectionTarget>
 ) {
-  val allComponents: Collection<Component> = components + packageComponent
-
   private val componentsByType = components.associateBy { it.type }
   private val modulesByType = components.flatMap { it.modules }.associateBy { it.type }
   private val injectableTargetsByType = injectableTargets.associateBy { it.type }

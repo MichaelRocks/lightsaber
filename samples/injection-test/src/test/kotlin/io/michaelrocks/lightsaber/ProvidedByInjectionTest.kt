@@ -16,32 +16,47 @@
 
 package io.michaelrocks.lightsaber
 
-import org.junit.Assert.assertSame
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import javax.inject.Inject
 
-class InjectorInjectionTest {
+class ProvidedByInjectionTest {
   @Test
-  fun testInjectorInjection() {
+  fun testProvidedByInjection() {
     val lightsaber = Lightsaber.get()
     val parentInjector = lightsaber.createInjector(ParentComponent())
     val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
-    assertSame(parentInjector, parentInjector.getInstance<InjectionTarget>().injector)
-    assertSame(childInjector, childInjector.getInstance<InjectionTarget>().injector)
+    assertEquals("ProvidedBy", parentInjector.getInstance<ParentInjectionTarget>().string)
+    assertEquals("ProvidedBy", childInjector.getInstance<ParentInjectionTarget>().string)
+    assertEquals("ProvidedBy", childInjector.getInstance<ChildInjectionTarget>().parent.string)
   }
 
   @Component
   private class ParentComponent {
     @Provides
     private fun provideParentModule(): ParentModule = ParentModule()
+
+    @Module
+    class ParentModule {
+      @Provides
+      private fun provideString(): String {
+        return "ProvidedBy"
+      }
+    }
   }
 
-  @Module
-  private class ParentModule
-
   @Component(parent = ParentComponent::class)
-  private class ChildComponent
+  private class ChildComponent {
+    @Provides
+    private fun provideChildModule(): ChildModule = ChildModule()
 
-  @ProvidedBy(ParentModule::class)
-  private class InjectionTarget @Inject private constructor(val injector: Injector)
+    @Module
+    class ChildModule
+  }
+
+  @ProvidedBy(ParentComponent.ParentModule::class)
+  private class ParentInjectionTarget @Inject private constructor(val string: String)
+
+  @ProvidedBy(ChildComponent.ChildModule::class)
+  private class ChildInjectionTarget @Inject private constructor(val parent: ParentInjectionTarget)
 }

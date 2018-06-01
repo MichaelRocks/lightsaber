@@ -44,9 +44,7 @@ public class Lightsaber {
 
   @Nonnull
   public Injector createInjector(@Nonnull final Object component) {
-    final LightsaberInjector injector = createInjectorInternal(null, component);
-    configurator.configureInjector(injector, null);
-    return injector;
+    return createInjectorInternal(null, component);
   }
 
   @Nonnull

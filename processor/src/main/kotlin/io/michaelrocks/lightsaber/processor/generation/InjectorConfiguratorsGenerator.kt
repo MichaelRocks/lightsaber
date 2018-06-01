@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ class InjectorConfiguratorsGenerator(
   private val logger = getLogger()
 
   fun generate(generationContext: GenerationContext) {
-    generationContext.allInjectorConfigurators.forEach { configurator ->
+    generationContext.injectorConfigurators.forEach { configurator ->
       logger.debug("Generating injector configurator {}", configurator.type.internalName)
       val generator =
           InjectorConfiguratorClassGenerator(classRegistry, generationContext.keyRegistry, configurator)

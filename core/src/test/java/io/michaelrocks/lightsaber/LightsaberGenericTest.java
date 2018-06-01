@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,6 @@ public class LightsaberGenericTest {
 
     final Injector injector = lightsaber.createInjector(parentModule);
 
-    verify(configurator).configureInjector((LightsaberInjector) injector, null);
     verify(configurator).configureInjector((LightsaberInjector) injector, parentModule);
     verifyNoMoreInteractions(configurator);
     assertEquals(Collections.singletonList("Parent List"), injector.getInstance(getJvmStringListType()));

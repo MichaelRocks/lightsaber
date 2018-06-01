@@ -29,42 +29,42 @@ import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
+import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.grip.not
 import io.michaelrocks.grip.returns
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import io.michaelrocks.lightsaber.processor.model.Dependency
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
+import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 import io.michaelrocks.lightsaber.processor.model.Module
 import io.michaelrocks.lightsaber.processor.model.Provider
 import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
-import java.util.HashMap
 
-interface ModuleRegistry {
-  fun getOrCreateModule(type: Type.Object): Module
+interface ModuleParser {
+  fun parseModule(type: Type.Object, providableTargets: Collection<InjectionTarget>): Module
 }
 
-class ModuleRegistryImpl(
+class ModuleParserImpl(
     private val grip: Grip,
     private val analyzerHelper: AnalyzerHelper,
     private val errorReporter: ErrorReporter
-) : ModuleRegistry {
+) : ModuleParser {
   private val logger = getLogger()
 
-  private val modulesByType = HashMap<Type.Object, Module>()
-
-  override fun getOrCreateModule(type: Type.Object): Module {
-    return modulesByType.getOrPut(type) { convertToModule(grip.classRegistry.getClassMirror(type)) }
+  override fun parseModule(type: Type.Object, providableTargets: Collection<InjectionTarget>): Module {
+    return convertToModule(grip.classRegistry.getClassMirror(type), providableTargets)
   }
 
-  private fun convertToModule(mirror: ClassMirror): Module {
+  private fun convertToModule(mirror: ClassMirror, providableTargets: Collection<InjectionTarget>): Module {
     if (mirror.signature.typeParameters.isNotEmpty()) {
-      errorReporter.reportError("Module cannot have a type parameters: $mirror")
+      errorReporter.reportError("Module cannot have a type parameters: ${mirror.type.className}")
       return Module(mirror.type, emptyList())
     }
 
     if (Types.MODULE_TYPE !in mirror.annotations) {
-      errorReporter.reportError("Class $mirror is not a module")
+      errorReporter.reportError("Class ${mirror.type.className} is not a module")
       return Module(mirror.type, emptyList())
     }
 
@@ -73,7 +73,12 @@ class ModuleRegistryImpl(
     val fieldsQuery = grip select fields from mirror where
         (annotatedWith(Types.PROVIDES_TYPE) and not(isStatic()))
 
-    logger.debug("Module: {}", mirror)
+    logger.debug("Module: {}", mirror.type.className)
+    val constructors = providableTargets.map { target ->
+      logger.debug("  Constructor: {}", target.injectionPoints.first())
+      target.toProvider(target.type)
+    }
+
     val methods = methodsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, method ->
       logger.debug("  Method: {}", method)
       method.toProvider(mirror.type, index)
@@ -84,9 +89,17 @@ class ModuleRegistryImpl(
       field.toProvider(mirror.type, index)
     }
 
-    return Module(mirror.type, methods + fields)
+    return Module(mirror.type, constructors + methods + fields)
   }
 
+  private fun InjectionTarget.toProvider(container: Type.Object): Provider {
+    val mirror = grip.classRegistry.getClassMirror(type)
+    val providerType = getObjectTypeByInternalName("${type.internalName}\$ConstructorProvider")
+    val dependency = Dependency(GenericType.Raw(type), analyzerHelper.findQualifier(mirror))
+    val provisionPoint = ProvisionPoint.Constructor(dependency, injectionPoints.first() as InjectionPoint.Method)
+    val scope = analyzerHelper.findScope(mirror)
+    return Provider(providerType, provisionPoint, container, scope)
+  }
 
   private fun MethodMirror.toProvider(container: Type.Object, index: Int): Provider {
     val providerType = getObjectTypeByInternalName("${container.internalName}\$MethodProvider\$$index")

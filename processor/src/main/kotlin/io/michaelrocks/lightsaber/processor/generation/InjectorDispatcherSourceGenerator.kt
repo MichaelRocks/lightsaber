@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,6 @@ class InjectorDispatcherSourceGenerator(
 
   private fun composeStaticInitializer(generationContext: GenerationContext): String {
     return buildString {
-      putPackageInjectorConfigurator(generationContext.packageInjectorConfigurator)
       generationContext.injectorConfigurators.forEach { injectorConfigurator ->
         val packageInvader = generationContext.findPackageInvaderByTargetType(injectorConfigurator.component.type)
         putInjectorConfigurator(injectorConfigurator, packageInvader)
@@ -57,11 +56,6 @@ class InjectorDispatcherSourceGenerator(
         putMembersInjector(membersInjector, packageInvader)
       }
     }
-  }
-
-  private fun StringBuilder.putPackageInjectorConfigurator(injectorConfigurator: InjectorConfigurator) {
-    val configurator = injectorConfigurator.className
-    putToInjectorConfigurators("null", "new $configurator()")
   }
 
   private fun StringBuilder.putInjectorConfigurator(injectorConfigurator: InjectorConfigurator,

@@ -83,7 +83,7 @@ class ClassProcessor(
   private fun performAnalysisAndValidation(): InjectionContext {
     val analyzer = Analyzer(grip, errorReporter)
     val context = analyzer.analyze(inputs)
-    Validator(grip.classRegistry, errorReporter).validate(context)
+    Validator(grip.classRegistry, errorReporter, context).validate()
     checkErrors()
     return context
   }
@@ -135,7 +135,6 @@ class ClassProcessor(
   }
 
   private fun InjectionContext.dump() {
-    packageComponent.dump()
     components.forEach { it.dump() }
     injectableTargets.forEach { it.dump("Injectable") }
     providableTargets.forEach { it.dump("Providable") }

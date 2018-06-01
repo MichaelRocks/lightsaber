@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,7 @@ public class InjectionDispatcher {
     }
 
     final LightsaberInjector injector = (LightsaberInjector) injectorObject;
-    final Class<?> componentClass = component == null ? null : component.getClass();
-    final InjectorConfigurator injectorConfigurator = injectorConfigurators.get(componentClass);
+    final InjectorConfigurator injectorConfigurator = injectorConfigurators.get(component.getClass());
     if (injectorConfigurator == null) {
       throw new ConfigurationException("The component hasn't been processed with Lightsaber: " + component);
     }

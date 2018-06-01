@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,6 @@ public class LightsaberTest {
 
     final Injector injector = lightsaber.createInjector(parentModule);
 
-    verify(configurator).configureInjector((LightsaberInjector) injector, null);
     verify(configurator).configureInjector((LightsaberInjector) injector, parentModule);
     verifyNoMoreInteractions(configurator);
     assertSame(injector, injector.getInstance(Key.of(Injector.class)));
@@ -108,7 +107,6 @@ public class LightsaberTest {
     final Injector injector = lightsaber.createInjector(parentModule);
     final Injector childInjector = lightsaber.createChildInjector(injector, childModule);
 
-    verify(configurator).configureInjector((LightsaberInjector) injector, null);
     verify(configurator).configureInjector((LightsaberInjector) injector, parentModule);
     verify(configurator).configureInjector((LightsaberInjector) childInjector, childModule);
     verifyNoMoreInteractions(configurator);
@@ -130,7 +128,6 @@ public class LightsaberTest {
     final Injector childInjector =
         lightsaber.createChildInjector(injector, childAnnotatedModule);
 
-    verify(configurator).configureInjector((LightsaberInjector) injector, null);
     verify(configurator).configureInjector((LightsaberInjector) injector, parentModule);
     verify(configurator).configureInjector((LightsaberInjector) childInjector, childAnnotatedModule);
     verifyNoMoreInteractions(configurator);

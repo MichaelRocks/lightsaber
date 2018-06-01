@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -393,6 +393,7 @@ class PrimitiveInjectionTest {
 
   private class BoxedResult
 
+  @ProvidedBy(UnboxedPrimitiveModule::class, BoxedPrimitiveModule::class)
   private class UnboxedConstructableContainer @Inject constructor(
       val booleanField: Boolean,
       val byteField: Byte,
@@ -404,6 +405,7 @@ class PrimitiveInjectionTest {
       val shortField: Short
   )
 
+  @ProvidedBy(UnboxedPrimitiveModule::class, BoxedPrimitiveModule::class)
   private class BoxedConstructableContainer @Inject constructor(
       val booleanField: Boolean?,
       val byteField: Byte?,

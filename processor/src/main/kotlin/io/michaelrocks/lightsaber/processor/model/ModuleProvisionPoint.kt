@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,5 +22,4 @@ import io.michaelrocks.grip.mirrors.MethodMirror
 sealed class ModuleProvisionPoint {
   data class Method(val method: MethodMirror) : ModuleProvisionPoint()
   data class Field(val field: FieldMirror) : ModuleProvisionPoint()
-  object Null : ModuleProvisionPoint()
 }
