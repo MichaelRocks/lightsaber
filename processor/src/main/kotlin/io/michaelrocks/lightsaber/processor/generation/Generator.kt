@@ -17,32 +17,11 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
-import io.michaelrocks.grip.mirrors.Type
-import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
-import io.michaelrocks.grip.mirrors.isPublic
-import io.michaelrocks.grip.mirrors.packageName
-import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.annotations.proxy.AnnotationCreator
-import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.associateByIndexedTo
-import io.michaelrocks.lightsaber.processor.commons.boxedOrElementType
-import io.michaelrocks.lightsaber.processor.commons.given
-import io.michaelrocks.lightsaber.processor.commons.groupNotNullByTo
-import io.michaelrocks.lightsaber.processor.commons.mergeWith
-import io.michaelrocks.lightsaber.processor.commons.rawType
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
-import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
-import io.michaelrocks.lightsaber.processor.generation.model.Key
-import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
-import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
-import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.io.FileSink
-import io.michaelrocks.lightsaber.processor.model.Component
-import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
-import java.util.HashMap
 
 class Generator(
     private val classRegistry: ClassRegistry,
@@ -55,7 +34,7 @@ class Generator(
   private val annotationCreator = AnnotationCreator(classProducer, classRegistry)
 
   fun generate(injectionContext: InjectionContext) {
-    val generationContext = composeGeneratorModel(injectionContext)
+    val generationContext = GenerationContextFactory(classRegistry).createGenerationContext(injectionContext)
     generateProviders(injectionContext, generationContext)
     generateInjectorConfigurators(generationContext)
     generateInjectors(generationContext)
@@ -65,99 +44,6 @@ class Generator(
 
     fileSink.flush()
     sourceSink.flush()
-  }
-
-  private fun composeGeneratorModel(context: InjectionContext) =
-      GenerationContext(
-          composeInjectorConfigurators(context),
-          composeMembersInjectors(context),
-          composePackageInvaders(context),
-          composeKeyRegistry(context)
-      )
-
-  private fun composeInjectorConfigurators(context: InjectionContext): Collection<InjectorConfigurator> {
-    return context.components
-        .map { component ->
-          val configuratorType = composeConfiguratorType(component)
-          InjectorConfigurator(configuratorType, component)
-        }
-  }
-
-  private fun composeConfiguratorType(component: Component): Type.Object {
-    val componentNameWithDollars = component.type.internalName.replace('/', '$')
-    return getObjectTypeByInternalName("io/michaelrocks/lightsaber/InjectorConfigurator\$$componentNameWithDollars")
-  }
-
-  private fun composeMembersInjectors(context: InjectionContext): Collection<MembersInjector> {
-    return context.injectableTargets.map { injectableTarget ->
-      val injectorType = getObjectTypeByInternalName(injectableTarget.type.internalName + "\$MembersInjector")
-      MembersInjector(injectorType, injectableTarget)
-    }
-  }
-
-  private fun composePackageInvaders(context: InjectionContext): Collection<PackageInvader> =
-      context.components.asSequence()
-          .flatMap { it.modules.asSequence() }
-          .flatMap { it.providers.asSequence() }
-          .asIterable()
-          .groupNotNullByTo(
-              HashMap(),
-              { provider -> provider.moduleType.packageName },
-              { provider ->
-                val type = provider.dependency.type.rawType
-                given (!classRegistry.getClassMirror(type.boxedOrElementType()).isPublic) { type }
-              }
-          )
-          .mergeWith(
-              context.components.groupNotNullByTo(
-                  HashMap<String, MutableList<Type>>(),
-                  { component -> component.type.packageName },
-                  { component ->
-                    given (!classRegistry.getClassMirror(component.type).isPublic) { component.type }
-                  }
-              )
-          )
-          .mergeWith(
-              context.injectableTargets.groupNotNullByTo(
-                  HashMap(),
-                  { target -> target.type.packageName },
-                  { target ->
-                    given (!classRegistry.getClassMirror(target.type).isPublic) { target.type }
-                  }
-              )
-          )
-          .map {
-            val (packageName, types) = it
-            val packageInvaderType = getObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader")
-            val fields = types.associateByIndexedTo(HashMap(),
-                { _, type -> type },
-                { index, _ -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
-            )
-            PackageInvader(packageInvaderType, packageName, fields)
-          }
-
-  private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {
-    val type = getObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry")
-    val keys = context.components.asSequence()
-        .flatMap { it.modules.asSequence() }
-        .flatMap { it.providers.asSequence() }
-        .asIterable()
-        .associateByIndexedTo(
-            HashMap(),
-            { _, provider -> provider.dependency.box() },
-            { index, provider -> composeKey("key$index", provider.dependency) }
-        )
-    val injectorDependency = Dependency(GenericType.Raw(Types.INJECTOR_TYPE))
-    keys.put(injectorDependency, composeKey("injectorKey", injectorDependency))
-    return KeyRegistry(type, keys)
-  }
-
-  private fun composeKey(name: String, dependency: Dependency): Key {
-    return when {
-      dependency.qualifier != null -> Key.QualifiedType(FieldDescriptor(name, Types.KEY_TYPE))
-      dependency.type is GenericType.Raw -> Key.Class(FieldDescriptor(name, Types.CLASS_TYPE))
-      else -> Key.Type(FieldDescriptor(name, Types.TYPE_TYPE))
-    }
   }
 
   private fun generateProviders(injectionContext: InjectionContext, generationContext: GenerationContext) {
