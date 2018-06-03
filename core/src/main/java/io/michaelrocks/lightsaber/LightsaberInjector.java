@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Provider;
 import java.lang.reflect.Type;
 
-class LightsaberInjector implements Injector {
+public class LightsaberInjector implements Injector {
   private final Lightsaber lightsaber;
   private final IterableMap<Object, InjectingProvider<?>> providers = new PolymorphicKeyHashMap<InjectingProvider<?>>();
 
@@ -104,15 +104,15 @@ class LightsaberInjector implements Injector {
     return providers;
   }
 
-  <T> void registerProvider(final Class<? extends T> type, final InjectingProvider<? extends T> provider) {
+  public <T> void registerProvider(final Class<? extends T> type, final InjectingProvider<? extends T> provider) {
     registerProviderInternal(type, provider);
   }
 
-  <T> void registerProvider(final Type type, final InjectingProvider<? extends T> provider) {
+  public <T> void registerProvider(final Type type, final InjectingProvider<? extends T> provider) {
     registerProviderInternal(type, provider);
   }
 
-  <T> void registerProvider(final Key<T> key, final InjectingProvider<? extends T> provider) {
+  public <T> void registerProvider(final Key<T> key, final InjectingProvider<? extends T> provider) {
     if (key.getQualifier() == null) {
       registerProviderInternal(key.getType(), provider);
     } else {

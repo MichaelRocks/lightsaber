@@ -33,10 +33,8 @@ class Generator(
   private val sourceProducer = ProcessorSourceProducer(sourceSink, errorReporter)
   private val annotationCreator = AnnotationCreator(classProducer, classRegistry)
 
-  fun generate(injectionContext: InjectionContext) {
-    val generationContext = GenerationContextFactory(classRegistry).createGenerationContext(injectionContext)
+  fun generate(injectionContext: InjectionContext, generationContext: GenerationContext) {
     generateProviders(injectionContext, generationContext)
-    generateInjectorConfigurators(generationContext)
     generateInjectors(generationContext)
     generatePackageInvaders(generationContext)
     generateKeyRegistry(generationContext)
@@ -49,11 +47,6 @@ class Generator(
   private fun generateProviders(injectionContext: InjectionContext, generationContext: GenerationContext) {
     val generator = ProvidersGenerator(classProducer, classRegistry)
     generator.generate(injectionContext, generationContext)
-  }
-
-  private fun generateInjectorConfigurators(generationContext: GenerationContext) {
-    val generator = InjectorConfiguratorsGenerator(classProducer, classRegistry)
-    generator.generate(generationContext)
   }
 
   private fun generateInjectors(generationContext: GenerationContext) {

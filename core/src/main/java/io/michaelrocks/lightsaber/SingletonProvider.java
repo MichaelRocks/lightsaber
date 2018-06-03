@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import io.michaelrocks.lightsaber.internal.InjectingProvider;
 
 import javax.annotation.Nonnull;
 
-class SingletonProvider<T> implements InjectingProvider<T> {
+public class SingletonProvider<T> implements InjectingProvider<T> {
   private final InjectingProvider<T> provider;
   private volatile T instance;
   private final Object instanceLock = new Object();

@@ -71,7 +71,9 @@ public class Lightsaber {
     if (parent != null) {
       overrideProviders(injector, parent);
     }
-    configurator.configureInjector(injector, component);
+
+    final InjectorConfigurator configurator = (InjectorConfigurator) component;
+    configurator.configureInjector(injector);
     return injector;
   }
 
@@ -119,16 +121,10 @@ public class Lightsaber {
   }
 
   interface Configurator {
-    void configureInjector(LightsaberInjector injector, Object component);
     void injectMembers(Injector injector, Object object);
   }
 
   private static class DefaultConfigurator implements Configurator {
-    @Override
-    public void configureInjector(final LightsaberInjector injector, final Object component) {
-      InjectionDispatcher.configureInjector(injector, component);
-    }
-
     @Override
     public void injectMembers(final Injector injector, final Object object) {
       InjectionDispatcher.injectMembers(injector, object);

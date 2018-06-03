@@ -20,7 +20,6 @@ import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
-import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.templates.TemplateLoader
@@ -33,9 +32,6 @@ class InjectorDispatcherSourceGenerator(
     private val sourceProducer: SourceProducer,
     private val classRegistry: ClassRegistry
 ) {
-  private val InjectorConfigurator.className: String
-    get() = type.internalName.substringAfterLast('/')
-
   fun generate(generationContext: GenerationContext) {
     val template = TemplateLoader().loadTemplate(INJECTION_DISPATCHER_TYPE)
     val sourceCode = template.newRenderer()
@@ -46,27 +42,11 @@ class InjectorDispatcherSourceGenerator(
 
   private fun composeStaticInitializer(generationContext: GenerationContext): String {
     return buildString {
-      generationContext.injectorConfigurators.forEach { injectorConfigurator ->
-        val packageInvader = generationContext.findPackageInvaderByTargetType(injectorConfigurator.component.type)
-        putInjectorConfigurator(injectorConfigurator, packageInvader)
-      }
-      appendln()
       generationContext.membersInjectors.forEach { membersInjector ->
         val packageInvader = generationContext.findPackageInvaderByTargetType(membersInjector.type)
         putMembersInjector(membersInjector, packageInvader)
       }
     }
-  }
-
-  private fun StringBuilder.putInjectorConfigurator(injectorConfigurator: InjectorConfigurator,
-      packageInvader: PackageInvader?) {
-    val component = injectorConfigurator.component.type.getClassReference(packageInvader)
-    val configurator = injectorConfigurator.className
-    putToInjectorConfigurators(component, "new $configurator()")
-  }
-
-  private fun StringBuilder.putToInjectorConfigurators(key: String, value: String) {
-    appendln("injectorConfigurators.put($key, $value);")
   }
 
   private fun StringBuilder.putMembersInjector(membersInjector: MembersInjector, packageInvader: PackageInvader?) {

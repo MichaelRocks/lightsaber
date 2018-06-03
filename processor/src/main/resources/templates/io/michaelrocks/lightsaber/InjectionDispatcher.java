@@ -21,27 +21,11 @@ import io.michaelrocks.lightsaber.internal.LightweightHashMap;
 import java.util.Map;
 
 public class InjectionDispatcher {
-  private static final Map<Class<?>, InjectorConfigurator> injectorConfigurators =
-      new LightweightHashMap<Class<?>, InjectorConfigurator>();
   private static final Map<Class<?>, MembersInjector<?>> membersInjectors =
       new LightweightHashMap<Class<?>, MembersInjector<?>>();
 
   static {
     /*%STATIC_INITIALIZER%*/
-  }
-
-  public static void configureInjector(final Object injectorObject, final Object component) {
-    if (!(injectorObject instanceof LightsaberInjector)) {
-      throw new ConfigurationException("Cannot configure a non-Lightsaber injector: " + injectorObject);
-    }
-
-    final LightsaberInjector injector = (LightsaberInjector) injectorObject;
-    final InjectorConfigurator injectorConfigurator = injectorConfigurators.get(component.getClass());
-    if (injectorConfigurator == null) {
-      throw new ConfigurationException("The component hasn't been processed with Lightsaber: " + component);
-    }
-
-    injectorConfigurator.configureInjector(injector, component);
   }
 
   public static void injectMembers(final Object injectorObject, final Object object) {

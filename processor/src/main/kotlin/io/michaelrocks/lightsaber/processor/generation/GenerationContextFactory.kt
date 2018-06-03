@@ -31,12 +31,10 @@ import io.michaelrocks.lightsaber.processor.commons.mergeWith
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
-import io.michaelrocks.lightsaber.processor.generation.model.InjectorConfigurator
 import io.michaelrocks.lightsaber.processor.generation.model.Key
 import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
 import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
-import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import java.util.HashMap
@@ -46,24 +44,10 @@ class GenerationContextFactory(
 ) {
   fun createGenerationContext(injectionContext: InjectionContext): GenerationContext {
     return GenerationContext(
-        composeInjectorConfigurators(injectionContext),
         composeMembersInjectors(injectionContext),
         composePackageInvaders(injectionContext),
         composeKeyRegistry(injectionContext)
     )
-  }
-
-  fun composeInjectorConfigurators(context: InjectionContext): Collection<InjectorConfigurator> {
-    return context.components
-        .map { component ->
-          val configuratorType = composeConfiguratorType(component)
-          InjectorConfigurator(configuratorType, component)
-        }
-  }
-
-  private fun composeConfiguratorType(component: Component): Type.Object {
-    val componentNameWithDollars = component.type.internalName.replace('/', '$')
-    return getObjectTypeByInternalName("io/michaelrocks/lightsaber/InjectorConfigurator\$$componentNameWithDollars")
   }
 
   private fun composeMembersInjectors(context: InjectionContext): Collection<MembersInjector> {

@@ -21,7 +21,6 @@ import io.michaelrocks.grip.mirrors.packageName
 import java.util.HashMap
 
 data class GenerationContext(
-    val injectorConfigurators: Collection<InjectorConfigurator>,
     val membersInjectors: Collection<MembersInjector>,
     val packageInvaders: Collection<PackageInvader>,
     val keyRegistry: KeyRegistry

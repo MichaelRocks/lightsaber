@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,17 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
+import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
+import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 
 class Patcher(
     classVisitor: ClassVisitor,
+    private val classRegistry: ClassRegistry,
+    private val keyRegistry: KeyRegistry,
     private val context: InjectionContext
 ) : ClassVisitor(Opcodes.ASM5, classVisitor) {
 
@@ -31,7 +35,7 @@ class Patcher(
     val type = getObjectTypeByInternalName(name)
 
     context.findComponentByType(type)?.let {
-      cv = ComponentPatcher(cv, it)
+      cv = ComponentPatcher(cv, classRegistry, keyRegistry, it)
     }
 
     context.findModuleByType(type)?.let {

@@ -22,7 +22,9 @@ import io.michaelrocks.lightsaber.processor.analysis.Analyzer
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.closeQuietly
 import io.michaelrocks.lightsaber.processor.compiler.JavaToolsCompiler
+import io.michaelrocks.lightsaber.processor.generation.GenerationContextFactory
 import io.michaelrocks.lightsaber.processor.generation.Generator
+import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.injection.Patcher
 import io.michaelrocks.lightsaber.processor.io.DirectoryFileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
@@ -63,10 +65,11 @@ class ClassProcessor(
   private val compiler = JavaToolsCompiler(inputs + classpath + genPath, bootClasspath, errorReporter)
 
   fun processClasses() {
-    val context = performAnalysisAndValidation()
-    context.dump()
-    copyAndPatchClasses(context)
-    performGeneration(context)
+    val injectionContext = performAnalysisAndValidation()
+    val generationContext = GenerationContextFactory(grip.classRegistry).createGenerationContext(injectionContext)
+    injectionContext.dump()
+    copyAndPatchClasses(injectionContext, generationContext)
+    performGeneration(injectionContext, generationContext)
     performCompilation()
   }
 
@@ -88,7 +91,7 @@ class ClassProcessor(
     return context
   }
 
-  private fun copyAndPatchClasses(context: InjectionContext) {
+  private fun copyAndPatchClasses(injectionContext: InjectionContext, generationContext: GenerationContext) {
     fileSourcesAndSinks.forEach { (fileSource, fileSink) ->
       logger.debug("Copy from {} to {}", fileSource, fileSink)
       fileSource.listFiles { path, type ->
@@ -98,7 +101,7 @@ class ClassProcessor(
             val classReader = ClassReader(fileSource.readFile(path))
             val classWriter = StandaloneClassWriter(
                 classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry)
-            val classVisitor = Patcher(classWriter, context)
+            val classVisitor = Patcher(classWriter, grip.classRegistry, generationContext.keyRegistry, injectionContext)
             classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
             fileSink.createFile(path, classWriter.toByteArray())
           }
@@ -113,9 +116,9 @@ class ClassProcessor(
     checkErrors()
   }
 
-  private fun performGeneration(context: InjectionContext) {
+  private fun performGeneration(injectionContext: InjectionContext, generationContext: GenerationContext) {
     val generator = Generator(grip.classRegistry, errorReporter, classSink, sourceSink)
-    generator.generate(context)
+    generator.generate(injectionContext, generationContext)
     checkErrors()
   }
 

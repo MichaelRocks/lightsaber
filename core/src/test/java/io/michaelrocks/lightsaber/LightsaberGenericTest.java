@@ -18,7 +18,6 @@ package io.michaelrocks.lightsaber;
 
 import io.michaelrocks.lightsaber.internal.AbstractInjectingProvider;
 import io.michaelrocks.lightsaber.internal.ParameterizedTypeImpl;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -32,42 +31,43 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class LightsaberGenericTest {
-  private Lightsaber.Configurator configurator;
-
-  @Before
-  public void createConfigurator() {
-    configurator = mock(Lightsaber.Configurator.class, RETURNS_DEEP_STUBS);
-    doAnswer(new Answer<Object>() {
-      @Override
-      public Object answer(final InvocationOnMock invocation) throws Throwable {
-        final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(getJvmStringListType(), new AbstractInjectingProvider<List<String>>(injector) {
-              @Nonnull
-              @Override
-              public List<String> getWithInjector(@Nonnull final Injector injector) {
-                return Collections.singletonList("Parent List");
-              }
-            });
-        return null;
-      }
-    })
-        .when(configurator).configureInjector(any(LightsaberInjector.class), isA(ParentModule.class));
-  }
+  private final Lightsaber.Configurator configurator = mock(Lightsaber.Configurator.class);
 
   @Test
   public void testCreateInjector() throws Exception {
     final Lightsaber lightsaber = new Lightsaber(configurator);
-    final ParentModule parentModule = new ParentModule();
+    final InjectorConfigurator parentComponent = createParentComponent();
 
-    final Injector injector = lightsaber.createInjector(parentModule);
+    final Injector injector = lightsaber.createInjector(parentComponent);
 
-    verify(configurator).configureInjector((LightsaberInjector) injector, parentModule);
-    verifyNoMoreInteractions(configurator);
+    verify(parentComponent).configureInjector((LightsaberInjector) injector);
+    verifyNoMoreInteractions(parentComponent);
     assertEquals(Collections.singletonList("Parent List"), injector.getInstance(getJvmStringListType()));
     assertEquals(Collections.singletonList("Parent List"), injector.getInstance(Key.of(getJvmStringListType())));
     assertEquals(Collections.singletonList("Parent List"), injector.getInstance(getArtificialStringListType()));
     assertEquals(Collections.singletonList("Parent List"), injector.getInstance(Key.of(getArtificialStringListType())));
   }
+
+  private static InjectorConfigurator createParentComponent() {
+    final InjectorConfigurator configurator = mock(InjectorConfigurator.class, RETURNS_DEEP_STUBS);
+    doAnswer(new Answer<Object>() {
+      @Override
+      public Object answer(final InvocationOnMock invocation) throws Throwable {
+        final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
+        injector.registerProvider(getJvmStringListType(), new AbstractInjectingProvider<List<String>>(injector) {
+          @Nonnull
+          @Override
+          public List<String> getWithInjector(@Nonnull final Injector injector) {
+            return Collections.singletonList("Parent List");
+          }
+        });
+        return null;
+      }
+    })
+        .when(configurator).configureInjector(any(LightsaberInjector.class));
+    return configurator;
+  }
+
 
   private static Type getJvmStringListType() {
     return new TypeReference<List<String>>() {}.getType();
@@ -75,8 +75,5 @@ public class LightsaberGenericTest {
 
   private static Type getArtificialStringListType() {
     return new ParameterizedTypeImpl(null, List.class, String.class);
-  }
-
-  private static class ParentModule {
   }
 }
