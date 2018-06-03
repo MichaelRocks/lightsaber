@@ -16,9 +16,11 @@
 
 package io.michaelrocks.lightsaber
 
+import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Test
 import javax.inject.Inject
+import javax.inject.Singleton
 
 class InjectorInjectionTest {
   @Test
@@ -28,6 +30,18 @@ class InjectorInjectionTest {
     val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
     assertSame(parentInjector, parentInjector.getInstance<InjectionTarget>().injector)
     assertSame(childInjector, childInjector.getInstance<InjectionTarget>().injector)
+  }
+
+  @Test
+  fun testInjectorInjectionWithSingletonTarget() {
+    val lightsaber = Lightsaber.get()
+    val parentInjector = lightsaber.createInjector(ParentComponent())
+    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childTarget = childInjector.getInstance<SingletonInjectionTarget>()
+    val parentTarget = parentInjector.getInstance<SingletonInjectionTarget>()
+    assertNotSame(childTarget, parentTarget)
+    assertSame(childInjector, childTarget.injector)
+    assertSame(parentInjector, parentTarget.injector)
   }
 
   @Component
@@ -44,4 +58,8 @@ class InjectorInjectionTest {
 
   @ProvidedBy(ParentModule::class)
   private class InjectionTarget @Inject private constructor(val injector: Injector)
+
+  @ProvidedBy(ParentModule::class)
+  @Singleton
+  private class SingletonInjectionTarget @Inject private constructor(val injector: Injector)
 }
