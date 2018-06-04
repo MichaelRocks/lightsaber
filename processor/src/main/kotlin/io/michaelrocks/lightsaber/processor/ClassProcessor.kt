@@ -101,7 +101,7 @@ class ClassProcessor(
             val classReader = ClassReader(fileSource.readFile(path))
             val classWriter = StandaloneClassWriter(
                 classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry)
-            val classVisitor = Patcher(classWriter, grip.classRegistry, generationContext.keyRegistry, injectionContext)
+            val classVisitor = Patcher(classWriter, generationContext.keyRegistry, injectionContext)
             classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
             fileSink.createFile(path, classWriter.toByteArray())
           }
