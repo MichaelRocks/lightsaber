@@ -19,9 +19,9 @@ package io.michaelrocks.lightsaber.processor.injection
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
+import io.michaelrocks.lightsaber.processor.commons.invokeMethod
 import io.michaelrocks.lightsaber.processor.commons.newMethod
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
-import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.ModuleProvider
@@ -78,7 +78,7 @@ class ComponentPatcher(
 
   private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint.Method) {
     loadThis()
-    invokeVirtual(component.type, provisionPoint.method.toMethodDescriptor())
+    invokeMethod(component.type, provisionPoint.method)
   }
 
   private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint.Field) {
