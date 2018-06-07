@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.FileRegistry
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.grip.mirrors.isPublic
@@ -39,6 +40,7 @@ import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import java.util.HashMap
 
 class GenerationContextFactory(
+    private val fileRegistry: FileRegistry,
     private val classRegistry: ClassRegistry
 ) {
   fun createGenerationContext(injectionContext: InjectionContext): GenerationContext {
@@ -81,7 +83,7 @@ class GenerationContextFactory(
           )
           .map {
             val (packageName, types) = it
-            val packageInvaderType = getObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader")
+            val packageInvaderType = createUniqueObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader")
             val fields = types.associateByIndexedTo(
                 HashMap(),
                 { _, type -> type },
@@ -91,7 +93,7 @@ class GenerationContextFactory(
           }
 
   private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {
-    val type = getObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry")
+    val type = createUniqueObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry")
     val keys = context.components.asSequence()
         .flatMap { it.modules.asSequence() }
         .flatMap { it.providers.asSequence() }
@@ -112,5 +114,15 @@ class GenerationContextFactory(
       dependency.type is GenericType.Raw -> Key.Class(FieldDescriptor(name, Types.CLASS_TYPE))
       else -> Key.Type(FieldDescriptor(name, Types.TYPE_TYPE))
     }
+  }
+
+  private fun createUniqueObjectTypeByInternalName(internalName: String): Type.Object {
+    val type = getObjectTypeByInternalName(internalName)
+    return if (type !in fileRegistry) type else createUniqueObjectTypeByInternalName(internalName, 0)
+  }
+
+  private tailrec fun createUniqueObjectTypeByInternalName(internalName: String, index: Int): Type.Object {
+    val type = getObjectTypeByInternalName(internalName + index)
+    return if (type !in fileRegistry) type else createUniqueObjectTypeByInternalName(internalName, index + 1)
   }
 }
