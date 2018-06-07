@@ -108,6 +108,10 @@ class GeneratorAdapter(
     invoke(INVOKESPECIAL, owner, method, false)
   }
 
+  fun invokeSuper(owner: Type, method: MethodDescriptor) {
+    invoke(INVOKESPECIAL, owner, method, false)
+  }
+
   private fun invoke(opcode: Int, type: Type, method: MethodDescriptor, ownerIsInterface: Boolean) {
     val owner = if (type.isArray) type.descriptor else type.internalName
     visitMethodInsn(opcode, owner, method.name, method.descriptor, ownerIsInterface)
