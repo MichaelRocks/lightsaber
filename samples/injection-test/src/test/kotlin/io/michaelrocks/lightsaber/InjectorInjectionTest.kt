@@ -16,7 +16,6 @@
 
 package io.michaelrocks.lightsaber
 
-import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Test
 import javax.inject.Inject
@@ -24,24 +23,53 @@ import javax.inject.Singleton
 
 class InjectorInjectionTest {
   @Test
-  fun testInjectorInjection() {
+  fun testInjectorFromParentInjectionTarget() {
     val lightsaber = Lightsaber.get()
     val parentInjector = lightsaber.createInjector(ParentComponent())
     val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
-    assertSame(parentInjector, parentInjector.getInstance<InjectionTarget>().injector)
-    assertSame(childInjector, childInjector.getInstance<InjectionTarget>().injector)
+    assertSame(parentInjector, parentInjector.getInstance<ParentInjectionTarget>().injector)
+    assertSame(parentInjector, childInjector.getInstance<ParentInjectionTarget>().injector)
   }
 
   @Test
-  fun testInjectorInjectionWithSingletonTarget() {
+  fun testInjectorFromChildInjectionTarget() {
     val lightsaber = Lightsaber.get()
     val parentInjector = lightsaber.createInjector(ParentComponent())
     val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
-    val childTarget = childInjector.getInstance<SingletonInjectionTarget>()
-    val parentTarget = parentInjector.getInstance<SingletonInjectionTarget>()
-    assertNotSame(childTarget, parentTarget)
-    assertSame(childInjector, childTarget.injector)
+    assertSame(childInjector, childInjector.getInstance<ChildInjectionTarget>().injector)
+  }
+
+  @Test
+  fun testInjectorFromSingletonParentInjectionTarget() {
+    val lightsaber = Lightsaber.get()
+    val parentInjector = lightsaber.createInjector(ParentComponent())
+    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val parentTarget = parentInjector.getInstance<SingletonParentInjectionTarget>()
+    val childTarget = childInjector.getInstance<SingletonParentInjectionTarget>()
+    assertSame(parentTarget, childTarget)
     assertSame(parentInjector, parentTarget.injector)
+    assertSame(parentInjector, childTarget.injector)
+  }
+
+  @Test
+  fun testInjectorFromSingletonParentInjectionTargetChildFirst() {
+    val lightsaber = Lightsaber.get()
+    val parentInjector = lightsaber.createInjector(ParentComponent())
+    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childTarget = childInjector.getInstance<SingletonParentInjectionTarget>()
+    val parentTarget = parentInjector.getInstance<SingletonParentInjectionTarget>()
+    assertSame(parentTarget, childTarget)
+    assertSame(parentInjector, parentTarget.injector)
+    assertSame(parentInjector, childTarget.injector)
+  }
+
+  @Test
+  fun testInjectorFromSingletonChildInjectionTarget() {
+    val lightsaber = Lightsaber.get()
+    val parentInjector = lightsaber.createInjector(ParentComponent())
+    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childTarget = childInjector.getInstance<SingletonChildInjectionTarget>()
+    assertSame(childInjector, childTarget.injector)
   }
 
   @Component
@@ -54,12 +82,25 @@ class InjectorInjectionTest {
   private class ParentModule
 
   @Component(parent = ParentComponent::class)
-  private class ChildComponent
+  private class ChildComponent {
+    @Provides
+    private fun provideChildModule(): ChildModule = ChildModule()
+  }
+
+  @Module
+  private class ChildModule
 
   @ProvidedBy(ParentModule::class)
-  private class InjectionTarget @Inject private constructor(val injector: Injector)
+  private class ParentInjectionTarget @Inject private constructor(val injector: Injector)
+
+  @ProvidedBy(ChildModule::class)
+  private class ChildInjectionTarget @Inject private constructor(val injector: Injector)
 
   @ProvidedBy(ParentModule::class)
   @Singleton
-  private class SingletonInjectionTarget @Inject private constructor(val injector: Injector)
+  private class SingletonParentInjectionTarget @Inject private constructor(val injector: Injector)
+
+  @ProvidedBy(ChildModule::class)
+  @Singleton
+  private class SingletonChildInjectionTarget @Inject private constructor(val injector: Injector)
 }
