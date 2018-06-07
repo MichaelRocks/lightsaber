@@ -24,12 +24,10 @@ import javax.inject.Provider;
 import java.lang.reflect.Type;
 
 public class LightsaberInjector implements Injector {
-  private final Lightsaber lightsaber;
   private final Injector parent;
   private final IterableMap<Object, Provider<?>> providers = new PolymorphicKeyHashMap<Provider<?>>();
 
-  LightsaberInjector(@Nonnull final Lightsaber lightsaber, final Injector parent) {
-    this.lightsaber = lightsaber;
+  LightsaberInjector(final Injector parent) {
     this.parent = parent;
     registerProvider(Injector.class, new Provider<Injector>() {
       @Override
@@ -41,7 +39,11 @@ public class LightsaberInjector implements Injector {
 
   @Override
   public void injectMembers(@Nonnull final Object target) {
-    lightsaber.injectMembers(this, target);
+    if (target instanceof MembersInjector) {
+      final MembersInjector membersInjector = (MembersInjector) target;
+      membersInjector.injectFields(this);
+      membersInjector.injectMethods(this);
+    }
   }
 
   @Nonnull

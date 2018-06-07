@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import io.michaelrocks.grip.mirrors.getObjectType
 
 object LightsaberTypes {
   val INJECTOR_CONFIGURATOR_TYPE = getObjectType<InjectorConfigurator>()
-  val MEMBERS_INJECTOR_TYPE = getObjectType<MembersInjector<*>>()
+  val MEMBERS_INJECTOR_TYPE = getObjectType<MembersInjector>()
   val LIGHTSABER_INJECTOR_TYPE = getObjectType<LightsaberInjector>()
   val SINGLETON_PROVIDER_TYPE = getObjectType<SingletonProvider<*>>()
   val LAZY_ADAPTER_TYPE = getObjectType<LazyAdapter<*>>()

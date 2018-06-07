@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,52 +16,109 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
+import io.michaelrocks.lightsaber.LightsaberTypes
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
+import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.newMethod
+import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
+import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
+import io.michaelrocks.lightsaber.processor.generation.getDependency
+import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
+import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.FieldVisitor
-import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes.*
+import org.objectweb.asm.Opcodes.ACC_PUBLIC
+import java.util.ArrayList
 
 class InjectableTargetPatcher(
     classVisitor: ClassVisitor,
-    private val injectableTarget: InjectionTarget
+    private val keyRegistry: KeyRegistry,
+    private val injectableTarget: InjectionTarget,
+    private val hasSuperMembersInjector: Boolean
 ) : BaseInjectionClassVisitor(classVisitor) {
+
+  private val fields: Collection<InjectionPoint.Field>
+  private val methods: Collection<InjectionPoint.Method>
+
+  private var isMembersInjector = false
+  private var superType: Type.Object? = null
+
+  init {
+    val fields = ArrayList<InjectionPoint.Field>()
+    val methods = ArrayList<InjectionPoint.Method>()
+
+    injectableTarget.injectionPoints.forEach {
+      when (it) {
+        is InjectionPoint.Field -> fields += it
+        is InjectionPoint.Method -> methods += it
+      }
+    }
+
+    this.fields = fields
+    this.methods = methods
+  }
 
   override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
       interfaces: Array<String>?) {
-    val newAccess = (access and (ACC_PRIVATE or ACC_PROTECTED).inv()) or ACC_PUBLIC
-    super.visit(version, newAccess, name, signature, superName, interfaces)
-    if (newAccess != access) {
+    val membersInjectorType = LightsaberTypes.MEMBERS_INJECTOR_TYPE.internalName
+    if (interfaces == null || membersInjectorType !in interfaces) {
+      val newInterfaces = if (interfaces == null) arrayOf(membersInjectorType) else interfaces + membersInjectorType
+      super.visit(version, access, name, signature, superName, newInterfaces)
+      superType = if (hasSuperMembersInjector && superName != null) getObjectTypeByInternalName(superName) else null
       isDirty = true
+    } else {
+      super.visit(version, access, name, signature, superName, interfaces)
+      isMembersInjector = true
     }
   }
 
-  override fun visitField(access: Int, name: String, desc: String, signature: String?, value: Any?): FieldVisitor? {
-    val field = FieldDescriptor(name, desc)
-    if (injectableTarget.isInjectableField(field)) {
-      val newAccess = access and (ACC_PRIVATE or ACC_FINAL).inv()
-      if (newAccess != access) {
-        isDirty = true
-      }
-      return super.visitField(newAccess, name, desc, signature, value)
-    } else {
-      return super.visitField(access, name, desc, signature, value)
+  override fun visitEnd() {
+    if (!isMembersInjector) {
+      newMethod(ACC_PUBLIC, INJECT_FIELDS_METHOD) { injectFields(fields) }
+      newMethod(ACC_PUBLIC, INJECT_METHODS_METHOD) { injectMethods(methods) }
     }
+    super.visitEnd()
   }
 
-  override fun visitMethod(access: Int, name: String, desc: String, signature: String?,
-      exceptions: Array<String>?): MethodVisitor? {
-    val method = MethodDescriptor(name, desc)
-    if (injectableTarget.isInjectableMethod(method)) {
-      val newAccess = access and (ACC_PRIVATE or ACC_FINAL).inv()
-      if (newAccess != access) {
-        isDirty = true
-      }
-      return super.visitMethod(newAccess, name, desc, signature, exceptions)
-    } else {
-      return super.visitMethod(access, name, desc, signature, exceptions)
+  private fun GeneratorAdapter.injectFields(fields: Collection<InjectionPoint.Field>) {
+    superType?.let {
+      loadThis()
+      invokeSuper(it, INJECT_FIELDS_METHOD)
     }
+    fields.forEach { injectField(it) }
+  }
+
+  private fun GeneratorAdapter.injectField(field: InjectionPoint.Field) {
+    loadThis()
+    loadArg(0)
+    getDependency(keyRegistry, field.injectee)
+    putField(injectableTarget.type, field.field.toFieldDescriptor())
+  }
+
+  private fun GeneratorAdapter.injectMethods(methods: Collection<InjectionPoint.Method>) {
+    superType?.let {
+      loadThis()
+      invokeSuper(it, INJECT_METHODS_METHOD)
+    }
+    methods.forEach { injectMethod(it) }
+  }
+
+  private fun GeneratorAdapter.injectMethod(method: InjectionPoint.Method) {
+    loadThis()
+    method.injectees.forEach { injectee ->
+      loadArg(0)
+      getDependency(keyRegistry, injectee)
+    }
+    invokeVirtual(injectableTarget.type, method.method.toMethodDescriptor())
+  }
+
+  companion object {
+    private val INJECT_FIELDS_METHOD =
+        MethodDescriptor.forMethod("injectFields", Type.Primitive.Void, Types.INJECTOR_TYPE)
+    private val INJECT_METHODS_METHOD =
+        MethodDescriptor.forMethod("injectMethods", Type.Primitive.Void, Types.INJECTOR_TYPE)
   }
 }

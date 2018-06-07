@@ -33,7 +33,6 @@ import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.generation.model.Key
 import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
-import io.michaelrocks.lightsaber.processor.generation.model.MembersInjector
 import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
@@ -44,17 +43,9 @@ class GenerationContextFactory(
 ) {
   fun createGenerationContext(injectionContext: InjectionContext): GenerationContext {
     return GenerationContext(
-        composeMembersInjectors(injectionContext),
         composePackageInvaders(injectionContext),
         composeKeyRegistry(injectionContext)
     )
-  }
-
-  private fun composeMembersInjectors(context: InjectionContext): Collection<MembersInjector> {
-    return context.injectableTargets.map { injectableTarget ->
-      val injectorType = getObjectTypeByInternalName(injectableTarget.type.internalName + "\$MembersInjector")
-      MembersInjector(injectorType, injectableTarget)
-    }
   }
 
   private fun composePackageInvaders(context: InjectionContext): Collection<PackageInvader> =

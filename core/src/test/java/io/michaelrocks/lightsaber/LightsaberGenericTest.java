@@ -31,11 +31,9 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class LightsaberGenericTest {
-  private final Lightsaber.Configurator configurator = mock(Lightsaber.Configurator.class);
-
   @Test
   public void testCreateInjector() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber(configurator);
+    final Lightsaber lightsaber = new Lightsaber();
     final InjectorConfigurator parentComponent = createParentComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);

@@ -16,14 +16,19 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
+import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
+import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
+import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 
 class Patcher(
     classVisitor: ClassVisitor,
+    private val classRegistry: ClassRegistry,
     private val keyRegistry: KeyRegistry,
     private val context: InjectionContext
 ) : ClassVisitor(Opcodes.ASM5, classVisitor) {
@@ -41,7 +46,7 @@ class Patcher(
     }
 
     context.findInjectableTargetByType(type)?.let {
-      cv = InjectableTargetPatcher(cv, it)
+      cv = InjectableTargetPatcher(cv, keyRegistry, it, it.hasSuperMembersInjector())
     }
 
     context.findProvidableTargetByType(type)?.let {
@@ -49,5 +54,18 @@ class Patcher(
     }
 
     super.visit(version, access, name, signature, superName, interfaces)
+  }
+
+  private fun InjectionTarget.hasSuperMembersInjector(): Boolean {
+    return findSuperInjectableTarget(type) != null
+  }
+
+  private tailrec fun findSuperInjectableTarget(type: Type.Object): InjectionTarget? {
+    val superType = classRegistry.getClassMirror(type).superType ?: return null
+    if (superType == Types.OBJECT_TYPE) {
+      return null
+    }
+
+    return context.findInjectableTargetByType(superType) ?: findSuperInjectableTarget(superType)
   }
 }

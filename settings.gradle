@@ -1,6 +1,5 @@
 rootProject.name = 'lightsaber'
 
-include ':core-stub'
 include ':core'
 include ':core-kotlin'
 include ':processor'

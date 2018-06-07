@@ -22,16 +22,7 @@ import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 
 public class Lightsaber {
-  private static final Configurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
-
-  private final Configurator configurator;
-
   Lightsaber() {
-    this(DEFAULT_CONFIGURATOR);
-  }
-
-  Lightsaber(final Configurator configurator) {
-    this.configurator = configurator;
   }
 
   @Nonnull
@@ -63,14 +54,10 @@ public class Lightsaber {
       throw new NullPointerException("Trying to create an injector with a null component");
     }
 
-    final LightsaberInjector injector = new LightsaberInjector(this, parentInjector);
+    final LightsaberInjector injector = new LightsaberInjector(parentInjector);
     final InjectorConfigurator configurator = (InjectorConfigurator) component;
     configurator.configureInjector(injector);
     return injector;
-  }
-
-  void injectMembers(final Injector injector, final Object object) {
-    configurator.injectMembers(injector, object);
   }
 
   @Nonnull
@@ -93,17 +80,6 @@ public class Lightsaber {
   public static <T> Provider<T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type,
       @Nullable final Annotation annotation) {
     return injector.getProvider(Key.of(type, annotation));
-  }
-
-  interface Configurator {
-    void injectMembers(Injector injector, Object object);
-  }
-
-  private static class DefaultConfigurator implements Configurator {
-    @Override
-    public void injectMembers(final Injector injector, final Object object) {
-      InjectionDispatcher.injectMembers(injector, object);
-    }
   }
 
   private static final class Holder {

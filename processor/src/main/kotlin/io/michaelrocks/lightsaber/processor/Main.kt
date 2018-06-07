@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,10 +80,6 @@ private fun validateParameters(parameters: LightsaberParameters) {
 
   if (parameters.outputs.size != parameters.inputs.size) {
     throw ParameterException("The number of output paths must be the same as the number of input paths")
-  }
-
-  if (parameters.source == null) {
-    parameters.source = File("src$DEFAULT_SUFFIX")
   }
 
   if (parameters.gen == null) {

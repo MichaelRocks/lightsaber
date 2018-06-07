@@ -58,7 +58,6 @@ class LightsaberTransform(private val project: Project) : Transform() {
     val parameters = LightsaberParameters(
         inputs = inputs.map { it.file },
         outputs = outputs,
-        source = File(invocation.context.temporaryDir, "src"),
         gen = invocation.outputProvider.getContentLocation(
             "gen-lightsaber",
             QualifiedContent.DefaultContentType.CLASSES,

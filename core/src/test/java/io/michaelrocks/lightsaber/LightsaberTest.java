@@ -30,11 +30,9 @@ import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.*;
 
 public class LightsaberTest {
-  private final Lightsaber.Configurator configurator = mock(Lightsaber.Configurator.class);
-
   @Test
   public void testCreateInjector() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber(configurator);
+    final Lightsaber lightsaber = new Lightsaber();
     final InjectorConfigurator parentComponent = createParentComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);
@@ -48,7 +46,7 @@ public class LightsaberTest {
 
   @Test
   public void testCreateChildInjector() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber(configurator);
+    final Lightsaber lightsaber = new Lightsaber();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childComponent = createChildComponent();
 
@@ -69,7 +67,7 @@ public class LightsaberTest {
 
   @Test
   public void testCreateChildInjectorWithAnnotation() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber(configurator);
+    final Lightsaber lightsaber = new Lightsaber();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();
 

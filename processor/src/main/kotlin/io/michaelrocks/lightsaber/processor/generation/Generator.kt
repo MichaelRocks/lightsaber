@@ -26,32 +26,22 @@ import io.michaelrocks.lightsaber.processor.model.InjectionContext
 class Generator(
     private val classRegistry: ClassRegistry,
     private val errorReporter: ErrorReporter,
-    private val fileSink: FileSink,
-    private val sourceSink: FileSink
+    private val fileSink: FileSink
 ) {
   private val classProducer = ProcessorClassProducer(fileSink, errorReporter)
-  private val sourceProducer = ProcessorSourceProducer(sourceSink, errorReporter)
   private val annotationCreator = AnnotationCreator(classProducer, classRegistry)
 
   fun generate(injectionContext: InjectionContext, generationContext: GenerationContext) {
     generateProviders(injectionContext, generationContext)
-    generateInjectors(generationContext)
     generatePackageInvaders(generationContext)
     generateKeyRegistry(generationContext)
-    generateInjectionDispatcher(generationContext)
 
     fileSink.flush()
-    sourceSink.flush()
   }
 
   private fun generateProviders(injectionContext: InjectionContext, generationContext: GenerationContext) {
     val generator = ProvidersGenerator(classProducer, classRegistry)
     generator.generate(injectionContext, generationContext)
-  }
-
-  private fun generateInjectors(generationContext: GenerationContext) {
-    val generator = MembersInjectorsGenerator(classProducer, classRegistry)
-    generator.generate(generationContext)
   }
 
   private fun generatePackageInvaders(generationContext: GenerationContext) {
@@ -62,10 +52,5 @@ class Generator(
   private fun generateKeyRegistry(generationContext: GenerationContext) {
     val generator = KeyRegistryClassGenerator(classProducer, classRegistry, annotationCreator, generationContext)
     generator.generate()
-  }
-
-  private fun generateInjectionDispatcher(generationContext: GenerationContext) {
-    val generator = InjectorDispatcherSourceGenerator(sourceProducer, classRegistry)
-    generator.generate(generationContext)
   }
 }

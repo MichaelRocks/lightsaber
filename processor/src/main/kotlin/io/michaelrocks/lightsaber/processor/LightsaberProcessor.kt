@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,11 +25,10 @@ class LightsaberProcessor(private val parameters: LightsaberParameters) {
   fun process() {
     val inputs = parameters.inputs
     val outputs = parameters.outputs
-    val sourcePath = parameters.source!!
     val genPath = parameters.gen!!
     val classpath = parameters.classpath
     val bootClasspath = parameters.bootClasspath
-    ClassProcessor(inputs, outputs, sourcePath, genPath, classpath, bootClasspath).apply {
+    ClassProcessor(inputs, outputs, genPath, classpath, bootClasspath).apply {
       processClasses()
       close()
     }
