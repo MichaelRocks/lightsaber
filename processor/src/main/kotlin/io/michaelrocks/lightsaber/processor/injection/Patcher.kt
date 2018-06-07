@@ -33,11 +33,11 @@ class Patcher(
     val type = getObjectTypeByInternalName(name)
 
     context.findComponentByType(type)?.let {
-      cv = ComponentPatcher(cv, keyRegistry, it)
+      cv = ComponentPatcher(cv, it)
     }
 
     context.findModuleByType(type)?.let {
-      cv = ModulePatcher(cv, it)
+      cv = ModulePatcher(cv, keyRegistry, it)
     }
 
     context.findInjectableTargetByType(type)?.let {

@@ -19,25 +19,18 @@ package io.michaelrocks.lightsaber.processor.injection
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
-import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.newLocal
 import io.michaelrocks.lightsaber.processor.commons.newMethod
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
 import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
-import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
-import io.michaelrocks.lightsaber.processor.generation.registerProvider
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.ModuleProvider
 import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
-import io.michaelrocks.lightsaber.processor.model.Provider
-import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes.ACC_PUBLIC
 
 class ComponentPatcher(
     classVisitor: ClassVisitor,
-    private val keyRegistry: KeyRegistry,
     private val component: Component
 ) : BaseInjectionClassVisitor(classVisitor) {
 
@@ -69,57 +62,28 @@ class ComponentPatcher(
   }
 
   private fun GeneratorAdapter.configureInjectorWithModule(moduleProvider: ModuleProvider) {
-    loadThis()
-    val moduleLocal = getModule(moduleProvider.provisionPoint)
-
-    moduleProvider.module.providers.forEach { provider ->
-      loadArg(0)
-      registerProvider(keyRegistry, provider) {
-        if (provider.isConstructorProvider) {
-          newConstructorProvider(provider)
-        } else {
-          newModuleProvider(provider) {
-            loadLocal(moduleLocal)
-          }
-        }
-      }
-    }
+    loadModule(moduleProvider.provisionPoint)
+    // TODO: It would be better to throw ConfigurationException here.
+    checkCast(LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE)
+    loadArg(0)
+    invokeInterface(LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE, CONFIGURE_INJECTOR_METHOD)
   }
 
-  private fun GeneratorAdapter.getModule(provisionPoint: ModuleProvisionPoint): Int {
+  private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint) {
     return when (provisionPoint) {
-      is ModuleProvisionPoint.Method -> getModule(provisionPoint)
-      is ModuleProvisionPoint.Field -> getModule(provisionPoint)
+      is ModuleProvisionPoint.Method -> loadModule(provisionPoint)
+      is ModuleProvisionPoint.Field -> loadModule(provisionPoint)
     }
   }
 
-  private fun GeneratorAdapter.getModule(provisionPoint: ModuleProvisionPoint.Method): Int {
-    return newLocal(provisionPoint.method.type.returnType) {
-      invokeVirtual(component.type, provisionPoint.method.toMethodDescriptor())
-    }
+  private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint.Method) {
+    loadThis()
+    invokeVirtual(component.type, provisionPoint.method.toMethodDescriptor())
   }
 
-  private fun GeneratorAdapter.getModule(provisionPoint: ModuleProvisionPoint.Field): Int {
-    return newLocal(provisionPoint.field.type) {
-      getField(component.type, provisionPoint.field.toFieldDescriptor())
-    }
-  }
-
-  private fun GeneratorAdapter.newModuleProvider(provider: Provider, moduleRetriever: () -> Unit) {
-    newInstance(provider.type)
-    dup()
-    moduleRetriever()
-    loadArg(0)
-    val constructor = MethodDescriptor.forConstructor(provider.moduleType, Types.INJECTOR_TYPE)
-    invokeConstructor(provider.type, constructor)
-  }
-
-  private fun GeneratorAdapter.newConstructorProvider(provider: Provider) {
-    newInstance(provider.type)
-    dup()
-    loadArg(0)
-    val constructor = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
-    invokeConstructor(provider.type, constructor)
+  private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint.Field) {
+    loadThis()
+    getField(component.type, provisionPoint.field.toFieldDescriptor())
   }
 
   companion object {
