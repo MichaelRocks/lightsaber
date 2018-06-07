@@ -16,13 +16,13 @@
 
 package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.lightsaber.internal.AbstractInjectingProvider;
 import io.michaelrocks.lightsaber.internal.ParameterizedTypeImpl;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import javax.annotation.Nonnull;
+import javax.inject.Provider;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
@@ -54,10 +54,10 @@ public class LightsaberGenericTest {
       @Override
       public Object answer(final InvocationOnMock invocation) throws Throwable {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(getJvmStringListType(), new AbstractInjectingProvider<List<String>>(injector) {
+        injector.registerProvider(getJvmStringListType(), new Provider<List<String>>() {
           @Nonnull
           @Override
-          public List<String> getWithInjector(@Nonnull final Injector injector) {
+          public List<String> get() {
             return Collections.singletonList("Parent List");
           }
         });

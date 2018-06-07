@@ -16,9 +16,6 @@
 
 package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.lightsaber.internal.InjectingProvider;
-import io.michaelrocks.lightsaber.internal.MapIterator;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
@@ -66,32 +63,10 @@ public class Lightsaber {
       throw new NullPointerException("Trying to create an injector with a null component");
     }
 
-    final LightsaberInjector parent = (LightsaberInjector) parentInjector;
-    final LightsaberInjector injector = new LightsaberInjector(this);
-    if (parent != null) {
-      overrideProviders(injector, parent);
-    }
-
+    final LightsaberInjector injector = new LightsaberInjector(this, parentInjector);
     final InjectorConfigurator configurator = (InjectorConfigurator) component;
     configurator.configureInjector(injector);
     return injector;
-  }
-
-  private static void overrideProviders(final LightsaberInjector injector, final LightsaberInjector parent) {
-    final MapIterator<Object, InjectingProvider<?>> iterator = parent.getProviders().iterator();
-    while (iterator.hasNext()) {
-      final Object key = iterator.next();
-      if (!Injector.class.equals(key)) {
-        // noinspection unchecked
-        overrideProvider(injector, key, iterator.getValue());
-      }
-    }
-  }
-
-  private static <T> void overrideProvider(final LightsaberInjector injector, final Object key,
-      final InjectingProvider<T> provider) {
-    final InjectingProvider<T> overriddenProvider = new InjectorOverridingProvider<T>(provider, injector);
-    injector.registerProviderInternal(key, overriddenProvider);
   }
 
   void injectMembers(final Injector injector, final Object object) {
