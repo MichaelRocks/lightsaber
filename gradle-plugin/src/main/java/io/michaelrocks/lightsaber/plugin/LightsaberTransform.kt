@@ -46,15 +46,6 @@ class LightsaberTransform(private val project: Project) : Transform() {
       )
     }
 
-    // For now just skip tests.
-    if (invocation.context.path.endsWith("Test")) {
-      logger.info("Found a test project. Skipping...")
-      inputs.zip(outputs) { input, output ->
-        input.file.copyRecursively(output, true)
-      }
-      return
-    }
-
     val parameters = LightsaberParameters(
         inputs = inputs.map { it.file },
         outputs = outputs,
