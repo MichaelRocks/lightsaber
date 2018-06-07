@@ -19,11 +19,11 @@ package io.michaelrocks.lightsaber.processor.injection
 import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.Type
-import io.michaelrocks.grip.mirrors.isPrivate
 import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.invokeMethod
 import io.michaelrocks.lightsaber.processor.commons.newMethod
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
 import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
@@ -117,11 +117,7 @@ class ModulePatcher(
 
     loadThis()
     loadArgs()
-    if (method.isPrivate) {
-      invokePrivate(module.type, method.toMethodDescriptor())
-    } else {
-      invokeVirtual(module.type, method.toMethodDescriptor())
-    }
+    invokeMethod(module.type, method)
   }
 
   private fun GeneratorAdapter.configureInjector() {
