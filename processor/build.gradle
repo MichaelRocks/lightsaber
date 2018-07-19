@@ -1,7 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'kotlin'
 apply plugin: 'application'
-apply plugin: 'bintray'
+apply plugin: 'io.michaelrocks.pablo'
 
 sourceCompatibility = JavaVersion.VERSION_1_6
 targetCompatibility = JavaVersion.VERSION_1_6
@@ -13,11 +13,12 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 
   implementation "com.beust:jcommander:$jcommanderVersion"
-  implementation "org.ow2.asm:asm:$asmVersion"
-  implementation "org.ow2.asm:asm-commons:$asmVersion"
-  implementation "io.michaelrocks:grip:$gripVersion"
   implementation "io.michaelrocks:bimap:$bimapVersion"
   implementation "ch.qos.logback:logback-classic:$logbackVersion"
+
+  relocate "org.ow2.asm:asm:$asmVersion"
+  relocate "org.ow2.asm:asm-commons:$asmVersion"
+  relocate "io.michaelrocks:grip:$gripVersion"
 
   testImplementation project(':tests:mockito-extensions')
   testImplementation "junit:junit:$junitVersion"
@@ -25,4 +26,10 @@ dependencies {
 
 jar {
   destinationDir = file('build/jar')
+}
+
+shadowJar {
+  relocate 'io.michaelrocks.lightsaber', 'io.michaelrocks.lightsaber'
+  relocate 'io.michaelrocks.grip', 'io.michaelrocks.lightsaber.grip'
+  relocate 'org.objectweb.asm', 'io.michaelrocks.lightsaber.asm'
 }

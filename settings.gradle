@@ -12,8 +12,6 @@ if (!properties['bootstrap'].toBoolean()) {
   include ':samples:injection-test'
   include ':samples:sample-java'
   include ':samples:sample-kotlin'
-  if (properties['enableAndroid'].toBoolean()) {
-    include ':samples:sample-android-kotlin'
-    include ':samples:sample-android-library'
-  }
+  include ':samples:sample-android-kotlin'
+  include ':samples:sample-android-library'
 }
