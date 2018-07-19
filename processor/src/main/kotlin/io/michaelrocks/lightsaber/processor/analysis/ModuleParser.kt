@@ -67,7 +67,7 @@ class ModuleParserImpl(
   }
 
   private fun convertToModule(mirror: ClassMirror, providableTargets: Collection<InjectionTarget>): Module {
-    if (mirror.signature.typeParameters.isNotEmpty()) {
+    if (mirror.signature.typeVariables.isNotEmpty()) {
       errorReporter.reportError("Module cannot have a type parameters: ${mirror.type.className}")
       return Module(mirror.type, emptyList())
     }

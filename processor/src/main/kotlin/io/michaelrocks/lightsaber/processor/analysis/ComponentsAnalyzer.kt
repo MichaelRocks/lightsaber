@@ -119,7 +119,7 @@ class ComponentsAnalyzerImpl(
 
     for (type in types) {
       val mirror = grip.classRegistry.getClassMirror(type)
-      if (mirror.signature.typeParameters.isNotEmpty()) {
+      if (mirror.signature.typeVariables.isNotEmpty()) {
         errorReporter.reportError("Component cannot have a type parameters: ${type.className}")
         continue
       }
