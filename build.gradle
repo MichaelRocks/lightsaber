@@ -14,7 +14,7 @@ allprojects {
   ext.logbackVersion = '1.2.3'
 
   ext.junitVersion = '4.12'
-  ext.mockitoVersion = '2.17.0'
+  ext.mockitoVersion = '2.19.1'
   ext.espressoVersion = '3.0.1'
   ext.testRunnerVersion = '1.0.1'
 
