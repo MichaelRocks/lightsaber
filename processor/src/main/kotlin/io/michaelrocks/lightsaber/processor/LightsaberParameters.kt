@@ -22,44 +22,40 @@ import com.beust.jcommander.converters.FileConverter
 import java.io.File
 
 data class LightsaberParameters(
-    @Parameter(names = arrayOf("--inputs"), description = "Jar files and/or class directories to process")
+    @Parameter(names = ["--inputs"], description = "Jar files and/or class directories to process")
     var inputs: List<File> = emptyList(),
     @Parameter(
-        names = arrayOf("--outputs"),
+        names = ["--outputs"],
         description = "Output jar files and/or class directories matching inputs"
     )
     var outputs: List<File> = emptyList(),
     @Parameter(
-        names = arrayOf("--classpath"),
+        names = ["--classpath"],
         listConverter = FileConverter::class, description = "Classpath",
         variableArity = true
     )
     var classpath: List<File> = emptyList(),
     @Parameter(
-        names = arrayOf("--bootclasspath"),
+        names = ["--bootclasspath"],
         listConverter = FileConverter::class, description = "Boot classpath",
         variableArity = true
     )
     var bootClasspath: List<File> = emptyList(),
-    @Parameter(names = arrayOf("--source"), description = "Output directory for .java files")
+    @Parameter(names = ["--source"], description = "Output directory for .java files")
     var source: File? = null,
-    @Parameter(names = arrayOf("--gen"), description = "Output directory for generated .class files")
+    @Parameter(names = ["--gen"], description = "Output directory for generated .class files")
     var gen: File? = null,
-    @Parameter(names = arrayOf("-i", "--info"), description = "Enable detailed logging")
+    @Parameter(names = ["-i", "--info"], description = "Enable detailed logging")
     var info: Boolean = false,
-    @Parameter(names = arrayOf("-d", "--debug"), description = "Enable verbose logging")
+    @Parameter(names = ["-d", "--debug"], description = "Enable verbose logging")
     var debug: Boolean = false,
-    @Parameter(names = arrayOf("--stacktrace"), description = "Print stack traces")
+    @Parameter(names = ["--stacktrace"], description = "Print stack traces")
     var printStacktrace: Boolean = false
 ) {
   val loggingLevel: Level
-    get() {
-      if (debug) {
-        return Level.DEBUG
-      } else if (info) {
-        return Level.INFO
-      } else {
-        return Level.WARN
-      }
+    get() = when {
+      debug -> Level.DEBUG
+      info -> Level.INFO
+      else -> Level.WARN
     }
 }
