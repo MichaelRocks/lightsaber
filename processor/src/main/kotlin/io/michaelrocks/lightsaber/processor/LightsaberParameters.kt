@@ -41,8 +41,6 @@ data class LightsaberParameters(
         variableArity = true
     )
     var bootClasspath: List<File> = emptyList(),
-    @Parameter(names = ["--source"], description = "Output directory for .java files")
-    var source: File? = null,
     @Parameter(names = ["--gen"], description = "Output directory for generated .class files")
     var gen: File? = null,
     @Parameter(names = ["-i", "--info"], description = "Enable detailed logging")
