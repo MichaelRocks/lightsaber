@@ -59,6 +59,7 @@ class LightsaberTransform(private val project: Project) : Transform() {
           it.jarInputs.map { it.file } + it.directoryInputs.map { it.file }
         },
         bootClasspath = project.android.bootClasspath,
+        projectName = invocation.context.path.replace(":lightsaberProcess", ":").replace(':', '$'),
         debug = logger.isDebugEnabled,
         info = logger.isInfoEnabled
     )

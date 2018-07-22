@@ -43,6 +43,8 @@ data class LightsaberParameters(
     var bootClasspath: List<File> = emptyList(),
     @Parameter(names = ["--gen"], description = "Output directory for generated .class files")
     var gen: File? = null,
+    @Parameter(names = ["-p", "--project"], description = "Project name used in names of some generated classes")
+    var projectName: String = "",
     @Parameter(names = ["-i", "--info"], description = "Enable detailed logging")
     var info: Boolean = false,
     @Parameter(names = ["-d", "--debug"], description = "Enable verbose logging")

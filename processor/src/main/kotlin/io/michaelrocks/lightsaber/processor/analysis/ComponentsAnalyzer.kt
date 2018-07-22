@@ -53,11 +53,12 @@ interface ComponentsAnalyzer {
 class ComponentsAnalyzerImpl(
     private val grip: Grip,
     private val analyzerHelper: AnalyzerHelper,
-    private val errorReporter: ErrorReporter
+    private val errorReporter: ErrorReporter,
+    private val projectName: String
 ) : ComponentsAnalyzer {
   private val logger = getLogger()
 
-  private val moduleParser: ModuleParser = ModuleParserImpl(grip, analyzerHelper, errorReporter)
+  private val moduleParser: ModuleParser = ModuleParserImpl(grip, analyzerHelper, errorReporter, projectName)
   private val moduleRegistry = HashMap<Type.Object, Module>()
 
   override fun analyze(files: Collection<File>, providableTargets: Collection<InjectionTarget>): Collection<Component> {

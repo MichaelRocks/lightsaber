@@ -44,6 +44,7 @@ class ClassProcessor(
     private val inputs: List<File>,
     private val outputs: List<File>,
     private val genPath: File,
+    private val projectName: String,
     classpath: List<File>,
     bootClasspath: List<File>
 ) : Closeable {
@@ -62,7 +63,8 @@ class ClassProcessor(
   fun processClasses() {
     val injectionContext = performAnalysisAndValidation()
     val generationContext =
-        GenerationContextFactory(grip.fileRegistry, grip.classRegistry).createGenerationContext(injectionContext)
+        GenerationContextFactory(grip.fileRegistry, grip.classRegistry, projectName)
+            .createGenerationContext(injectionContext)
     injectionContext.dump()
     copyAndPatchClasses(injectionContext, generationContext)
     performGeneration(injectionContext, generationContext)
@@ -78,7 +80,7 @@ class ClassProcessor(
   }
 
   private fun performAnalysisAndValidation(): InjectionContext {
-    val analyzer = Analyzer(grip, errorReporter)
+    val analyzer = Analyzer(grip, errorReporter, projectName)
     val context = analyzer.analyze(inputs)
     Validator(grip.classRegistry, errorReporter, context).validate()
     checkErrors()

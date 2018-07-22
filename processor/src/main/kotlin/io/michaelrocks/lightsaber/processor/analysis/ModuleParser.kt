@@ -56,7 +56,8 @@ interface ModuleParser {
 class ModuleParserImpl(
     private val grip: Grip,
     private val analyzerHelper: AnalyzerHelper,
-    private val errorReporter: ErrorReporter
+    private val errorReporter: ErrorReporter,
+    private val projectName: String
 ) : ModuleParser {
   private val logger = getLogger()
 
@@ -106,7 +107,7 @@ class ModuleParserImpl(
 
   private fun InjectionTarget.toProvider(container: Type.Object): Provider {
     val mirror = grip.classRegistry.getClassMirror(type)
-    val providerType = getObjectTypeByInternalName("${type.internalName}\$ConstructorProvider")
+    val providerType = getObjectTypeByInternalName("${type.internalName}\$ConstructorProvider\$$projectName")
     val dependency = Dependency(GenericType.Raw(type), analyzerHelper.findQualifier(mirror))
     val injectionPoint = injectionPoints.first() as InjectionPoint.Method
     val provisionPoint = ProvisionPoint.Constructor(dependency, injectionPoint)
@@ -115,7 +116,7 @@ class ModuleParserImpl(
   }
 
   private fun MethodMirror.toProvider(container: Type.Object, index: Int): Provider {
-    val providerType = getObjectTypeByInternalName("${container.internalName}\$MethodProvider\$$index")
+    val providerType = getObjectTypeByInternalName("${container.internalName}\$MethodProvider\$$index\$$projectName")
     val dependency = Dependency(signature.returnType, analyzerHelper.findQualifier(this))
     val injectionPoint = analyzerHelper.convertToInjectionPoint(this, container)
     val provisionPoint = ProvisionPoint.Method(dependency, injectionPoint, null).withBridge()
@@ -124,7 +125,7 @@ class ModuleParserImpl(
   }
 
   private fun FieldMirror.toProvider(container: Type.Object, index: Int): Provider {
-    val providerType = getObjectTypeByInternalName("${container.internalName}\$FieldProvider\$$index")
+    val providerType = getObjectTypeByInternalName("${container.internalName}\$FieldProvider\$$index\$$projectName")
     val dependency = Dependency(signature.type, analyzerHelper.findQualifier(this))
     val provisionPoint = ProvisionPoint.Field(container, dependency, null, this).withBridge()
     val scope = analyzerHelper.findScope(this)

@@ -41,7 +41,8 @@ import java.util.HashMap
 
 class GenerationContextFactory(
     private val fileRegistry: FileRegistry,
-    private val classRegistry: ClassRegistry
+    private val classRegistry: ClassRegistry,
+    private val projectName: String
 ) {
   fun createGenerationContext(injectionContext: InjectionContext): GenerationContext {
     return GenerationContext(
@@ -83,7 +84,8 @@ class GenerationContextFactory(
           )
           .map {
             val (packageName, types) = it
-            val packageInvaderType = createUniqueObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader")
+            val packageInvaderType =
+                createUniqueObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader\$$projectName")
             val fields = types.associateByIndexedTo(
                 HashMap(),
                 { _, type -> type },
@@ -93,7 +95,7 @@ class GenerationContextFactory(
           }
 
   private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {
-    val type = createUniqueObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry")
+    val type = createUniqueObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry\$$projectName")
     val keys = context.components.asSequence()
         .flatMap { it.modules.asSequence() }
         .flatMap { it.providers.asSequence() }
