@@ -21,9 +21,9 @@ import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.invokeMethod
 import io.michaelrocks.lightsaber.processor.commons.newMethod
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
-import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.getDependency
 import io.michaelrocks.lightsaber.processor.generation.model.KeyRegistry
@@ -112,7 +112,7 @@ class InjectableTargetPatcher(
       loadArg(0)
       getDependency(keyRegistry, injectee)
     }
-    invokeVirtual(injectableTarget.type, method.method.toMethodDescriptor())
+    invokeMethod(injectableTarget.type, method.method)
   }
 
   companion object {
