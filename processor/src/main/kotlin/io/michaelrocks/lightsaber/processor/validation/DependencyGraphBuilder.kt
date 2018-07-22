@@ -22,11 +22,15 @@ import io.michaelrocks.lightsaber.processor.generation.box
 import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
 import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
 import io.michaelrocks.lightsaber.processor.model.Component
+import io.michaelrocks.lightsaber.processor.model.Converter
 import io.michaelrocks.lightsaber.processor.model.Dependency
+import io.michaelrocks.lightsaber.processor.model.Injectee
 import io.michaelrocks.lightsaber.processor.model.Module
 import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 
-class DependencyGraphBuilder {
+class DependencyGraphBuilder(
+    private val omitWrappedDependencies: Boolean = false
+) {
   private val graph = HashDirectedGraph<Dependency>()
 
   init {
@@ -38,7 +42,7 @@ class DependencyGraphBuilder {
     for (provider in module.providers) {
       val returnType = provider.dependency.box()
       val method = provider.provisionPoint as? ProvisionPoint.AbstractMethod
-      val injectees = method?.injectionPoint?.injectees
+      val injectees = method?.injectionPoint?.injectees?.maybeOmitWrappedDependencies()
       val dependencies = injectees?.map { it.dependency.box() }
       graph.put(returnType, dependencies.orEmpty())
     }
@@ -54,5 +58,13 @@ class DependencyGraphBuilder {
 
   fun build(): DirectedGraph<Dependency> {
     return HashDirectedGraph(graph)
+  }
+
+  private fun List<Injectee>.maybeOmitWrappedDependencies(): List<Injectee> {
+    if (!omitWrappedDependencies) {
+      return this
+    }
+
+    return filter { it.converter === Converter.Instance }
   }
 }

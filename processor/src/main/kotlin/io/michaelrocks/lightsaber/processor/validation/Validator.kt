@@ -55,7 +55,7 @@ class Validator(
         validateNoModuleDuplicates(component, emptyMap())
         validateNoDependencyDuplicates(component, emptyMap())
         validateDependenciesAreResolved(component, DependencyResolver())
-        validateNoDependencyCycles(component, DependencyGraphBuilder())
+        validateNoDependencyCycles(component, DependencyGraphBuilder(true))
       }
 
     validateInjectionTargetsAreResolved(context.injectableTargets, context.components)
