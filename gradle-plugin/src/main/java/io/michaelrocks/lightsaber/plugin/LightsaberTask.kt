@@ -57,7 +57,7 @@ open class LightsaberTask : DefaultTask() {
         classpath = classpath,
         bootClasspath = bootClasspath,
         gen = classesDirs[0],
-        projectName = name.orEmpty().replace(":transformClassesWithLightsaberFor", ":").replace(':', '$'),
+        projectName = name.orEmpty().replace(":lightsaberProcess", ":").replace(':', '$'),
         debug = logger.isDebugEnabled,
         info = logger.isInfoEnabled
     )
