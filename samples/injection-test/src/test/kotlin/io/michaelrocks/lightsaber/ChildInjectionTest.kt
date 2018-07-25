@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -112,17 +112,19 @@ class ChildInjectionTest {
     private fun provideParentModule(): ParentModule = ParentModule()
   }
 
-  @Component(parents = arrayOf(ParentComponent::class))
+  @Component(parent = ParentComponent::class)
   private class ChildComponent {
     @Provides
     private fun provideChildModule(): ChildModule = ChildModule()
   }
 
+  @ProvidedBy(ChildModule::class)
   class PackageDependency @Inject private constructor(
       @Named("Child String")
       val namedString: String
   )
 
+  @ProvidedBy(ChildModule::class)
   class PackageDependencyTarget @Inject private constructor(
       @Named("Package Dependency")
       val packageDependency: PackageDependency

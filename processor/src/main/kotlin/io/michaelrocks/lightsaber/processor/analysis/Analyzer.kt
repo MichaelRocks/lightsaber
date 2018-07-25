@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@ import java.io.File
 
 class Analyzer(
     private val grip: Grip,
-    private val errorReporter: ErrorReporter
+    private val errorReporter: ErrorReporter,
+    private val projectName: String
 ) {
   private val injectionTargetAnalyzer: InjectionTargetsAnalyzer
   private val componentsAnalyzer: ComponentsAnalyzer
@@ -31,7 +32,7 @@ class Analyzer(
   init {
     val analyzerHelper = AnalyzerHelperImpl(grip.classRegistry, ScopeRegistry(), errorReporter)
     injectionTargetAnalyzer = InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter)
-    componentsAnalyzer = ComponentsAnalyzerImpl(grip, analyzerHelper, errorReporter)
+    componentsAnalyzer = ComponentsAnalyzerImpl(grip, analyzerHelper, errorReporter, projectName)
   }
 
   fun analyze(files: Collection<File>): InjectionContext {
@@ -40,7 +41,7 @@ class Analyzer(
         InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).let { analyzer ->
           analyzer.analyze(files)
         }
-    val (packageComponent, components) = componentsAnalyzer.analyze(files, providableTargets)
-    return InjectionContext(packageComponent, components, injectableTargets, providableTargets)
+    val components = componentsAnalyzer.analyze(files, providableTargets)
+    return InjectionContext(components, injectableTargets, providableTargets)
   }
 }

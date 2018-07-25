@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,13 +48,13 @@ private val GET_INSTANCE_FOR_KEY_METHOD =
     MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.KEY_TYPE)
 
 private val REGISTER_PROVIDER_FOR_CLASS_METHOD =
-    MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.CLASS_TYPE, Types.INJECTING_PROVIDER_TYPE)
+    MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.CLASS_TYPE, Types.PROVIDER_TYPE)
 private val REGISTER_PROVIDER_FOR_TYPE_METHOD =
-    MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.TYPE_TYPE, Types.INJECTING_PROVIDER_TYPE)
+    MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.TYPE_TYPE, Types.PROVIDER_TYPE)
 private val REGISTER_PROVIDER_FOR_KEY_METHOD =
-    MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.KEY_TYPE, Types.INJECTING_PROVIDER_TYPE)
+    MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.KEY_TYPE, Types.PROVIDER_TYPE)
 
-private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.INJECTING_PROVIDER_TYPE)
+private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
 
 fun GeneratorAdapter.getDependency(keyRegistry: KeyRegistry, injectee: Injectee) {
   when (injectee.converter) {

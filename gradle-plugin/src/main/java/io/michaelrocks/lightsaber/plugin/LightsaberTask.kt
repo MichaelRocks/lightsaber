@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,8 @@ open class LightsaberTask : DefaultTask() {
         outputs = classesDirs,
         classpath = classpath,
         bootClasspath = bootClasspath,
-        source = sourceDir,
         gen = classesDirs[0],
+        projectName = name.orEmpty().replace(":lightsaberProcess", ":").replace(':', '$'),
         debug = logger.isDebugEnabled,
         info = logger.isInfoEnabled
     )

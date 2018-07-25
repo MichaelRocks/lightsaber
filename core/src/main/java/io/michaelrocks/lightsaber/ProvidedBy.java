@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,18 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.templates
+package io.michaelrocks.lightsaber;
 
-internal sealed class Line {
-  class Text(val text: String) : Line()
-  class Parameter(val name: String, val prefix: String) : Line()
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@Target({ TYPE })
+@Retention(RUNTIME)
+@Documented
+public @interface ProvidedBy {
+  Class<?>[] value();
 }

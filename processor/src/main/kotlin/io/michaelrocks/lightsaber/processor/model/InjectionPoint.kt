@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import io.michaelrocks.grip.mirrors.Type
 sealed class InjectionPoint {
   abstract val containerType: Type.Object
 
-  class Method(
+  data class Method(
       override val containerType: Type.Object,
       val method: MethodMirror,
       val injectees: List<Injectee>
   ) : InjectionPoint()
 
-  class Field(
+  data class Field(
       override val containerType: Type.Object,
       val field: FieldMirror,
       val injectee: Injectee

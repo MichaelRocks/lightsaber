@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,188 +17,192 @@
 package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.mirrors.Element
+import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.processor.ErrorReporter
-import io.michaelrocks.lightsaber.processor.commons.cast
 import io.michaelrocks.lightsaber.processor.generation.box
-import io.michaelrocks.lightsaber.processor.graph.AbstractMarkingTraversal
-import io.michaelrocks.lightsaber.processor.graph.DepthFirstTraversal
-import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
 import io.michaelrocks.lightsaber.processor.graph.findCycles
-import io.michaelrocks.lightsaber.processor.graph.findReachableVertices
-import io.michaelrocks.lightsaber.processor.graph.reversed
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency
-import io.michaelrocks.lightsaber.processor.model.Injectee
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
-import java.util.ArrayList
-import java.util.HashSet
+import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 
 class Validator(
-    private val classRegistry: ClassRegistry,
-    private val errorReporter: ErrorReporter
+  private val classRegistry: ClassRegistry,
+  private val errorReporter: ErrorReporter,
+  private val context: InjectionContext
 ) {
-  fun validate(context: InjectionContext) {
-    performSanityChecks(context)
-    validateComponentGraph(context)
-    validateInjectionGraph(context)
+  fun validate() {
+    performSanityChecks()
+    validateComponents()
   }
 
-  private fun performSanityChecks(context: InjectionContext) {
+  private fun performSanityChecks() {
     SanityChecker(classRegistry, errorReporter).performSanityChecks(context)
   }
 
-  private fun validateComponentGraph(context: InjectionContext) {
-    val componentGraph = buildComponentGraph(context.allComponents)
+  private fun validateComponents() {
+    val componentGraph = buildComponentGraph(context.components)
     val cycles = componentGraph.findCycles()
     for (cycle in cycles) {
-      errorReporter.reportError("Cycled component: ${cycle.joinToString(" -> ")}")
+      errorReporter.reportError("Component cycle ${cycle.joinToString(" -> ")}")
     }
 
-    val reachableComponents = componentGraph.findReachableVertices(context.packageComponent.type)
-    val unreachableComponents = context.components.filterNot { it.type in reachableComponents }
-    for (unreachableComponent in unreachableComponents) {
-      errorReporter.reportError("Abandoned component: ${unreachableComponent.type.className}")
-    }
+    context.components
+      .filter { it.parent == null }
+      .forEach { component ->
+        validateNoModuleDuplicates(component, emptyMap())
+        validateNoDependencyDuplicates(component, emptyMap())
+        validateDependenciesAreResolved(component, DependencyResolver())
+        validateNoDependencyCycles(component, DependencyGraphBuilder(true))
+      }
+
+    validateInjectionTargetsAreResolved(context.injectableTargets, context.components)
   }
 
-  private fun validateInjectionGraph(context: InjectionContext) {
-    val injectionGraphs = buildInjectionGraphs(context)
-    injectionGraphs.forEach {
-      validateNoDuplicatesInInjectionGraph(it)
-      validateDependencyGraph(context, it)
+  private fun validateNoModuleDuplicates(
+    component: Component,
+    moduleToComponentsMap: Map<Type.Object, List<Type.Object>>
+  ) {
+    val newModuleTypeToComponentMap = HashMap(moduleToComponentsMap)
+    component.modules.forEach { module ->
+      val oldComponents = newModuleTypeToComponentMap[module.type]
+      val newComponents = if (oldComponents == null) listOf(component.type) else oldComponents + component.type
+      newModuleTypeToComponentMap[module.type] = newComponents
     }
 
-    val fullInjectionGraph = buildInjectionGraph(injectionGraphs)
-    validateInjectionPointsAreResolved(context, fullInjectionGraph)
-  }
-
-  private fun validateNoDuplicatesInInjectionGraph(graph: DirectedGraph<InjectionGraphVertex>) {
-    val reversed = graph.reversed()
-    reversed.vertices.forEach { vertex ->
-      val adjacent = reversed.getAdjacentVertices(vertex)
-      if (adjacent != null && adjacent.size > 1) {
-        when (vertex) {
-          is InjectionGraphVertex.ComponentVertex -> Unit
-          is InjectionGraphVertex.ModuleVertex -> {
-            val module = vertex.module.type.className
-            val components =
-                adjacent
-                    .mapNotNull { it as? InjectionGraphVertex.ComponentVertex }
-                    .joinToString { it.component.type.className }
-            errorReporter.reportError(
-                "Module provided multiple times in a component chain: $module in $components"
-            )
-          }
-          is InjectionGraphVertex.DependencyVertex -> {
-            val dependency = vertex.dependency.toString()
-            val modules =
-                adjacent
-                    .mapNotNull { it as? InjectionGraphVertex.ModuleVertex }
-                    .joinToString { it.module.type.className }
-            errorReporter.reportError(
-                "Dependency provided multiple times in a component chain: $dependency: $modules"
-            )
-          }
+    if (component.subcomponents.isEmpty()) {
+      // FIXME: This code will report duplicate errors in some cases.
+      newModuleTypeToComponentMap.forEach { (moduleType, componentTypes) ->
+        if (componentTypes.size > 1) {
+          val moduleName = moduleType.className
+          val componentNames = componentTypes.joinToString { it.className }
+          errorReporter.reportError(
+            "Module $moduleName provided multiple times in a single component hierarchy: $componentNames"
+          )
+        }
+      }
+    } else {
+      component.subcomponents.forEach { subcomponentType ->
+        val subcomponent = context.findComponentByType(subcomponentType)
+        if (subcomponent != null) {
+          validateNoModuleDuplicates(subcomponent, newModuleTypeToComponentMap)
+        } else {
+          val subcomponentName = subcomponentType.className
+          val componentName = component.type.className
+          errorReporter.reportError("Subcomponent $subcomponentName of component $componentName not found")
         }
       }
     }
   }
 
-  private fun validateDependencyGraph(context: InjectionContext, injectionGraph: DirectedGraph<InjectionGraphVertex>) {
-    val modules = injectionGraph.vertices.mapNotNull { (it as? InjectionGraphVertex.ModuleVertex)?.module }
-    val dependencyGraph = buildDependencyGraph(modules)
+  private fun validateNoDependencyDuplicates(
+    component: Component,
+    dependencyTypeToModuleMap: Map<Dependency, List<Type.Object>>
+  ) {
+    val newDependencyTypeToModuleMap = HashMap(dependencyTypeToModuleMap)
+    component.modules.forEach { module ->
+      module.providers.forEach { provider ->
+        val oldModules = newDependencyTypeToModuleMap[provider.dependency]
+        val newModules = if (oldModules == null) listOf(module.type) else oldModules + listOf(module.type)
+        newDependencyTypeToModuleMap[provider.dependency] = newModules
+      }
+    }
 
-    val packageComponent = InjectionGraphVertex.ComponentVertex(context.packageComponent)
-    val componentChain = extractComponentChain(injectionGraph, packageComponent)
-    val unresolvedDependencies =
-        dependencyGraph.findUnresolvedDependencies(componentChain.subList(1, componentChain.size))
+    if (component.subcomponents.isEmpty()) {
+      // FIXME: This code will report duplicate errors in some cases.
+      newDependencyTypeToModuleMap.forEach { (dependency, moduleTypes) ->
+        if (moduleTypes.size > 1) {
+          val moduleNames = moduleTypes.joinToString { it.className }
+          errorReporter.reportError(
+            "Dependency $dependency provided multiple times in a single component hierarchy by modules: $moduleNames"
+          )
+        }
+      }
+    } else {
+      component.subcomponents.forEach { subcomponentType ->
+        val subcomponent = context.findComponentByType(subcomponentType)
+        if (subcomponent != null) {
+          validateNoDependencyDuplicates(subcomponent, newDependencyTypeToModuleMap)
+        } else {
+          val subcomponentName = subcomponentType.className
+          val componentName = component.type.className
+          errorReporter.reportError("Subcomponent $subcomponentName of component $componentName not found")
+        }
+      }
+    }
+  }
+
+  private fun validateDependenciesAreResolved(component: Component, resolver: DependencyResolver) {
+    resolver.add(component)
+    val unresolvedDependencies = resolver.getUnresolvedDependenciesAndResolveAllDepepdencies()
     if (unresolvedDependencies.isNotEmpty()) {
-      val componentChainString = componentChain.joinToString(" -> ") { it.type.className }
+      val componentName = component.type.className
       for (unresolvedDependency in unresolvedDependencies) {
-        errorReporter.reportError("Unresolved dependency: $unresolvedDependency in $componentChainString")
+        errorReporter.reportError("Unresolved dependency $unresolvedDependency in component $componentName")
       }
     }
+  }
 
+  private fun validateNoDependencyCycles(component: Component, builder: DependencyGraphBuilder) {
+    builder.add(component)
+    val dependencyGraph = builder.build()
     val cycles = dependencyGraph.findCycles()
-    for (cycle in cycles) {
-      errorReporter.reportError("Cycled dependency: ${cycle.joinToString(" -> ")}")
+    if (cycles.isNotEmpty()) {
+      val componentName = component.type.className
+      for (cycle in cycles) {
+        val cycleString = cycle.joinToString(" -> ")
+        errorReporter.reportError("Dependency cycle $cycleString in component $componentName")
+      }
     }
   }
 
-  private fun extractComponentChain(
-      graph: DirectedGraph<InjectionGraphVertex>,
-      componentVertex: InjectionGraphVertex.ComponentVertex
-  ): List<Component> {
-    val chain = ArrayList<Component>()
-    val traversal = DepthFirstTraversal<InjectionGraphVertex>()
-    val delegate = object : AbstractMarkingTraversal.SimpleDelegate<InjectionGraphVertex>() {
-      override fun isVisited(vertex: InjectionGraphVertex): Boolean {
-        return vertex !is InjectionGraphVertex.ComponentVertex || super.isVisited(vertex)
-      }
+  private fun validateInjectionTargetsAreResolved(
+    injectionTargets: Iterable<InjectionTarget>,
+    components: Iterable<Component>
+  ) {
+    val dependencyResolver = DependencyResolver()
+    components.forEach { dependencyResolver.add(it) }
+    val resolvedDependencies = dependencyResolver.getResolvedDependencies()
 
-      override fun onBeforeAdjacentVertices(vertex: InjectionGraphVertex) {
-        chain += vertex.cast<InjectionGraphVertex.ComponentVertex>().component
+    injectionTargets.forEach { injectionTarget ->
+      injectionTarget.injectionPoints.forEach { injectionPoint ->
+        validateInjectionPointIsResolved(injectionTarget.type, injectionPoint, resolvedDependencies)
       }
     }
-    traversal.traverse(graph, delegate, componentVertex)
-    return chain
   }
 
-  private fun DirectedGraph<Dependency>.findUnresolvedDependencies(
-      components: Collection<Component>
-  ): Collection<Dependency> {
-    val unresolvedDependencies = HashSet<Dependency>()
+  private fun validateInjectionPointIsResolved(
+    injectionTargetType: Type.Object,
+    injectionPoint: InjectionPoint,
+    resolvedDependencies: Set<Dependency>
+  ) {
+    val dependencies = getDependenciesForInjectionPoint(injectionPoint)
+    val element = getElementForInjectionPoint(injectionPoint)
 
-    val traversal = DepthFirstTraversal<Dependency>()
-    val delegate = object : AbstractMarkingTraversal.SimpleDelegate<Dependency>() {
-      override fun onBeforeAdjacentVertices(vertex: Dependency) {
-        if (getAdjacentVertices(vertex) == null) {
-          unresolvedDependencies.add(vertex)
-        }
+    val unresolvedDependencies = dependencies.filter { it !in resolvedDependencies }
+    if (unresolvedDependencies.isNotEmpty()) {
+      val injectionTargetName = injectionTargetType.className
+      unresolvedDependencies.forEach { dependency ->
+        errorReporter.reportError(
+          "Unresolved dependency $dependency in $element at $injectionTargetName"
+        )
       }
     }
-
-    components.forEach { component ->
-      component.modules.forEach { module ->
-        module.providers.forEach { provider ->
-          traversal.traverse(this, delegate, provider.dependency.box())
-        }
-      }
-    }
-
-    return unresolvedDependencies
   }
 
-  private fun validateInjectionPointsAreResolved(context: InjectionContext,
-      injectionGraph: DirectedGraph<InjectionGraphVertex>) {
-    fun Injectee.isResolved(): Boolean {
-      return injectionGraph.contains(InjectionGraphVertex.DependencyVertex(dependency))
+  private fun getDependenciesForInjectionPoint(injectionPoint: InjectionPoint): Collection<Dependency> {
+    return when (injectionPoint) {
+      is InjectionPoint.Field -> listOf(injectionPoint.injectee.dependency.box())
+      is InjectionPoint.Method -> injectionPoint.injectees.map { it.dependency.box() }
     }
+  }
 
-    fun InjectionPoint.checkResolved() {
-      when (this) {
-        is InjectionPoint.Field ->
-          if (!injectee.isResolved()) {
-            errorReporter.reportError(
-                "Unresolved dependency ${injectee.dependency} in $field at ${containerType.className}"
-            )
-          }
-        is InjectionPoint.Method ->
-          injectees.forEach { injectee ->
-            if (!injectee.isResolved()) {
-              errorReporter.reportError(
-                  "Unresolved dependency ${injectee.dependency} in $method at ${containerType.className}"
-              )
-            }
-          }
-      }
-    }
-
-    context.injectableTargets.forEach { injectableTarget ->
-      injectableTarget.injectionPoints.forEach { injectionPoint ->
-        injectionPoint.checkResolved()
-      }
+  private fun getElementForInjectionPoint(injectionPoint: InjectionPoint): Element<out Type> {
+    return when (injectionPoint) {
+      is InjectionPoint.Field -> injectionPoint.field
+      is InjectionPoint.Method -> injectionPoint.method
     }
   }
 }

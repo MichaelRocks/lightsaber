@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,66 +16,78 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.lightsaber.LightsaberTypes
+import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
+import io.michaelrocks.lightsaber.processor.commons.invokeMethod
+import io.michaelrocks.lightsaber.processor.commons.newMethod
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
-import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.model.Component
+import io.michaelrocks.lightsaber.processor.model.ModuleProvider
 import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
 import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.FieldVisitor
-import org.objectweb.asm.MethodVisitor
-import org.objectweb.asm.Opcodes.ACC_PRIVATE
-import org.objectweb.asm.Opcodes.ACC_PROTECTED
 import org.objectweb.asm.Opcodes.ACC_PUBLIC
-import java.util.HashSet
 
 class ComponentPatcher(
     classVisitor: ClassVisitor,
-    component: Component
+    private val component: Component
 ) : BaseInjectionClassVisitor(classVisitor) {
-  private val providableFields: MutableSet<FieldDescriptor>
-  private val providableMethods: MutableSet<MethodDescriptor>
 
-  init {
-    providableFields = HashSet(component.providers.size)
-    providableMethods = HashSet(component.providers.size)
-    for (provider in component.providers) {
-      val provisionPoint = provider.provisionPoint
-      when (provisionPoint) {
-        is ModuleProvisionPoint.Field -> providableFields.add(provisionPoint.field.toFieldDescriptor())
-        is ModuleProvisionPoint.Method -> providableMethods.add(provisionPoint.method.toMethodDescriptor())
-      }
-    }
-  }
+  private var isInjectorConfigurator = false
 
   override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
       interfaces: Array<String>?) {
-    val newAccess = (access and (ACC_PRIVATE or ACC_PROTECTED).inv()) or ACC_PUBLIC
-    super.visit(version, newAccess, name, signature, superName, interfaces)
-    isDirty = isDirty or (newAccess != access)
-  }
-
-  override fun visitField(access: Int, name: String, desc: String, signature: String?, value: Any?): FieldVisitor? {
-    val field = FieldDescriptor(name, desc)
-    if (providableFields.contains(field)) {
-      val newAccess = access and ACC_PRIVATE.inv() or ACC_PUBLIC
-      isDirty = isDirty or (newAccess != access)
-      return super.visitField(newAccess, name, desc, signature, value)
+    val injectorConfiguratorType = LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE.internalName
+    if (interfaces == null || injectorConfiguratorType !in interfaces) {
+      val newInterfaces =
+          if (interfaces == null) arrayOf(injectorConfiguratorType) else interfaces + injectorConfiguratorType
+      super.visit(version, access, name, signature, superName, newInterfaces)
+      isDirty = true
     } else {
-      return super.visitField(access, name, desc, signature, value)
+      super.visit(version, access, name, signature, superName, interfaces)
+      isInjectorConfigurator = true
     }
   }
 
-  override fun visitMethod(access: Int, name: String, desc: String, signature: String?,
-      exceptions: Array<String>?): MethodVisitor? {
-    val method = MethodDescriptor(name, desc)
-    if (providableMethods.contains(method)) {
-      val newAccess = access and ACC_PRIVATE.inv() or ACC_PUBLIC
-      isDirty = isDirty or (newAccess != access)
-      return super.visitMethod(newAccess, name, desc, signature, exceptions)
-    } else {
-      return super.visitMethod(access, name, desc, signature, exceptions)
+  override fun visitEnd() {
+    if (!isInjectorConfigurator) {
+      newMethod(ACC_PUBLIC, CONFIGURE_INJECTOR_METHOD) { configureInjector() }
     }
+    super.visitEnd()
+  }
+
+  private fun GeneratorAdapter.configureInjector() {
+    component.providers.forEach { configureInjectorWithModule(it) }
+  }
+
+  private fun GeneratorAdapter.configureInjectorWithModule(moduleProvider: ModuleProvider) {
+    loadModule(moduleProvider.provisionPoint)
+    // TODO: It would be better to throw ConfigurationException here.
+    checkCast(LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE)
+    loadArg(0)
+    invokeInterface(LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE, CONFIGURE_INJECTOR_METHOD)
+  }
+
+  private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint) {
+    return when (provisionPoint) {
+      is ModuleProvisionPoint.Method -> loadModule(provisionPoint)
+      is ModuleProvisionPoint.Field -> loadModule(provisionPoint)
+    }
+  }
+
+  private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint.Method) {
+    loadThis()
+    invokeMethod(component.type, provisionPoint.method)
+  }
+
+  private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint.Field) {
+    loadThis()
+    getField(component.type, provisionPoint.field.toFieldDescriptor())
+  }
+
+  companion object {
+    private val CONFIGURE_INJECTOR_METHOD =
+        MethodDescriptor.forMethod("configureInjector", Type.Primitive.Void, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE)
   }
 }

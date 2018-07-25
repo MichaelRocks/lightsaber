@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,9 @@ package io.michaelrocks.lightsaber.access
 
 import io.michaelrocks.lightsaber.Key
 import io.michaelrocks.lightsaber.Lightsaber
+import org.junit.Assert.assertSame
 import org.junit.Test
 
-@InternalQualifier
 class AccessTest {
   @Test
   fun testInjectionAccess() {
@@ -32,8 +32,23 @@ class AccessTest {
   @Test
   fun testInjectionAccessWithQualifier() {
     val injector = Lightsaber.get().createInjector(AccessComponent())
-    val qualifier = javaClass.getAnnotation(InternalQualifier::class.java)
+    val qualifier = AnnotationHolder::class.java.getAnnotation(InternalQualifier::class.java)
     val target = injector.getInstance(Key.of<InternalDependency>(InternalDependency::class.java, qualifier))
     target.action()
   }
+
+  @Test
+  fun testInjectionAccessWithSingletonScope() {
+    val injector = Lightsaber.get().createInjector(AccessComponent())
+    val qualifier = AnnotationHolder::class.java.getAnnotation(SingletonQualifier::class.java)
+    val target1 = injector.getInstance(Key.of<InternalDependency>(InternalDependency::class.java, qualifier))
+    val target2 = injector.getInstance(Key.of<InternalDependency>(InternalDependency::class.java, qualifier))
+    target1.action()
+    target2.action()
+    assertSame(target1, target2)
+  }
+
+  @InternalQualifier
+  @SingletonQualifier
+  private class AnnotationHolder
 }

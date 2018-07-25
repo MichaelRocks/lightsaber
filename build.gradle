@@ -1,24 +1,28 @@
 allprojects {
-  ext.kotlinVersion = '1.2.41'
+  version = '0.9.0-beta'
+  group = 'io.michaelrocks'
+
+  ext.kotlinVersion = '1.2.51'
+  ext.pabloVersion = '1.0.3'
 
   ext.javaxInjectVersion = '1'
   ext.jsr305Version = '3.0.2'
   ext.jcommanderVersion = '1.72'
-  ext.asmVersion = '5.2'
-  ext.gripVersion = '0.5.3-beta'
+  ext.asmVersion = '6.2'
+  ext.gripVersion = '0.6.2-beta'
   ext.bimapVersion = '1.0.2'
   ext.logbackVersion = '1.2.3'
 
   ext.junitVersion = '4.12'
-  ext.mockitoVersion = '2.17.0'
-  ext.espressoVersion = '3.0.1'
-  ext.testRunnerVersion = '1.0.1'
+  ext.mockitoVersion = '2.19.1'
+  ext.espressoVersion = '3.0.2'
+  ext.testRunnerVersion = '1.0.2'
 
   ext.androidCompileSdkVersion = 27
   ext.androidTargetSdkVersion = 27
   ext.androidMinSdkVersion = 16
-  ext.androidBuildToolsVersion = '27.0.3'
-  ext.androidToolsVersion = '3.1.1'
+  ext.androidBuildToolsVersion = '28.0.1'
+  ext.androidToolsVersion = '3.1.3'
   ext.supportVersion = '27.1.1'
 
   buildscript {
@@ -31,6 +35,11 @@ allprojects {
     dependencies {
       classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
       classpath "com.android.tools.build:gradle:$androidToolsVersion"
+      classpath "io.michaelrocks.pablo:pablo:$pabloVersion"
+
+      if (!rootProject.properties['bootstrap'].toBoolean()) {
+        classpath "io.michaelrocks:lightsaber-gradle-plugin:$version"
+      }
     }
   }
 
@@ -39,19 +48,4 @@ allprojects {
     jcenter()
     google()
   }
-}
-
-allprojects {
-  def properties = new Properties()
-  properties.load(new FileInputStream(new File(rootDir, "version.properties")))
-  def major = properties['version.major'] as int
-  def minor = properties['version.minor'] as int
-  def patch = properties['version.patch'] as int
-  def suffix = properties['version.suffix']?.toString()?.trim() ?: ""
-  def snapshot = properties['version.snapshot'].toBoolean()
-  version = "$major.$minor.$patch" + (suffix.isAllWhitespace() ? '' : "-$suffix") + (snapshot ? '-SNAPSHOT' : '')
-  group = 'io.michaelrocks'
-
-  ext.dryRun = properties['version.dryRun'].toBoolean()
-  ext.publish = properties['version.publish'].toBoolean()
 }

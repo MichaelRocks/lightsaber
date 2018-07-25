@@ -21,8 +21,9 @@ import io.michaelrocks.grip.GripFactory
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.closeQuietly
-import io.michaelrocks.lightsaber.processor.compiler.JavaToolsCompiler
+import io.michaelrocks.lightsaber.processor.generation.GenerationContextFactory
 import io.michaelrocks.lightsaber.processor.generation.Generator
+import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.injection.Patcher
 import io.michaelrocks.lightsaber.processor.io.DirectoryFileSink
 import io.michaelrocks.lightsaber.processor.io.FileSource
@@ -42,8 +43,8 @@ import java.io.File
 class ClassProcessor(
     private val inputs: List<File>,
     private val outputs: List<File>,
-    private val sourcePath: File,
     private val genPath: File,
+    private val projectName: String,
     classpath: List<File>,
     bootClasspath: List<File>
 ) : Closeable {
@@ -57,22 +58,20 @@ class ClassProcessor(
     val sink = IoFactory.createFileSink(input, output)
     source to sink
   }
-  private val sourceSink = DirectoryFileSink(sourcePath)
   private val classSink = DirectoryFileSink(genPath)
 
-  private val compiler = JavaToolsCompiler(inputs + classpath + genPath, bootClasspath, errorReporter)
-
   fun processClasses() {
-    val context = performAnalysisAndValidation()
-    context.dump()
-    copyAndPatchClasses(context)
-    performGeneration(context)
-    performCompilation()
+    val injectionContext = performAnalysisAndValidation()
+    val generationContext =
+        GenerationContextFactory(grip.fileRegistry, grip.classRegistry, projectName)
+            .createGenerationContext(injectionContext)
+    injectionContext.dump()
+    copyAndPatchClasses(injectionContext, generationContext)
+    performGeneration(injectionContext, generationContext)
   }
 
   override fun close() {
     classSink.closeQuietly()
-    sourceSink.closeQuietly()
 
     fileSourcesAndSinks.forEach {
       it.first.closeQuietly()
@@ -81,14 +80,14 @@ class ClassProcessor(
   }
 
   private fun performAnalysisAndValidation(): InjectionContext {
-    val analyzer = Analyzer(grip, errorReporter)
+    val analyzer = Analyzer(grip, errorReporter, projectName)
     val context = analyzer.analyze(inputs)
-    Validator(grip.classRegistry, errorReporter).validate(context)
+    Validator(grip.classRegistry, errorReporter, context).validate()
     checkErrors()
     return context
   }
 
-  private fun copyAndPatchClasses(context: InjectionContext) {
+  private fun copyAndPatchClasses(injectionContext: InjectionContext, generationContext: GenerationContext) {
     fileSourcesAndSinks.forEach { (fileSource, fileSink) ->
       logger.debug("Copy from {} to {}", fileSource, fileSink)
       fileSource.listFiles { path, type ->
@@ -98,7 +97,7 @@ class ClassProcessor(
             val classReader = ClassReader(fileSource.readFile(path))
             val classWriter = StandaloneClassWriter(
                 classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry)
-            val classVisitor = Patcher(classWriter, context)
+            val classVisitor = Patcher(classWriter, grip.classRegistry, generationContext.keyRegistry, injectionContext)
             classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
             fileSink.createFile(path, classWriter.toByteArray())
           }
@@ -113,14 +112,9 @@ class ClassProcessor(
     checkErrors()
   }
 
-  private fun performGeneration(context: InjectionContext) {
-    val generator = Generator(grip.classRegistry, errorReporter, classSink, sourceSink)
-    generator.generate(context)
-    checkErrors()
-  }
-
-  private fun performCompilation() {
-    compiler.compile(sourcePath, genPath)
+  private fun performGeneration(injectionContext: InjectionContext, generationContext: GenerationContext) {
+    val generator = Generator(grip.classRegistry, errorReporter, classSink)
+    generator.generate(injectionContext, generationContext)
     checkErrors()
   }
 
@@ -135,7 +129,6 @@ class ClassProcessor(
   }
 
   private fun InjectionContext.dump() {
-    packageComponent.dump()
     components.forEach { it.dump() }
     injectableTargets.forEach { it.dump("Injectable") }
     providableTargets.forEach { it.dump("Providable") }

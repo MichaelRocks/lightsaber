@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package io.michaelrocks.lightsaber;
 
 import javax.annotation.Nonnull;
 
-public interface MembersInjector<T> {
-  void injectFields(@Nonnull Injector injector, @Nonnull T target);
+public interface MembersInjector {
+  void injectFields(@Nonnull Injector injector);
 
-  void injectMethods(@Nonnull Injector injector, @Nonnull T target);
+  void injectMethods(@Nonnull Injector injector);
 }

@@ -46,19 +46,9 @@ class LightsaberTransform(private val project: Project) : Transform() {
       )
     }
 
-    // For now just skip tests.
-    if (invocation.context.path.endsWith("Test")) {
-      logger.info("Found a test project. Skipping...")
-      inputs.zip(outputs) { input, output ->
-        input.file.copyRecursively(output, true)
-      }
-      return
-    }
-
     val parameters = LightsaberParameters(
         inputs = inputs.map { it.file },
         outputs = outputs,
-        source = File(invocation.context.temporaryDir, "src"),
         gen = invocation.outputProvider.getContentLocation(
             "gen-lightsaber",
             QualifiedContent.DefaultContentType.CLASSES,
@@ -69,6 +59,7 @@ class LightsaberTransform(private val project: Project) : Transform() {
           it.jarInputs.map { it.file } + it.directoryInputs.map { it.file }
         },
         bootClasspath = project.android.bootClasspath,
+        projectName = invocation.context.path.replace(":transformClassesWithLightsaberFor", ":").replace(':', '$'),
         debug = logger.isDebugEnabled,
         info = logger.isInfoEnabled
     )

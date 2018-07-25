@@ -21,7 +21,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 sealed class Key {
   abstract val field: FieldDescriptor
 
-  class Class(override val field: FieldDescriptor) : Key()
-  class Type(override val field: FieldDescriptor) : Key()
-  class QualifiedType(override val field: FieldDescriptor) : Key()
+  data class Class(override val field: FieldDescriptor) : Key()
+  data class Type(override val field: FieldDescriptor) : Key()
+  data class QualifiedType(override val field: FieldDescriptor) : Key()
 }

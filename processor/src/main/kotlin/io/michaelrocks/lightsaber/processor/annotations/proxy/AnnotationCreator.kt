@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,11 +72,21 @@ class AnnotationCreator(
     when (fieldType) {
       is Type.Primitive -> {
         // TODO: Check if the value class corresponds to fieldType.
-        generator.visitLdcInsn(value)
+        generator.visitLdcInsn(normalizeConstant(value))
       }
       is Type.Array -> createArray(generator, fieldType, value)
-      is Type.Object -> createObject(generator, fieldType, value)
+      is Type.Object -> createObject(generator, value)
       else -> throw IllegalArgumentException("Unsupported annotation field type: $fieldType")
+    }
+  }
+
+  private fun normalizeConstant(value: Any): Any {
+    return when (value) {
+      is Boolean -> if (value) 1 else 0
+      is Byte -> value.toInt()
+      is Char -> value.toInt()
+      is Short -> value.toInt()
+      else -> value
     }
   }
 
@@ -105,7 +115,7 @@ class AnnotationCreator(
     }
   }
 
-  private fun createObject(generator: GeneratorAdapter, fieldType: Type, value: Any) {
+  private fun createObject(generator: GeneratorAdapter, value: Any) {
     when (value) {
       is Type -> generator.push(value)
       is String -> generator.push(value)

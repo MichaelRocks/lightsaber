@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2017 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.graph
 
-import java.util.*
+import java.util.HashSet
 
 interface Traversal<T, D : Traversal.Delegate<T>> {
   fun traverse(graph: DirectedGraph<T>, delegate: D)
@@ -84,24 +84,6 @@ class DepthFirstTraversal<T> : AbstractMarkingTraversal<T>() {
       }
     } finally {
       delegate.onAfterVertex(vertex)
-    }
-  }
-}
-
-fun <T> DirectedGraph<T>.traverseDepthFirst(
-    beforeAdjacent: (T) -> Unit = {},
-    afterAdjacent: (T) -> Unit = {}
-) {
-  val visited = HashSet<T>(size)
-
-  fun traverse(vertex: T) {
-    if (visited.add(vertex)) {
-      beforeAdjacent(vertex)
-      try {
-        getAdjacentVertices(vertex)?.forEach { traverse(it) }
-      } finally {
-        afterAdjacent(vertex)
-      }
     }
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,21 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
+import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.isPrivate
 
 inline fun GeneratorAdapter.newLocal(type: Type, valueProvider: () -> Unit): Int {
   val local = newLocal(type)
   valueProvider()
   storeLocal(local)
   return local
+}
+
+fun GeneratorAdapter.invokeMethod(owner: Type, method: MethodMirror) {
+  if (method.isPrivate) {
+    invokePrivate(owner, method.toMethodDescriptor())
+  } else {
+    invokeVirtual(owner, method.toMethodDescriptor())
+  }
 }

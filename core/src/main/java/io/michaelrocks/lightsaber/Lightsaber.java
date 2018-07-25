@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,13 @@
 
 package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.lightsaber.internal.InjectingProvider;
-import io.michaelrocks.lightsaber.internal.MapIterator;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 
 public class Lightsaber {
-  private static final Configurator DEFAULT_CONFIGURATOR = new DefaultConfigurator();
-
-  private final Configurator configurator;
-
   Lightsaber() {
-    this(DEFAULT_CONFIGURATOR);
-  }
-
-  Lightsaber(final Configurator configurator) {
-    this.configurator = configurator;
   }
 
   @Nonnull
@@ -44,9 +32,7 @@ public class Lightsaber {
 
   @Nonnull
   public Injector createInjector(@Nonnull final Object component) {
-    final LightsaberInjector injector = createInjectorInternal(null, component);
-    configurator.configureInjector(injector, null);
-    return injector;
+    return createInjectorInternal(null, component);
   }
 
   @Nonnull
@@ -68,39 +54,15 @@ public class Lightsaber {
       throw new NullPointerException("Trying to create an injector with a null component");
     }
 
-    final LightsaberInjector parent = (LightsaberInjector) parentInjector;
-    final LightsaberInjector injector = new LightsaberInjector(this);
-    if (parent != null) {
-      overrideProviders(injector, parent);
-    }
-    configurator.configureInjector(injector, component);
+    final LightsaberInjector injector = new LightsaberInjector(parentInjector);
+    final InjectorConfigurator configurator = (InjectorConfigurator) component;
+    configurator.configureInjector(injector);
     return injector;
-  }
-
-  private static void overrideProviders(final LightsaberInjector injector, final LightsaberInjector parent) {
-    final MapIterator<Object, InjectingProvider<?>> iterator = parent.getProviders().iterator();
-    while (iterator.hasNext()) {
-      final Object key = iterator.next();
-      if (!Injector.class.equals(key)) {
-        // noinspection unchecked
-        overrideProvider(injector, key, iterator.getValue());
-      }
-    }
-  }
-
-  private static <T> void overrideProvider(final LightsaberInjector injector, final Object key,
-      final InjectingProvider<T> provider) {
-    final InjectingProvider<T> overriddenProvider = new InjectorOverridingProvider<T>(provider, injector);
-    injector.registerProviderInternal(key, overriddenProvider);
-  }
-
-  void injectMembers(final Injector injector, final Object object) {
-    configurator.injectMembers(injector, object);
   }
 
   @Nonnull
   public static <T> T getInstance(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type) {
-    return injector.getInstance(Key.of(type));
+    return injector.getInstance(type);
   }
 
   @Nonnull
@@ -111,30 +73,13 @@ public class Lightsaber {
 
   @Nonnull
   public static <T> Provider<T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type) {
-    return injector.getProvider(Key.of(type));
+    return injector.getProvider(type);
   }
 
   @Nonnull
   public static <T> Provider<T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type,
       @Nullable final Annotation annotation) {
     return injector.getProvider(Key.of(type, annotation));
-  }
-
-  interface Configurator {
-    void configureInjector(LightsaberInjector injector, Object component);
-    void injectMembers(Injector injector, Object object);
-  }
-
-  private static class DefaultConfigurator implements Configurator {
-    @Override
-    public void configureInjector(final LightsaberInjector injector, final Object component) {
-      InjectionDispatcher.configureInjector(injector, component);
-    }
-
-    @Override
-    public void injectMembers(final Injector injector, final Object object) {
-      InjectionDispatcher.injectMembers(injector, object);
-    }
   }
 
   private static final class Holder {

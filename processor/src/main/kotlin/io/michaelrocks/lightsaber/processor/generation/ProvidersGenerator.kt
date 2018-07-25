@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ class ProvidersGenerator(
   private val logger = getLogger()
 
   fun generate(injectionContext: InjectionContext, generationContext: GenerationContext) {
-    injectionContext.allComponents.asSequence()
+    injectionContext.components.asSequence()
         .flatMap { it.modules.asSequence() }
         .flatMap { it.providers.asSequence() }
         .forEach { provider ->
