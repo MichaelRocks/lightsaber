@@ -72,11 +72,21 @@ class AnnotationCreator(
     when (fieldType) {
       is Type.Primitive -> {
         // TODO: Check if the value class corresponds to fieldType.
-        generator.visitLdcInsn(value)
+        generator.visitLdcInsn(normalizeConstant(value))
       }
       is Type.Array -> createArray(generator, fieldType, value)
       is Type.Object -> createObject(generator, value)
       else -> throw IllegalArgumentException("Unsupported annotation field type: $fieldType")
+    }
+  }
+
+  private fun normalizeConstant(value: Any): Any {
+    return when (value) {
+      is Boolean -> if (value) 1 else 0
+      is Byte -> value.toInt()
+      is Char -> value.toInt()
+      is Short -> value.toInt()
+      else -> value
     }
   }
 
