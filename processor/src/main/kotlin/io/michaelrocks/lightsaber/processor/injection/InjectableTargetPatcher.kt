@@ -86,6 +86,7 @@ class InjectableTargetPatcher(
   private fun GeneratorAdapter.injectFields(fields: Collection<InjectionPoint.Field>) {
     superType?.let {
       loadThis()
+      loadArg(0)
       invokeSuper(it, INJECT_FIELDS_METHOD)
     }
     fields.forEach { injectField(it) }
@@ -101,6 +102,7 @@ class InjectableTargetPatcher(
   private fun GeneratorAdapter.injectMethods(methods: Collection<InjectionPoint.Method>) {
     superType?.let {
       loadThis()
+      loadArg(0)
       invokeSuper(it, INJECT_METHODS_METHOD)
     }
     methods.forEach { injectMethod(it) }
