@@ -16,10 +16,14 @@
 
 package io.michaelrocks.lightsaber;
 
+import java.lang.annotation.Annotation;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
-import java.lang.annotation.Annotation;
+
+import io.michaelrocks.lightsaber.internal.InjectorConfigurator;
+import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 
 public class Lightsaber {
   Lightsaber() {

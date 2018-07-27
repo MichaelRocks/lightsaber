@@ -17,6 +17,10 @@
 package io.michaelrocks.lightsaber
 
 import io.michaelrocks.grip.mirrors.getObjectType
+import io.michaelrocks.lightsaber.internal.InjectorConfigurator
+import io.michaelrocks.lightsaber.internal.LightsaberInjector
+import io.michaelrocks.lightsaber.internal.MembersInjector
+import io.michaelrocks.lightsaber.internal.SingletonProvider
 
 object LightsaberTypes {
   val INJECTOR_CONFIGURATOR_TYPE = getObjectType<InjectorConfigurator>()

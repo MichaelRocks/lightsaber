@@ -14,20 +14,22 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber;
+package io.michaelrocks.lightsaber.internal;
 
-import io.michaelrocks.lightsaber.internal.IterableMap;
-import io.michaelrocks.lightsaber.internal.PolymorphicKeyHashMap;
+import java.lang.reflect.Type;
 
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
-import java.lang.reflect.Type;
+
+import io.michaelrocks.lightsaber.ConfigurationException;
+import io.michaelrocks.lightsaber.Injector;
+import io.michaelrocks.lightsaber.Key;
 
 public class LightsaberInjector implements Injector {
   private final Injector parent;
   private final IterableMap<Object, Provider<?>> providers = new PolymorphicKeyHashMap<Provider<?>>();
 
-  LightsaberInjector(final Injector parent) {
+  public LightsaberInjector(final Injector parent) {
     this.parent = parent;
     registerProvider(Injector.class, new Provider<Injector>() {
       @Override

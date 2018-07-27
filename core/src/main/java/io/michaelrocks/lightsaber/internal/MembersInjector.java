@@ -14,31 +14,14 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber;
-
+package io.michaelrocks.lightsaber.internal;
 
 import javax.annotation.Nonnull;
-import javax.inject.Provider;
 
-public class SingletonProvider<T> implements Provider<T> {
-  private final Provider<T> provider;
-  private volatile T instance;
-  private final Object instanceLock = new Object();
+import io.michaelrocks.lightsaber.Injector;
 
-  public SingletonProvider(@Nonnull final Provider<T> provider) {
-    this.provider = provider;
-  }
+public interface MembersInjector {
+  void injectFields(@Nonnull Injector injector);
 
-  @Nonnull
-  @Override
-  public T get() {
-    if (instance == null) {
-      synchronized (instanceLock) {
-        if (instance == null) {
-          instance = provider.get();
-        }
-      }
-    }
-    return instance;
-  }
+  void injectMethods(@Nonnull Injector injector);
 }

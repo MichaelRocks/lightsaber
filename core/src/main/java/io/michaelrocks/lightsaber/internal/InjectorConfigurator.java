@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber;
+package io.michaelrocks.lightsaber.internal;
 
 public interface InjectorConfigurator {
   void configureInjector(LightsaberInjector injector);
