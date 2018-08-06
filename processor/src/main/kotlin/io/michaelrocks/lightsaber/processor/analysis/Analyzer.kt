@@ -26,22 +26,12 @@ class Analyzer(
     private val errorReporter: ErrorReporter,
     private val projectName: String
 ) {
-  private val injectionTargetAnalyzer: InjectionTargetsAnalyzer
-  private val componentsAnalyzer: ComponentsAnalyzer
-
-  init {
-    val analyzerHelper = AnalyzerHelperImpl(grip.classRegistry, ScopeRegistry(), errorReporter)
-    injectionTargetAnalyzer = InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter)
-    componentsAnalyzer = ComponentsAnalyzerImpl(grip, analyzerHelper, errorReporter, projectName)
-  }
-
   fun analyze(files: Collection<File>): InjectionContext {
     val analyzerHelper: AnalyzerHelper = AnalyzerHelperImpl(grip.classRegistry, ScopeRegistry(), errorReporter)
     val (injectableTargets, providableTargets) =
-        InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).let { analyzer ->
-          analyzer.analyze(files)
-        }
-    val components = componentsAnalyzer.analyze(files, providableTargets)
+        InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).analyze(files)
+    val components =
+        ComponentsAnalyzerImpl(grip, analyzerHelper, errorReporter, projectName).analyze(files, providableTargets)
     return InjectionContext(components, injectableTargets, providableTargets)
   }
 }
