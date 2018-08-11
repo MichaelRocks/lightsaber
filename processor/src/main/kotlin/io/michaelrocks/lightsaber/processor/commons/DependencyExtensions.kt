@@ -16,11 +16,9 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
-import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.model.Dependency
 
-fun Dependency.boxed(): Dependency =
-    when (type) {
-      is GenericType.Raw -> Dependency(GenericType.Raw(type.type.boxed()), qualifier)
-      else -> this
-    }
+fun Dependency.boxed(): Dependency {
+  val boxedType = type.boxed()
+  return if (boxedType === type) this else copy(type = boxedType)
+}
