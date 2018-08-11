@@ -20,7 +20,7 @@ import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.Key
@@ -122,5 +122,5 @@ private fun GeneratorAdapter.newDelegator(scopeType: Type, providerCreator: () -
 }
 
 private fun getKey(keyRegistry: KeyRegistry, dependency: Dependency): Key {
-  return keyRegistry.keys[dependency.box()] ?: error("Key for $dependency not found")
+  return keyRegistry.keys[dependency.boxed()] ?: error("Key for $dependency not found")
 }

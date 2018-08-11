@@ -25,7 +25,7 @@ import io.michaelrocks.grip.mirrors.packageName
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.associateByIndexedTo
-import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.commons.boxedOrElementType
 import io.michaelrocks.lightsaber.processor.commons.given
 import io.michaelrocks.lightsaber.processor.commons.groupNotNullByTo
@@ -103,7 +103,7 @@ class GenerationContextFactory(
         .asIterable()
         .associateByIndexedTo(
             HashMap(),
-            { _, provider -> provider.dependency.box() },
+            { _, provider -> provider.dependency.boxed() },
             { index, provider -> composeKey("key$index", provider.dependency) }
         )
     val injectorDependency = Dependency(GenericType.Raw(Types.INJECTOR_TYPE))

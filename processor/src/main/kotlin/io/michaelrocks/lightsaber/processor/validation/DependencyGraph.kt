@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
 import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
 import io.michaelrocks.lightsaber.processor.model.Dependency
@@ -31,10 +31,10 @@ fun buildDependencyGraph(modules: Collection<Module>): DirectedGraph<Dependency>
     put(rootType, emptyList())
     for (module in modules) {
       for (provider in module.providers) {
-        val returnType = provider.dependency.box()
+        val returnType = provider.dependency.boxed()
         val method = provider.provisionPoint as? ProvisionPoint.AbstractMethod
         val injectees = method?.injectionPoint?.injectees
-        val dependencies = injectees?.map { it.dependency.box() }
+        val dependencies = injectees?.map { it.dependency.boxed() }
         put(returnType, dependencies.orEmpty())
       }
     }

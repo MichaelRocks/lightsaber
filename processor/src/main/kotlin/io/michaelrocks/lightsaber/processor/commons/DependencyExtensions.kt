@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package io.michaelrocks.lightsaber.processor.commons
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.model.Dependency
 
-fun Dependency.box(): Dependency =
+fun Dependency.boxed(): Dependency =
     when (type) {
       is GenericType.Raw -> Dependency(GenericType.Raw(type.type.boxed()), qualifier)
       else -> this

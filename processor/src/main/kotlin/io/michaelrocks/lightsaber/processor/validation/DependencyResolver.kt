@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.Module
@@ -36,9 +36,9 @@ class DependencyResolver {
     for (provider in module.providers) {
       val method = provider.provisionPoint as? ProvisionPoint.AbstractMethod
       val injectees = method?.injectionPoint?.injectees
-      val dependencies = injectees?.map { it.dependency.box() }
+      val dependencies = injectees?.map { it.dependency.boxed() }
 
-      providedDependencies += provider.dependency.box()
+      providedDependencies += provider.dependency.boxed()
       requiredDependencies += dependencies.orEmpty()
     }
   }

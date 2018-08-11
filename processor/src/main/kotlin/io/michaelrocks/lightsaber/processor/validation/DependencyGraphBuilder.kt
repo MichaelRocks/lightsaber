@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
 import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
 import io.michaelrocks.lightsaber.processor.model.Component
@@ -40,10 +40,10 @@ class DependencyGraphBuilder(
 
   fun add(module: Module): DependencyGraphBuilder = apply {
     for (provider in module.providers) {
-      val returnType = provider.dependency.box()
+      val returnType = provider.dependency.boxed()
       val method = provider.provisionPoint as? ProvisionPoint.AbstractMethod
       val injectees = method?.injectionPoint?.injectees?.maybeOmitWrappedDependencies()
-      val dependencies = injectees?.map { it.dependency.box() }
+      val dependencies = injectees?.map { it.dependency.boxed() }
       graph.put(returnType, dependencies.orEmpty())
     }
   }

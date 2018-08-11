@@ -20,7 +20,7 @@ import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.Element
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.processor.ErrorReporter
-import io.michaelrocks.lightsaber.processor.commons.box
+import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.graph.findCycles
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency
@@ -194,8 +194,8 @@ class Validator(
 
   private fun getDependenciesForInjectionPoint(injectionPoint: InjectionPoint): Collection<Dependency> {
     return when (injectionPoint) {
-      is InjectionPoint.Field -> listOf(injectionPoint.injectee.dependency.box())
-      is InjectionPoint.Method -> injectionPoint.injectees.map { it.dependency.box() }
+      is InjectionPoint.Field -> listOf(injectionPoint.injectee.dependency.boxed())
+      is InjectionPoint.Method -> injectionPoint.injectees.map { it.dependency.boxed() }
     }
   }
 
