@@ -171,11 +171,11 @@ class ProviderClassGenerator(
   }
 
   private fun GeneratorAdapter.invokeConstructor(provisionPoint: ProvisionPoint.Constructor) {
-    newInstance(provider.dependency.type.rawType)
+    newInstance(provisionPoint.containerType)
     dup()
     loadArguments(provisionPoint)
     val method = provisionPoint.method.toMethodDescriptor()
-    invokeConstructor(provider.dependency.type.rawType, method)
+    invokeConstructor(provisionPoint.containerType, method)
   }
 
   private fun GeneratorAdapter.provideFromMethod(provisionPoint: ProvisionPoint.Method) {
