@@ -63,8 +63,10 @@ fun GeneratorAdapter.getDependency(keyRegistry: KeyRegistry, injectee: Injectee)
       getProvider(keyRegistry, injectee.dependency)
     }
     is Converter.Instance -> {
-      getInstance(keyRegistry, injectee.dependency)
-      unbox(injectee.dependency.type.rawType)
+      if (injectee.dependency.type.rawType != Types.INJECTOR_TYPE || injectee.dependency.qualifier != null) {
+        getInstance(keyRegistry, injectee.dependency)
+        unbox(injectee.dependency.type.rawType)
+      }
     }
     is Converter.Adapter -> {
       getProvider(keyRegistry, injectee.dependency)
