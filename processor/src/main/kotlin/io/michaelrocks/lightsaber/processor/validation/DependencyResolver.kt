@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber.processor.validation
 
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.lightsaber.processor.generation.box
+import io.michaelrocks.lightsaber.processor.commons.box
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.Module

@@ -20,7 +20,7 @@ import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.Element
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.processor.ErrorReporter
-import io.michaelrocks.lightsaber.processor.generation.box
+import io.michaelrocks.lightsaber.processor.commons.box
 import io.michaelrocks.lightsaber.processor.graph.findCycles
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency

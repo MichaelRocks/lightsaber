@@ -25,6 +25,7 @@ import io.michaelrocks.grip.mirrors.packageName
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.associateByIndexedTo
+import io.michaelrocks.lightsaber.processor.commons.box
 import io.michaelrocks.lightsaber.processor.commons.boxedOrElementType
 import io.michaelrocks.lightsaber.processor.commons.given
 import io.michaelrocks.lightsaber.processor.commons.groupNotNullByTo
