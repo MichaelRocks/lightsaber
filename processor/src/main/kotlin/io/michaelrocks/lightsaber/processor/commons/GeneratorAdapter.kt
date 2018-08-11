@@ -22,6 +22,7 @@ import io.michaelrocks.grip.mirrors.toAsmType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
+import io.michaelrocks.lightsaber.processor.descriptors.isConstructor
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Label
 import org.objectweb.asm.MethodVisitor
@@ -89,10 +90,12 @@ class GeneratorAdapter(
   }
 
   fun invokeVirtual(owner: Type, method: MethodDescriptor) {
+    require(!method.isConstructor) { "Trying to invoke a constructor $method virtually" }
     invoke(INVOKEVIRTUAL, owner, method, false)
   }
 
   fun invokeConstructor(type: Type, method: MethodDescriptor) {
+    require(method.isConstructor) { "Trying to invoke a regular method $method as a constructor" }
     invoke(INVOKESPECIAL, type, method, false)
   }
 
@@ -101,6 +104,7 @@ class GeneratorAdapter(
   }
 
   fun invokeInterface(owner: Type, method: MethodDescriptor) {
+    require(!method.isConstructor) { "Trying to invoke a constructor $method as an interface method" }
     invoke(INVOKEINTERFACE, owner, method, true)
   }
 
