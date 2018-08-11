@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,3 +38,5 @@ inline fun <T : Any> given(condition: Boolean, body: () -> T): T? =
 
 infix inline fun <T : Any> T?.or(body: () -> T): T =
     this ?: body()
+
+fun exhaustive(@Suppress("UNUSED_PARAMETER") ignored: Any?) = Unit
