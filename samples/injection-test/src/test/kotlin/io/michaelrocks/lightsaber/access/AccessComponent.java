@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.access
+package io.michaelrocks.lightsaber.access;
 
-internal interface InternalDependency {
-  fun action()
+import io.michaelrocks.lightsaber.Component;
+import io.michaelrocks.lightsaber.Provides;
+
+@Component
+class AccessComponent {
+  @Provides
+  private AccessModule provideAccessModule() {
+    return new AccessModule();
+  }
 }

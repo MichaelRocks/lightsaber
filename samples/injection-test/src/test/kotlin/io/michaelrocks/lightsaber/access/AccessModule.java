@@ -14,23 +14,30 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.access
+package io.michaelrocks.lightsaber.access;
 
-import io.michaelrocks.lightsaber.Module
-import io.michaelrocks.lightsaber.Provides
-import javax.inject.Singleton
+import javax.inject.Singleton;
+
+import io.michaelrocks.lightsaber.Module;
+import io.michaelrocks.lightsaber.Provides;
 
 @Module
-internal class AccessModule {
+class AccessModule {
   @Provides
-  private fun provideInternalDependency(impl: InternalDependencyImpl): InternalDependency = impl
+  private InternalDependency provideInternalDependency(final InternalDependencyImpl impl) {
+    return impl;
+  }
 
   @Provides
   @InternalQualifier
-  private fun provideQualifiedInternalDependency(impl: InternalDependencyImpl): InternalDependency = impl
+  private InternalDependency provideQualifiedInternalDependency(final InternalDependencyImpl impl) {
+    return impl;
+  }
 
   @Provides
   @Singleton
   @SingletonQualifier
-  private fun provideSingletonInternalDependency(impl: InternalDependencyImpl): InternalDependency = impl
+  private InternalDependency provideSingletonInternalDependency(final InternalDependencyImpl impl) {
+    return impl;
+  }
 }

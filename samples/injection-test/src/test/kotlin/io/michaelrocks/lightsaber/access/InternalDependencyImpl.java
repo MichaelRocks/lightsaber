@@ -14,11 +14,35 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.access
+package io.michaelrocks.lightsaber.access;
 
-import javax.inject.Qualifier
+import javax.inject.Inject;
 
-@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION, AnnotationTarget.FIELD)
-@Retention(AnnotationRetention.RUNTIME)
-@Qualifier
-annotation class SingletonQualifier
+import io.michaelrocks.lightsaber.ProvidedBy;
+
+@ProvidedBy(AccessModule.class)
+class InternalDependencyImpl implements InternalDependency {
+  @Inject
+  public InternalDependencyImpl() {
+  }
+
+  @Override
+  public void action() {
+  }
+
+  @Inject
+  private void privateMethod() {
+  }
+
+  @Inject
+  void internalMethod() {
+  }
+
+  @Inject
+  protected void protectedMethod() {
+  }
+
+  @Inject
+  public void publicMethod() {
+  }
+}

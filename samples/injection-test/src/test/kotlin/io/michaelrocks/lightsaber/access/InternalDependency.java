@@ -14,29 +14,8 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.access
+package io.michaelrocks.lightsaber.access;
 
-import io.michaelrocks.lightsaber.ProvidedBy
-import javax.inject.Inject
-
-@ProvidedBy(AccessModule::class)
-internal class InternalDependencyImpl @Inject private constructor() : InternalDependency {
-  override fun action() {
-  }
-
-  @Inject
-  private fun privateMethod() {
-  }
-
-  @Inject
-  fun internalMethod() {
-  }
-
-  @Inject
-  protected fun protectedMethod() {
-  }
-
-  @Inject
-  fun publicMethod() {
-  }
+interface InternalDependency {
+  void action();
 }
