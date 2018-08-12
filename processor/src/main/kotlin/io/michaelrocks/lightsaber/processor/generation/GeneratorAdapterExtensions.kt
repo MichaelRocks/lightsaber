@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber.processor.generation
 
 import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -31,7 +32,6 @@ import io.michaelrocks.lightsaber.processor.model.Injectee
 import io.michaelrocks.lightsaber.processor.model.Provider
 import io.michaelrocks.lightsaber.processor.model.Scope
 
-private val PROVIDER_GET_METHOD = MethodDescriptor.forMethod("get", Types.OBJECT_TYPE)
 private val ADAPTER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
 
 private val GET_PROVIDER_FOR_CLASS_METHOD =
@@ -79,30 +79,27 @@ fun GeneratorAdapter.getDependency(keyRegistry: KeyRegistry, injectee: Injectee)
 }
 
 fun GeneratorAdapter.getProvider(keyRegistry: KeyRegistry, dependency: Dependency) {
-  val key = getKey(keyRegistry, dependency)
-  getStatic(keyRegistry.type, key.field)
+  val key = pushTypeOrKey(keyRegistry, dependency)
 
   when (key) {
-    is Key.Class -> invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_FOR_CLASS_METHOD)
+    null -> invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_FOR_CLASS_METHOD)
     is Key.Type -> invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_FOR_TYPE_METHOD)
     is Key.QualifiedType -> invokeInterface(Types.INJECTOR_TYPE, GET_PROVIDER_FOR_KEY_METHOD)
   }
 }
 
 fun GeneratorAdapter.getInstance(keyRegistry: KeyRegistry, dependency: Dependency) {
-  val key = getKey(keyRegistry, dependency)
-  getStatic(keyRegistry.type, key.field)
+  val key = pushTypeOrKey(keyRegistry, dependency)
 
   when (key) {
-    is Key.Class -> invokeInterface(Types.INJECTOR_TYPE, GET_INSTANCE_FOR_CLASS_METHOD)
+    null -> invokeInterface(Types.INJECTOR_TYPE, GET_INSTANCE_FOR_CLASS_METHOD)
     is Key.Type -> invokeInterface(Types.INJECTOR_TYPE, GET_INSTANCE_FOR_TYPE_METHOD)
     is Key.QualifiedType -> invokeInterface(Types.INJECTOR_TYPE, GET_INSTANCE_FOR_KEY_METHOD)
   }
 }
 
 fun GeneratorAdapter.registerProvider(keyRegistry: KeyRegistry, provider: Provider, providerCreator: () -> Unit) {
-  val key = getKey(keyRegistry, provider.dependency)
-  getStatic(keyRegistry.type, key.field)
+  val key = pushTypeOrKey(keyRegistry, provider.dependency)
 
   when (provider.scope) {
     is Scope.Class -> newDelegator(provider.scope.scopeType, providerCreator)
@@ -110,7 +107,7 @@ fun GeneratorAdapter.registerProvider(keyRegistry: KeyRegistry, provider: Provid
   }
 
   when (key) {
-    is Key.Class -> invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_FOR_CLASS_METHOD)
+    null -> invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_FOR_CLASS_METHOD)
     is Key.Type -> invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_FOR_TYPE_METHOD)
     is Key.QualifiedType -> invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_PROVIDER_FOR_KEY_METHOD)
   }
@@ -123,6 +120,19 @@ private fun GeneratorAdapter.newDelegator(scopeType: Type, providerCreator: () -
   invokeConstructor(scopeType, DELEGATE_PROVIDER_CONSTRUCTOR)
 }
 
-private fun getKey(keyRegistry: KeyRegistry, dependency: Dependency): Key {
-  return keyRegistry.keys[dependency.boxed()] ?: error("Key for $dependency not found")
+private fun GeneratorAdapter.pushTypeOrKey(keyRegistry: KeyRegistry, dependency: Dependency): Key? {
+  val key = keyRegistry.keys[dependency.boxed()]
+  if (key == null) {
+    push(dependency.type)
+  } else {
+    getStatic(keyRegistry.type, key.field)
+  }
+  return key
+}
+
+private fun GeneratorAdapter.push(type: GenericType) {
+  when (type) {
+    is GenericType.Raw -> push(type.type.boxed())
+    else -> error("Cannot push a generic type $type")
+  }
 }

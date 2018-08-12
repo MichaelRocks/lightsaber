@@ -24,6 +24,7 @@ import io.michaelrocks.grip.mirrors.isPublic
 import io.michaelrocks.grip.mirrors.packageName
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.associateByIndexedNotNullTo
 import io.michaelrocks.lightsaber.processor.commons.associateByIndexedTo
 import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.commons.boxedOrElementType
@@ -101,21 +102,19 @@ class GenerationContextFactory(
         .flatMap { it.modules.asSequence() }
         .flatMap { it.providers.asSequence() }
         .asIterable()
-        .associateByIndexedTo(
+        .associateByIndexedNotNullTo(
             HashMap(),
             { _, provider -> provider.dependency.boxed() },
-            { index, provider -> composeKey("key$index", provider.dependency) }
+            { index, provider -> maybeComposeKey("key$index", provider.dependency) }
         )
-    val injectorDependency = Dependency(GenericType.Raw(Types.INJECTOR_TYPE))
-    keys.put(injectorDependency, composeKey("injectorKey", injectorDependency))
     return KeyRegistry(type, keys)
   }
 
-  private fun composeKey(name: String, dependency: Dependency): Key {
+  private fun maybeComposeKey(name: String, dependency: Dependency): Key? {
     return when {
       dependency.qualifier != null -> Key.QualifiedType(FieldDescriptor(name, Types.KEY_TYPE))
-      dependency.type is GenericType.Raw -> Key.Class(FieldDescriptor(name, Types.CLASS_TYPE))
-      else -> Key.Type(FieldDescriptor(name, Types.TYPE_TYPE))
+      dependency.type !is GenericType.Raw -> Key.Type(FieldDescriptor(name, Types.TYPE_TYPE))
+      else -> null
     }
   }
 

@@ -33,6 +33,7 @@ import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.descriptor
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.generation.model.Key
+import io.michaelrocks.lightsaber.processor.generation.model.PackageInvader
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.watermark.WatermarkClassVisitor
 import org.objectweb.asm.ClassVisitor
@@ -111,7 +112,7 @@ class KeyRegistryClassGenerator(
   private fun GeneratorAdapter.pushInstanceOfKey(dependency: Dependency, key: Key) {
     when (key) {
       is Key.QualifiedType -> newKey(dependency)
-      is Key.Class, is Key.Type -> push(dependency.type)
+      is Key.Type -> push(dependency.type)
     }
   }
 
@@ -161,14 +162,23 @@ class KeyRegistryClassGenerator(
   }
 
   private fun GeneratorAdapter.pushType(rawType: Type) {
-    val type = rawType.boxed() as Type.Object
-    val packageInvader = generationContext.findPackageInvaderByTargetType(type)
-    val field = packageInvader?.fields?.get(type)
+    val packageInvader = findPackageInvaderForType(rawType)
+    val field = packageInvader?.fields?.get(rawType)
 
     if (field != null) {
       getStatic(packageInvader.type, field)
     } else {
-      push(type)
+      push(rawType.boxed())
     }
+  }
+
+  private fun findPackageInvaderForType(type: Type): PackageInvader? {
+    val targetType = when (type) {
+      is Type.Object -> type
+      is Type.Array -> type.elementType as? Type.Object
+      else -> null
+    }
+
+    return targetType?.let { generationContext.findPackageInvaderByTargetType(it) }
   }
 }
