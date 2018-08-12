@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,17 @@ inline fun <T, K, V, M : MutableMap<in K, in V>> Iterable<T>.associateByIndexedT
     keySelector: (Int, T) -> K, valueSelector: (Int, T) -> V): M {
   forEachIndexed { index, element ->
     destination.put(keySelector(index, element), valueSelector(index, element))
+  }
+  return destination
+}
+
+inline fun <T, K, V : Any, M : MutableMap<in K, in V>> Iterable<T>.associateByIndexedNotNullTo(destination: M,
+    keySelector: (Int, T) -> K, valueSelector: (Int, T) -> V?): M {
+  forEachIndexed { index, element ->
+    val value = valueSelector(index, element)
+    if (value != null) {
+      destination.put(keySelector(index, element), value)
+    }
   }
   return destination
 }
