@@ -40,4 +40,25 @@ class AccessModule {
   private InternalDependency provideSingletonInternalDependency(final InternalDependencyImpl impl) {
     return impl;
   }
+
+  @Provides
+  private InternalGenericDependency<InternalDependency> provideInternalGenericDependency(
+      final InternalGenericDependencyImpl impl) {
+    return impl;
+  }
+
+  @Provides
+  @InternalQualifier
+  private InternalGenericDependency<InternalDependency> provideQualifiedInternalGenericDependency(
+      final InternalGenericDependencyImpl impl) {
+    return impl;
+  }
+
+  @Provides
+  @Singleton
+  @SingletonQualifier
+  private InternalGenericDependency<InternalDependency> provideSingletonInternalGenericDependency(
+      final InternalGenericDependencyImpl impl) {
+    return impl;
+  }
 }

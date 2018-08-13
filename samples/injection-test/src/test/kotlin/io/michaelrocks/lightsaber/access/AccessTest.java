@@ -18,6 +18,10 @@ package io.michaelrocks.lightsaber.access;
 
 import org.junit.Test;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.Key;
 import io.michaelrocks.lightsaber.Lightsaber;
@@ -52,8 +56,53 @@ class AccessTest {
     assertSame(target1, target2);
   }
 
+  @Test
+  public void testGenericInjectionAccess() {
+    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final InternalGenericDependency<InternalDependency> target =
+        injector.getInstance(createInternalGenericDependencyKey(null));
+    target.action();
+  }
+
+  @Test
+  public void testGenericInjectionAccessWithQualifier() {
+    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final InternalQualifier qualifier = AnnotationHolder.class.getAnnotation(InternalQualifier.class);
+    final InternalGenericDependency<InternalDependency> target =
+        injector.getInstance(createInternalGenericDependencyKey(qualifier));
+    target.action();
+  }
+
+  @Test
+  public void testGenericInjectionAccessWithSingletonScope() {
+    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final SingletonQualifier qualifier = AnnotationHolder.class.getAnnotation(SingletonQualifier.class);
+    final InternalGenericDependency<InternalDependency> target1 =
+        injector.getInstance(createInternalGenericDependencyKey(qualifier));
+    final InternalGenericDependency<InternalDependency> target2 =
+        injector.getInstance(createInternalGenericDependencyKey(qualifier));
+    target1.action();
+    target2.action();
+    assertSame(target1, target2);
+  }
+
+  private static Key<InternalGenericDependency<InternalDependency>> createInternalGenericDependencyKey(
+      final Annotation qualifier) {
+    return Key.of(getInternalGenericDependencyType(), qualifier);
+  }
+
+  private static Type getInternalGenericDependencyType() {
+    final Class<?> tokeClass = new TypeToken<InternalGenericDependency<InternalDependency>>() {}.getClass();
+    final ParameterizedType superType = (ParameterizedType) tokeClass.getGenericSuperclass();
+    return superType.getActualTypeArguments()[0];
+  }
+
   @InternalQualifier
   @SingletonQualifier
   private class AnnotationHolder {
+  }
+
+  @SuppressWarnings("unused")
+  private static class TypeToken<T> {
   }
 }
