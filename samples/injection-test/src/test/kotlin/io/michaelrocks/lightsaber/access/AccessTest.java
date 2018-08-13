@@ -29,7 +29,7 @@ import io.michaelrocks.lightsaber.Lightsaber;
 
 import static org.junit.Assert.assertSame;
 
-class AccessTest {
+public class AccessTest {
   @Test
   public void testInjectionAccess() {
     final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
