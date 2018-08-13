@@ -42,6 +42,25 @@ class AccessModule {
   }
 
   @Provides
+  private InternalDependency[] provideInternalDependencyArray(final InternalDependencyImpl impl) {
+    return new InternalDependency[] { impl };
+  }
+
+  @Provides
+  @InternalQualifier
+  private InternalDependency[] provideQualifiedInternalDependencyArray(final InternalDependencyImpl impl) {
+    return new InternalDependencyImpl[] { impl };
+  }
+
+  @Provides
+  @Singleton
+  @SingletonQualifier
+  private InternalDependency[] provideSingletonInternalDependencyArray(final InternalDependencyImpl impl) {
+    return new InternalDependencyImpl[] { impl };
+  }
+
+
+  @Provides
   private InternalGenericDependency<InternalDependency> provideInternalGenericDependency(
       final InternalGenericDependencyImpl impl) {
     return impl;
@@ -60,5 +79,26 @@ class AccessModule {
   private InternalGenericDependency<InternalDependency> provideSingletonInternalGenericDependency(
       final InternalGenericDependencyImpl impl) {
     return impl;
+  }
+
+  @Provides
+  private InternalGenericDependency<InternalDependency>[] provideInternalGenericDependencyArray(
+      final InternalGenericDependencyImpl impl) {
+    return new InternalGenericDependencyImpl[] { impl };
+  }
+
+  @Provides
+  @InternalQualifier
+  private InternalGenericDependency<InternalDependency>[] provideQualifiedInternalGenericDependencyArray(
+      final InternalGenericDependencyImpl impl) {
+    return new InternalGenericDependencyImpl[] { impl };
+  }
+
+  @Provides
+  @Singleton
+  @SingletonQualifier
+  private InternalGenericDependency<InternalDependency>[] provideSingletonInternalGenericDependencyArray(
+      final InternalGenericDependencyImpl impl) {
+    return new InternalGenericDependencyImpl[] { impl };
   }
 }

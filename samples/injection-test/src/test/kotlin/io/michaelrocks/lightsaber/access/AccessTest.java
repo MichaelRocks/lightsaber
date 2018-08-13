@@ -57,6 +57,32 @@ class AccessTest {
   }
 
   @Test
+  public void testArrayInjectionAccess() {
+    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final InternalDependency[] target = injector.getInstance(Key.of(InternalDependency[].class));
+    target[0].action();
+  }
+
+  @Test
+  public void testArrayInjectionAccessWithQualifier() {
+    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final InternalQualifier qualifier = AnnotationHolder.class.getAnnotation(InternalQualifier.class);
+    final InternalDependency[] target = injector.getInstance(Key.of(InternalDependency[].class, qualifier));
+    target[0].action();
+  }
+
+  @Test
+  public void testArrayInjectionAccessWithSingletonScope() {
+    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final SingletonQualifier qualifier = AnnotationHolder.class.getAnnotation(SingletonQualifier.class);
+    final InternalDependency[] target1 = injector.getInstance(Key.of(InternalDependency[].class, qualifier));
+    final InternalDependency[] target2 = injector.getInstance(Key.of(InternalDependency[].class, qualifier));
+    target1[0].action();
+    target2[0].action();
+    assertSame(target1[0], target2[0]);
+  }
+
+  @Test
   public void testGenericInjectionAccess() {
     final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
     final InternalGenericDependency<InternalDependency> target =
@@ -86,6 +112,36 @@ class AccessTest {
     assertSame(target1, target2);
   }
 
+  @Test
+  public void testGenericArrayInjectionAccess() {
+    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final InternalGenericDependency<InternalDependency>[] target =
+        injector.getInstance(createInternalGenericArrayDependencyKey(null));
+    target[0].action();
+  }
+
+  @Test
+  public void testGenericArrayInjectionAccessWithQualifier() {
+    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final InternalQualifier qualifier = AnnotationHolder.class.getAnnotation(InternalQualifier.class);
+    final InternalGenericDependency<InternalDependency>[] target =
+        injector.getInstance(createInternalGenericArrayDependencyKey(qualifier));
+    target[0].action();
+  }
+
+  @Test
+  public void testGenericArrayInjectionAccessWithSingletonScope() {
+    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final SingletonQualifier qualifier = AnnotationHolder.class.getAnnotation(SingletonQualifier.class);
+    final InternalGenericDependency<InternalDependency>[] target1 =
+        injector.getInstance(createInternalGenericArrayDependencyKey(qualifier));
+    final InternalGenericDependency<InternalDependency>[] target2 =
+        injector.getInstance(createInternalGenericArrayDependencyKey(qualifier));
+    target1[0].action();
+    target2[0].action();
+    assertSame(target1[0], target2[0]);
+  }
+
   private static Key<InternalGenericDependency<InternalDependency>> createInternalGenericDependencyKey(
       final Annotation qualifier) {
     return Key.of(getInternalGenericDependencyType(), qualifier);
@@ -96,6 +152,18 @@ class AccessTest {
     final ParameterizedType superType = (ParameterizedType) tokeClass.getGenericSuperclass();
     return superType.getActualTypeArguments()[0];
   }
+
+  private static Key<InternalGenericDependency<InternalDependency>[]> createInternalGenericArrayDependencyKey(
+      final Annotation qualifier) {
+    return Key.of(getInternalGenericArrayDependencyType(), qualifier);
+  }
+
+  private static Type getInternalGenericArrayDependencyType() {
+    final Class<?> tokeClass = new TypeToken<InternalGenericDependency<InternalDependency>[]>() {}.getClass();
+    final ParameterizedType superType = (ParameterizedType) tokeClass.getGenericSuperclass();
+    return superType.getActualTypeArguments()[0];
+  }
+
 
   @InternalQualifier
   @SingletonQualifier
