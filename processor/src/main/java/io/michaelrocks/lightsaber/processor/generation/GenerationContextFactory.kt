@@ -27,11 +27,6 @@ import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.associateByIndexedNotNullTo
 import io.michaelrocks.lightsaber.processor.commons.associateByIndexedTo
 import io.michaelrocks.lightsaber.processor.commons.boxed
-import io.michaelrocks.lightsaber.processor.commons.boxedOrElementType
-import io.michaelrocks.lightsaber.processor.commons.given
-import io.michaelrocks.lightsaber.processor.commons.groupNotNullByTo
-import io.michaelrocks.lightsaber.processor.commons.mergeWith
-import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.generation.model.Key
@@ -47,66 +42,88 @@ class GenerationContextFactory(
     private val projectName: String
 ) {
   fun createGenerationContext(injectionContext: InjectionContext): GenerationContext {
+    val dependencies = findAllDependencies(injectionContext)
     return GenerationContext(
-        composePackageInvaders(injectionContext),
-        composeKeyRegistry(injectionContext)
+        composePackageInvaders(dependencies),
+        composeKeyRegistry(dependencies)
     )
   }
 
-  private fun composePackageInvaders(context: InjectionContext): Collection<PackageInvader> =
-      context.components.asSequence()
-          .flatMap { it.modules.asSequence() }
-          .flatMap { it.providers.asSequence() }
-          .asIterable()
-          .groupNotNullByTo(
-              HashMap(),
-              { provider -> provider.moduleType.packageName },
-              { provider ->
-                val type = provider.dependency.type.rawType
-                given(!classRegistry.getClassMirror(type.boxedOrElementType()).isPublic) { type }
-              }
-          )
-          .mergeWith(
-              context.components.groupNotNullByTo(
-                  HashMap<String, MutableList<Type>>(),
-                  { component -> component.type.packageName },
-                  { component ->
-                    given(!classRegistry.getClassMirror(component.type).isPublic) { component.type }
-                  }
-              )
-          )
-          .mergeWith(
-              context.injectableTargets.groupNotNullByTo(
-                  HashMap(),
-                  { target -> target.type.packageName },
-                  { target ->
-                    given(!classRegistry.getClassMirror(target.type).isPublic) { target.type }
-                  }
-              )
-          )
-          .map {
-            val (packageName, types) = it
-            val packageInvaderType =
-                createUniqueObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader\$$projectName")
-            val fields = types.associateByIndexedTo(
-                HashMap(),
-                { _, type -> type },
-                { index, _ -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
-            )
-            PackageInvader(packageInvaderType, packageName, fields)
-          }
-
-  private fun composeKeyRegistry(context: InjectionContext): KeyRegistry {
-    val type = createUniqueObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry\$$projectName")
-    val keys = context.components.asSequence()
+  private fun findAllDependencies(context: InjectionContext): Collection<Dependency> {
+    return context.components.asSequence()
         .flatMap { it.modules.asSequence() }
         .flatMap { it.providers.asSequence() }
-        .asIterable()
-        .associateByIndexedNotNullTo(
+        .map { it.dependency }
+        .toSet()
+  }
+
+  private fun composePackageInvaders(dependencies: Collection<Dependency>): Collection<PackageInvader> {
+    return dependencies
+        .flatMap { extractObjectTypes(it.type) }
+        .distinct()
+        .filterNot { isPublicType(it) }
+        .groupByTo(
             HashMap(),
-            { _, provider -> provider.dependency.boxed() },
-            { index, provider -> maybeComposeKey("key$index", provider.dependency) }
+            { extractPackageName(it) },
+            { it }
         )
+        .map {
+          val (packageName, types) = it
+          val packageInvaderType =
+              createUniqueObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader\$$projectName")
+          val fields = types.associateByIndexedTo(
+              HashMap(),
+              { _, type -> type },
+              { index, _ -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
+          )
+          PackageInvader(packageInvaderType, packageName, fields)
+        }
+  }
+
+  private fun extractObjectTypes(type: GenericType): List<Type> {
+    return when (type) {
+      is GenericType.Raw -> extractObjectTypes(type.type)
+      is GenericType.TypeVariable -> extractObjectTypes(type.classBound) + type.interfaceBounds.flatMap { extractObjectTypes(it) }
+      is GenericType.Array -> extractObjectTypes(type.elementType)
+      is GenericType.Parameterized -> listOf(type.type) + type.typeArguments.flatMap { extractObjectTypes(it) }
+      is GenericType.Inner -> extractObjectTypes(type.ownerType) + extractObjectTypes(type.type)
+      is GenericType.UpperBounded -> extractObjectTypes(type.upperBound)
+      is GenericType.LowerBounded -> extractObjectTypes(type.lowerBound)
+    }
+  }
+
+  private fun extractObjectTypes(type: Type): List<Type> {
+    return when (type) {
+      is Type.Primitive -> emptyList()
+      else -> listOf(type)
+    }
+  }
+
+  private fun isPublicType(type: Type): Boolean {
+    return when (type) {
+      is Type.Primitive -> true
+      is Type.Array -> isPublicType(type.elementType)
+      is Type.Object -> classRegistry.getClassMirror(type).isPublic
+      is Type.Method -> error("Method handles aren't supported")
+    }
+  }
+
+  private fun extractPackageName(type: Type): String {
+    return when (type) {
+      is Type.Primitive -> error("Cannot get a package for a primitive type $type")
+      is Type.Array -> extractPackageName(type.elementType)
+      is Type.Object -> type.packageName
+      is Type.Method -> error("Method handles aren't supported")
+    }
+  }
+
+  private fun composeKeyRegistry(dependencies: Collection<Dependency>): KeyRegistry {
+    val type = createUniqueObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry\$$projectName")
+    val keys = dependencies.associateByIndexedNotNullTo(
+        HashMap(),
+        { _, dependency -> dependency.boxed() },
+        { index, dependency -> maybeComposeKey("key$index", dependency) }
+    )
     return KeyRegistry(type, keys)
   }
 
