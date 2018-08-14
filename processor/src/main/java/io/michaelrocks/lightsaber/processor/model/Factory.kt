@@ -18,8 +18,9 @@ package io.michaelrocks.lightsaber.processor.model
 
 import io.michaelrocks.grip.mirrors.Type
 
-data class Module(
+data class Factory(
     val type: Type.Object,
-    val providers: Collection<Provider>,
-    val factories: Collection<Factory>
+    val implementationType: Type.Object,
+    val dependency: Dependency,
+    val provisionPoints: List<FactoryProvisionPoint>
 )

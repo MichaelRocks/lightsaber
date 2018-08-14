@@ -32,6 +32,6 @@ class Analyzer(
         InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).analyze(files)
     val components =
         ComponentsAnalyzerImpl(grip, analyzerHelper, errorReporter, projectName).analyze(files, providableTargets)
-    return InjectionContext(components, injectableTargets, providableTargets)
+    return InjectionContext(components, injectableTargets, providableTargets, emptyList())
   }
 }
