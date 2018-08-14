@@ -28,6 +28,7 @@ import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.getMethodType
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.grip.not
@@ -39,7 +40,10 @@ import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
 import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.logging.getLogger
+import io.michaelrocks.lightsaber.processor.model.Converter
 import io.michaelrocks.lightsaber.processor.model.Dependency
+import io.michaelrocks.lightsaber.processor.model.Factory
+import io.michaelrocks.lightsaber.processor.model.Injectee
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 import io.michaelrocks.lightsaber.processor.model.Module
@@ -50,7 +54,11 @@ import org.objectweb.asm.Opcodes.ACC_PUBLIC
 import org.objectweb.asm.Opcodes.ACC_SYNTHETIC
 
 interface ModuleParser {
-  fun parseModule(type: Type.Object, providableTargets: Collection<InjectionTarget>): Module
+  fun parseModule(
+      type: Type.Object,
+      providableTargets: Collection<InjectionTarget>,
+      factories: Collection<Factory>
+  ): Module
 }
 
 class ModuleParserImpl(
@@ -63,19 +71,27 @@ class ModuleParserImpl(
 
   private val bridgeRegistry = BridgeRegistry()
 
-  override fun parseModule(type: Type.Object, providableTargets: Collection<InjectionTarget>): Module {
-    return convertToModule(grip.classRegistry.getClassMirror(type), providableTargets)
+  override fun parseModule(
+      type: Type.Object,
+      providableTargets: Collection<InjectionTarget>,
+      factories: Collection<Factory>
+  ): Module {
+    return convertToModule(grip.classRegistry.getClassMirror(type), providableTargets, factories)
   }
 
-  private fun convertToModule(mirror: ClassMirror, providableTargets: Collection<InjectionTarget>): Module {
+  private fun convertToModule(
+      mirror: ClassMirror,
+      providableTargets: Collection<InjectionTarget>,
+      factories: Collection<Factory>
+  ): Module {
     if (mirror.signature.typeVariables.isNotEmpty()) {
       errorReporter.reportError("Module cannot have a type parameters: ${mirror.type.className}")
-      return Module(mirror.type, emptyList())
+      return Module(mirror.type, emptyList(), emptyList())
     }
 
     if (Types.MODULE_TYPE !in mirror.annotations) {
       errorReporter.reportError("Class ${mirror.type.className} is not a module")
-      return Module(mirror.type, emptyList())
+      return Module(mirror.type, emptyList(), emptyList())
     }
 
     bridgeRegistry.clear()
@@ -102,7 +118,8 @@ class ModuleParserImpl(
       field.toProvider(mirror.type, index)
     }
 
-    return Module(mirror.type, constructors + methods + fields)
+    val factoryProviders = factories.map { it.toProvider(mirror.type) }
+    return Module(mirror.type, constructors + methods + fields + factoryProviders, factories)
   }
 
   private fun InjectionTarget.toProvider(container: Type.Object): Provider {
@@ -129,6 +146,21 @@ class ModuleParserImpl(
     val dependency = Dependency(signature.type, analyzerHelper.findQualifier(this))
     val provisionPoint = ProvisionPoint.Field(container, dependency, null, this).withBridge()
     val scope = analyzerHelper.findScope(this)
+    return Provider(providerType, provisionPoint, container, scope)
+  }
+
+  private fun Factory.toProvider(container: Type.Object): Provider {
+    val mirror = grip.classRegistry.getClassMirror(type)
+    val providerType = getObjectTypeByInternalName("${type.internalName}\$FactoryProvider\$$projectName")
+    val constructorMirror = MethodMirror.Builder()
+        .access(ACC_PUBLIC)
+        .name(MethodDescriptor.CONSTRUCTOR_NAME)
+        .type(getMethodType(Type.Primitive.Void, Types.INJECTOR_TYPE))
+        .build()
+    val constructorInjectee = Injectee(Dependency(GenericType.Raw(Types.INJECTOR_TYPE)), Converter.Instance)
+    val injectionPoint = InjectionPoint.Method(implementationType, constructorMirror, listOf(constructorInjectee))
+    val provisionPoint = ProvisionPoint.Constructor(dependency, injectionPoint)
+    val scope = analyzerHelper.findScope(mirror)
     return Provider(providerType, provisionPoint, container, scope)
   }
 
