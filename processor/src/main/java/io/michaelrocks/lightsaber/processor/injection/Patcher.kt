@@ -37,20 +37,24 @@ class Patcher(
       interfaces: Array<String>?) {
     val type = getObjectTypeByInternalName(name)
 
-    context.findComponentByType(type)?.let {
+    context.findComponentByType(type)?.also {
       cv = ComponentPatcher(cv, it)
     }
 
-    context.findModuleByType(type)?.let {
+    context.findModuleByType(type)?.also {
       cv = ModulePatcher(cv, keyRegistry, it)
     }
 
-    context.findInjectableTargetByType(type)?.let {
+    context.findInjectableTargetByType(type)?.also {
       cv = InjectableTargetPatcher(cv, keyRegistry, it, it.hasSuperMembersInjector())
     }
 
-    context.findProvidableTargetByType(type)?.let {
+    context.findProvidableTargetByType(type)?.also {
       cv = ProvidableTargetPatcher(cv, it)
+    }
+
+    context.findFactoryInjectionPointByType(type)?.also {
+      cv = FactoryInjectionPointPatcher(cv, it)
     }
 
     super.visit(version, access, name, signature, superName, interfaces)
