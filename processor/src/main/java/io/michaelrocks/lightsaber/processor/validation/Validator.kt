@@ -24,14 +24,16 @@ import io.michaelrocks.lightsaber.processor.commons.boxed
 import io.michaelrocks.lightsaber.processor.graph.findCycles
 import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.Dependency
+import io.michaelrocks.lightsaber.processor.model.Factory
+import io.michaelrocks.lightsaber.processor.model.FactoryInjectee
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 
 class Validator(
-  private val classRegistry: ClassRegistry,
-  private val errorReporter: ErrorReporter,
-  private val context: InjectionContext
+    private val classRegistry: ClassRegistry,
+    private val errorReporter: ErrorReporter,
+    private val context: InjectionContext
 ) {
   fun validate() {
     performSanityChecks()
@@ -50,20 +52,21 @@ class Validator(
     }
 
     context.components
-      .filter { it.parent == null }
-      .forEach { component ->
-        validateNoModuleDuplicates(component, emptyMap())
-        validateNoDependencyDuplicates(component, emptyMap())
-        validateDependenciesAreResolved(component, DependencyResolver())
-        validateNoDependencyCycles(component, DependencyGraphBuilder(true))
-      }
+        .filter { it.parent == null }
+        .forEach { component ->
+          validateNoModuleDuplicates(component, emptyMap())
+          validateNoDependencyDuplicates(component, emptyMap())
+          validateDependenciesAreResolved(component, DependencyResolver())
+          validateNoDependencyCycles(component, DependencyGraphBuilder(true))
+          validateFactories(component, DependencyResolver())
+        }
 
     validateInjectionTargetsAreResolved(context.injectableTargets, context.components)
   }
 
   private fun validateNoModuleDuplicates(
-    component: Component,
-    moduleToComponentsMap: Map<Type.Object, List<Type.Object>>
+      component: Component,
+      moduleToComponentsMap: Map<Type.Object, List<Type.Object>>
   ) {
     val newModuleTypeToComponentMap = HashMap(moduleToComponentsMap)
     component.modules.forEach { module ->
@@ -79,7 +82,7 @@ class Validator(
           val moduleName = moduleType.className
           val componentNames = componentTypes.joinToString { it.className }
           errorReporter.reportError(
-            "Module $moduleName provided multiple times in a single component hierarchy: $componentNames"
+              "Module $moduleName provided multiple times in a single component hierarchy: $componentNames"
           )
         }
       }
@@ -98,8 +101,8 @@ class Validator(
   }
 
   private fun validateNoDependencyDuplicates(
-    component: Component,
-    dependencyTypeToModuleMap: Map<Dependency, List<Type.Object>>
+      component: Component,
+      dependencyTypeToModuleMap: Map<Dependency, List<Type.Object>>
   ) {
     val newDependencyTypeToModuleMap = HashMap(dependencyTypeToModuleMap)
     component.modules.forEach { module ->
@@ -116,7 +119,7 @@ class Validator(
         if (moduleTypes.size > 1) {
           val moduleNames = moduleTypes.joinToString { it.className }
           errorReporter.reportError(
-            "Dependency $dependency provided multiple times in a single component hierarchy by modules: $moduleNames"
+              "Dependency $dependency provided multiple times in a single component hierarchy by modules: $moduleNames"
           )
         }
       }
@@ -158,9 +161,50 @@ class Validator(
     }
   }
 
+  private fun validateFactories(component: Component, resolver: DependencyResolver) {
+    resolver.add(component)
+    val factories = component.modules.flatMap { it.factories }.distinctBy { it.type }
+    for (factory in factories) {
+      for (provisionPoint in factory.provisionPoints) {
+        val injectees = provisionPoint.injectionPoint.injectees
+        val resolvedDependencies = resolver.getResolvedDependencies()
+        for (injectee in injectees) {
+          val shouldBeResolved = shouldFactoryInjecteeBeResolved(injectee)
+          validateFactoryDependency(component, factory, injectee.dependency, resolvedDependencies, shouldBeResolved)
+        }
+      }
+    }
+  }
+
+  private fun shouldFactoryInjecteeBeResolved(injectee: FactoryInjectee): Boolean {
+    return when (injectee) {
+      is FactoryInjectee.FromInjector -> true
+      is FactoryInjectee.FromMethod -> false
+    }
+  }
+
+  private fun validateFactoryDependency(
+      component: Component,
+      factory: Factory,
+      dependency: Dependency,
+      resolvedDependencies: Set<Dependency>,
+      shouldBeResolved: Boolean
+  ) {
+    val isResolved = dependency.boxed() in resolvedDependencies
+    if (isResolved != shouldBeResolved) {
+      val factoryName = factory.type.className
+      val componentName = component.type.className
+      if (shouldBeResolved) {
+        errorReporter.reportError("Unresolved dependency $dependency in factory $factoryName in component $componentName")
+      } else {
+        errorReporter.reportError("Ambiguous dependency $dependency in factory $factoryName in component $componentName")
+      }
+    }
+  }
+
   private fun validateInjectionTargetsAreResolved(
-    injectionTargets: Iterable<InjectionTarget>,
-    components: Iterable<Component>
+      injectionTargets: Iterable<InjectionTarget>,
+      components: Iterable<Component>
   ) {
     val dependencyResolver = DependencyResolver()
     components.forEach { dependencyResolver.add(it) }
@@ -174,9 +218,9 @@ class Validator(
   }
 
   private fun validateInjectionPointIsResolved(
-    injectionTargetType: Type.Object,
-    injectionPoint: InjectionPoint,
-    resolvedDependencies: Set<Dependency>
+      injectionTargetType: Type.Object,
+      injectionPoint: InjectionPoint,
+      resolvedDependencies: Set<Dependency>
   ) {
     val dependencies = getDependenciesForInjectionPoint(injectionPoint)
     val element = getElementForInjectionPoint(injectionPoint)
@@ -186,7 +230,7 @@ class Validator(
       val injectionTargetName = injectionTargetType.className
       unresolvedDependencies.forEach { dependency ->
         errorReporter.reportError(
-          "Unresolved dependency $dependency in $element at $injectionTargetName"
+            "Unresolved dependency $dependency in $element at $injectionTargetName"
         )
       }
     }
