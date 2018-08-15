@@ -16,10 +16,27 @@
 
 package io.michaelrocks.lightsaber.sample
 
+import io.michaelrocks.lightsaber.Factory
+import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
-internal class R2D2 @Inject private constructor() : Droid {
+internal class R2D2 @Factory.Inject private constructor(
+    private val body: Body,
+    private val color: String
+) : Droid {
   override fun repair() {
     System.out.println("BEEP BEEP BEEEEEP")
+  }
+
+  override fun toString(): String {
+    return "R2-D2, S/N: " + body.serialNumber + ", color: " + color
+  }
+
+  private class Body @Inject private constructor() {
+    val serialNumber = serialNumberCounter.incrementAndGet()
+
+    companion object {
+      private val serialNumberCounter = AtomicInteger()
+    }
   }
 }

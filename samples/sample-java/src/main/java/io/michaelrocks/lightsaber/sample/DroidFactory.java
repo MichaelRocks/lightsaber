@@ -16,30 +16,9 @@
 
 package io.michaelrocks.lightsaber.sample;
 
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import io.michaelrocks.lightsaber.Factory;
 
-import io.michaelrocks.lightsaber.Module;
-import io.michaelrocks.lightsaber.Provides;
-
-@Module(isDefault = true)
-class LightsaberModule {
-  @Provides
-  private final DarthVader darthVader = DarthVader.INSTANCE;
-
-  @Provides
-  private Wookiee provideWookiee(final Chewbacca chewbacca) {
-    return chewbacca;
-  }
-
-  @Provides
-  private Droid provideDroid(final DroidFactory factory) {
-    return factory.produceR2D2("Silver");
-  }
-
-  @Provides
-  @Singleton
-  private Planet providePlanet(final Provider<Kashyyyk> kashyyykProvider) {
-    return kashyyykProvider.get();
-  }
+@Factory
+public interface DroidFactory {
+  R2D2 produceR2D2(final String color);
 }
