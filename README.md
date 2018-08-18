@@ -600,10 +600,78 @@ the `Battery` class to them. Please, note that if for some reason a singleton de
 injector and then child injectors were created the child injectors would return the same singleton instance created by
 the parent injector.
 
+### Factories (assisted injection)
+
+In some cases you may want to instantiate an object passing some arguments to its constructor from an injector and
+provide some other arguments manually at the instantiation site.
+
+Let's define a `Droid` class that has a constructor with two parameters: a battery and a model:
+
+```java
+public class Droid {
+  private final Battery battery;
+  private final String model;
+  
+  @Factory.Inject
+  public Droid(final Battery battery, final String model) {
+    this.battery = battery;
+    this.model = model;
+  }
+  
+  /* ... */
+}
+```
+
+`Droid`'s constructor is annotated with `@Factory.Inject` annotation. This annotation means that this constructor can be
+used for injections but some of its arguments aren't provided by injector's component. Now let's define a module that
+will be used for providing a `Battery` for the `Droid`:
+
+```java
+@Module
+public class DroidModule {
+  @Provides
+  public Battery provideBattery() {
+    return new Battery();
+  }
+}
+```
+
+As you can see no `String` dependency is provided by the module. In order to create a `Droid` we have to provide a model
+name indirectly at the instantiation site. Lightsaber offers a way to achieve that by supporting factories that can
+accept any arguments and pass them to injectable constructors. 
+
+```java
+@Factory
+@ProvidedBy(DroidModule.class)
+public interface DroidFactory {
+  Droid assembleDroid(String model);
+}
+```
+
+The factory must be an interface annotated with `@Factory` annotation and may contain any number of factory methods. 
+The factory method may contain any number of parameters with unique types. If you need the factory method to contain 
+multiple parameters of the same type they have to be annotated with different qualifiers like `@Named("parameterName")`.
+Lightsaber matches factory method's parameters with constructor's parameters by a type and a qualifier. A component
+that provides a factory mustn't provide dependencies with the same type and qualifier as declared by factory methods'
+parameters.
+
+After the factory is defined as shown above it can be injected or retrieved manually from an injector as any other
+dependency:
+
+```java
+public class DroidParty {
+  @Inject
+  public DroidParty(final DroidFactory factory) {
+    final Droid r2d2 = factory.assembleDroid("R2-D2");
+    final Droid c3po = factory.assembleDroid("C-3PO");
+  }
+}
+```
+
 License
 -------
 
-    Copyright 2016 Michael Rozumyanskiy
+    Copyright 2018 Michael Rozumyanskiy
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
