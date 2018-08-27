@@ -19,17 +19,17 @@ package io.michaelrocks.lightsaber.processor.validation
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.boxed
+import io.michaelrocks.lightsaber.processor.commons.getDependencies
 import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
 import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
 import io.michaelrocks.lightsaber.processor.model.Component
-import io.michaelrocks.lightsaber.processor.model.Converter
 import io.michaelrocks.lightsaber.processor.model.Dependency
-import io.michaelrocks.lightsaber.processor.model.Injectee
+import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.Module
-import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 
 class DependencyGraphBuilder(
-    private val omitWrappedDependencies: Boolean = false
+    private val context: InjectionContext,
+    private val includeDependenciesOnlyWithInstanceConverter: Boolean = false
 ) {
   private val graph = HashDirectedGraph<Dependency>()
 
@@ -41,10 +41,7 @@ class DependencyGraphBuilder(
   fun add(module: Module): DependencyGraphBuilder = apply {
     for (provider in module.providers) {
       val returnType = provider.dependency.boxed()
-      val method = provider.provisionPoint as? ProvisionPoint.AbstractMethod
-      val injectees = method?.injectionPoint?.injectees?.maybeOmitWrappedDependencies()
-      val dependencies = injectees?.map { it.dependency.boxed() }
-      graph.put(returnType, dependencies.orEmpty())
+      graph.put(returnType, provider.getDependencies(context, includeDependenciesOnlyWithInstanceConverter))
     }
   }
 
@@ -58,13 +55,5 @@ class DependencyGraphBuilder(
 
   fun build(): DirectedGraph<Dependency> {
     return HashDirectedGraph(graph)
-  }
-
-  private fun List<Injectee>.maybeOmitWrappedDependencies(): List<Injectee> {
-    if (!omitWrappedDependencies) {
-      return this
-    }
-
-    return filter { it.converter === Converter.Instance }
   }
 }

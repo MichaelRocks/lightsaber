@@ -16,9 +16,27 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
+import io.michaelrocks.lightsaber.processor.model.Converter
+import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.Injectee
 
 fun Injectee.boxed(): Injectee {
   val boxedDependency = dependency.boxed()
   return if (boxedDependency === dependency) this else copy(dependency = boxedDependency)
+}
+
+fun Iterable<Injectee>.onlyWithInstanceConverter(): List<Injectee> {
+  return filter { it.converter === Converter.Instance }
+}
+
+fun Iterable<Injectee>.getDependencies(): List<Dependency> {
+  return map { it.dependency.boxed() }
+}
+
+fun Iterable<Injectee>.getDependenciesWithInstanceConverter(): List<Dependency> {
+  return onlyWithInstanceConverter().getDependencies()
+}
+
+fun Iterable<Injectee>.getDependencies(onlyWithInstanceConverter: Boolean): List<Dependency> {
+  return if (onlyWithInstanceConverter) getDependenciesWithInstanceConverter() else getDependencies()
 }

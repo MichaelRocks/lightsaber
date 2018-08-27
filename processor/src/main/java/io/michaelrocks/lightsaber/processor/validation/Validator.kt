@@ -54,8 +54,8 @@ class Validator(
       .forEach { component ->
         validateNoModuleDuplicates(component, emptyMap())
         validateNoDependencyDuplicates(component, emptyMap())
-        validateDependenciesAreResolved(component, DependencyResolver())
-        validateNoDependencyCycles(component, DependencyGraphBuilder(true))
+        validateDependenciesAreResolved(component, DependencyResolver(context))
+        validateNoDependencyCycles(component, DependencyGraphBuilder(context, true))
       }
 
     validateInjectionTargetsAreResolved(context.injectableTargets, context.components)
@@ -162,7 +162,7 @@ class Validator(
     injectionTargets: Iterable<InjectionTarget>,
     components: Iterable<Component>
   ) {
-    val dependencyResolver = DependencyResolver()
+    val dependencyResolver = DependencyResolver(context)
     components.forEach { dependencyResolver.add(it) }
     val resolvedDependencies = dependencyResolver.getResolvedDependencies()
 
