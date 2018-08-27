@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2018 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,39 @@
 
 package io.michaelrocks.lightsaber.sample;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import javax.inject.Inject;
 
+import io.michaelrocks.lightsaber.Factory;
+
 public class R2D2 implements Droid {
-  @Inject
-  public R2D2() {
+  private final Body body;
+  private final String color;
+
+  @Factory.Inject
+  public R2D2(final Body body, final String color) {
+    this.body = body;
+    this.color = color;
   }
 
   @Override
   public void repair() {
     System.out.println("BEEP BEEP BEEEEEP");
+  }
+
+  @Override
+  public String toString() {
+    return "R2-D2, S/N: " + body.serialNumber + ", color: " + color;
+  }
+
+  public static class Body {
+    private static final AtomicInteger serialNumberCounter = new AtomicInteger();
+
+    private final int serialNumber = serialNumberCounter.incrementAndGet();
+
+    @Inject
+    public Body() {
+    }
   }
 }

@@ -14,12 +14,24 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.model
+package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.grip.mirrors.Type
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-data class Module(
-    val type: Type.Object,
-    val providers: Collection<Provider>,
-    val factories: Collection<Factory>
-)
+
+import static java.lang.annotation.ElementType.CONSTRUCTOR;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+@Target(TYPE)
+@Retention(RUNTIME)
+@Documented
+public @interface Factory {
+  @Target(CONSTRUCTOR)
+  @Retention(RUNTIME)
+  @Documented
+  @interface Inject {
+  }
+}

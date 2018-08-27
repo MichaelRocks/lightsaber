@@ -33,6 +33,7 @@ class Generator(
 
   fun generate(injectionContext: InjectionContext, generationContext: GenerationContext) {
     generateProviders(injectionContext, generationContext)
+    generateFactories(injectionContext, generationContext)
     generatePackageInvaders(generationContext)
     generateKeyRegistry(generationContext)
 
@@ -41,6 +42,11 @@ class Generator(
 
   private fun generateProviders(injectionContext: InjectionContext, generationContext: GenerationContext) {
     val generator = ProvidersGenerator(classProducer, classRegistry)
+    generator.generate(injectionContext, generationContext)
+  }
+
+  private fun generateFactories(injectionContext: InjectionContext, generationContext: GenerationContext) {
+    val generator = FactoriesGenerator(classProducer, classRegistry)
     generator.generate(injectionContext, generationContext)
   }
 

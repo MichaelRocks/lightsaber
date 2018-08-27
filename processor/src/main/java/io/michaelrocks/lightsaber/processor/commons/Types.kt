@@ -21,6 +21,7 @@ import io.michaelrocks.bimap.HashBiMap
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectType
 import io.michaelrocks.lightsaber.Component
+import io.michaelrocks.lightsaber.Factory
 import io.michaelrocks.lightsaber.Injector
 import io.michaelrocks.lightsaber.Key
 import io.michaelrocks.lightsaber.Lazy
@@ -44,6 +45,8 @@ object Types {
   val MODULE_TYPE = getObjectType<Module>()
   val QUALIFIER_TYPE = getObjectType<Qualifier>()
   val SINGLETON_TYPE = getObjectType<Singleton>()
+  val FACTORY_TYPE = getObjectType<Factory>()
+  val FACTORY_INJECT_TYPE = getObjectType<Factory.Inject>()
   val INJECTOR_TYPE = getObjectType<Injector>()
   val PROVIDER_TYPE = getObjectType<Provider<*>>()
   val LAZY_TYPE = getObjectType<Lazy<*>>()

@@ -16,10 +16,17 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
-import io.michaelrocks.grip.mirrors.Type
+sealed class FactoryInjectee {
+  abstract val injectee: Injectee
 
-data class Module(
-    val type: Type.Object,
-    val providers: Collection<Provider>,
-    val factories: Collection<Factory>
-)
+  val dependency: Dependency get() = injectee.dependency
+
+  data class FromInjector(
+      override val injectee: Injectee
+  ) : FactoryInjectee()
+
+  data class FromMethod(
+      override val injectee: Injectee,
+      val argumentIndex: Int
+  ) : FactoryInjectee()
+}

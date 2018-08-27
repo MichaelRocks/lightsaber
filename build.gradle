@@ -24,8 +24,8 @@ allprojects {
   ext.javaxInjectVersion = '1'
   ext.jsr305Version = '3.0.2'
   ext.jcommanderVersion = '1.72'
-  ext.asmVersion = '6.2'
-  ext.gripVersion = '0.6.2-beta'
+  ext.asmVersion = '6.2.1'
+  ext.gripVersion = '0.6.3-beta'
   ext.bimapVersion = '1.0.2'
   ext.logbackVersion = '1.2.3'
 

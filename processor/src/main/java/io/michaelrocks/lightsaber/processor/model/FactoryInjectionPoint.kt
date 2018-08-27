@@ -16,10 +16,11 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
+import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.Type
 
-data class Module(
-    val type: Type.Object,
-    val providers: Collection<Provider>,
-    val factories: Collection<Factory>
+data class FactoryInjectionPoint(
+  val containerType: Type.Object,
+  val method: MethodMirror,
+  val injectees: List<FactoryInjectee>
 )

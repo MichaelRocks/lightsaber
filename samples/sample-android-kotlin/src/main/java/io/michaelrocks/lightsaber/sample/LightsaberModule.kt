@@ -29,5 +29,5 @@ internal class LightsaberModule {
   private fun provideWookiee(chewbacca: Chewbacca): Wookiee = chewbacca
 
   @Provides
-  private fun provideDroid(r2d2: R2D2): Droid = r2d2
+  private fun provideDroid(factory: DroidFactory): Droid = factory.produceR2D2("Silver")
 }

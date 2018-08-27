@@ -16,23 +16,9 @@
 
 package io.michaelrocks.lightsaber.sample
 
-import io.michaelrocks.lightsaber.Module
-import io.michaelrocks.lightsaber.Provides
-import javax.inject.Provider
-import javax.inject.Singleton
+import io.michaelrocks.lightsaber.Factory
 
-@Module(isDefault = true)
-internal class LightsaberModule {
-  @Provides
-  private val darthVader = DarthVader
-
-  @Provides
-  private fun provideWookiee(chewbacca: Chewbacca): Wookiee = chewbacca
-
-  @Provides
-  private fun provideDroid(factory: DroidFactory): Droid = factory.produceR2D2("Silver")
-
-  @Provides
-  @Singleton
-  private fun providePlanet(kashyyykProvider: Provider<Kashyyyk>): Planet = kashyyykProvider.get()
+@Factory
+internal interface DroidFactory {
+  fun produceR2D2(color: String): R2D2
 }

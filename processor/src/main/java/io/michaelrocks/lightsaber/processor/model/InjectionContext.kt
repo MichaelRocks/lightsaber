@@ -21,12 +21,15 @@ import io.michaelrocks.grip.mirrors.Type
 data class InjectionContext(
     val components: Collection<Component>,
     val injectableTargets: Collection<InjectionTarget>,
-    val providableTargets: Collection<InjectionTarget>
+    val providableTargets: Collection<InjectionTarget>,
+    val factories: Collection<Factory>
 ) {
   private val componentsByType = components.associateBy { it.type }
   private val modulesByType = components.flatMap { it.modules }.associateBy { it.type }
   private val injectableTargetsByType = injectableTargets.associateBy { it.type }
   private val providableTargetsByType = providableTargets.associateBy { it.type }
+  private val factoryInjectionPointsByType =
+      factories.flatMap { it.provisionPoints }.map { it.injectionPoint }.associateBy { it.containerType }
 
   fun findComponentByType(componentType: Type.Object): Component? =
       componentsByType[componentType]
@@ -39,4 +42,7 @@ data class InjectionContext(
 
   fun findProvidableTargetByType(providableTargetType: Type.Object): InjectionTarget? =
       providableTargetsByType[providableTargetType]
+
+  fun findFactoryInjectionPointByType(factoryInjectionPointType: Type.Object): FactoryInjectionPoint? =
+      factoryInjectionPointsByType[factoryInjectionPointType]
 }
