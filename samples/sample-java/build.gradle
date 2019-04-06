@@ -18,8 +18,8 @@ apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'io.michaelrocks.lightsaber'
 
-sourceCompatibility = JavaVersion.VERSION_1_6
-targetCompatibility = JavaVersion.VERSION_1_6
+sourceCompatibility = javaVersion
+targetCompatibility = javaVersion
 
 mainClassName = 'io.michaelrocks.lightsaber.sample.LightsaberSample'
 

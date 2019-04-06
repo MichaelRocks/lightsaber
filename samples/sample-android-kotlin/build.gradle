@@ -48,6 +48,11 @@ android {
     main.java.srcDirs += 'src/main/kotlin'
     androidTest.java.srcDirs += 'src/androidTest/kotlin'
   }
+
+  compileOptions {
+    sourceCompatibility javaVersion
+    targetCompatibility javaVersion
+  }
 }
 
 dependencies {
@@ -55,7 +60,7 @@ dependencies {
   implementation project(':samples:sample-android-library')
 
   // Kotlin
-  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
 
   // Testing
   androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoVersion"

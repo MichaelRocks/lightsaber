@@ -28,6 +28,11 @@ android {
 
     testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
   }
+
+  compileOptions {
+    sourceCompatibility javaVersion
+    targetCompatibility javaVersion
+  }
 }
 
 dependencies {
