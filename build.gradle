@@ -19,7 +19,7 @@ allprojects {
   group = 'io.michaelrocks'
 
   ext.kotlinVersion = '1.2.60'
-  ext.pabloVersion = '1.0.3'
+  ext.pabloVersion = '1.0.4'
 
   ext.javaxInjectVersion = '1'
   ext.jsr305Version = '3.0.2'
