@@ -20,7 +20,7 @@ dependencies {
   relocate "org.ow2.asm:asm-commons:$asmVersion"
   relocate "io.michaelrocks:grip:$gripVersion"
 
-  testImplementation project(':tests:mockito-extensions')
+  testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:$mockitoKotlinVersion"
   testImplementation "junit:junit:$junitVersion"
 }
 

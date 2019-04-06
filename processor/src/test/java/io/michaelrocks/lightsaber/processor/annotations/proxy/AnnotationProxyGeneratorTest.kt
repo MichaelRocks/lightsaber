@@ -16,6 +16,12 @@
 
 package io.michaelrocks.lightsaber.processor.annotations.proxy
 
+import com.nhaarman.mockitokotlin2.any
+import com.nhaarman.mockitokotlin2.mock
+import com.nhaarman.mockitokotlin2.times
+import com.nhaarman.mockitokotlin2.verify
+import com.nhaarman.mockitokotlin2.verifyNoMoreInteractions
+import com.nhaarman.mockitokotlin2.whenever
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
@@ -52,12 +58,6 @@ import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.ShortA
 import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.StringAnnotation
 import io.michaelrocks.lightsaber.processor.annotations.proxy.Annotations.StringArrayAnnotation
 import io.michaelrocks.lightsaber.processor.commons.Types
-import io.michaelrocks.mockito.given
-import io.michaelrocks.mockito.isNotNull
-import io.michaelrocks.mockito.mock
-import io.michaelrocks.mockito.times
-import io.michaelrocks.mockito.verify
-import io.michaelrocks.mockito.verifyNoMoreInteractions
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
@@ -418,7 +418,7 @@ class AnnotationProxyGeneratorTest {
     val handler = mock<InvocationHandler>()
     val intAnnotation = newProxyInstance<IntAnnotation>(handler)
     val hashCodeMethod = Any::class.java.getDeclaredMethod("hashCode")
-    given(handler.invoke(intAnnotation, hashCodeMethod, null)).thenReturn(0)
+    whenever(handler.invoke(intAnnotation, hashCodeMethod, null)).thenReturn(0)
 
     val annotation = createAnnotationProxy<AnnotationAnnotation>(intAnnotation)
     annotation.hashCode()
@@ -432,7 +432,7 @@ class AnnotationProxyGeneratorTest {
     val handler = mock<InvocationHandler>()
     val intAnnotation = newProxyInstance<IntAnnotation>(handler)
     val toStringMethod = Any::class.java.getDeclaredMethod("toString")
-    given(handler.invoke(intAnnotation, toStringMethod, null)).thenReturn("ToString")
+    whenever(handler.invoke(intAnnotation, toStringMethod, null)).thenReturn("ToString")
 
     val annotation = createAnnotationProxy<AnnotationAnnotation>(intAnnotation)
     annotation.toString()
@@ -474,12 +474,13 @@ class AnnotationProxyGeneratorTest {
   }
 
   private fun addAnnotationProxy(annotationClass: Class<out Annotation>) {
-    val classRegistry = mock<ClassRegistry>()
-    given(classRegistry.getClassMirror(isNotNull())).thenAnswer { invocation ->
-      mock<ClassMirror>().apply {
-        given(access).thenReturn(Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER)
-        given(type).thenReturn(invocation.arguments[0] as Type.Object)
-        given(superType).thenReturn(Types.OBJECT_TYPE)
+    val classRegistry = mock<ClassRegistry> {
+      on { getClassMirror(any()) }.thenAnswer { invocation ->
+        mock<ClassMirror> {
+          on { access }.thenReturn(Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER)
+          on { type }.thenReturn(invocation.arguments[0] as Type.Object)
+          on { superType }.thenReturn(Types.OBJECT_TYPE)
+        }
       }
     }
     val annotationDescriptor = getAnnotationDescriptor(annotationClass)
