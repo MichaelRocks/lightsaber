@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,17 +30,18 @@ allprojects {
   ext.logbackVersion = '1.2.3'
 
   ext.junitVersion = '4.12'
-  ext.espressoVersion = '3.0.2'
-  ext.testRunnerVersion = '1.0.2'
   ext.mockitoVersion = '2.25.1'
   ext.mockitoKotlinVersion = '2.1.0'
 
-  ext.androidCompileSdkVersion = 27
-  ext.androidTargetSdkVersion = 27
+  ext.androidCompileSdkVersion = 28
+  ext.androidTargetSdkVersion = 28
   ext.androidMinSdkVersion = 16
-  ext.androidBuildToolsVersion = '28.0.1'
-  ext.androidToolsVersion = '3.1.4'
-  ext.supportVersion = '27.1.1'
+  ext.androidBuildToolsVersion = '28.0.3'
+  ext.androidToolsVersion = '3.3.2'
+  ext.androidxAnnotationVersion = '1.0.2'
+  ext.androidxEspressoVersion = '3.1.1'
+  ext.androidxTestRunnerVersion = '1.1.1'
+  ext.androidxTestExtJunitVersion = '1.1.0'
 
   buildscript {
     repositories {
