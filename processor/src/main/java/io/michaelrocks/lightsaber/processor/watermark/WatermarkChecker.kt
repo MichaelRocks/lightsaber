@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package io.michaelrocks.lightsaber.processor.watermark
 
+import io.michaelrocks.lightsaber.processor.io.readBytes
 import org.objectweb.asm.Attribute
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
