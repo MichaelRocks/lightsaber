@@ -16,11 +16,11 @@
 
 package io.michaelrocks.lightsaber.sample;
 
-import io.michaelrocks.lightsaber.Module;
-import io.michaelrocks.lightsaber.Provides;
-
 import javax.inject.Provider;
 import javax.inject.Singleton;
+
+import io.michaelrocks.lightsaber.Module;
+import io.michaelrocks.lightsaber.Provides;
 
 @Module(isDefault = true)
 class LightsaberModule {
@@ -33,8 +33,8 @@ class LightsaberModule {
   }
 
   @Provides
-  private Droid provideDroid(final R2D2 r2d2) {
-    return r2d2;
+  private Droid provideDroid(final DroidFactory factory) {
+    return factory.produceR2D2("Silver");
   }
 
   @Provides

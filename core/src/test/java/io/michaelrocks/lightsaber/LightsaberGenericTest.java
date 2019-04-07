@@ -16,19 +16,29 @@
 
 package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.lightsaber.internal.ParameterizedTypeImpl;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import javax.annotation.Nonnull;
-import javax.inject.Provider;
 import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+import javax.inject.Provider;
+
+import io.michaelrocks.lightsaber.internal.InjectorConfigurator;
+import io.michaelrocks.lightsaber.internal.LightsaberInjector;
+import io.michaelrocks.lightsaber.internal.ParameterizedTypeImpl;
+
+
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class LightsaberGenericTest {
   @Test

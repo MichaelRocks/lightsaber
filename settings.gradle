@@ -6,8 +6,6 @@ include ':processor'
 
 include ':gradle-plugin'
 
-include ':tests:mockito-extensions'
-
 if (!properties['bootstrap'].toBoolean()) {
   include ':samples:injection-test'
   include ':samples:sample-java'

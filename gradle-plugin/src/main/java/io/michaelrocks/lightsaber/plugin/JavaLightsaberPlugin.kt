@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,15 +46,8 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
   }
 
   private fun addDependencies() {
-    val version = GradleVersion.parse(project.gradle.gradleVersion)
-    if (version >= GRADLE_VERSION_WITH_IMPLEMENTATION) {
-      addDependencies(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
-      addDependencies(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME)
-    } else {
-      @Suppress("DEPRECATION")
-      addDependencies(JavaPlugin.COMPILE_CONFIGURATION_NAME)
-      addDependencies(JavaPlugin.TEST_COMPILE_CONFIGURATION_NAME)
-    }
+    addDependencies(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME)
+    addDependencies(JavaPlugin.TEST_IMPLEMENTATION_CONFIGURATION_NAME)
   }
 
   private fun setupLightsaberForJava() {
@@ -97,13 +90,7 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
   }
 
   private fun getClassesDirs(output: SourceSetOutput): List<File> {
-    val version = GradleVersion.parse(project.gradle.gradleVersion)
-    if (version.isAtLeast(4,0, 0)) {
-      return output.classesDirs.files.toList()
-    } else {
-      @Suppress("DEPRECATION")
-      return listOf(output.classesDir)
-    }
+    return output.classesDirs.files.toList()
   }
 
   private fun getBackupDirs(buildDir: File, lightsaberDir: File, classesDirs: List<File>): List<File> {
@@ -170,7 +157,5 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
 
   companion object {
     private const val LIGHTSABER_PATH = "lightsaber"
-
-    private val GRADLE_VERSION_WITH_IMPLEMENTATION = GradleVersion.create(3, 4, 0)
   }
 }
