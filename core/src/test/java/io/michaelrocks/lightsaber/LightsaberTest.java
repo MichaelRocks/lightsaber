@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 public class LightsaberTest {
   @Test
   public void testCreateInjector() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber();
+    final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);
@@ -55,7 +55,7 @@ public class LightsaberTest {
 
   @Test
   public void testCreateChildInjector() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber();
+    final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childComponent = createChildComponent();
 
@@ -76,7 +76,7 @@ public class LightsaberTest {
 
   @Test
   public void testCreateChildInjectorWithAnnotation() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber();
+    final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();
 

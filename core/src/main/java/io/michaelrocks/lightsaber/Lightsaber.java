@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,17 @@ import io.michaelrocks.lightsaber.internal.InjectorConfigurator;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 
 public class Lightsaber {
-  Lightsaber() {
+  Lightsaber(final Builder builder) {
   }
 
   @Nonnull
   public static Lightsaber get() {
     return Holder.INSTANCE;
+  }
+
+  @Nonnull
+  public Builder newBuilder() {
+    return new Builder(this);
   }
 
   @Nonnull
@@ -86,7 +91,19 @@ public class Lightsaber {
     return injector.getProvider(Key.of(type, annotation));
   }
 
+  public static class Builder {
+    public Builder() {
+    }
+
+    Builder(final Lightsaber lightsaber) {
+    }
+
+    public Lightsaber build() {
+      return new Lightsaber(this);
+    }
+  }
+
   private static final class Holder {
-    static final Lightsaber INSTANCE = new Lightsaber();
+    static final Lightsaber INSTANCE = new Lightsaber.Builder().build();
   }
 }
