@@ -17,6 +17,8 @@
 package io.michaelrocks.lightsaber;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -26,7 +28,10 @@ import io.michaelrocks.lightsaber.internal.InjectorConfigurator;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 
 public class Lightsaber {
+  private final List<ProviderInterceptor> interceptors;
+
   Lightsaber(final Builder builder) {
+    interceptors = builder.interceptors == null ? null : new ArrayList<>(builder.interceptors);
   }
 
   @Nonnull
@@ -55,15 +60,15 @@ public class Lightsaber {
       throw new IllegalArgumentException("Cannot create a child injector for a non-Lightsaber injector");
     }
 
-    return createInjectorInternal(parentInjector, component);
+    return createInjectorInternal((LightsaberInjector) parentInjector, component);
   }
 
-  private LightsaberInjector createInjectorInternal(final Injector parentInjector, final Object component) {
+  private LightsaberInjector createInjectorInternal(final LightsaberInjector parentInjector, final Object component) {
     if (component == null) {
       throw new NullPointerException("Trying to create an injector with a null component");
     }
 
-    final LightsaberInjector injector = new LightsaberInjector(parentInjector);
+    final LightsaberInjector injector = new LightsaberInjector(parentInjector, interceptors);
     final InjectorConfigurator configurator = (InjectorConfigurator) component;
     configurator.configureInjector(injector);
     return injector;
@@ -92,12 +97,42 @@ public class Lightsaber {
   }
 
   public static class Builder {
+    private List<ProviderInterceptor> interceptors;
+
     public Builder() {
     }
 
-    Builder(final Lightsaber lightsaber) {
+    Builder(@Nonnull final Lightsaber lightsaber) {
+      interceptors = lightsaber.interceptors == null ? null : new ArrayList<>(lightsaber.interceptors);
     }
 
+    /**
+     * Adds a {@link ProviderInterceptor} to the interceptor chain. Added interceptors will be invoked in the reverse order.
+     * <p>
+     * <strong>WARNING!</strong> Provider interception affects performance negatively. If a single interceptor is added each dependency resolution
+     * produces at least two additional allocations even if it's not affected by the interceptor.
+     * </p>
+     *
+     * @param interceptor
+     *     The {@link ProviderInterceptor} to add to the interceptor chain.
+     * @return The current {@link Builder} instance.
+     */
+    @Nonnull
+    public Builder addProviderInterceptor(@Nonnull final ProviderInterceptor interceptor) {
+      // noinspection ConstantConditions
+      if (interceptor == null) {
+        throw new NullPointerException("Interceptor is null");
+      }
+
+      if (interceptors == null) {
+        interceptors = new ArrayList<>();
+      }
+
+      interceptors.add(interceptor);
+      return this;
+    }
+
+    @Nonnull
     public Lightsaber build() {
       return new Lightsaber(this);
     }
