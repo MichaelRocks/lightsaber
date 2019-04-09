@@ -668,10 +668,37 @@ public class DroidParty {
 }
 ```
 
+### Provider interceptors
+
+When writing tests you may need to substitute a real dependency with a mock. To be able to do that you can register a `ProviderInterceptor` when
+creating a `Lightsaber` instance and replace a provider with the one that returns mocks:
+
+```java
+final Lightsaber lightsaber = new Lightsaber.Builder()
+    .addProviderInterceptor(
+        new ProviderInterceptor() {
+          @Override
+          public Provider<?> intercept(final ProviderInterceptor.Chain chain, final Key<?> key) {
+            if (key.getType() == Battery.class) {
+              return new Provider<Object>() {
+                @Override
+                public Object get() {
+                  return new TestBattery();
+                }
+              };
+            } else {
+              return chain.proceed(key);
+            }
+          }
+        }
+    )
+    .build();
+``` 
+
 License
 -------
 
-    Copyright 2018 Michael Rozumyanskiy
+    Copyright 2019 Michael Rozumyanskiy
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
