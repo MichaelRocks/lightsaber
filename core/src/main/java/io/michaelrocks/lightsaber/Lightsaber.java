@@ -31,7 +31,7 @@ public class Lightsaber {
   private final List<ProviderInterceptor> interceptors;
 
   Lightsaber(final Builder builder) {
-    interceptors = builder.interceptors == null ? null : new ArrayList<>(builder.interceptors);
+    interceptors = builder.interceptors == null ? null : new ArrayList<ProviderInterceptor>(builder.interceptors);
   }
 
   @Nonnull
@@ -103,7 +103,7 @@ public class Lightsaber {
     }
 
     Builder(@Nonnull final Lightsaber lightsaber) {
-      interceptors = lightsaber.interceptors == null ? null : new ArrayList<>(lightsaber.interceptors);
+      interceptors = lightsaber.interceptors == null ? null : new ArrayList<ProviderInterceptor>(lightsaber.interceptors);
     }
 
     /**
@@ -125,7 +125,7 @@ public class Lightsaber {
       }
 
       if (interceptors == null) {
-        interceptors = new ArrayList<>();
+        interceptors = new ArrayList<ProviderInterceptor>();
       }
 
       interceptors.add(interceptor);
