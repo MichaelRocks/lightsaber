@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,11 +37,12 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 public class LightsaberTest {
   @Test
   public void testCreateInjector() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber();
+    final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);
@@ -55,7 +56,7 @@ public class LightsaberTest {
 
   @Test
   public void testCreateChildInjector() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber();
+    final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childComponent = createChildComponent();
 
@@ -76,7 +77,7 @@ public class LightsaberTest {
 
   @Test
   public void testCreateChildInjectorWithAnnotation() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber();
+    final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();
 
@@ -93,6 +94,52 @@ public class LightsaberTest {
     assertSame(childInjector, childInjector.getInstance(Key.of(Injector.class)));
     assertEquals("Parent String", childInjector.getInstance(String.class));
     assertEquals("Parent String", childInjector.getInstance(Key.of(String.class)));
+    assertEquals("Child Annotated String", childInjector.getInstance(Key.of(String.class, annotation)));
+  }
+
+  @Test
+  public void testInjectionInterceptor() {
+    // noinspection unchecked
+    final Provider<String> stringProvider = mock(Provider.class);
+    when(stringProvider.get()).thenReturn("StringInstanceClass", "StringInstanceKey", "StringProviderClass", "StringProviderKey");
+    // noinspection unchecked
+    final Provider<Object> objectProvider = mock(Provider.class);
+    when(objectProvider.get()).thenReturn("ObjectInstanceClass", "ObjectInstanceKey", "ObjectProviderClass", "ObjectProviderKey");
+    final ProviderInterceptor interceptor = new ProviderInterceptor() {
+      private final Key<?> stringKey = Key.of(String.class);
+      private final Key<?> objectKey = Key.of(Object.class);
+
+      @Nonnull
+      @Override
+      public Provider<?> intercept(@Nonnull final Chain chain, @Nonnull final Key<?> key) {
+        if (stringKey.equals(key)) {
+          return stringProvider;
+        } else if (objectKey.equals(key)) {
+          return  objectProvider;
+        } else {
+          return chain.proceed(key);
+        }
+      }
+    };
+
+    final Lightsaber lightsaber = new Lightsaber.Builder().addProviderInterceptor(interceptor).build();
+    final InjectorConfigurator parentComponent = createParentComponent();
+    final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();
+
+    final Injector injector = lightsaber.createInjector(parentComponent);
+    final Injector childInjector = lightsaber.createChildInjector(injector, childAnnotatedComponent);
+
+    assertEquals("StringInstanceClass", childInjector.getInstance(String.class));
+    assertEquals("StringInstanceKey", childInjector.getInstance(Key.of(String.class)));
+    assertEquals("StringProviderClass", childInjector.getProvider(String.class).get());
+    assertEquals("StringProviderKey", childInjector.getProvider(Key.of(String.class)).get());
+
+    assertEquals("ObjectInstanceClass", childInjector.getInstance(Object.class));
+    assertEquals("ObjectInstanceKey", childInjector.getInstance(Key.of(Object.class)));
+    assertEquals("ObjectProviderClass", childInjector.getProvider(Object.class).get());
+    assertEquals("ObjectProviderKey", childInjector.getProvider(Key.of(Object.class)).get());
+
+    final Named annotation = new NamedProxy("Annotated");
     assertEquals("Child Annotated String", childInjector.getInstance(Key.of(String.class, annotation)));
   }
 

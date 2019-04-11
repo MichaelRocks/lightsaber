@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber.internal;
 
 import java.lang.reflect.Type;
+import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
@@ -24,13 +25,16 @@ import javax.inject.Provider;
 import io.michaelrocks.lightsaber.ConfigurationException;
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.Key;
+import io.michaelrocks.lightsaber.ProviderInterceptor;
 
 public class LightsaberInjector implements Injector {
-  private final Injector parent;
+  private final LightsaberInjector parent;
+  private final List<ProviderInterceptor> interceptors;
   private final IterableMap<Object, Provider<?>> providers = new PolymorphicKeyHashMap<Provider<?>>();
 
-  public LightsaberInjector(final Injector parent) {
+  public LightsaberInjector(final LightsaberInjector parent, final List<ProviderInterceptor> interceptors) {
     this.parent = parent;
+    this.interceptors = interceptors;
     registerProvider(Injector.class, new Provider<Injector>() {
       @Override
       public Injector get() {
@@ -76,45 +80,27 @@ public class LightsaberInjector implements Injector {
   @Nonnull
   @Override
   public <T> Provider<T> getProvider(@Nonnull final Type type) {
-    // noinspection unchecked
-    final Provider<T> provider = (Provider<T>) providers.get(type);
-    if (provider == null) {
-      if (parent != null) {
-        try {
-          return parent.getProvider(type);
-        } catch (final ConfigurationException exception) {
-          throwConfigurationException(type, exception);
-        }
-      } else {
-        throwConfigurationException(type, null);
-      }
+    if (interceptors == null) {
+      return getProviderInternal(type);
     }
-    // noinspection ConstantConditions
-    return provider;
+
+    // noinspection unchecked
+    return (Provider<T>) new ProviderResolutionChain().proceed(Key.of(type));
   }
 
   @Nonnull
   @Override
   public <T> Provider<T> getProvider(@Nonnull final Key<? extends T> key) {
-    if (key.getQualifier() == null) {
-      return getProvider(key.getType());
+    if (interceptors == null) {
+      if (key.getQualifier() != null) {
+        return getProviderInternal(key);
+      } else {
+        return getProvider(key.getType());
+      }
     }
 
     // noinspection unchecked
-    final Provider<T> provider = (Provider<T>) providers.get(key);
-    if (provider == null) {
-      if (parent != null) {
-        try {
-          return parent.getProvider(key);
-        } catch (final ConfigurationException exception) {
-          throwConfigurationException(key, exception);
-        }
-      } else {
-        throwConfigurationException(key, null);
-      }
-    }
-    // noinspection ConstantConditions
-    return provider;
+    return (Provider<T>) new ProviderResolutionChain().proceed(key);
   }
 
   @Nonnull
@@ -131,11 +117,30 @@ public class LightsaberInjector implements Injector {
   }
 
   public <T> void registerProvider(final Key<T> key, final Provider<? extends T> provider) {
-    if (key.getQualifier() == null) {
-      registerProviderInternal(key.getType(), provider);
-    } else {
+    if (key.getQualifier() != null) {
       registerProviderInternal(key, provider);
+    } else {
+      registerProviderInternal(key.getType(), provider);
     }
+  }
+
+  @Nonnull
+  private <T> Provider<T> getProviderInternal(@Nonnull final Object key) {
+    // noinspection unchecked
+    final Provider<T> provider = (Provider<T>) providers.get(key);
+    if (provider == null) {
+      if (parent != null) {
+        try {
+          return parent.getProviderInternal(key);
+        } catch (final ConfigurationException exception) {
+          throwConfigurationException(key, exception);
+        }
+      } else {
+        throwConfigurationException(key, null);
+      }
+    }
+    // noinspection ConstantConditions
+    return provider;
   }
 
   private <T> void registerProviderInternal(final Object key, final Provider<? extends T> provider) {
@@ -152,5 +157,36 @@ public class LightsaberInjector implements Injector {
       exception.initCause(cause);
     }
     throw exception;
+  }
+
+  private class ProviderResolutionChain implements ProviderInterceptor.Chain {
+    private int index = interceptors.size();
+
+    @Nonnull
+    @Override
+    public Injector injector() {
+      return LightsaberInjector.this;
+    }
+
+    @Nonnull
+    @Override
+    public Provider<?> proceed(@Nonnull final Key<?> key) {
+      // noinspection ConstantConditions
+      if (key == null) {
+        throw new NullPointerException("Key is null");
+      }
+
+      index -= 1;
+      if (index >= 0) {
+        final ProviderInterceptor interceptor = interceptors.get(index);
+        return interceptor.intercept(this, key);
+      } else {
+        if (key.getQualifier() != null) {
+          return getProviderInternal(key);
+        } else {
+          return getProviderInternal(key.getType());
+        }
+      }
+    }
   }
 }
