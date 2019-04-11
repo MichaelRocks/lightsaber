@@ -25,7 +25,7 @@ sourceCompatibility = javaVersion
 dependencies {
   relocate project(':processor')
 
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib$kotlinRuntimeVariant:$kotlinVersion"
 
   compileOnly gradleApi()
   compileOnly "com.android.tools.build:gradle:$androidToolsVersion"
