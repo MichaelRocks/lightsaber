@@ -14,19 +14,22 @@
  * limitations under the License.
  */
 
-rootProject.name = 'lightsaber'
+apply plugin: 'java-library'
+apply plugin: 'io.michaelrocks.pablo'
 
-include ':core'
-include ':core-kotlin'
-include ':core-test'
-include ':processor'
+sourceCompatibility = javaVersion
+targetCompatibility = javaVersion
 
-include ':gradle-plugin'
+dependencies {
+  implementation project(":core")
 
-if (!properties['bootstrap'].toBoolean()) {
-  include ':samples:injection-test'
-  include ':samples:sample-java'
-  include ':samples:sample-kotlin'
-  include ':samples:sample-android-kotlin'
-  include ':samples:sample-android-library'
+  implementation "com.google.code.findbugs:jsr305:$jsr305Version"
+
+  testImplementation "junit:junit:$junitVersion"
+  testImplementation "org.mockito:mockito-core:$mockitoVersion"
+  testImplementation "com.google.code.findbugs:jsr305:$jsr305Version"
+}
+
+jar {
+  destinationDirectory.set(file('build/jar'))
 }
