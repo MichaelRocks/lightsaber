@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import javax.inject.Singleton
 class InjectorInjectionTest {
   @Test
   fun testInjectorFromParentInjectionTarget() {
-    val lightsaber = Lightsaber.get()
+    val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
     val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
     assertSame(parentInjector, parentInjector.getInstance<ParentInjectionTarget>().injector)
@@ -33,7 +33,7 @@ class InjectorInjectionTest {
 
   @Test
   fun testInjectorFromChildInjectionTarget() {
-    val lightsaber = Lightsaber.get()
+    val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
     val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
     assertSame(childInjector, childInjector.getInstance<ChildInjectionTarget>().injector)
@@ -41,7 +41,7 @@ class InjectorInjectionTest {
 
   @Test
   fun testInjectorFromSingletonParentInjectionTarget() {
-    val lightsaber = Lightsaber.get()
+    val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
     val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
     val parentTarget = parentInjector.getInstance<SingletonParentInjectionTarget>()
@@ -53,7 +53,7 @@ class InjectorInjectionTest {
 
   @Test
   fun testInjectorFromSingletonParentInjectionTargetChildFirst() {
-    val lightsaber = Lightsaber.get()
+    val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
     val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
     val childTarget = childInjector.getInstance<SingletonParentInjectionTarget>()
@@ -65,7 +65,7 @@ class InjectorInjectionTest {
 
   @Test
   fun testInjectorFromSingletonChildInjectionTarget() {
-    val lightsaber = Lightsaber.get()
+    val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
     val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
     val childTarget = childInjector.getInstance<SingletonChildInjectionTarget>()

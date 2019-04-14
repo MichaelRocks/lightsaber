@@ -162,7 +162,8 @@ One of the reasons why you need a component is that its instance should be passe
 creates an `Injector`. Finally, when a component is defined you can create an injector with this component.
 
 ```
-Injector injector = Lightsaber.get().createInjector(DroidComponent());
+Lightsaber lightsaber = new Lightsaber.Builder().build(); 
+Injector injector = lightsaber.createInjector(DroidComponent());
 ```
 
 The `createInjector()` method accepts a single component and returns an injector that can provide any dependency from
@@ -585,11 +586,12 @@ Now we can create child injectors passing different instances of the `BatteryCom
 `createChildInjector()` method.
 
 ```
-Injector droidInjector = Lightsaber.get().createInjector(new DroidComponent());
+Lightsaber lightsaber = new Lightsaber.Builder().build();
+Injector droidInjector = lightsaber.createInjector(new DroidComponent());
 Injector nuclearBatteryInjector =
-    Lightsaber.get().createChildInjector(droidInjector, new BatteryComponent("Nuclear"));
+    lightsaber.createChildInjector(droidInjector, new BatteryComponent("Nuclear"));
 Injector plasmBatteryInjector =
-    Lightsaber.get().createChildInjector(droidInjector, new BatteryComponent("Plasm"));
+    lightsaber.createChildInjector(droidInjector, new BatteryComponent("Plasm"));
 
 Droid nuclearBatteryDroid = nuclearBatteryInjector.getInstance(Droid.class);
 Droid plasmBatteryDroid = plasmBatteryInjector.getInstance(Droid.class);
@@ -613,7 +615,7 @@ public class Droid {
   private final String model;
   
   @Factory.Inject
-  public Droid(final Battery battery, final String model) {
+  public Droid(Battery battery, String model) {
     this.battery = battery;
     this.model = model;
   }
@@ -661,9 +663,9 @@ dependency:
 ```java
 public class DroidParty {
   @Inject
-  public DroidParty(final DroidFactory factory) {
-    final Droid r2d2 = factory.assembleDroid("R2-D2");
-    final Droid c3po = factory.assembleDroid("C-3PO");
+  public DroidParty(DroidFactory factory) {
+    Droid r2d2 = factory.assembleDroid("R2-D2");
+    Droid c3po = factory.assembleDroid("C-3PO");
   }
 }
 ```
@@ -674,11 +676,11 @@ When writing tests you may need to substitute a real dependency with a mock. To 
 creating a `Lightsaber` instance and replace a provider with the one that returns mocks:
 
 ```java
-final Lightsaber lightsaber = new Lightsaber.Builder()
+Lightsaber lightsaber = new Lightsaber.Builder()
     .addProviderInterceptor(
         new ProviderInterceptor() {
           @Override
-          public Provider<?> intercept(final ProviderInterceptor.Chain chain, final Key<?> key) {
+          public Provider<?> intercept(ProviderInterceptor.Chain chain, Key<?> key) {
             if (key.getType() == Battery.class) {
               return new Provider<Object>() {
                 @Override
@@ -710,7 +712,7 @@ runtime, so you'll be able to deal with qualified dependencies easily.
 
 ```java
 // Create a provider of Battery instances.
-final Provider<Battery> provider = new Provider<Battery>() {
+Provider<Battery> provider = new Provider<Battery>() {
   @Override
   public Battery get() {
     return new TestBattery();
@@ -718,17 +720,17 @@ final Provider<Battery> provider = new Provider<Battery>() {
 };
 
 // Create a proxy for @Named("primary") annotation.
-final Named annotation = new AnnotationBuilder<Named>(Named.class)
+Named annotation = new AnnotationBuilder<Named>(Named.class)
     .addMember("value", "primary")
     .build();
 
 // Create a provider interceptor that replaces the primary battery with the test one.
-final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
+ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
     .addProviderForClass(Battery.class, annotation, provider)
     .build();
 
 // Create a Lightsaber instance for unit testing. 
-final Lightsaber lightsaber = new Lightsaber.Builder()
+Lightsaber lightsaber = new Lightsaber.Builder()
     .addProviderInterceptor(interceptor)
     .build();
 ``` 

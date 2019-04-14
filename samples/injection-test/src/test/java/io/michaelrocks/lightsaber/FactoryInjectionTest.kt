@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import javax.inject.Named
 class FactoryInjectionTest {
   @Test
   fun testSingleMethodFactory() {
-    val lightsaber = Lightsaber.get()
+    val lightsaber = Lightsaber.Builder().build()
     val injector = lightsaber.createInjector(ParentFactoryComponent())
     val factory = injector.getInstance<SingleMethodFactory>()
     val target = factory.createTarget(
@@ -135,7 +135,7 @@ class FactoryInjectionTest {
 
   @Test
   fun testMultipleMethodFactory() {
-    val lightsaber = Lightsaber.get()
+    val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentFactoryComponent())
     val childInjector = lightsaber.createChildInjector(parentInjector, ChildFactoryComponent())
     val factory = childInjector.getInstance<MultipleMethodFactory>()

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import javax.inject.Inject
 class PrimitiveInjectionTest {
   @Test
   fun testUnboxedIntoUnboxedInjection() {
-    val injector = Lightsaber.get().createInjector(UnboxedPrimitiveComponent())
+    val injector = Lightsaber.Builder().build().createInjector(UnboxedPrimitiveComponent())
     val container = UnboxedInjectableContainer()
     injector.injectMembers(container)
 
@@ -41,7 +41,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testUnboxedIntoBoxedInjection() {
-    val injector = Lightsaber.get().createInjector(UnboxedPrimitiveComponent())
+    val injector = Lightsaber.Builder().build().createInjector(UnboxedPrimitiveComponent())
     val container = BoxedInjectableContainer()
     injector.injectMembers(container)
 
@@ -58,7 +58,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testBoxedIntoUnboxedInjection() {
-    val injector = Lightsaber.get().createInjector(BoxedPrimitiveComponent())
+    val injector = Lightsaber.Builder().build().createInjector(BoxedPrimitiveComponent())
     val container = UnboxedInjectableContainer()
     injector.injectMembers(container)
 
@@ -75,7 +75,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testBoxedIntoBoxedInjection() {
-    val injector = Lightsaber.get().createInjector(BoxedPrimitiveComponent())
+    val injector = Lightsaber.Builder().build().createInjector(BoxedPrimitiveComponent())
     val container = BoxedInjectableContainer()
     injector.injectMembers(container)
 
@@ -92,7 +92,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testUnboxedForUnboxedConstruction() {
-    val injector = Lightsaber.get().createInjector(UnboxedPrimitiveComponent())
+    val injector = Lightsaber.Builder().build().createInjector(UnboxedPrimitiveComponent())
     val container = injector.getInstance<UnboxedConstructableContainer>()
 
     val module = UnboxedPrimitiveModule()
@@ -108,7 +108,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testUnboxedForBoxedConstruction() {
-    val injector = Lightsaber.get().createInjector(UnboxedPrimitiveComponent())
+    val injector = Lightsaber.Builder().build().createInjector(UnboxedPrimitiveComponent())
     val container = injector.getInstance<BoxedConstructableContainer>()
 
     val module = UnboxedPrimitiveModule()
@@ -124,7 +124,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testBoxedForUnboxedConstruction() {
-    val injector = Lightsaber.get().createInjector(BoxedPrimitiveComponent())
+    val injector = Lightsaber.Builder().build().createInjector(BoxedPrimitiveComponent())
     val container = injector.getInstance<UnboxedConstructableContainer>()
 
     val module = BoxedPrimitiveModule()
@@ -140,7 +140,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testBoxedForBoxedConstruction() {
-    val injector = Lightsaber.get().createInjector(BoxedPrimitiveComponent())
+    val injector = Lightsaber.Builder().build().createInjector(BoxedPrimitiveComponent())
     val container = injector.getInstance<BoxedConstructableContainer>()
 
     val module = BoxedPrimitiveModule()
@@ -156,7 +156,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testUnboxedProvision() {
-    val injector = Lightsaber.get().createInjector(UnboxedPrimitiveComponent())
+    val injector = Lightsaber.Builder().build().createInjector(UnboxedPrimitiveComponent())
 
     val unboxedResult = injector.getInstance<UnboxedResult>()
     val boxedResult = injector.getInstance<BoxedResult>()
@@ -167,7 +167,7 @@ class PrimitiveInjectionTest {
 
   @Test
   fun testBoxedProvision() {
-    val injector = Lightsaber.get().createInjector(BoxedPrimitiveComponent())
+    val injector = Lightsaber.Builder().build().createInjector(BoxedPrimitiveComponent())
 
     val unboxedResult = injector.getInstance<UnboxedResult>()
     val boxedResult = injector.getInstance<BoxedResult>()

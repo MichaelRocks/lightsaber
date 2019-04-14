@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,14 @@ import static org.junit.Assert.assertSame;
 public class AccessTest {
   @Test
   public void testInjectionAccess() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final InternalDependency target = injector.getInstance(Key.of(InternalDependency.class));
     target.action();
   }
 
   @Test
   public void testInjectionAccessWithQualifier() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final InternalQualifier qualifier = AnnotationHolder.class.getAnnotation(InternalQualifier.class);
     final InternalDependency target = injector.getInstance(Key.of(InternalDependency.class, qualifier));
     target.action();
@@ -47,7 +47,7 @@ public class AccessTest {
 
   @Test
   public void testInjectionAccessWithSingletonScope() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final SingletonQualifier qualifier = AnnotationHolder.class.getAnnotation(SingletonQualifier.class);
     final InternalDependency target1 = injector.getInstance(Key.of(InternalDependency.class, qualifier));
     final InternalDependency target2 = injector.getInstance(Key.of(InternalDependency.class, qualifier));
@@ -58,14 +58,14 @@ public class AccessTest {
 
   @Test
   public void testArrayInjectionAccess() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final InternalDependency[] target = injector.getInstance(Key.of(InternalDependency[].class));
     target[0].action();
   }
 
   @Test
   public void testArrayInjectionAccessWithQualifier() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final InternalQualifier qualifier = AnnotationHolder.class.getAnnotation(InternalQualifier.class);
     final InternalDependency[] target = injector.getInstance(Key.of(InternalDependency[].class, qualifier));
     target[0].action();
@@ -73,7 +73,7 @@ public class AccessTest {
 
   @Test
   public void testArrayInjectionAccessWithSingletonScope() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final SingletonQualifier qualifier = AnnotationHolder.class.getAnnotation(SingletonQualifier.class);
     final InternalDependency[] target1 = injector.getInstance(Key.of(InternalDependency[].class, qualifier));
     final InternalDependency[] target2 = injector.getInstance(Key.of(InternalDependency[].class, qualifier));
@@ -84,7 +84,7 @@ public class AccessTest {
 
   @Test
   public void testGenericInjectionAccess() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final InternalGenericDependency<InternalDependency> target =
         injector.getInstance(createInternalGenericDependencyKey(null));
     target.action();
@@ -92,7 +92,7 @@ public class AccessTest {
 
   @Test
   public void testGenericInjectionAccessWithQualifier() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final InternalQualifier qualifier = AnnotationHolder.class.getAnnotation(InternalQualifier.class);
     final InternalGenericDependency<InternalDependency> target =
         injector.getInstance(createInternalGenericDependencyKey(qualifier));
@@ -101,7 +101,7 @@ public class AccessTest {
 
   @Test
   public void testGenericInjectionAccessWithSingletonScope() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final SingletonQualifier qualifier = AnnotationHolder.class.getAnnotation(SingletonQualifier.class);
     final InternalGenericDependency<InternalDependency> target1 =
         injector.getInstance(createInternalGenericDependencyKey(qualifier));
@@ -114,7 +114,7 @@ public class AccessTest {
 
   @Test
   public void testGenericArrayInjectionAccess() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final InternalGenericDependency<InternalDependency>[] target =
         injector.getInstance(createInternalGenericArrayDependencyKey(null));
     target[0].action();
@@ -122,7 +122,7 @@ public class AccessTest {
 
   @Test
   public void testGenericArrayInjectionAccessWithQualifier() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final InternalQualifier qualifier = AnnotationHolder.class.getAnnotation(InternalQualifier.class);
     final InternalGenericDependency<InternalDependency>[] target =
         injector.getInstance(createInternalGenericArrayDependencyKey(qualifier));
@@ -131,7 +131,7 @@ public class AccessTest {
 
   @Test
   public void testGenericArrayInjectionAccessWithSingletonScope() {
-    final Injector injector = Lightsaber.get().createInjector(new AccessComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new AccessComponent());
     final SingletonQualifier qualifier = AnnotationHolder.class.getAnnotation(SingletonQualifier.class);
     final InternalGenericDependency<InternalDependency>[] target1 =
         injector.getInstance(createInternalGenericArrayDependencyKey(qualifier));
