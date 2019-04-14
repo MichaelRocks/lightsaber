@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ class MainActivity : Activity() {
 
     val afterInjectionTextView = findViewById<TextView>(R.id.afterInjectionTextView)
 
-    val injector = Lightsaber.get().createInjector(LightsaberComponent())
+    val injector = Lightsaber.Builder().build().createInjector(LightsaberComponent())
     injector.injectMembers(this)
 
     print(afterInjectionTextView, "Wookiee: $wookiee from ${wookiee.planet}")

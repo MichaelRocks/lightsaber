@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,14 @@ import javax.inject.Inject
 class LambdaInjectionTest {
   @Test
   fun testLambdaConstructorInjection() {
-    val injector = lightsaber.createInjector(LambdaComponent())
+    val injector = Lightsaber.Builder().build().createInjector(LambdaComponent())
     val target = injector.getInstance<ConstructorInjectionTarget>()
     validateTarget(LambdaModule(), target)
   }
 
   @Test
   fun testLambdaFieldInjection() {
-    val injector = lightsaber.createInjector(LambdaComponent())
+    val injector = Lightsaber.Builder().build().createInjector(LambdaComponent())
     val target = FieldInjectionTarget()
     injector.injectMembers(target)
     validateTarget(LambdaModule(), target)
@@ -38,7 +38,7 @@ class LambdaInjectionTest {
 
   @Test
   fun testLambdaMethodInjection() {
-    val injector = lightsaber.createInjector(LambdaComponent())
+    val injector = Lightsaber.Builder().build().createInjector(LambdaComponent())
     val target = MethodInjectionTarget()
     injector.injectMembers(target)
     validateTarget(LambdaModule(), target)

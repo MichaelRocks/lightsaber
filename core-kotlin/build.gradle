@@ -24,7 +24,7 @@ targetCompatibility = javaVersion
 dependencies {
   api project(':core')
 
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib$kotlinRuntimeVariant:$kotlinVersion"
 
   testImplementation "junit:junit:$junitVersion"
 }

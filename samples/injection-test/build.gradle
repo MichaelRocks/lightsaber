@@ -22,7 +22,7 @@ sourceCompatibility = javaVersion
 targetCompatibility = javaVersion
 
 dependencies {
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib$kotlinRuntimeVariant:$kotlinVersion"
 
   testImplementation "io.michaelrocks:lightsaber-core-kotlin:$version"
   testImplementation "junit:junit:$junitVersion"

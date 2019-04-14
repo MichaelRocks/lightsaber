@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.lang.annotation.Annotation;
-
 import javax.annotation.Nonnull;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -37,11 +35,12 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 public class LightsaberTest {
   @Test
   public void testCreateInjector() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber();
+    final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);
@@ -55,7 +54,7 @@ public class LightsaberTest {
 
   @Test
   public void testCreateChildInjector() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber();
+    final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childComponent = createChildComponent();
 
@@ -76,7 +75,7 @@ public class LightsaberTest {
 
   @Test
   public void testCreateChildInjectorWithAnnotation() throws Exception {
-    final Lightsaber lightsaber = new Lightsaber();
+    final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();
 
@@ -88,11 +87,45 @@ public class LightsaberTest {
     verifyNoMoreInteractions(parentComponent);
     verify(childAnnotatedComponent).configureInjector((LightsaberInjector) childInjector);
     verifyNoMoreInteractions(childAnnotatedComponent);
-    final Named annotation = new NamedProxy("Annotated");
+    final Named annotation = createNamedAnnotation("Annotated");
     assertSame(injector, injector.getInstance(Key.of(Injector.class)));
     assertSame(childInjector, childInjector.getInstance(Key.of(Injector.class)));
     assertEquals("Parent String", childInjector.getInstance(String.class));
     assertEquals("Parent String", childInjector.getInstance(Key.of(String.class)));
+    assertEquals("Child Annotated String", childInjector.getInstance(Key.of(String.class, annotation)));
+  }
+
+  @Test
+  public void testInjectionInterceptor() {
+    // noinspection unchecked
+    final Provider<String> stringProvider = mock(Provider.class);
+    when(stringProvider.get()).thenReturn("StringInstanceClass", "StringInstanceKey", "StringProviderClass", "StringProviderKey");
+    // noinspection unchecked
+    final Provider<Object> objectProvider = mock(Provider.class);
+    when(objectProvider.get()).thenReturn("ObjectInstanceClass", "ObjectInstanceKey", "ObjectProviderClass", "ObjectProviderKey");
+    final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
+        .addProviderForClass(String.class, stringProvider)
+        .addProviderForClass(Object.class, objectProvider)
+        .build();
+
+    final Lightsaber lightsaber = new Lightsaber.Builder().addProviderInterceptor(interceptor).build();
+    final InjectorConfigurator parentComponent = createParentComponent();
+    final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();
+
+    final Injector injector = lightsaber.createInjector(parentComponent);
+    final Injector childInjector = lightsaber.createChildInjector(injector, childAnnotatedComponent);
+
+    assertEquals("StringInstanceClass", childInjector.getInstance(String.class));
+    assertEquals("StringInstanceKey", childInjector.getInstance(Key.of(String.class)));
+    assertEquals("StringProviderClass", childInjector.getProvider(String.class).get());
+    assertEquals("StringProviderKey", childInjector.getProvider(Key.of(String.class)).get());
+
+    assertEquals("ObjectInstanceClass", childInjector.getInstance(Object.class));
+    assertEquals("ObjectInstanceKey", childInjector.getInstance(Key.of(Object.class)));
+    assertEquals("ObjectProviderClass", childInjector.getProvider(Object.class).get());
+    assertEquals("ObjectProviderKey", childInjector.getProvider(Key.of(Object.class)).get());
+
+    final Named annotation = createNamedAnnotation("Annotated");
     assertEquals("Child Annotated String", childInjector.getInstance(Key.of(String.class, annotation)));
   }
 
@@ -142,7 +175,7 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) throws Throwable {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(Key.of(String.class, new NamedProxy("Annotated")),
+        injector.registerProvider(Key.of(String.class, createNamedAnnotation("Annotated")),
             new Provider<String>() {
               @Nonnull
               @Override
@@ -157,43 +190,7 @@ public class LightsaberTest {
     return configurator;
   }
 
-  @SuppressWarnings("ClassExplicitlyAnnotation")
-  private static class NamedProxy implements Named {
-    @Nonnull
-    private final String value;
-
-    NamedProxy(@Nonnull final String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String value() {
-      return value;
-    }
-
-    @Override
-    public Class<? extends Annotation> annotationType() {
-      return Named.class;
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-      if (this == object) {
-        return true;
-      }
-
-      if (!(object instanceof Named)) {
-        return false;
-      }
-
-      final Named that = (Named) object;
-      return value.equals(that.value());
-    }
-
-    @Override
-    public int hashCode() {
-      // Hash code for annotation is the sum of 127 * fieldName.hashCode() ^ fieldValue.hashCode().
-      return 127 * "value".hashCode() ^ value.hashCode();
-    }
+  private static Named createNamedAnnotation(@SuppressWarnings("SameParameterValue") final String value) {
+    return new AnnotationBuilder<Named>(Named.class).addMember("value", value).build();
   }
 }

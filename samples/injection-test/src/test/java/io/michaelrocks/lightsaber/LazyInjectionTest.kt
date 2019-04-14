@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@ import javax.inject.Inject
 class LazyInjectionTest {
   @Test
   fun testLazyConstructorInjection() {
-    val injector = lightsaber.createInjector(LazyComponent())
+    val injector = Lightsaber.Builder().build().createInjector(LazyComponent())
     val target = injector.getInstance<ConstructorInjectionTarget>()
     validateTarget(LazyModule(), target)
   }
 
   @Test
   fun testLazyFieldInjection() {
-    val injector = lightsaber.createInjector(LazyComponent())
+    val injector = Lightsaber.Builder().build().createInjector(LazyComponent())
     val target = FieldInjectionTarget()
     injector.injectMembers(target)
     validateTarget(LazyModule(), target)
@@ -40,7 +40,7 @@ class LazyInjectionTest {
 
   @Test
   fun testLazyMethodInjection() {
-    val injector = lightsaber.createInjector(LazyComponent())
+    val injector = Lightsaber.Builder().build().createInjector(LazyComponent())
     val target = MethodInjectionTarget()
     injector.injectMembers(target)
     validateTarget(LazyModule(), target)

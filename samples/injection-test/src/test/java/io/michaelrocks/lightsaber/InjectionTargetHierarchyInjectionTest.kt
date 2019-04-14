@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import javax.inject.Inject
 class InjectionTargetHierarchyInjectionTest {
   @Test
   fun testFieldTargets() {
-    val lightsaber = Lightsaber.get()
+    val lightsaber = Lightsaber.Builder().build()
     val injector = lightsaber.createInjector(InjectionTargetHierarchyComponent())
     val target = FieldTarget4()
     injector.injectMembers(target)
@@ -34,7 +34,7 @@ class InjectionTargetHierarchyInjectionTest {
 
   @Test
   fun testMethodTargets() {
-    val lightsaber = Lightsaber.get()
+    val lightsaber = Lightsaber.Builder().build()
     val injector = lightsaber.createInjector(InjectionTargetHierarchyComponent())
     val target = MethodTarget4()
     injector.injectMembers(target)

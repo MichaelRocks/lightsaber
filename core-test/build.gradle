@@ -21,11 +21,10 @@ sourceCompatibility = javaVersion
 targetCompatibility = javaVersion
 
 dependencies {
-  api "javax.inject:javax.inject:$javaxInjectVersion"
+  implementation project(":core")
 
   implementation "com.google.code.findbugs:jsr305:$jsr305Version"
 
-  testImplementation project(':core-test')
   testImplementation "junit:junit:$junitVersion"
   testImplementation "org.mockito:mockito-core:$mockitoVersion"
   testImplementation "com.google.code.findbugs:jsr305:$jsr305Version"
@@ -33,4 +32,8 @@ dependencies {
 
 jar {
   destinationDirectory.set(file('build/jar'))
+}
+
+pablo {
+  artifactName 'lightsaber-test'
 }

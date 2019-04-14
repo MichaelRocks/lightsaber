@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,14 @@
 
 package io.michaelrocks.lightsaber.sample;
 
-import io.michaelrocks.lightsaber.Injector;
-import io.michaelrocks.lightsaber.Lightsaber;
+import java.io.File;
+import java.net.URISyntaxException;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.io.File;
-import java.net.URISyntaxException;
+
+import io.michaelrocks.lightsaber.Injector;
+import io.michaelrocks.lightsaber.Lightsaber;
 
 public class LightsaberSample {
   @Inject
@@ -53,7 +54,7 @@ public class LightsaberSample {
     System.out.println("Droid: " + droid);
     System.out.println("Darth Vader: " + darthVader);
     System.out.println("Planet: " + planet);
-    final Injector injector = Lightsaber.get().createInjector(new LightsaberComponent());
+    final Injector injector = new Lightsaber.Builder().build().createInjector(new LightsaberComponent());
     injector.injectMembers(this);
     System.out.println("After injection");
     System.out.println("Wookiee: " + wookiee + " from " + wookiee.getPlanet());

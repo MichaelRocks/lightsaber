@@ -26,7 +26,7 @@ mainClassName = 'io.michaelrocks.lightsaber.processor.LightsaberProcessor'
 
 dependencies {
   implementation project(':core')
-  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion"
+  implementation "org.jetbrains.kotlin:kotlin-stdlib$kotlinRuntimeVariant:$kotlinVersion"
 
   implementation "com.beust:jcommander:$jcommanderVersion"
   implementation "io.michaelrocks:bimap:$bimapVersion"
