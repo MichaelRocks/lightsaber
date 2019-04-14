@@ -695,6 +695,44 @@ final Lightsaber lightsaber = new Lightsaber.Builder()
     .build();
 ``` 
 
+### Testing
+
+To simplify unit testing and dependency substitution you can add a special testing module to your project's configuration:
+
+```groovy
+dependencies {
+  testImplementation 'io.michaelrocks:lightsaber-core-test:0.11.0-beta'
+}
+```
+
+This module allows you to build a `ProviderInterceptor` using a convenient builder API. Moreover, it supports creation of annotation proxies at
+runtime, so you'll be able to deal with qualified dependencies easily.
+
+```java
+// Create a provider of Battery instances.
+final Provider<Battery> provider = new Provider<Battery>() {
+  @Override
+  public Battery get() {
+    return new TestBattery();
+  }
+};
+
+// Create a proxy for @Named("primary") annotation.
+final Named annotation = new AnnotationBuilder<Named>(Named.class)
+    .addMember("value", "primary")
+    .build();
+
+// Create a provider interceptor that replaces the primary battery with the test one.
+final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
+    .addProviderForClass(Battery.class, annotation, provider)
+    .build();
+
+// Create a Lightsaber instance for unit testing. 
+final Lightsaber lightsaber = new Lightsaber.Builder()
+    .addProviderInterceptor(interceptor)
+    .build();
+``` 
+
 License
 -------
 
