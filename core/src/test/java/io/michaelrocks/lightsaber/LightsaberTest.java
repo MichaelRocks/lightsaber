@@ -20,8 +20,6 @@ import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import java.lang.annotation.Annotation;
-
 import javax.annotation.Nonnull;
 import javax.inject.Named;
 import javax.inject.Provider;
@@ -89,7 +87,7 @@ public class LightsaberTest {
     verifyNoMoreInteractions(parentComponent);
     verify(childAnnotatedComponent).configureInjector((LightsaberInjector) childInjector);
     verifyNoMoreInteractions(childAnnotatedComponent);
-    final Named annotation = new NamedProxy("Annotated");
+    final Named annotation = createNamedAnnotation("Annotated");
     assertSame(injector, injector.getInstance(Key.of(Injector.class)));
     assertSame(childInjector, childInjector.getInstance(Key.of(Injector.class)));
     assertEquals("Parent String", childInjector.getInstance(String.class));
@@ -105,22 +103,10 @@ public class LightsaberTest {
     // noinspection unchecked
     final Provider<Object> objectProvider = mock(Provider.class);
     when(objectProvider.get()).thenReturn("ObjectInstanceClass", "ObjectInstanceKey", "ObjectProviderClass", "ObjectProviderKey");
-    final ProviderInterceptor interceptor = new ProviderInterceptor() {
-      private final Key<?> stringKey = Key.of(String.class);
-      private final Key<?> objectKey = Key.of(Object.class);
-
-      @Nonnull
-      @Override
-      public Provider<?> intercept(@Nonnull final Chain chain, @Nonnull final Key<?> key) {
-        if (stringKey.equals(key)) {
-          return stringProvider;
-        } else if (objectKey.equals(key)) {
-          return  objectProvider;
-        } else {
-          return chain.proceed(key);
-        }
-      }
-    };
+    final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
+        .addProviderForClass(String.class, stringProvider)
+        .addProviderForClass(Object.class, objectProvider)
+        .build();
 
     final Lightsaber lightsaber = new Lightsaber.Builder().addProviderInterceptor(interceptor).build();
     final InjectorConfigurator parentComponent = createParentComponent();
@@ -139,7 +125,7 @@ public class LightsaberTest {
     assertEquals("ObjectProviderClass", childInjector.getProvider(Object.class).get());
     assertEquals("ObjectProviderKey", childInjector.getProvider(Key.of(Object.class)).get());
 
-    final Named annotation = new NamedProxy("Annotated");
+    final Named annotation = createNamedAnnotation("Annotated");
     assertEquals("Child Annotated String", childInjector.getInstance(Key.of(String.class, annotation)));
   }
 
@@ -189,7 +175,7 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) throws Throwable {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(Key.of(String.class, new NamedProxy("Annotated")),
+        injector.registerProvider(Key.of(String.class, createNamedAnnotation("Annotated")),
             new Provider<String>() {
               @Nonnull
               @Override
@@ -204,43 +190,7 @@ public class LightsaberTest {
     return configurator;
   }
 
-  @SuppressWarnings("ClassExplicitlyAnnotation")
-  private static class NamedProxy implements Named {
-    @Nonnull
-    private final String value;
-
-    NamedProxy(@Nonnull final String value) {
-      this.value = value;
-    }
-
-    @Override
-    public String value() {
-      return value;
-    }
-
-    @Override
-    public Class<? extends Annotation> annotationType() {
-      return Named.class;
-    }
-
-    @Override
-    public boolean equals(final Object object) {
-      if (this == object) {
-        return true;
-      }
-
-      if (!(object instanceof Named)) {
-        return false;
-      }
-
-      final Named that = (Named) object;
-      return value.equals(that.value());
-    }
-
-    @Override
-    public int hashCode() {
-      // Hash code for annotation is the sum of 127 * fieldName.hashCode() ^ fieldValue.hashCode().
-      return 127 * "value".hashCode() ^ value.hashCode();
-    }
+  private static Named createNamedAnnotation(@SuppressWarnings("SameParameterValue") final String value) {
+    return new AnnotationBuilder<Named>(Named.class).addMember("value", value).build();
   }
 }

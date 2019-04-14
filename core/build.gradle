@@ -25,6 +25,7 @@ dependencies {
 
   implementation "com.google.code.findbugs:jsr305:$jsr305Version"
 
+  testImplementation project(':core-test')
   testImplementation "junit:junit:$junitVersion"
   testImplementation "org.mockito:mockito-core:$mockitoVersion"
   testImplementation "com.google.code.findbugs:jsr305:$jsr305Version"
