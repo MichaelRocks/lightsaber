@@ -162,7 +162,8 @@ One of the reasons why you need a component is that its instance should be passe
 creates an `Injector`. Finally, when a component is defined you can create an injector with this component.
 
 ```
-Injector injector = Lightsaber.get().createInjector(DroidComponent());
+Lightsaber lightsaber = new Lightsaber.Builder().build(); 
+Injector injector = lightsaber.createInjector(DroidComponent());
 ```
 
 The `createInjector()` method accepts a single component and returns an injector that can provide any dependency from
@@ -585,11 +586,12 @@ Now we can create child injectors passing different instances of the `BatteryCom
 `createChildInjector()` method.
 
 ```
-Injector droidInjector = Lightsaber.get().createInjector(new DroidComponent());
+Lightsaber lightsaber = new Lightsaber.Builder().build();
+Injector droidInjector = lightsaber.createInjector(new DroidComponent());
 Injector nuclearBatteryInjector =
-    Lightsaber.get().createChildInjector(droidInjector, new BatteryComponent("Nuclear"));
+    lightsaber.createChildInjector(droidInjector, new BatteryComponent("Nuclear"));
 Injector plasmBatteryInjector =
-    Lightsaber.get().createChildInjector(droidInjector, new BatteryComponent("Plasm"));
+    lightsaber.createChildInjector(droidInjector, new BatteryComponent("Plasm"));
 
 Droid nuclearBatteryDroid = nuclearBatteryInjector.getInstance(Droid.class);
 Droid plasmBatteryDroid = plasmBatteryInjector.getInstance(Droid.class);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,14 +50,14 @@ import kotlin.reflect.KClass
 class QualifiedInjectionTest {
   @Test
   fun testConstructionInjection() {
-    val injector = Lightsaber.get().createInjector(QualifiedComponent())
+    val injector = Lightsaber.Builder().build().createInjector(QualifiedComponent())
     val container = injector.getInstance<ConstructorInjectionContainer>()
     validateContainer(QualifiedModule(), container)
   }
 
   @Test
   fun testFieldInjection() {
-    val injector = Lightsaber.get().createInjector(QualifiedComponent())
+    val injector = Lightsaber.Builder().build().createInjector(QualifiedComponent())
     val container = FieldInjectionContainer()
     injector.injectMembers(container)
     validateContainer(QualifiedModule(), container)
@@ -65,7 +65,7 @@ class QualifiedInjectionTest {
 
   @Test
   fun testMethodInjection() {
-    val injector = Lightsaber.get().createInjector(QualifiedComponent())
+    val injector = Lightsaber.Builder().build().createInjector(QualifiedComponent())
     val container = MethodInjectionContainer()
     injector.injectMembers(container)
     validateContainer(QualifiedModule(), container)

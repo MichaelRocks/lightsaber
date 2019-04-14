@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,14 +25,14 @@ import javax.inject.Inject
 class GenericInjectionTest {
   @Test
   fun testGenericConstructorInjection() {
-    val injector = lightsaber.createInjector(GenericComponent())
+    val injector = Lightsaber.Builder().build().createInjector(GenericComponent())
     val target = injector.getInstance<ConstructorInjectionTarget>()
     validateTarget(GenericModule(), target)
   }
 
   @Test
   fun testGenericFieldInjection() {
-    val injector = lightsaber.createInjector(GenericComponent())
+    val injector = Lightsaber.Builder().build().createInjector(GenericComponent())
     val target = FieldInjectionTarget()
     injector.injectMembers(target)
     validateTarget(GenericModule(), target)
@@ -40,7 +40,7 @@ class GenericInjectionTest {
 
   @Test
   fun testGenericMethodInjection() {
-    val injector = lightsaber.createInjector(GenericComponent())
+    val injector = Lightsaber.Builder().build().createInjector(GenericComponent())
     val target = MethodInjectionTarget()
     injector.injectMembers(target)
     validateTarget(GenericModule(), target)
@@ -48,7 +48,7 @@ class GenericInjectionTest {
 
   @Test
   fun testGetGenericInstanceWithKey() {
-    val injector = lightsaber.createInjector(GenericComponent())
+    val injector = Lightsaber.Builder().build().createInjector(GenericComponent())
     val token = object : TypeToken<List<@JvmSuppressWildcards String>>() {}
     val type = (token.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0]
     val key = Key.of<List<String>>(type)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import javax.inject.Singleton
 class CycleInjectionTest {
   @Test
   fun testCycleInjection() {
-    val injector = lightsaber.createInjector(CycleComponent())
+    val injector = Lightsaber.Builder().build().createInjector(CycleComponent())
     val cycleTarget1 = injector.getInstance<CycleTarget1>()
     val cycleTarget2 = injector.getInstance<CycleTarget2>()
     assertSame(cycleTarget2, cycleTarget1.cycleTarget2)
@@ -35,7 +35,7 @@ class CycleInjectionTest {
 
   @Test
   fun testFieldCycleInjection() {
-    val injector = lightsaber.createInjector(CycleComponent())
+    val injector = Lightsaber.Builder().build().createInjector(CycleComponent())
     val fieldCycleTarget1 = injector.getInstance<FieldCycleTarget1>()
     val fieldCycleTarget2 = injector.getInstance<FieldCycleTarget2>()
     assertSame(fieldCycleTarget2, fieldCycleTarget1.fieldCycleTarget2)
@@ -45,7 +45,7 @@ class CycleInjectionTest {
 
   @Test
   fun testMethodCycleInjection() {
-    val injector = lightsaber.createInjector(CycleComponent())
+    val injector = Lightsaber.Builder().build().createInjector(CycleComponent())
     val methodCycleTarget1 = injector.getInstance<MethodCycleTarget1>()
     val methodCycleTarget2 = injector.getInstance<MethodCycleTarget2>()
     assertSame(methodCycleTarget2, methodCycleTarget1.methodCycleTarget2)
