@@ -701,7 +701,7 @@ To simplify unit testing and dependency substitution you can add a special testi
 
 ```groovy
 dependencies {
-  testImplementation 'io.michaelrocks:lightsaber-core-test:0.11.0-beta'
+  testImplementation 'io.michaelrocks:lightsaber-test:0.11.0-beta'
 }
 ```
 

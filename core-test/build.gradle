@@ -33,3 +33,7 @@ dependencies {
 jar {
   destinationDirectory.set(file('build/jar'))
 }
+
+pablo {
+  artifactName 'lightsaber-test'
+}
