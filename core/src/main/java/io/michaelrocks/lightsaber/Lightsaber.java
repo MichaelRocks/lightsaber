@@ -34,7 +34,12 @@ public class Lightsaber {
     interceptors = builder.interceptors == null ? null : new ArrayList<ProviderInterceptor>(builder.interceptors);
   }
 
+  /**
+   * @return A {@link Lightsaber} instance.
+   * @deprecated Use {@link Lightsaber.Builder} instead.
+   */
   @Nonnull
+  @Deprecated
   public static Lightsaber get() {
     return Holder.INSTANCE;
   }
