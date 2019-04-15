@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,9 +59,7 @@ class LightsaberTransform(private val project: Project) : Transform() {
           it.jarInputs.map { it.file } + it.directoryInputs.map { it.file }
         },
         bootClasspath = project.android.bootClasspath,
-        projectName = invocation.context.path.replace(":transformClassesWithLightsaberFor", ":").replace(':', '$'),
-        debug = logger.isDebugEnabled,
-        info = logger.isInfoEnabled
+        projectName = invocation.context.path.replace(":transformClassesWithLightsaberFor", ":").replace(':', '$')
     )
     logger.info("Starting Lightsaber processor: {}", parameters)
     val processor = LightsaberProcessor(parameters)

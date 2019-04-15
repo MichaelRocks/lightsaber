@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,9 +57,7 @@ open class LightsaberTask : DefaultTask() {
         classpath = classpath,
         bootClasspath = bootClasspath,
         gen = classesDirs[0],
-        projectName = name.orEmpty().replace(":lightsaberProcess", ":").replace(':', '$'),
-        debug = logger.isDebugEnabled,
-        info = logger.isInfoEnabled
+        projectName = name.orEmpty().replace(":lightsaberProcess", ":").replace(':', '$')
     )
 
     logger.info("Starting Lightsaber processor: {}", parameters)

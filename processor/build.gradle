@@ -28,7 +28,6 @@ dependencies {
   implementation project(':core')
   implementation "org.jetbrains.kotlin:kotlin-stdlib$kotlinRuntimeVariant:$kotlinVersion"
 
-  implementation "com.beust:jcommander:$jcommanderVersion"
   implementation "io.michaelrocks:bimap:$bimapVersion"
   implementation "ch.qos.logback:logback-classic:$logbackVersion"
 

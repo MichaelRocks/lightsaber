@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,46 +16,13 @@
 
 package io.michaelrocks.lightsaber.processor
 
-import ch.qos.logback.classic.Level
-import com.beust.jcommander.Parameter
-import com.beust.jcommander.converters.FileConverter
 import java.io.File
 
 data class LightsaberParameters(
-    @Parameter(names = ["--inputs"], description = "Jar files and/or class directories to process")
-    var inputs: List<File> = emptyList(),
-    @Parameter(
-        names = ["--outputs"],
-        description = "Output jar files and/or class directories matching inputs"
-    )
-    var outputs: List<File> = emptyList(),
-    @Parameter(
-        names = ["--classpath"],
-        listConverter = FileConverter::class, description = "Classpath",
-        variableArity = true
-    )
-    var classpath: List<File> = emptyList(),
-    @Parameter(
-        names = ["--bootclasspath"],
-        listConverter = FileConverter::class, description = "Boot classpath",
-        variableArity = true
-    )
-    var bootClasspath: List<File> = emptyList(),
-    @Parameter(names = ["--gen"], description = "Output directory for generated .class files")
-    var gen: File? = null,
-    @Parameter(names = ["-p", "--project"], description = "Project name used in names of some generated classes")
-    var projectName: String = "",
-    @Parameter(names = ["-i", "--info"], description = "Enable detailed logging")
-    var info: Boolean = false,
-    @Parameter(names = ["-d", "--debug"], description = "Enable verbose logging")
-    var debug: Boolean = false,
-    @Parameter(names = ["--stacktrace"], description = "Print stack traces")
-    var printStacktrace: Boolean = false
-) {
-  val loggingLevel: Level
-    get() = when {
-      debug -> Level.DEBUG
-      info -> Level.INFO
-      else -> Level.WARN
-    }
-}
+    var inputs: List<File>,
+    var outputs: List<File>,
+    var classpath: List<File>,
+    var bootClasspath: List<File>,
+    var gen: File,
+    var projectName: String
+)
