@@ -38,7 +38,7 @@ class ChildInjectionTest {
     val parentInjector = lightsaber.createInjector(ParentComponent())
     val parentString = parentInjector.getInstance<String>()
     assertEquals("Parent String", parentString)
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     assertSame(parentString, parentInjector.getInstance<String>())
     assertSame(parentString, childInjector.getInstance<String>())
   }
@@ -46,7 +46,7 @@ class ChildInjectionTest {
   @Test
   fun testCreateSingletonAfterChildInjector() {
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     val parentString = parentInjector.getInstance<String>()
     assertEquals("Parent String", parentString)
     assertSame(parentString, parentInjector.getInstance<String>())
@@ -56,7 +56,7 @@ class ChildInjectionTest {
   @Test
   fun testCreateSingletonInChildInjector() {
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     val childString = childInjector.getInstance<String>()
     assertEquals("Parent String", childString)
     assertSame(childString, parentInjector.getInstance<String>())
@@ -66,8 +66,8 @@ class ChildInjectionTest {
   @Test
   fun testCreateSingletonInTwoChildInjectors() {
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector1 = lightsaber.createChildInjector(parentInjector, ChildComponent())
-    val childInjector2 = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector1 = parentInjector.createChildInjector(ChildComponent())
+    val childInjector2 = parentInjector.createChildInjector(ChildComponent())
     val childObject1 = childInjector1.getInstance<Any>()
     val childObject2 = childInjector2.getInstance<Any>()
     assertEquals("Child Object", childObject1)
@@ -78,7 +78,7 @@ class ChildInjectionTest {
   @Test
   fun testCreateUnboundDependencyWithChildComponentDependency() {
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     val target = childInjector.getInstance<PackageDependencyTarget>()
     assertEquals("Child String", target.packageDependency.namedString)
   }

@@ -59,7 +59,7 @@ public class LightsaberTest {
     final InjectorConfigurator childComponent = createChildComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);
-    final Injector childInjector = lightsaber.createChildInjector(injector, childComponent);
+    final Injector childInjector = injector.createChildInjector(childComponent);
 
     verify(parentComponent).configureInjector((LightsaberInjector) injector);
     verifyNoMoreInteractions(parentComponent);
@@ -80,8 +80,7 @@ public class LightsaberTest {
     final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);
-    final Injector childInjector =
-        lightsaber.createChildInjector(injector, childAnnotatedComponent);
+    final Injector childInjector = injector.createChildInjector(childAnnotatedComponent);
 
     verify(parentComponent).configureInjector((LightsaberInjector) injector);
     verifyNoMoreInteractions(parentComponent);
@@ -113,7 +112,7 @@ public class LightsaberTest {
     final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);
-    final Injector childInjector = lightsaber.createChildInjector(injector, childAnnotatedComponent);
+    final Injector childInjector = injector.createChildInjector(childAnnotatedComponent);
 
     assertEquals("StringInstanceClass", childInjector.getInstance(String.class));
     assertEquals("StringInstanceKey", childInjector.getInstance(Key.of(String.class)));

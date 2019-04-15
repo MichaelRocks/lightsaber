@@ -24,7 +24,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 
-import io.michaelrocks.lightsaber.internal.InjectorConfigurator;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 
 public class Lightsaber {
@@ -51,9 +50,10 @@ public class Lightsaber {
 
   @Nonnull
   public Injector createInjector(@Nonnull final Object component) {
-    return createInjectorInternal(null, component);
+    return new LightsaberInjector(component, null, interceptors);
   }
 
+  /** @deprecated Use {@link Injector#createChildInjector(Object)} instead. */
   @Nonnull
   public Injector createChildInjector(@Nonnull final Injector parentInjector, @Nonnull final Object component) {
     // noinspection ConstantConditions
@@ -65,18 +65,7 @@ public class Lightsaber {
       throw new IllegalArgumentException("Cannot create a child injector for a non-Lightsaber injector");
     }
 
-    return createInjectorInternal((LightsaberInjector) parentInjector, component);
-  }
-
-  private LightsaberInjector createInjectorInternal(final LightsaberInjector parentInjector, final Object component) {
-    if (component == null) {
-      throw new NullPointerException("Trying to create an injector with a null component");
-    }
-
-    final LightsaberInjector injector = new LightsaberInjector(parentInjector, interceptors);
-    final InjectorConfigurator configurator = (InjectorConfigurator) component;
-    configurator.configureInjector(injector);
-    return injector;
+    return new LightsaberInjector(component, (LightsaberInjector) parentInjector, interceptors);
   }
 
   @Nonnull

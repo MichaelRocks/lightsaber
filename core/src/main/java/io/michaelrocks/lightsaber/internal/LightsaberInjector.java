@@ -32,7 +32,7 @@ public class LightsaberInjector implements Injector {
   private final List<ProviderInterceptor> interceptors;
   private final IterableMap<Object, Provider<?>> providers = new PolymorphicKeyHashMap<Provider<?>>();
 
-  public LightsaberInjector(final LightsaberInjector parent, final List<ProviderInterceptor> interceptors) {
+  public LightsaberInjector(@Nonnull final Object component, final LightsaberInjector parent, final List<ProviderInterceptor> interceptors) {
     this.parent = parent;
     this.interceptors = interceptors;
     registerProvider(Injector.class, new Provider<Injector>() {
@@ -41,6 +41,20 @@ public class LightsaberInjector implements Injector {
         return LightsaberInjector.this;
       }
     });
+
+    final InjectorConfigurator configurator = (InjectorConfigurator) component;
+    configurator.configureInjector(this);
+  }
+
+  @Nonnull
+  @Override
+  public Injector createChildInjector(@Nonnull final Object component) {
+    // noinspection ConstantConditions
+    if (component == null) {
+      throw new NullPointerException("Trying to create an injector with a null component");
+    }
+
+    return new LightsaberInjector(component, this, interceptors);
   }
 
   @Override

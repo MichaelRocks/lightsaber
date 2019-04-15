@@ -25,7 +25,7 @@ class ProvidedByInjectionTest {
   fun testProvidedByInjection() {
     val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     assertEquals("ProvidedBy", parentInjector.getInstance<ParentInjectionTarget>().string)
     assertEquals("ProvidedBy", childInjector.getInstance<ParentInjectionTarget>().string)
     assertEquals("ProvidedBy", childInjector.getInstance<ChildInjectionTarget>().parent.string)

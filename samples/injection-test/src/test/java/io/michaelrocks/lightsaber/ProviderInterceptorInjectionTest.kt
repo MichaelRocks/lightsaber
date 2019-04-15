@@ -51,7 +51,7 @@ class ProviderInterceptorInjectionTest {
     val childComponent = ChildComponent()
 
     val injector = lightsaber.createInjector(parentComponent)
-    val childInjector = lightsaber.createChildInjector(injector, childComponent)
+    val childInjector = injector.createChildInjector(childComponent)
 
     assertEquals("StringInstanceClass", childInjector.getInstance(String::class.java))
     assertEquals("StringInstanceKey", childInjector.getInstance(Key.of(String::class.java)))

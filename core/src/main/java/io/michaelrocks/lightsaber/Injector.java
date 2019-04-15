@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,15 @@
 
 package io.michaelrocks.lightsaber;
 
-import javax.annotation.Nonnull;
-import javax.inject.Provider;
 import java.lang.reflect.Type;
 
+import javax.annotation.Nonnull;
+import javax.inject.Provider;
+
 public interface Injector {
+  @Nonnull
+  Injector createChildInjector(@Nonnull final Object component);
+
   void injectMembers(@Nonnull Object target);
 
   @Nonnull

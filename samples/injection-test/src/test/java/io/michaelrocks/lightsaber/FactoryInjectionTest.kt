@@ -137,7 +137,7 @@ class FactoryInjectionTest {
   fun testMultipleMethodFactory() {
     val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentFactoryComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildFactoryComponent())
+    val childInjector = parentInjector.createChildInjector(ChildFactoryComponent())
     val factory = childInjector.getInstance<MultipleMethodFactory>()
     val target1 = factory.createTarget1("String1")
     val target2 = factory.createTarget2("String2")

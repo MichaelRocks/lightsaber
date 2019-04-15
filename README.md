@@ -489,7 +489,7 @@ And these types you cannot use:
 
 When defining a component you can specify any number of parent components of the component. Given an injector created
 with one of the parent components you can create a child injector by passing an instance of the child component to
-the `createChildInjector()` method of the `Lightsaber` class.
+the `createChildInjector()` method of the `Injector` interface.
 
 The child injector inherits all the dependencies of its ancestor components, overrides the `Injector` dependency with
 itself, and adds dependencies defined in its component. At the moment Lightsaber doesn't support dependency overriding
@@ -588,10 +588,10 @@ Now we can create child injectors passing different instances of the `BatteryCom
 ```
 Lightsaber lightsaber = new Lightsaber.Builder().build();
 Injector droidInjector = lightsaber.createInjector(new DroidComponent());
-Injector nuclearBatteryInjector =
-    lightsaber.createChildInjector(droidInjector, new BatteryComponent("Nuclear"));
+Injector nuclearBatteryInjector = 
+    droidInjector.createChildInjector(new BatteryComponent("Nuclear"));
 Injector plasmBatteryInjector =
-    lightsaber.createChildInjector(droidInjector, new BatteryComponent("Plasm"));
+    droidInjector.createChildInjector(new BatteryComponent("Plasm"));
 
 Droid nuclearBatteryDroid = nuclearBatteryInjector.getInstance(Droid.class);
 Droid plasmBatteryDroid = plasmBatteryInjector.getInstance(Droid.class);
