@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,17 @@
 package io.michaelrocks.lightsaber.sample
 
 import io.michaelrocks.lightsaber.Module
-import io.michaelrocks.lightsaber.Provides
+import io.michaelrocks.lightsaber.Provide
 import io.michaelrocks.lightsaber.sample.library.Droid
 
 @Module(isDefault = true)
 internal class LightsaberModule {
-  @Provides
+  @Provide
   private val darthVader = DarthVader
 
-  @Provides
+  @Provide
   private fun provideWookiee(chewbacca: Chewbacca): Wookiee = chewbacca
 
-  @Provides
+  @Provide
   private fun provideDroid(factory: DroidFactory): Droid = factory.produceR2D2("Silver")
 }

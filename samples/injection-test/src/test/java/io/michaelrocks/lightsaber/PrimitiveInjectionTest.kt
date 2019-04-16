@@ -222,7 +222,8 @@ class PrimitiveInjectionTest {
     @Inject var longField: Long? = null
     @Inject var shortField: Short? = null
 
-    @Inject fun unboxedMethod(booleanArg: Boolean, byteArg: Byte, charArg: Char, doubleArg: Double,
+    @Inject
+    fun unboxedMethod(booleanArg: Boolean, byteArg: Byte, charArg: Char, doubleArg: Double,
         floatArg: Float, intArg: Int, longArg: Long, shortArg: Short) {
       assertEquals(booleanField, booleanArg)
       assertEquals(byteField, java.lang.Byte.valueOf(byteArg))
@@ -234,7 +235,8 @@ class PrimitiveInjectionTest {
       assertEquals(shortField, java.lang.Short.valueOf(shortArg))
     }
 
-    @Inject fun boxedMethod(
+    @Inject
+    fun boxedMethod(
         booleanArg: Boolean?,
         byteArg: Byte?,
         characterArg: Char?,
@@ -257,23 +259,32 @@ class PrimitiveInjectionTest {
 
   @Module
   private class UnboxedPrimitiveModule {
-    @Provides fun provideBoolean(): Boolean = true
+    @Provide
+    fun provideBoolean(): Boolean = true
 
-    @Provides fun provideByte(): Byte = 42
+    @Provide
+    fun provideByte(): Byte = 42
 
-    @Provides fun provideChar(): Char = 'x'
+    @Provide
+    fun provideChar(): Char = 'x'
 
-    @Provides fun provideDouble(): Double = Math.PI
+    @Provide
+    fun provideDouble(): Double = Math.PI
 
-    @Provides fun provideFloat(): Float = Math.E.toFloat()
+    @Provide
+    fun provideFloat(): Float = Math.E.toFloat()
 
-    @Provides fun provideInt(): Int = 42424242
+    @Provide
+    fun provideInt(): Int = 42424242
 
-    @Provides fun provideLong(): Long = 4242424242424242L
+    @Provide
+    fun provideLong(): Long = 4242424242424242L
 
-    @Provides fun provideShort(): Short = 4242
+    @Provide
+    fun provideShort(): Short = 4242
 
-    @Provides fun consumeUnboxed(
+    @Provide
+    fun consumeUnboxed(
         booleanArg: Boolean,
         byteArg: Byte,
         charArg: Char,
@@ -294,7 +305,8 @@ class PrimitiveInjectionTest {
       return UnboxedResult()
     }
 
-    @Provides fun consumeBoxed(
+    @Provide
+    fun consumeBoxed(
         booleanArg: Boolean?,
         byteArg: Byte?,
         characterArg: Char?,
@@ -318,23 +330,32 @@ class PrimitiveInjectionTest {
 
   @Module
   private class BoxedPrimitiveModule {
-    @Provides fun provideBoolean(): Boolean? = false
+    @Provide
+    fun provideBoolean(): Boolean? = false
 
-    @Provides fun provideByte(): Byte? = -42
+    @Provide
+    fun provideByte(): Byte? = -42
 
-    @Provides fun provideCharacter(): Char? = 'X'
+    @Provide
+    fun provideCharacter(): Char? = 'X'
 
-    @Provides fun provideDouble(): Double? = -Math.PI
+    @Provide
+    fun provideDouble(): Double? = -Math.PI
 
-    @Provides fun provideFloat(): Float? = (-Math.E).toFloat()
+    @Provide
+    fun provideFloat(): Float? = (-Math.E).toFloat()
 
-    @Provides fun provideInteger(): Int? = -42424242
+    @Provide
+    fun provideInteger(): Int? = -42424242
 
-    @Provides fun provideLong(): Long? = -4242424242424242L
+    @Provide
+    fun provideLong(): Long? = -4242424242424242L
 
-    @Provides fun provideShort(): Short? = -4242
+    @Provide
+    fun provideShort(): Short? = -4242
 
-    @Provides fun consumeUnboxed(
+    @Provide
+    fun consumeUnboxed(
         booleanArg: Boolean,
         byteArg: Byte,
         charArg: Char,
@@ -355,7 +376,8 @@ class PrimitiveInjectionTest {
       return UnboxedResult()
     }
 
-    @Provides fun consumeBoxed(
+    @Provide
+    fun consumeBoxed(
         booleanArg: Boolean?,
         byteArg: Byte?,
         characterArg: Char?,
@@ -379,14 +401,14 @@ class PrimitiveInjectionTest {
 
   @Component
   private class UnboxedPrimitiveComponent {
-    @Provides
-    private fun provideUnboxedPrimitiveModule(): UnboxedPrimitiveModule = UnboxedPrimitiveModule()
+    @Import
+    private fun importUnboxedPrimitiveModule(): UnboxedPrimitiveModule = UnboxedPrimitiveModule()
   }
 
   @Component
   private class BoxedPrimitiveComponent {
-    @Provides
-    private fun provideBoxedPrimitiveModule(): BoxedPrimitiveModule = BoxedPrimitiveModule()
+    @Import
+    private fun importBoxedPrimitiveModule(): BoxedPrimitiveModule = BoxedPrimitiveModule()
   }
 
   private class UnboxedResult

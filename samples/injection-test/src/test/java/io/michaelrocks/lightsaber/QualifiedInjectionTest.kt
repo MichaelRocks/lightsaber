@@ -126,210 +126,210 @@ class QualifiedInjectionTest {
 
   @Module
   private class QualifiedModule {
-    @Provides
+    @Provide
     fun provideNoQualifier(): String = "NoQualifier"
 
-    @Provides
+    @Provide
     @EmptyQualifier
     fun provideEmptyQualifier(): String = "EmptyQualifier"
 
-    @Provides
+    @Provide
     @BooleanQualifier
     fun provideBooleanQualifier(): String = "BooleanQualifier"
 
-    @Provides
+    @Provide
     @BooleanQualifier(false)
     fun provideBooleanQualifierExplicit(): String = "BooleanQualifierExplicit"
 
-    @Provides
+    @Provide
     @ByteQualifier
     fun provideByteQualifier(): String = "ByteQualifier"
 
-    @Provides
+    @Provide
     @ByteQualifier(-42)
     fun provideByteQualifierExplicit(): String = "ByteQualifierExplicit"
 
-    @Provides
+    @Provide
     @CharQualifier
     fun provideCharQualifier(): String = "CharQualifier"
 
-    @Provides
+    @Provide
     @CharQualifier('y')
     fun provideCharQualifierExplicit(): String = "CharQualifierExplicit"
 
-    @Provides
+    @Provide
     @FloatQualifier
     fun provideFloatQualifier(): String = "FloatQualifier"
 
-    @Provides
+    @Provide
     @FloatQualifier(-0.0f)
     fun provideFloatQualifierExplicit(): String = "FloatQualifierExplicit"
 
-    @Provides
+    @Provide
     @DoubleQualifier
     fun provideDoubleQualifier(): String = "DoubleQualifier"
 
-    @Provides
+    @Provide
     @DoubleQualifier(-0.0)
     fun provideDoubleQualifierExplicit(): String = "DoubleQualifierExplicit"
 
-    @Provides
+    @Provide
     @IntQualifier
     fun provideIntQualifier(): String = "IntQualifier"
 
-    @Provides
+    @Provide
     @IntQualifier(-42)
     fun provideIntQualifierExplicit(): String = "IntQualifierExplicit"
 
-    @Provides
+    @Provide
     @LongQualifier
     fun provideLongQualifier(): String = "LongQualifier"
 
-    @Provides
+    @Provide
     @LongQualifier(-42L)
     fun provideLongQualifierExplicit(): String = "LongQualifierExplicit"
 
-    @Provides
+    @Provide
     @ShortQualifier
     fun provideShortQualifier(): String = "ShortQualifier"
 
-    @Provides
+    @Provide
     @ShortQualifier(-42)
     fun provideShortQualifierExplicit(): String = "ShortQualifierExplicit"
 
-    @Provides
+    @Provide
     @StringQualifier
     fun provideStringQualifier(): String = "StringQualifier"
 
-    @Provides
+    @Provide
     @StringQualifier("ExplicitValue")
     fun provideStringQualifierExplicit(): String = "StringQualifierExplicit"
 
-    @Provides
+    @Provide
     @EnumQualifier
     fun provideEnumQualifier(): String = "EnumQualifier"
 
-    @Provides
+    @Provide
     @EnumQualifier(AnnotationRetention.BINARY)
     fun provideEnumQualifierExplicit(): String = "EnumQualifierExplicit"
 
-    @Provides
+    @Provide
     @ClassQualifier
     fun provideClassQualifier(): String = "ClassQualifier"
 
-    @Provides
+    @Provide
     @ClassQualifier(String::class)
     fun provideClassQualifierExplicit(): String = "ClassQualifierExplicit"
 
-    @Provides
+    @Provide
     @AnnotationQualifier
     fun provideAnnotationQualifier(): String = "AnnotationQualifier"
 
-    @Provides
+    @Provide
     @AnnotationQualifier(IntQualifier(-42))
     fun provideAnnotationQualifierExplicit(): String = "AnnotationQualifierExplicit"
 
-    @Provides
+    @Provide
     @BooleanArrayQualifier
     fun provideBooleanArrayQualifier(): String = "BooleanArrayQualifier"
 
-    @Provides
+    @Provide
     @BooleanArrayQualifier(false)
     fun provideBooleanArrayQualifierExplicit(): String = "BooleanArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @ByteArrayQualifier
     fun provideByteArrayQualifier(): String = "ByteArrayQualifier"
 
-    @Provides
+    @Provide
     @ByteArrayQualifier(-42)
     fun provideByteArrayQualifierExplicit(): String = "ByteArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @CharArrayQualifier
     fun provideCharArrayQualifier(): String = "CharArrayQualifier"
 
-    @Provides
+    @Provide
     @CharArrayQualifier('y')
     fun provideCharArrayQualifierExplicit(): String = "CharArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @FloatArrayQualifier
     fun provideFloatArrayQualifier(): String = "FloatArrayQualifier"
 
-    @Provides
+    @Provide
     @FloatArrayQualifier(-0.0f)
     fun provideFloatArrayQualifierExplicit(): String = "FloatArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @DoubleArrayQualifier
     fun provideDoubleArrayQualifier(): String = "DoubleArrayQualifier"
 
-    @Provides
+    @Provide
     @DoubleArrayQualifier(-0.0)
     fun provideDoubleArrayQualifierExplicit(): String = "DoubleArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @IntArrayQualifier
     fun provideIntArrayQualifier(): String = "IntArrayQualifier"
 
-    @Provides
+    @Provide
     @IntArrayQualifier(-42)
     fun provideIntArrayQualifierExplicit(): String = "IntArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @LongArrayQualifier
     fun provideLongArrayQualifier(): String = "LongArrayQualifier"
 
-    @Provides
+    @Provide
     @LongArrayQualifier(-42L)
     fun provideLongArrayQualifierExplicit(): String = "LongArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @ShortArrayQualifier
     fun provideShortArrayQualifier(): String = "ShortArrayQualifier"
 
-    @Provides
+    @Provide
     @ShortArrayQualifier(-42)
     fun provideShortArrayQualifierExplicit(): String = "ShortArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @StringArrayQualifier
     fun provideStringArrayQualifier(): String = "StringArrayQualifier"
 
-    @Provides
+    @Provide
     @StringArrayQualifier("ExplicitValue")
     fun provideStringArrayQualifierExplicit(): String = "StringArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @EnumArrayQualifier
     fun provideEnumArrayQualifier(): String = "EnumArrayQualifier"
 
-    @Provides
+    @Provide
     @EnumArrayQualifier(AnnotationRetention.BINARY)
     fun provideEnumArrayQualifierExplicit(): String = "EnumArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @ClassArrayQualifier
     fun provideClassArrayQualifier(): String = "ClassArrayQualifier"
 
-    @Provides
+    @Provide
     @ClassArrayQualifier(String::class)
     fun provideClassArrayQualifierExplicit(): String = "ClassArrayQualifierExplicit"
 
-    @Provides
+    @Provide
     @AnnotationArrayQualifier
     fun provideAnnotationArrayQualifier(): String = "AnnotationArrayQualifier"
 
-    @Provides
+    @Provide
     @AnnotationArrayQualifier(IntQualifier(-42))
     fun provideAnnotationArrayQualifierExplicit(): String = "AnnotationArrayQualifierExplicit"
   }
 
   @Component
   private class QualifiedComponent {
-    @Provides
-    fun provideQualifiedModule(): QualifiedModule = QualifiedModule()
+    @Import
+    fun importQualifiedModule(): QualifiedModule = QualifiedModule()
   }
 
   private interface Container {

@@ -58,8 +58,8 @@ class CycleInjectionTest {
 
   @Component
   private class CycleComponent {
-    @Provides
-    fun provideCycleModule(): CycleModule = CycleModule()
+    @Import
+    fun importCycleModule(): CycleModule = CycleModule()
   }
 
   @ProvidedBy(CycleModule::class)

@@ -156,102 +156,102 @@ class FactoryInjectionTest {
 
   @Component
   private class ParentFactoryComponent {
-    @Provides
-    private fun provideParentFactoryModule(): ParentFactoryModule = ParentFactoryModule()
+    @Import
+    private fun importParentFactoryModule(): ParentFactoryModule = ParentFactoryModule()
   }
 
   @Module
   private class ParentFactoryModule {
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideBoolean(): Boolean = true
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideByte(): Byte = 42
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideChar(): Char = 'x'
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideDouble(): Double = Double.NaN
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideFloat(): Float = Float.NaN
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideInt(): Int = 42
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideLong(): Long = 42L
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideShort(): Short = 42
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideString(): String = "Injected"
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideBooleanArray(): BooleanArray = booleanArrayOf(true, false)
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideByteArray(): ByteArray = byteArrayOf(42)
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideCharArray(): CharArray = charArrayOf('x')
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideDoubleArray(): DoubleArray = doubleArrayOf(Double.NaN)
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideFloatArray(): FloatArray = floatArrayOf(Float.NaN)
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideIntArray(): IntArray = intArrayOf(42)
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideLongArray(): LongArray = longArrayOf(42L)
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideShortArray(): ShortArray = shortArrayOf(42)
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideStringArray(): Array<String> = arrayOf("Injected", "String")
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideIntList(): List<Int> = listOf(42)
 
-    @Provides
+    @Provide
     @Named("Injected")
     private fun provideStringList(): List<String> = listOf("Injected", "String")
   }
 
   @Component(parent = ParentFactoryComponent::class)
   private class ChildFactoryComponent {
-    @Provides
+    @Import
     private fun provideChildFactoryModule(): ChildFactoryModule = ChildFactoryModule()
   }
 
   @Module
   private class ChildFactoryModule {
-    @Provides
+    @Provide
     private fun provideString(): String = "Child"
   }
 

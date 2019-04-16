@@ -33,12 +33,12 @@ class ProvidedByInjectionTest {
 
   @Component
   private class ParentComponent {
-    @Provides
-    private fun provideParentModule(): ParentModule = ParentModule()
+    @Import
+    private fun importParentModule(): ParentModule = ParentModule()
 
     @Module
     class ParentModule {
-      @Provides
+      @Provide
       private fun provideString(): String {
         return "ProvidedBy"
       }
@@ -47,8 +47,8 @@ class ProvidedByInjectionTest {
 
   @Component(parent = ParentComponent::class)
   private class ChildComponent {
-    @Provides
-    private fun provideChildModule(): ChildModule = ChildModule()
+    @Import
+    private fun importChildModule(): ChildModule = ChildModule()
 
     @Module
     class ChildModule

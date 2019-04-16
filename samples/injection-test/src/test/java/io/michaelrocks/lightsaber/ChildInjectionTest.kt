@@ -85,37 +85,37 @@ class ChildInjectionTest {
 
   @Module
   private class ParentModule {
-    @Provides
+    @Provide
     @Singleton
     fun provideString(): String = StringBuilder("Parent String").toString()
   }
 
   @Module
   private class ChildModule {
-    @Provides
+    @Provide
     @Singleton
     fun provideObject(): Any = StringBuilder("Child Object").toString()
 
-    @Provides
+    @Provide
     @Singleton
     @Named("Child String")
     fun provideNamedString(): String = StringBuilder("Child String").toString()
 
-    @Provides
+    @Provide
     @Named("Package Dependency")
     fun provideNamedPackageDependency(packageDependency: PackageDependency): PackageDependency = packageDependency
   }
 
   @Component
   private class ParentComponent {
-    @Provides
-    private fun provideParentModule(): ParentModule = ParentModule()
+    @Import
+    private fun importParentModule(): ParentModule = ParentModule()
   }
 
   @Component(parent = ParentComponent::class)
   private class ChildComponent {
-    @Provides
-    private fun provideChildModule(): ChildModule = ChildModule()
+    @Import
+    private fun importChildModule(): ChildModule = ChildModule()
   }
 
   @ProvidedBy(ChildModule::class)

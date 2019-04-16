@@ -93,22 +93,22 @@ class GenericInjectionTest {
 
   @Module
   private class GenericModule {
-    @Provides
+    @Provide
     fun provideStringList(): List<String> = listOf("Hello", "world")
-    @Provides
+    @Provide
     fun provideIntList(): List<Int> = listOf(42, 43)
-    @Provides
+    @Provide
     fun provideIntArrayList(): List<IntArray> = listOf(intArrayOf(42, 43))
-    @Provides
+    @Provide
     fun provideIntListArray(): Array<List<Int>> = arrayOf(listOf(42, 43))
-    @Provides
+    @Provide
     fun provideIntListArrayArray(): Array<Array<List<Int>>> = arrayOf(arrayOf(listOf(42, 43)))
   }
 
   @Component
   private class GenericComponent {
-    @Provides
-    fun provideGenericModule(): GenericModule = GenericModule()
+    @Import
+    fun importGenericModule(): GenericModule = GenericModule()
   }
 
   private interface Target {

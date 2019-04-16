@@ -58,14 +58,14 @@ class LazyInjectionTest {
 
   @Module
   private class LazyModule {
-    @Provides
+    @Provide
     fun provideString(): String = StringBuilder("String").toString()
   }
 
   @Component
   private class LazyComponent {
-    @Provides
-    fun provideLazyModule(): LazyModule = LazyModule()
+    @Import
+    fun importLazyModule(): LazyModule = LazyModule()
   }
 
   private interface Target {

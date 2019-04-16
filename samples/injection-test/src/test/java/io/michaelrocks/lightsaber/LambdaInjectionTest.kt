@@ -55,18 +55,18 @@ class LambdaInjectionTest {
 
   @Module
   private class LambdaModule {
-    @Provides
+    @Provide
     fun provideGreeting1(): () -> String = { "Hello, world!" }
-    @Provides
+    @Provide
     fun provideGreeting2(): (String) -> String = { "Hello, $it!" }
-    @Provides
+    @Provide
     fun provideGreeting3(): (String, String) -> String = { greeting, name -> "$greeting, $name!" }
   }
 
   @Component
   private class LambdaComponent {
-    @Provides
-    fun provideLambdaModule(): LambdaModule = LambdaModule()
+    @Import
+    fun importLambdaModule(): LambdaModule = LambdaModule()
   }
 
   private interface Target {
