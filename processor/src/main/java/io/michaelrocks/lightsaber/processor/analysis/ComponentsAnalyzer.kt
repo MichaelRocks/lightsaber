@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.grip.not
+import io.michaelrocks.grip.or
 import io.michaelrocks.grip.returns
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -203,10 +204,11 @@ class ComponentsAnalyzerImpl(
   }
 
   private fun createComponent(mirror: ClassMirror, parent: Type.Object?, subcomponents: List<Type.Object>): Component {
+    val isImportable = (annotatedWith(Types.PROVIDES_TYPE) or annotatedWith(Types.IMPORT_TYPE)) and not(isStatic())
     val methodsQuery = grip select methods from mirror where
-        (annotatedWith(Types.PROVIDES_TYPE) and methodType(not(returns(Type.Primitive.Void))) and not(isStatic()))
+        (isImportable and methodType(not(returns(Type.Primitive.Void))) and not(isStatic()))
     val fieldsQuery = grip select fields from mirror where
-        (annotatedWith(Types.PROVIDES_TYPE) and not(isStatic()))
+        (isImportable and not(isStatic()))
 
     logger.debug("Component: {}", mirror.type.className)
     val methods = methodsQuery.execute()[mirror.type].orEmpty().map { method ->

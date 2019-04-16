@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("Deprecation")
+
 package io.michaelrocks.lightsaber.processor.commons
 
 import io.michaelrocks.bimap.BiMap
@@ -22,10 +24,12 @@ import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectType
 import io.michaelrocks.lightsaber.Component
 import io.michaelrocks.lightsaber.Factory
+import io.michaelrocks.lightsaber.Import
 import io.michaelrocks.lightsaber.Injector
 import io.michaelrocks.lightsaber.Key
 import io.michaelrocks.lightsaber.Lazy
 import io.michaelrocks.lightsaber.Module
+import io.michaelrocks.lightsaber.Provide
 import io.michaelrocks.lightsaber.ProvidedBy
 import io.michaelrocks.lightsaber.Provides
 import javax.inject.Inject
@@ -38,6 +42,8 @@ object Types {
   val OBJECT_TYPE = getObjectType<Any>()
   val STRING_TYPE = getObjectType<String>()
   val INJECT_TYPE = getObjectType<Inject>()
+  val IMPORT_TYPE = getObjectType<Import>()
+  val PROVIDE_TYPE = getObjectType<Provide>()
   val PROVIDES_TYPE = getObjectType<Provides>()
   val PROVIDED_BY_TYPE = getObjectType<ProvidedBy>()
   val COMPONENT_TYPE = getObjectType<Component>()

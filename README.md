@@ -123,14 +123,14 @@ Lightsaber requires provider methods to be defined in modules that need to be co
 
 A module is a logical unit responsible for providing dependencies belonging to the module. Module classes must be
 annotated with the `@Module` annotation. A module can contain a number of provider methods. Lightsaber treats a method
-as a provider method if it's annotated with the `@Provides` annotation. When a type is provided by a provider method
+as a provider method if it's annotated with the `@Provide` annotation. When a type is provided by a provider method
 it can be injected into a class in other parts of the project. Neither the module nor its provider methods are required
 to be `public`.
 
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   public Droid provideDroid() {
     return new Droid();
   }
@@ -144,15 +144,15 @@ instance. But you can do that via [manual injection](#manual-injection) or by cr
 ##### Components
 
 To make Lightsaber aware of modules and their provided dependencies the modules have to be organized into a component.
-A component is just a class annotated with the `@Component` annotation. The goal of this class is to provide modules
-to Lightsaber. Every method that provides a module must be annotated with `@Provides`. Neither the component class
+A component is just a class annotated with the `@Component` annotation. The goal of this class is to import modules
+to Lightsaber. Every method that imports a module must be annotated with `@Import`. Neither the component class
 itself not its provider methods have to be `public`.
 
 ```java
 @Component
 public class DroidComponent {
-  @Provides
-  public DroidModule provideDroidModule() {
+  @Import
+  public DroidModule importDroidModule() {
     return new DroidModule();
   }
 }
@@ -250,7 +250,7 @@ manually injecting dependencies into the instance using the `injectMembers()` me
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   public Droid provideDroid(Injector injector) {
     Droid droid = new ElectircalDroid();
     injector.injectMemebers(droid);
@@ -278,7 +278,7 @@ class ElectricalDroid implements Droid {
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   public Droid provideDroid(ElectricalDroid droid) {
     return droid;
   }
@@ -301,7 +301,7 @@ class ElectricalDroid implements Droid {
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   @Singleton
   public Droid provideDroid(ElectricalDroid droid) {
     return droid;
@@ -377,21 +377,21 @@ Lightsaber distinguish between these dependencies we will annotate them with the
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   @Singleton
   @Named("R2-D2")
   public Droid provideR2D2() {
     return new Droid("R2-D2");
   }
 
-  @Provides
+  @Provide
   @Singleton
   @Named("C-3PO")
   public Droid provideC3PO() {
     return new Droid("C-3PO");
   }
 
-  @Provides
+  @Provide
   @Singleton
   public Droid provideUnknownDroid() {
     return new Droid("Unknown");
@@ -438,14 +438,14 @@ public @interface Model {
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   @Singleton
   @Model(DroidType.R2D2)
   public Droid provideR2D2() {
     return new Droid("R2-D2");
   }
 
-  @Provides
+  @Provide
   @Singleton
   @Model(DroidType.C3PO)
   public Droid provideC3PO() {
@@ -516,7 +516,7 @@ class ElectricalDroid implements Droid {
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   @Singleton
   public Droid provideDroid(ElectricalDroid droid) {
     return droid;
@@ -527,8 +527,8 @@ public class DroidModule {
 ```java
 @Component
 public class DroidComponent {
-  @Provides
-  public DroidModule provideDroidModule() {
+  @Import
+  public DroidModule importDroidModule() {
     return new DroidModule();
   }
 }
@@ -559,7 +559,7 @@ public class BatteryModule {
     this.name = name;
   }
 
-  @Provides
+  @Provide
   public Droid provideBattery() {
     return new Battery(name);
   }
@@ -575,8 +575,8 @@ public class BatteryComponent {
     this.name = name;
   }
 
-  @Provides
-  public BatteryModule provideBatteryModule() {
+  @Import
+  public BatteryModule importBatteryModule() {
     return new BatteryModule(name);
   }
 }
@@ -631,7 +631,7 @@ will be used for providing a `Battery` for the `Droid`:
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   public Battery provideBattery() {
     return new Battery();
   }
