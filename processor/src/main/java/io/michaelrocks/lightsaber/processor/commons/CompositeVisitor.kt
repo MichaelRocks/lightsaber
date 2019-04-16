@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,7 +35,9 @@ inline fun <T> CompositeVisitor<T>.forEachVisitor(action: T.() -> Unit) {
 }
 
 inline fun <C : CompositeVisitor<R>, T, R> CompositeVisitor<T>.addVisitorsTo(
-    compositeVisitor: C, produce: T.() -> R?): C? {
+  compositeVisitor: C,
+  produce: T.() -> R?
+): C? {
   for (visitor in visitors) {
     visitor.produce()?.let { compositeVisitor.addVisitor(it) }
   }

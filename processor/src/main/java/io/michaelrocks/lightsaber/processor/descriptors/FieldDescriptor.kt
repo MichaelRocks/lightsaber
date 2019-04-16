@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import io.michaelrocks.grip.mirrors.getType
 fun FieldDescriptor(name: String, desc: String): FieldDescriptor = FieldDescriptor(name, getType(desc))
 
 data class FieldDescriptor(
-    val name: String,
-    val type: Type
+  val name: String,
+  val type: Type
 )
 
 val FieldDescriptor.descriptor: String

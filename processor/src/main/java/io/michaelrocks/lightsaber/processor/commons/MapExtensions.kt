@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.util.ArrayList
 import java.util.HashMap
 
 fun <K, V> Map<K, Collection<V>>.mergeWith(
-    map: Map<K, Collection<V>>,
-    collection: () -> MutableCollection<V> = { ArrayList() }
+  map: Map<K, Collection<V>>,
+  collection: () -> MutableCollection<V> = { ArrayList() }
 ): Map<K, Collection<V>> {
   val result = mapValuesTo(HashMap()) { entry ->
     collection().apply { addAll(entry.value) }
@@ -31,8 +31,8 @@ fun <K, V> Map<K, Collection<V>>.mergeWith(
 }
 
 fun <K, V> Map<K, Collection<V>>.mergeTo(
-    destination: MutableMap<K, MutableCollection<V>>,
-    collection: () -> MutableCollection<V> = { ArrayList() }
+  destination: MutableMap<K, MutableCollection<V>>,
+  collection: () -> MutableCollection<V> = { ArrayList() }
 ): Map<K, Collection<V>> {
   for ((key, value) in this) {
     destination.getOrPut(key, collection).addAll(value)

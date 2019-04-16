@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,10 +45,11 @@ interface InjectionTargetsAnalyzer {
 }
 
 class InjectionTargetsAnalyzerImpl(
-    private val grip: Grip,
-    private val analyzerHelper: AnalyzerHelper,
-    private val errorReporter: ErrorReporter
+  private val grip: Grip,
+  private val analyzerHelper: AnalyzerHelper,
+  private val errorReporter: ErrorReporter
 ) : InjectionTargetsAnalyzer {
+
   private val logger = getLogger()
 
   override fun analyze(files: Collection<File>): InjectionTargetsAnalyzer.Result {
@@ -113,8 +114,8 @@ class InjectionTargetsAnalyzerImpl(
   }
 
   private class InjectionTargetsContext(
-      val types: Collection<Type.Object>,
-      val methods: MethodsResult,
-      val fields: FieldsResult
+    val types: Collection<Type.Object>,
+    val methods: MethodsResult,
+    val fields: FieldsResult
   )
 }

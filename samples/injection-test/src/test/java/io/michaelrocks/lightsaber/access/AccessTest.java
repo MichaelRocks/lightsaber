@@ -26,7 +26,6 @@ import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.Key;
 import io.michaelrocks.lightsaber.Lightsaber;
 
-
 import static org.junit.Assert.assertSame;
 
 public class AccessTest {
@@ -163,7 +162,6 @@ public class AccessTest {
     final ParameterizedType superType = (ParameterizedType) tokeClass.getGenericSuperclass();
     return superType.getActualTypeArguments()[0];
   }
-
 
   @InternalQualifier
   @SingletonQualifier

@@ -126,6 +126,7 @@ class QualifiedInjectionTest {
 
   @Module
   private class QualifiedModule {
+
     @Provide
     fun provideNoQualifier(): String = "NoQualifier"
 
@@ -328,6 +329,7 @@ class QualifiedInjectionTest {
 
   @Component
   private class QualifiedComponent {
+
     @Import
     fun importQualifiedModule(): QualifiedModule = QualifiedModule()
   }
@@ -387,105 +389,106 @@ class QualifiedInjectionTest {
 
   @ProvidedBy(QualifiedModule::class)
   private class ConstructorInjectionContainer @Inject constructor(
-      override val noQualifier: String,
-      @EmptyQualifier
-      override val emptyQualifier: String,
-      @BooleanQualifier
-      override val booleanQualifier: String,
-      @BooleanQualifier(false)
-      override val booleanQualifierExplicit: String,
-      @ByteQualifier
-      override val byteQualifier: String,
-      @ByteQualifier(-42)
-      override val byteQualifierExplicit: String,
-      @CharQualifier
-      override val charQualifier: String,
-      @CharQualifier('y')
-      override val charQualifierExplicit: String,
-      @FloatQualifier
-      override val floatQualifier: String,
-      @FloatQualifier(-0.0f)
-      override val floatQualifierExplicit: String,
-      @DoubleQualifier
-      override val doubleQualifier: String,
-      @DoubleQualifier(-0.0)
-      override val doubleQualifierExplicit: String,
-      @IntQualifier
-      override val intQualifier: String,
-      @IntQualifier(-42)
-      override val intQualifierExplicit: String,
-      @LongQualifier
-      override val longQualifier: String,
-      @LongQualifier(-42L)
-      override val longQualifierExplicit: String,
-      @ShortQualifier
-      override val shortQualifier: String,
-      @ShortQualifier(-42)
-      override val shortQualifierExplicit: String,
-      @StringQualifier
-      override val stringQualifier: String,
-      @StringQualifier("ExplicitValue")
-      override val stringQualifierExplicit: String,
-      @EnumQualifier
-      override val enumQualifier: String,
-      @EnumQualifier(AnnotationRetention.BINARY)
-      override val enumQualifierExplicit: String,
-      @ClassQualifier
-      override val classQualifier: String,
-      @ClassQualifier(String::class)
-      override val classQualifierExplicit: String,
-      @AnnotationQualifier
-      override val annotationQualifier: String,
-      @AnnotationQualifier(IntQualifier(-42))
-      override val annotationQualifierExplicit: String,
-      @BooleanArrayQualifier
-      override val booleanArrayQualifier: String,
-      @BooleanArrayQualifier(false)
-      override val booleanArrayQualifierExplicit: String,
-      @ByteArrayQualifier
-      override val byteArrayQualifier: String,
-      @ByteArrayQualifier(-42)
-      override val byteArrayQualifierExplicit: String,
-      @CharArrayQualifier
-      override val charArrayQualifier: String,
-      @CharArrayQualifier('y')
-      override val charArrayQualifierExplicit: String,
-      @FloatArrayQualifier
-      override val floatArrayQualifier: String,
-      @FloatArrayQualifier(-0.0f)
-      override val floatArrayQualifierExplicit: String,
-      @DoubleArrayQualifier
-      override val doubleArrayQualifier: String,
-      @DoubleArrayQualifier(-0.0)
-      override val doubleArrayQualifierExplicit: String,
-      @IntArrayQualifier
-      override val intArrayQualifier: String,
-      @IntArrayQualifier(-42)
-      override val intArrayQualifierExplicit: String,
-      @LongArrayQualifier
-      override val longArrayQualifier: String,
-      @LongArrayQualifier(-42L)
-      override val longArrayQualifierExplicit: String,
-      @ShortArrayQualifier
-      override val shortArrayQualifier: String,
-      @ShortArrayQualifier(-42)
-      override val shortArrayQualifierExplicit: String,
-      @StringArrayQualifier
-      override val stringArrayQualifier: String,
-      @StringArrayQualifier("ExplicitValue")
-      override val stringArrayQualifierExplicit: String,
-      @EnumArrayQualifier
-      override val enumArrayQualifier: String,
-      @EnumArrayQualifier(AnnotationRetention.BINARY)
-      override val enumArrayQualifierExplicit: String,
-      @ClassArrayQualifier
-      override val classArrayQualifier: String,
-      @ClassArrayQualifier(String::class)
-      override val classArrayQualifierExplicit: String,
-      @AnnotationArrayQualifier
-      override val annotationArrayQualifier: String,
-      @AnnotationArrayQualifier(IntQualifier(-42))
-      override val annotationArrayQualifierExplicit: String) : Container
+    override val noQualifier: String,
+    @EmptyQualifier
+    override val emptyQualifier: String,
+    @BooleanQualifier
+    override val booleanQualifier: String,
+    @BooleanQualifier(false)
+    override val booleanQualifierExplicit: String,
+    @ByteQualifier
+    override val byteQualifier: String,
+    @ByteQualifier(-42)
+    override val byteQualifierExplicit: String,
+    @CharQualifier
+    override val charQualifier: String,
+    @CharQualifier('y')
+    override val charQualifierExplicit: String,
+    @FloatQualifier
+    override val floatQualifier: String,
+    @FloatQualifier(-0.0f)
+    override val floatQualifierExplicit: String,
+    @DoubleQualifier
+    override val doubleQualifier: String,
+    @DoubleQualifier(-0.0)
+    override val doubleQualifierExplicit: String,
+    @IntQualifier
+    override val intQualifier: String,
+    @IntQualifier(-42)
+    override val intQualifierExplicit: String,
+    @LongQualifier
+    override val longQualifier: String,
+    @LongQualifier(-42L)
+    override val longQualifierExplicit: String,
+    @ShortQualifier
+    override val shortQualifier: String,
+    @ShortQualifier(-42)
+    override val shortQualifierExplicit: String,
+    @StringQualifier
+    override val stringQualifier: String,
+    @StringQualifier("ExplicitValue")
+    override val stringQualifierExplicit: String,
+    @EnumQualifier
+    override val enumQualifier: String,
+    @EnumQualifier(AnnotationRetention.BINARY)
+    override val enumQualifierExplicit: String,
+    @ClassQualifier
+    override val classQualifier: String,
+    @ClassQualifier(String::class)
+    override val classQualifierExplicit: String,
+    @AnnotationQualifier
+    override val annotationQualifier: String,
+    @AnnotationQualifier(IntQualifier(-42))
+    override val annotationQualifierExplicit: String,
+    @BooleanArrayQualifier
+    override val booleanArrayQualifier: String,
+    @BooleanArrayQualifier(false)
+    override val booleanArrayQualifierExplicit: String,
+    @ByteArrayQualifier
+    override val byteArrayQualifier: String,
+    @ByteArrayQualifier(-42)
+    override val byteArrayQualifierExplicit: String,
+    @CharArrayQualifier
+    override val charArrayQualifier: String,
+    @CharArrayQualifier('y')
+    override val charArrayQualifierExplicit: String,
+    @FloatArrayQualifier
+    override val floatArrayQualifier: String,
+    @FloatArrayQualifier(-0.0f)
+    override val floatArrayQualifierExplicit: String,
+    @DoubleArrayQualifier
+    override val doubleArrayQualifier: String,
+    @DoubleArrayQualifier(-0.0)
+    override val doubleArrayQualifierExplicit: String,
+    @IntArrayQualifier
+    override val intArrayQualifier: String,
+    @IntArrayQualifier(-42)
+    override val intArrayQualifierExplicit: String,
+    @LongArrayQualifier
+    override val longArrayQualifier: String,
+    @LongArrayQualifier(-42L)
+    override val longArrayQualifierExplicit: String,
+    @ShortArrayQualifier
+    override val shortArrayQualifier: String,
+    @ShortArrayQualifier(-42)
+    override val shortArrayQualifierExplicit: String,
+    @StringArrayQualifier
+    override val stringArrayQualifier: String,
+    @StringArrayQualifier("ExplicitValue")
+    override val stringArrayQualifierExplicit: String,
+    @EnumArrayQualifier
+    override val enumArrayQualifier: String,
+    @EnumArrayQualifier(AnnotationRetention.BINARY)
+    override val enumArrayQualifierExplicit: String,
+    @ClassArrayQualifier
+    override val classArrayQualifier: String,
+    @ClassArrayQualifier(String::class)
+    override val classArrayQualifierExplicit: String,
+    @AnnotationArrayQualifier
+    override val annotationArrayQualifier: String,
+    @AnnotationArrayQualifier(IntQualifier(-42))
+    override val annotationArrayQualifierExplicit: String
+  ) : Container
 
   private class FieldInjectionContainer : Container {
     @Inject

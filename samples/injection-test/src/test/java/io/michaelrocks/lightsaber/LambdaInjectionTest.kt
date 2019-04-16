@@ -55,16 +55,20 @@ class LambdaInjectionTest {
 
   @Module
   private class LambdaModule {
+
     @Provide
     fun provideGreeting1(): () -> String = { "Hello, world!" }
+
     @Provide
     fun provideGreeting2(): (String) -> String = { "Hello, $it!" }
+
     @Provide
     fun provideGreeting3(): (String, String) -> String = { greeting, name -> "$greeting, $name!" }
   }
 
   @Component
   private class LambdaComponent {
+
     @Import
     fun importLambdaModule(): LambdaModule = LambdaModule()
   }
@@ -78,9 +82,9 @@ class LambdaInjectionTest {
   @JvmSuppressWildcards
   @ProvidedBy(LambdaModule::class)
   private class ConstructorInjectionTarget @Inject constructor(
-      override val greeting1: () -> String,
-      override val greeting2: (String) -> String,
-      override val greeting3: (String, String) -> String
+    override val greeting1: () -> String,
+    override val greeting2: (String) -> String,
+    override val greeting3: (String, String) -> String
   ) : Target
 
   private class FieldInjectionTarget : Target {
@@ -94,6 +98,7 @@ class LambdaInjectionTest {
 
   @JvmSuppressWildcards
   private class MethodInjectionTarget : Target {
+
     @set:Inject
     override var greeting1: () -> String = inject()
     @set:Inject

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,13 +41,14 @@ import java.io.Closeable
 import java.io.File
 
 class ClassProcessor(
-    private val inputs: List<File>,
-    private val outputs: List<File>,
-    private val genPath: File,
-    private val projectName: String,
-    classpath: List<File>,
-    bootClasspath: List<File>
+  private val inputs: List<File>,
+  private val outputs: List<File>,
+  private val genPath: File,
+  private val projectName: String,
+  classpath: List<File>,
+  bootClasspath: List<File>
 ) : Closeable {
+
   private val logger = getLogger()
 
   private val grip: Grip = GripFactory.create(inputs + classpath + bootClasspath)
@@ -63,8 +64,8 @@ class ClassProcessor(
   fun processClasses() {
     val injectionContext = performAnalysisAndValidation()
     val generationContext =
-        GenerationContextFactory(grip.fileRegistry, grip.classRegistry, projectName)
-            .createGenerationContext(injectionContext)
+      GenerationContextFactory(grip.fileRegistry, grip.classRegistry, projectName)
+        .createGenerationContext(injectionContext)
     injectionContext.dump()
     copyAndPatchClasses(injectionContext, generationContext)
     performGeneration(injectionContext, generationContext)
@@ -96,11 +97,13 @@ class ClassProcessor(
           FileSource.EntryType.CLASS -> {
             val classReader = ClassReader(fileSource.readFile(path))
             val classWriter = StandaloneClassWriter(
-                classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry)
+              classReader, ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, grip.classRegistry
+            )
             val classVisitor = Patcher(classWriter, grip.classRegistry, generationContext.keyRegistry, injectionContext)
             classReader.accept(classVisitor, ClassReader.SKIP_FRAMES)
             fileSink.createFile(path, classWriter.toByteArray())
           }
+
           FileSource.EntryType.FILE -> fileSink.createFile(path, fileSource.readFile(path))
           FileSource.EntryType.DIRECTORY -> fileSink.createDirectory(path)
         }

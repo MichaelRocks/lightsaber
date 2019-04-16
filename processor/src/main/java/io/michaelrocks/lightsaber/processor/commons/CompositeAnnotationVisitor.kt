@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,17 +28,17 @@ class CompositeAnnotationVisitor : AnnotationVisitor(Opcodes.ASM5), CompositeVis
   }
 
   override fun visit(name: String?, value: Any) =
-      forEachVisitor { visit(name, value) }
+    forEachVisitor { visit(name, value) }
 
   override fun visitEnum(name: String?, desc: String, value: String) =
-      forEachVisitor { visitEnum(name, desc, value) }
+    forEachVisitor { visitEnum(name, desc, value) }
 
   override fun visitAnnotation(name: String?, desc: String): AnnotationVisitor? =
-      addVisitorsTo(CompositeAnnotationVisitor()) { visitAnnotation(name, desc) }
+    addVisitorsTo(CompositeAnnotationVisitor()) { visitAnnotation(name, desc) }
 
   override fun visitArray(name: String?): AnnotationVisitor? =
-      addVisitorsTo(CompositeAnnotationVisitor()) { visitArray(name) }
+    addVisitorsTo(CompositeAnnotationVisitor()) { visitArray(name) }
 
   override fun visitEnd() =
-      forEachVisitor { visitEnd() }
+    forEachVisitor { visitEnd() }
 }

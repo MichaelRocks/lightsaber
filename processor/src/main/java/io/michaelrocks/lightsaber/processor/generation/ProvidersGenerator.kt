@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,20 +22,21 @@ import io.michaelrocks.lightsaber.processor.logging.getLogger
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 
 class ProvidersGenerator(
-    private val classProducer: ClassProducer,
-    private val classRegistry: ClassRegistry
+  private val classProducer: ClassProducer,
+  private val classRegistry: ClassRegistry
 ) {
+
   private val logger = getLogger()
 
   fun generate(injectionContext: InjectionContext, generationContext: GenerationContext) {
     injectionContext.components.asSequence()
-        .flatMap { it.modules.asSequence() }
-        .flatMap { it.providers.asSequence() }
-        .forEach { provider ->
-          logger.debug("Generating provider {}", provider.type.internalName)
-          val generator = ProviderClassGenerator(classRegistry, generationContext.keyRegistry, provider)
-          val providerClassData = generator.generate()
-          classProducer.produceClass(provider.type.internalName, providerClassData)
-        }
+      .flatMap { it.modules.asSequence() }
+      .flatMap { it.providers.asSequence() }
+      .forEach { provider ->
+        logger.debug("Generating provider {}", provider.type.internalName)
+        val generator = ProviderClassGenerator(classRegistry, generationContext.keyRegistry, provider)
+        val providerClassData = generator.generate()
+        classProducer.produceClass(provider.type.internalName, providerClassData)
+      }
   }
 }

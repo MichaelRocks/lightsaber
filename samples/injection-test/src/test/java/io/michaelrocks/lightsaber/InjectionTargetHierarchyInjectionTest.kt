@@ -45,6 +45,7 @@ class InjectionTargetHierarchyInjectionTest {
 
   @Component
   private class InjectionTargetHierarchyComponent {
+
     @Import
     private fun importInjectionTargetHierarchyModule(): InjectionTargetHierarchyModule {
       return InjectionTargetHierarchyModule()
@@ -53,6 +54,7 @@ class InjectionTargetHierarchyInjectionTest {
 
   @Module
   class InjectionTargetHierarchyModule {
+
     @Provide
     private fun provideString(): String {
       return "InjectionTargetHierarchy"

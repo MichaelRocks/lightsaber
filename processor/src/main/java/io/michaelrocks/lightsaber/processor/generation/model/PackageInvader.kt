@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 
 data class PackageInvader(
-    val type: Type.Object,
-    val packageName: String,
-    val fields: Map<Type, FieldDescriptor>
+  val type: Type.Object,
+  val packageName: String,
+  val fields: Map<Type, FieldDescriptor>
 )

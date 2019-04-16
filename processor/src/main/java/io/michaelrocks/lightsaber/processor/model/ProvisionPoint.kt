@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,22 +36,23 @@ sealed class ProvisionPoint {
   }
 
   data class Constructor(
-      override val dependency: Dependency,
-      override val injectionPoint: InjectionPoint.Method
+    override val dependency: Dependency,
+    override val injectionPoint: InjectionPoint.Method
   ) : AbstractMethod() {
+
     override val bridge: ProvisionPoint.Method? get() = null
   }
 
   data class Method(
-      override val dependency: Dependency,
-      override val injectionPoint: InjectionPoint.Method,
-      override val bridge: ProvisionPoint.Method?
+    override val dependency: Dependency,
+    override val injectionPoint: InjectionPoint.Method,
+    override val bridge: ProvisionPoint.Method?
   ) : AbstractMethod()
 
   data class Field(
-      override val containerType: Type.Object,
-      override val dependency: Dependency,
-      override val bridge: ProvisionPoint.Method?,
-      val field: FieldMirror
+    override val containerType: Type.Object,
+    override val dependency: Dependency,
+    override val bridge: ProvisionPoint.Method?,
+    val field: FieldMirror
   ) : ProvisionPoint()
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,10 @@ import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 
 class PackageInvadersGenerator(
-    private val classProducer: ClassProducer,
-    private val classRegistry: ClassRegistry
+  private val classProducer: ClassProducer,
+  private val classRegistry: ClassRegistry
 ) {
+
   private val logger = getLogger()
 
   fun generate(generationContext: GenerationContext) {

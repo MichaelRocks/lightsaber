@@ -56,34 +56,35 @@ import org.objectweb.asm.Opcodes.ACC_SYNTHETIC
 
 interface ModuleParser {
   fun parseModule(
-      type: Type.Object,
-      providableTargets: Collection<InjectionTarget>,
-      factories: Collection<Factory>
+    type: Type.Object,
+    providableTargets: Collection<InjectionTarget>,
+    factories: Collection<Factory>
   ): Module
 }
 
 class ModuleParserImpl(
-    private val grip: Grip,
-    private val analyzerHelper: AnalyzerHelper,
-    private val errorReporter: ErrorReporter,
-    private val projectName: String
+  private val grip: Grip,
+  private val analyzerHelper: AnalyzerHelper,
+  private val errorReporter: ErrorReporter,
+  private val projectName: String
 ) : ModuleParser {
+
   private val logger = getLogger()
 
   private val bridgeRegistry = BridgeRegistry()
 
   override fun parseModule(
-      type: Type.Object,
-      providableTargets: Collection<InjectionTarget>,
-      factories: Collection<Factory>
+    type: Type.Object,
+    providableTargets: Collection<InjectionTarget>,
+    factories: Collection<Factory>
   ): Module {
     return convertToModule(grip.classRegistry.getClassMirror(type), providableTargets, factories)
   }
 
   private fun convertToModule(
-      mirror: ClassMirror,
-      providableTargets: Collection<InjectionTarget>,
-      factories: Collection<Factory>
+    mirror: ClassMirror,
+    providableTargets: Collection<InjectionTarget>,
+    factories: Collection<Factory>
   ): Module {
     if (mirror.signature.typeVariables.isNotEmpty()) {
       errorReporter.reportError("Module cannot have a type parameters: ${mirror.type.className}")
@@ -155,10 +156,10 @@ class ModuleParserImpl(
     val mirror = grip.classRegistry.getClassMirror(type)
     val providerType = getObjectTypeByInternalName("${type.internalName}\$FactoryProvider\$$projectName")
     val constructorMirror = MethodMirror.Builder()
-        .access(ACC_PUBLIC)
-        .name(MethodDescriptor.CONSTRUCTOR_NAME)
-        .type(getMethodType(Type.Primitive.Void, Types.INJECTOR_TYPE))
-        .build()
+      .access(ACC_PUBLIC)
+      .name(MethodDescriptor.CONSTRUCTOR_NAME)
+      .type(getMethodType(Type.Primitive.Void, Types.INJECTOR_TYPE))
+      .build()
     val constructorInjectee = Injectee(Dependency(GenericType.Raw(Types.INJECTOR_TYPE)), Converter.Instance)
     val injectionPoint = InjectionPoint.Method(implementationType, constructorMirror, listOf(constructorInjectee))
     val provisionPoint = ProvisionPoint.Constructor(dependency, injectionPoint)
@@ -202,9 +203,9 @@ class ModuleParserImpl(
 
   private fun createBridgeMirror(bridge: MethodDescriptor): MethodMirror {
     return MethodMirror.Builder()
-        .access(ACC_PUBLIC or ACC_SYNTHETIC)
-        .name(bridge.name)
-        .type(bridge.type)
-        .build()
+      .access(ACC_PUBLIC or ACC_SYNTHETIC)
+      .name(bridge.name)
+      .type(bridge.type)
+      .build()
   }
 }

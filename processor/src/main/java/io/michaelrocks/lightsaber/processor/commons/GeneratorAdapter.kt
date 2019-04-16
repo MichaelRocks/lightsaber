@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,44 +40,44 @@ import org.objectweb.asm.Opcodes.TOP
 import java.util.ArrayList
 
 class GeneratorAdapter(
-    methodVisitor: MethodVisitor,
-    access: Int,
-    name: String,
-    desc: String
+  methodVisitor: MethodVisitor,
+  access: Int,
+  name: String,
+  desc: String
 ) : org.objectweb.asm.commons.GeneratorAdapter(ASM5, methodVisitor, access, name, desc) {
 
   companion object {
     private fun visitMethod(
-        classVisitor: ClassVisitor,
-        access: Int,
-        method: MethodDescriptor,
-        signature: String?,
-        exceptions: Array<Type.Object>?
-    ): MethodVisitor =
-        classVisitor.visitMethod(access, method.name, method.descriptor, signature, exceptions?.toInternalNames())
-
-    private fun Array<Type.Object>.toInternalNames(): Array<String>? =
-        this.mapToArray { it.internalName }
-  }
-
-  constructor(
-      methodVisitor: MethodVisitor,
-      access: Int,
-      method: MethodDescriptor
-  ) : this(methodVisitor, access, method.name, method.descriptor)
-
-  constructor(
-      classVisitor: ClassVisitor,
-      access: Int,
-      method: MethodDescriptor
-  ) : this(visitMethod(classVisitor, access, method, null, null), access, method)
-
-  constructor(
       classVisitor: ClassVisitor,
       access: Int,
       method: MethodDescriptor,
       signature: String?,
       exceptions: Array<Type.Object>?
+    ): MethodVisitor =
+      classVisitor.visitMethod(access, method.name, method.descriptor, signature, exceptions?.toInternalNames())
+
+    private fun Array<Type.Object>.toInternalNames(): Array<String>? =
+      this.mapToArray { it.internalName }
+  }
+
+  constructor(
+    methodVisitor: MethodVisitor,
+    access: Int,
+    method: MethodDescriptor
+  ) : this(methodVisitor, access, method.name, method.descriptor)
+
+  constructor(
+    classVisitor: ClassVisitor,
+    access: Int,
+    method: MethodDescriptor
+  ) : this(visitMethod(classVisitor, access, method, null, null), access, method)
+
+  constructor(
+    classVisitor: ClassVisitor,
+    access: Int,
+    method: MethodDescriptor,
+    signature: String?,
+    exceptions: Array<Type.Object>?
   ) : this(visitMethod(classVisitor, access, method, signature, exceptions), access, method)
 
   fun newArray(type: Type, size: Int) {
@@ -228,19 +228,23 @@ class GeneratorAdapter(
             is Type.Primitive.Int -> {
               objects.add(INTEGER)
             }
+
             is Type.Primitive.Float -> {
               objects.add(FLOAT)
             }
+
             Type.Primitive.Long -> {
               objects.add(LONG)
               objects.add(TOP)
             }
+
             Type.Primitive.Double -> {
               objects.add(DOUBLE)
               objects.add(TOP)
             }
           }
         }
+
         is Type.Array -> objects.add(type.descriptor)
         is Type.Object -> objects.add(type.internalName)
         else -> throw IllegalArgumentException("Illegal type used in frame: " + type)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,16 @@ import java.util.ArrayList
 import java.util.HashMap
 
 fun <T> HashDirectedGraph(
-    graph: DirectedGraph<T>,
-    collection: () -> MutableCollection<T> = { ArrayList() }
+  graph: DirectedGraph<T>,
+  collection: () -> MutableCollection<T> = { ArrayList() }
 ): HashDirectedGraph<T> {
   return HashDirectedGraph(collection).apply { putAll(graph) }
 }
 
 class HashDirectedGraph<T>(
-    private val collection: () -> MutableCollection<T> = { ArrayList() }
+  private val collection: () -> MutableCollection<T> = { ArrayList() }
 ) : MutableDirectedGraph<T> {
+
   private val edges = HashMap<T, MutableCollection<T>>()
 
   override val vertices: Collection<T>

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ fun <T> DirectedGraph<T>.findCycles(): Collection<List<T>> {
   traversal.traverse(this, delegate)
   return cycles
 }
-
 
 class CycleSearcherTraversal<T> : AbstractTraversal<T, CycleSearcherTraversal.Delegate<T>>() {
   override fun performTraversal(graph: DirectedGraph<T>, delegate: Delegate<T>, vertex: T) {
@@ -87,6 +86,8 @@ class CycleSearcherTraversal<T> : AbstractTraversal<T, CycleSearcherTraversal.De
   }
 
   enum class VertexColor {
-    WHITE, GRAY, BLACK
+    WHITE,
+    GRAY,
+    BLACK
   }
 }

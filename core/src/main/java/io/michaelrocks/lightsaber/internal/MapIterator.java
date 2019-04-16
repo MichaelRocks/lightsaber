@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,5 +20,6 @@ import java.util.Iterator;
 
 public interface MapIterator<K, V> extends Iterator<K> {
   V getValue();
+
   V setValue(V value);
 }

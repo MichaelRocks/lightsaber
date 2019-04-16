@@ -29,46 +29,46 @@ class FactoryInjectionTest {
     val injector = lightsaber.createInjector(ParentFactoryComponent())
     val factory = injector.getInstance<SingleMethodFactory>()
     val target = factory.createTarget(
-        boolean = false,
-        byte = Byte.MIN_VALUE,
-        char = Char.MIN_SURROGATE,
-        double = Double.NEGATIVE_INFINITY,
-        float = Float.NEGATIVE_INFINITY,
-        int = Int.MIN_VALUE,
-        long = Long.MIN_VALUE,
-        short = Short.MIN_VALUE,
-        string = "String",
-        booleanArray = booleanArrayOf(false),
-        byteArray = byteArrayOf(Byte.MIN_VALUE),
-        charArray = charArrayOf(Char.MIN_SURROGATE),
-        doubleArray = doubleArrayOf(Double.NEGATIVE_INFINITY),
-        floatArray = floatArrayOf(Float.NEGATIVE_INFINITY),
-        intArray = intArrayOf(Int.MIN_VALUE),
-        longArray = longArrayOf(Long.MIN_VALUE),
-        shortArray = shortArrayOf(Short.MIN_VALUE),
-        stringArray = arrayOf("String"),
-        intList = listOf(Int.MIN_VALUE),
-        stringList = listOf("String"),
-        annotatedBoolean = true,
-        annotatedByte = Byte.MAX_VALUE,
-        annotatedChar = Char.MAX_SURROGATE,
-        annotatedDouble = Double.POSITIVE_INFINITY,
-        annotatedFloat = Float.POSITIVE_INFINITY,
-        annotatedInt = Int.MAX_VALUE,
-        annotatedLong = Long.MAX_VALUE,
-        annotatedShort = Short.MAX_VALUE,
-        annotatedString = "Annotated",
-        annotatedBooleanArray = booleanArrayOf(true),
-        annotatedByteArray = byteArrayOf(Byte.MAX_VALUE),
-        annotatedCharArray = charArrayOf(Char.MAX_SURROGATE),
-        annotatedDoubleArray = doubleArrayOf(Double.POSITIVE_INFINITY),
-        annotatedFloatArray = floatArrayOf(Float.POSITIVE_INFINITY),
-        annotatedIntArray = intArrayOf(Int.MAX_VALUE),
-        annotatedLongArray = longArrayOf(Long.MAX_VALUE),
-        annotatedShortArray = shortArrayOf(Short.MAX_VALUE),
-        annotatedStringArray = arrayOf("Annotated", "String"),
-        annotatedIntList = listOf(Int.MAX_VALUE),
-        annotatedStringList = listOf("Annotated", "String")
+      boolean = false,
+      byte = Byte.MIN_VALUE,
+      char = Char.MIN_SURROGATE,
+      double = Double.NEGATIVE_INFINITY,
+      float = Float.NEGATIVE_INFINITY,
+      int = Int.MIN_VALUE,
+      long = Long.MIN_VALUE,
+      short = Short.MIN_VALUE,
+      string = "String",
+      booleanArray = booleanArrayOf(false),
+      byteArray = byteArrayOf(Byte.MIN_VALUE),
+      charArray = charArrayOf(Char.MIN_SURROGATE),
+      doubleArray = doubleArrayOf(Double.NEGATIVE_INFINITY),
+      floatArray = floatArrayOf(Float.NEGATIVE_INFINITY),
+      intArray = intArrayOf(Int.MIN_VALUE),
+      longArray = longArrayOf(Long.MIN_VALUE),
+      shortArray = shortArrayOf(Short.MIN_VALUE),
+      stringArray = arrayOf("String"),
+      intList = listOf(Int.MIN_VALUE),
+      stringList = listOf("String"),
+      annotatedBoolean = true,
+      annotatedByte = Byte.MAX_VALUE,
+      annotatedChar = Char.MAX_SURROGATE,
+      annotatedDouble = Double.POSITIVE_INFINITY,
+      annotatedFloat = Float.POSITIVE_INFINITY,
+      annotatedInt = Int.MAX_VALUE,
+      annotatedLong = Long.MAX_VALUE,
+      annotatedShort = Short.MAX_VALUE,
+      annotatedString = "Annotated",
+      annotatedBooleanArray = booleanArrayOf(true),
+      annotatedByteArray = byteArrayOf(Byte.MAX_VALUE),
+      annotatedCharArray = charArrayOf(Char.MAX_SURROGATE),
+      annotatedDoubleArray = doubleArrayOf(Double.POSITIVE_INFINITY),
+      annotatedFloatArray = floatArrayOf(Float.POSITIVE_INFINITY),
+      annotatedIntArray = intArrayOf(Int.MAX_VALUE),
+      annotatedLongArray = longArrayOf(Long.MAX_VALUE),
+      annotatedShortArray = shortArrayOf(Short.MAX_VALUE),
+      annotatedStringArray = arrayOf("Annotated", "String"),
+      annotatedIntList = listOf(Int.MAX_VALUE),
+      annotatedStringList = listOf("Annotated", "String")
     )
 
     assertEquals(false, target.boolean)
@@ -156,12 +156,14 @@ class FactoryInjectionTest {
 
   @Component
   private class ParentFactoryComponent {
+
     @Import
     private fun importParentFactoryModule(): ParentFactoryModule = ParentFactoryModule()
   }
 
   @Module
   private class ParentFactoryModule {
+
     @Provide
     @Named("Injected")
     private fun provideBoolean(): Boolean = true
@@ -245,12 +247,14 @@ class FactoryInjectionTest {
 
   @Component(parent = ParentFactoryComponent::class)
   private class ChildFactoryComponent {
+
     @Import
     private fun provideChildFactoryModule(): ChildFactoryModule = ChildFactoryModule()
   }
 
   @Module
   private class ChildFactoryModule {
+
     @Provide
     private fun provideString(): String = "Child"
   }
@@ -258,116 +262,118 @@ class FactoryInjectionTest {
   @Factory
   @ProvidedBy(ParentFactoryModule::class)
   interface SingleMethodFactory {
+
     fun createTarget(
-        boolean: Boolean,
-        byte: Byte,
-        char: Char,
-        double: Double,
-        float: Float,
-        int: Int,
-        long: Long,
-        short: Short,
-        string: String,
-        booleanArray: BooleanArray,
-        byteArray: ByteArray,
-        charArray: CharArray,
-        doubleArray: DoubleArray,
-        floatArray: FloatArray,
-        intArray: IntArray,
-        longArray: LongArray,
-        shortArray: ShortArray,
-        stringArray: Array<String>,
-        intList: List<Int>,
-        stringList: List<String>,
-        @Named("Annotated") annotatedBoolean: Boolean,
-        @Named("Annotated") annotatedByte: Byte,
-        @Named("Annotated") annotatedChar: Char,
-        @Named("Annotated") annotatedDouble: Double,
-        @Named("Annotated") annotatedFloat: Float,
-        @Named("Annotated") annotatedInt: Int,
-        @Named("Annotated") annotatedLong: Long,
-        @Named("Annotated") annotatedShort: Short,
-        @Named("Annotated") annotatedString: String,
-        @Named("Annotated") annotatedBooleanArray: BooleanArray,
-        @Named("Annotated") annotatedByteArray: ByteArray,
-        @Named("Annotated") annotatedCharArray: CharArray,
-        @Named("Annotated") annotatedDoubleArray: DoubleArray,
-        @Named("Annotated") annotatedFloatArray: FloatArray,
-        @Named("Annotated") annotatedIntArray: IntArray,
-        @Named("Annotated") annotatedLongArray: LongArray,
-        @Named("Annotated") annotatedShortArray: ShortArray,
-        @Named("Annotated") annotatedStringArray: Array<String>,
-        @Named("Annotated") annotatedIntList: List<Int>,
-        @Named("Annotated") annotatedStringList: List<String>
+      boolean: Boolean,
+      byte: Byte,
+      char: Char,
+      double: Double,
+      float: Float,
+      int: Int,
+      long: Long,
+      short: Short,
+      string: String,
+      booleanArray: BooleanArray,
+      byteArray: ByteArray,
+      charArray: CharArray,
+      doubleArray: DoubleArray,
+      floatArray: FloatArray,
+      intArray: IntArray,
+      longArray: LongArray,
+      shortArray: ShortArray,
+      stringArray: Array<String>,
+      intList: List<Int>,
+      stringList: List<String>,
+      @Named("Annotated") annotatedBoolean: Boolean,
+      @Named("Annotated") annotatedByte: Byte,
+      @Named("Annotated") annotatedChar: Char,
+      @Named("Annotated") annotatedDouble: Double,
+      @Named("Annotated") annotatedFloat: Float,
+      @Named("Annotated") annotatedInt: Int,
+      @Named("Annotated") annotatedLong: Long,
+      @Named("Annotated") annotatedShort: Short,
+      @Named("Annotated") annotatedString: String,
+      @Named("Annotated") annotatedBooleanArray: BooleanArray,
+      @Named("Annotated") annotatedByteArray: ByteArray,
+      @Named("Annotated") annotatedCharArray: CharArray,
+      @Named("Annotated") annotatedDoubleArray: DoubleArray,
+      @Named("Annotated") annotatedFloatArray: FloatArray,
+      @Named("Annotated") annotatedIntArray: IntArray,
+      @Named("Annotated") annotatedLongArray: LongArray,
+      @Named("Annotated") annotatedShortArray: ShortArray,
+      @Named("Annotated") annotatedStringArray: Array<String>,
+      @Named("Annotated") annotatedIntList: List<Int>,
+      @Named("Annotated") annotatedStringList: List<String>
     ): SingleMethodTarget
   }
 
   class SingleMethodTarget @Factory.Inject private constructor(
-      val boolean: Boolean,
-      val byte: Byte,
-      val char: Char,
-      val double: Double,
-      val float: Float,
-      val int: Int,
-      val long: Long,
-      val short: Short,
-      val string: String,
-      val booleanArray: BooleanArray,
-      val byteArray: ByteArray,
-      val charArray: CharArray,
-      val doubleArray: DoubleArray,
-      val floatArray: FloatArray,
-      val intArray: IntArray,
-      val longArray: LongArray,
-      val shortArray: ShortArray,
-      val stringArray: Array<String>,
-      val intList: List<Int>,
-      val stringList: List<String>,
-      @Named("Annotated") val annotatedBoolean: Boolean,
-      @Named("Annotated") val annotatedByte: Byte,
-      @Named("Annotated") val annotatedChar: Char,
-      @Named("Annotated") val annotatedDouble: Double,
-      @Named("Annotated") val annotatedFloat: Float,
-      @Named("Annotated") val annotatedInt: Int,
-      @Named("Annotated") val annotatedLong: Long,
-      @Named("Annotated") val annotatedShort: Short,
-      @Named("Annotated") val annotatedString: String,
-      @Named("Annotated") val annotatedBooleanArray: BooleanArray,
-      @Named("Annotated") val annotatedByteArray: ByteArray,
-      @Named("Annotated") val annotatedCharArray: CharArray,
-      @Named("Annotated") val annotatedDoubleArray: DoubleArray,
-      @Named("Annotated") val annotatedFloatArray: FloatArray,
-      @Named("Annotated") val annotatedIntArray: IntArray,
-      @Named("Annotated") val annotatedLongArray: LongArray,
-      @Named("Annotated") val annotatedShortArray: ShortArray,
-      @Named("Annotated") val annotatedStringArray: Array<String>,
-      @Named("Annotated") val annotatedIntList: List<Int>,
-      @Named("Annotated") val annotatedStringList: List<String>,
-      @Named("Injected") val injectedBoolean: Boolean,
-      @Named("Injected") val injectedByte: Byte,
-      @Named("Injected") val injectedChar: Char,
-      @Named("Injected") val injectedDouble: Double,
-      @Named("Injected") val injectedFloat: Float,
-      @Named("Injected") val injectedInt: Int,
-      @Named("Injected") val injectedLong: Long,
-      @Named("Injected") val injectedShort: Short,
-      @Named("Injected") val injectedString: String,
-      @Named("Injected") val injectedBooleanArray: BooleanArray,
-      @Named("Injected") val injectedByteArray: ByteArray,
-      @Named("Injected") val injectedCharArray: CharArray,
-      @Named("Injected") val injectedDoubleArray: DoubleArray,
-      @Named("Injected") val injectedFloatArray: FloatArray,
-      @Named("Injected") val injectedIntArray: IntArray,
-      @Named("Injected") val injectedLongArray: LongArray,
-      @Named("Injected") val injectedShortArray: ShortArray,
-      @Named("Injected") val injectedStringArray: Array<String>,
-      @Named("Injected") val injectedIntList: List<Int>,
-      @Named("Injected") val injectedStringList: List<String>
+    val boolean: Boolean,
+    val byte: Byte,
+    val char: Char,
+    val double: Double,
+    val float: Float,
+    val int: Int,
+    val long: Long,
+    val short: Short,
+    val string: String,
+    val booleanArray: BooleanArray,
+    val byteArray: ByteArray,
+    val charArray: CharArray,
+    val doubleArray: DoubleArray,
+    val floatArray: FloatArray,
+    val intArray: IntArray,
+    val longArray: LongArray,
+    val shortArray: ShortArray,
+    val stringArray: Array<String>,
+    val intList: List<Int>,
+    val stringList: List<String>,
+    @Named("Annotated") val annotatedBoolean: Boolean,
+    @Named("Annotated") val annotatedByte: Byte,
+    @Named("Annotated") val annotatedChar: Char,
+    @Named("Annotated") val annotatedDouble: Double,
+    @Named("Annotated") val annotatedFloat: Float,
+    @Named("Annotated") val annotatedInt: Int,
+    @Named("Annotated") val annotatedLong: Long,
+    @Named("Annotated") val annotatedShort: Short,
+    @Named("Annotated") val annotatedString: String,
+    @Named("Annotated") val annotatedBooleanArray: BooleanArray,
+    @Named("Annotated") val annotatedByteArray: ByteArray,
+    @Named("Annotated") val annotatedCharArray: CharArray,
+    @Named("Annotated") val annotatedDoubleArray: DoubleArray,
+    @Named("Annotated") val annotatedFloatArray: FloatArray,
+    @Named("Annotated") val annotatedIntArray: IntArray,
+    @Named("Annotated") val annotatedLongArray: LongArray,
+    @Named("Annotated") val annotatedShortArray: ShortArray,
+    @Named("Annotated") val annotatedStringArray: Array<String>,
+    @Named("Annotated") val annotatedIntList: List<Int>,
+    @Named("Annotated") val annotatedStringList: List<String>,
+    @Named("Injected") val injectedBoolean: Boolean,
+    @Named("Injected") val injectedByte: Byte,
+    @Named("Injected") val injectedChar: Char,
+    @Named("Injected") val injectedDouble: Double,
+    @Named("Injected") val injectedFloat: Float,
+    @Named("Injected") val injectedInt: Int,
+    @Named("Injected") val injectedLong: Long,
+    @Named("Injected") val injectedShort: Short,
+    @Named("Injected") val injectedString: String,
+    @Named("Injected") val injectedBooleanArray: BooleanArray,
+    @Named("Injected") val injectedByteArray: ByteArray,
+    @Named("Injected") val injectedCharArray: CharArray,
+    @Named("Injected") val injectedDoubleArray: DoubleArray,
+    @Named("Injected") val injectedFloatArray: FloatArray,
+    @Named("Injected") val injectedIntArray: IntArray,
+    @Named("Injected") val injectedLongArray: LongArray,
+    @Named("Injected") val injectedShortArray: ShortArray,
+    @Named("Injected") val injectedStringArray: Array<String>,
+    @Named("Injected") val injectedIntList: List<Int>,
+    @Named("Injected") val injectedStringList: List<String>
   )
 
   @Factory
   @ProvidedBy(ChildFactoryModule::class)
   interface MultipleMethodFactory {
+
     fun createTarget1(@Named("FromMethod") string: String): MultipleMethodTarget1
     fun createTarget2(@Named("FromMethod") string: String): MultipleMethodTarget2
     fun createTarget3(@Named("FromMethod") string: String): MultipleMethodTarget3
@@ -375,22 +381,23 @@ class FactoryInjectionTest {
   }
 
   class MultipleMethodTarget1 @Factory.Inject private constructor(
-      val stringFromInjector: String
+    val stringFromInjector: String
   )
 
   class MultipleMethodTarget2 @Factory.Inject private constructor(
-      @Named("FromMethod") val stringFromMethod: String
+    @Named("FromMethod") val stringFromMethod: String
   )
 
   class MultipleMethodTarget3 @Factory.Inject private constructor(
-      val stringFromInjector: String,
-      @Named("FromMethod") val stringFromMethod: String
+    val stringFromInjector: String,
+    @Named("FromMethod") val stringFromMethod: String
   )
 
   class MultipleMethodTarget4 @Factory.Inject private constructor(
-      val stringFromInjector: String,
-      @Named("FromMethod") val stringFromMethod: String
+    val stringFromInjector: String,
+    @Named("FromMethod") val stringFromMethod: String
   ) {
+
     @Inject
     val stringFromFieldInjection: String = inject()
     lateinit var stringFromMethodInjection: String

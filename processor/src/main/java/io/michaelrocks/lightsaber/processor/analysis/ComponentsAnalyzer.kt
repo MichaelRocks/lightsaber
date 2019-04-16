@@ -50,27 +50,28 @@ import java.util.HashMap
 
 interface ComponentsAnalyzer {
   fun analyze(
-      files: Collection<File>,
-      providableTargets: Collection<InjectionTarget>,
-      factories: Collection<Factory>
+    files: Collection<File>,
+    providableTargets: Collection<InjectionTarget>,
+    factories: Collection<Factory>
   ): Collection<Component>
 }
 
 class ComponentsAnalyzerImpl(
-    private val grip: Grip,
-    private val analyzerHelper: AnalyzerHelper,
-    private val errorReporter: ErrorReporter,
-    private val projectName: String
+  private val grip: Grip,
+  private val analyzerHelper: AnalyzerHelper,
+  private val errorReporter: ErrorReporter,
+  private val projectName: String
 ) : ComponentsAnalyzer {
+
   private val logger = getLogger()
 
   private val moduleParser: ModuleParser = ModuleParserImpl(grip, analyzerHelper, errorReporter, projectName)
   private val moduleRegistry = HashMap<Type.Object, Module>()
 
   override fun analyze(
-      files: Collection<File>,
-      providableTargets: Collection<InjectionTarget>,
-      factories: Collection<Factory>
+    files: Collection<File>,
+    providableTargets: Collection<InjectionTarget>,
+    factories: Collection<Factory>
   ): Collection<Component> {
     val defaultModulesQuery = grip select classes from files where annotatedWith(Types.MODULE_TYPE) { _, annotation ->
       annotation.values["isDefault"] == true
@@ -92,30 +93,30 @@ class ComponentsAnalyzerImpl(
     val graph = buildComponentGraph(componentsQuery.execute().types)
     val reversedGraph = graph.reversed()
     return graph.vertices
-        .filterNot { it == Types.COMPONENT_NONE_TYPE }
-        .map { type ->
-          val parent = reversedGraph.getAdjacentVertices(type)?.first()?.takeIf { it != Types.COMPONENT_NONE_TYPE }
-          val subcomponents = graph.getAdjacentVertices(type).orEmpty()
-          createComponent(type, parent, subcomponents)
-        }
+      .filterNot { it == Types.COMPONENT_NONE_TYPE }
+      .map { type ->
+        val parent = reversedGraph.getAdjacentVertices(type)?.first()?.takeIf { it != Types.COMPONENT_NONE_TYPE }
+        val subcomponents = graph.getAdjacentVertices(type).orEmpty()
+        createComponent(type, parent, subcomponents)
+      }
   }
 
   private fun groupProvidableTargetsByModules(
-      providableTargets: Collection<InjectionTarget>,
-      defaultModuleTypes: Collection<Type.Object>
+    providableTargets: Collection<InjectionTarget>,
+    defaultModuleTypes: Collection<Type.Object>
   ): Map<Type.Object, List<InjectionTarget>> {
     return HashMap<Type.Object, MutableList<InjectionTarget>>().also { providableTargetsByModule ->
       providableTargets.forEach { target ->
         val mirror = grip.classRegistry.getClassMirror(target.type)
         val providedByAnnotation = mirror.annotations[Types.PROVIDED_BY_TYPE]
         val moduleTypes =
-            if (providedByAnnotation != null) providedByAnnotation.values["value"] as List<*> else defaultModuleTypes
+          if (providedByAnnotation != null) providedByAnnotation.values["value"] as List<*> else defaultModuleTypes
 
         if (moduleTypes.isEmpty()) {
           errorReporter.reportError(
-              "Class ${target.type.className} should be bounds to at least one module. " +
-                  "You can annotate it with @ProvidedBy with a module list " +
-                  "or make some of your modules default with @Module(isDefault = true)"
+            "Class ${target.type.className} should be bounds to at least one module. " +
+                "You can annotate it with @ProvidedBy with a module list " +
+                "or make some of your modules default with @Module(isDefault = true)"
           )
         } else {
           moduleTypes.forEach { moduleType ->
@@ -123,7 +124,7 @@ class ComponentsAnalyzerImpl(
               providableTargetsByModule.getOrPut(moduleType, ::ArrayList).add(target)
             } else {
               errorReporter.reportError(
-                  "A non-class type is specified in @ProvidedBy annotation for ${mirror.type.className}"
+                "A non-class type is specified in @ProvidedBy annotation for ${mirror.type.className}"
               )
             }
           }
@@ -133,21 +134,21 @@ class ComponentsAnalyzerImpl(
   }
 
   private fun groupFactoriesByModules(
-      factories: Collection<Factory>,
-      defaultModuleTypes: Collection<Type.Object>
+    factories: Collection<Factory>,
+    defaultModuleTypes: Collection<Type.Object>
   ): Map<Type.Object, List<Factory>> {
     return HashMap<Type.Object, MutableList<Factory>>().also { factoriesByModule ->
       factories.forEach { factory ->
         val mirror = grip.classRegistry.getClassMirror(factory.type)
         val providedByAnnotation = mirror.annotations[Types.PROVIDED_BY_TYPE]
         val moduleTypes =
-            if (providedByAnnotation != null) providedByAnnotation.values["value"] as List<*> else defaultModuleTypes
+          if (providedByAnnotation != null) providedByAnnotation.values["value"] as List<*> else defaultModuleTypes
 
         if (moduleTypes.isEmpty()) {
           errorReporter.reportError(
-              "Class ${factory.type.className} should be bounds to at least one module. " +
-                  "You can annotate it with @ProvidedBy with a module list " +
-                  "or make some of your modules default with @Module(isDefault = true)"
+            "Class ${factory.type.className} should be bounds to at least one module. " +
+                "You can annotate it with @ProvidedBy with a module list " +
+                "or make some of your modules default with @Module(isDefault = true)"
           )
         } else {
           moduleTypes.forEach { moduleType ->
@@ -155,7 +156,7 @@ class ComponentsAnalyzerImpl(
               factoriesByModule.getOrPut(moduleType, ::ArrayList).add(factory)
             } else {
               errorReporter.reportError(
-                  "A non-class type is specified in @ProvidedBy annotation for ${mirror.type.className}"
+                "A non-class type is specified in @ProvidedBy annotation for ${mirror.type.className}"
               )
             }
           }
@@ -196,9 +197,9 @@ class ComponentsAnalyzerImpl(
   }
 
   private fun createComponent(
-      type: Type.Object,
-      parent: Type.Object?,
-      subcomponents: Iterable<Type.Object>
+    type: Type.Object,
+    parent: Type.Object?,
+    subcomponents: Iterable<Type.Object>
   ): Component {
     return createComponent(grip.classRegistry.getClassMirror(type), parent, subcomponents.toList())
   }

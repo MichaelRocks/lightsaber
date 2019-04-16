@@ -21,6 +21,7 @@ import io.michaelrocks.lightsaber.Import
 
 @Component
 internal class LightsaberComponent {
+
   @Import
   private fun importLightsaberModule(): LightsaberModule {
     return LightsaberModule()

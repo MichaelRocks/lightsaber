@@ -52,12 +52,12 @@ open class LightsaberTask : DefaultTask() {
     validate()
 
     val parameters = LightsaberParameters(
-        inputs = backupDirs,
-        outputs = classesDirs,
-        classpath = classpath,
-        bootClasspath = bootClasspath,
-        gen = classesDirs[0],
-        projectName = name.orEmpty().replace(":lightsaberProcess", ":").replace(':', '$')
+      inputs = backupDirs,
+      outputs = classesDirs,
+      classpath = classpath,
+      bootClasspath = bootClasspath,
+      gen = classesDirs[0],
+      projectName = name.orEmpty().replace(":lightsaberProcess", ":").replace(':', '$')
     )
 
     logger.info("Starting Lightsaber processor: {}", parameters)

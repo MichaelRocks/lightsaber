@@ -93,20 +93,26 @@ class GenericInjectionTest {
 
   @Module
   private class GenericModule {
+
     @Provide
     fun provideStringList(): List<String> = listOf("Hello", "world")
+
     @Provide
     fun provideIntList(): List<Int> = listOf(42, 43)
+
     @Provide
     fun provideIntArrayList(): List<IntArray> = listOf(intArrayOf(42, 43))
+
     @Provide
     fun provideIntListArray(): Array<List<Int>> = arrayOf(listOf(42, 43))
+
     @Provide
     fun provideIntListArrayArray(): Array<Array<List<Int>>> = arrayOf(arrayOf(listOf(42, 43)))
   }
 
   @Component
   private class GenericComponent {
+
     @Import
     fun importGenericModule(): GenericModule = GenericModule()
   }
@@ -121,11 +127,11 @@ class GenericInjectionTest {
 
   @ProvidedBy(GenericModule::class)
   private class ConstructorInjectionTarget @Inject constructor(
-      override val stringList: List<String>,
-      override val intList: List<Int>,
-      override val intArrayList: List<IntArray>,
-      override val intListArray: Array<List<Int>>,
-      override val intListArrayArray: Array<Array<List<Int>>>
+    override val stringList: List<String>,
+    override val intList: List<Int>,
+    override val intArrayList: List<IntArray>,
+    override val intListArray: Array<List<Int>>,
+    override val intListArrayArray: Array<Array<List<Int>>>
   ) : Target
 
   private class FieldInjectionTarget : Target {

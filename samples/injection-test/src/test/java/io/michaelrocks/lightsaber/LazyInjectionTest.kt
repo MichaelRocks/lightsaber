@@ -58,12 +58,14 @@ class LazyInjectionTest {
 
   @Module
   private class LazyModule {
+
     @Provide
     fun provideString(): String = StringBuilder("String").toString()
   }
 
   @Component
   private class LazyComponent {
+
     @Import
     fun importLazyModule(): LazyModule = LazyModule()
   }
@@ -76,9 +78,9 @@ class LazyInjectionTest {
 
   @ProvidedBy(LazyModule::class)
   private class ConstructorInjectionTarget @Inject constructor(
-      override val string: String,
-      override val lazyString1: Lazy<String>,
-      override val lazyString2: Lazy<String>
+    override val string: String,
+    override val lazyString1: Lazy<String>,
+    override val lazyString2: Lazy<String>
   ) : Target
 
   private class FieldInjectionTarget : Target {

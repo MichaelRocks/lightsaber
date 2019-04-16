@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,30 +19,31 @@ package io.michaelrocks.lightsaber.processor.model
 import io.michaelrocks.grip.mirrors.Type
 
 data class InjectionContext(
-    val components: Collection<Component>,
-    val injectableTargets: Collection<InjectionTarget>,
-    val providableTargets: Collection<InjectionTarget>,
-    val factories: Collection<Factory>
+  val components: Collection<Component>,
+  val injectableTargets: Collection<InjectionTarget>,
+  val providableTargets: Collection<InjectionTarget>,
+  val factories: Collection<Factory>
 ) {
+
   private val componentsByType = components.associateBy { it.type }
   private val modulesByType = components.flatMap { it.modules }.associateBy { it.type }
   private val injectableTargetsByType = injectableTargets.associateBy { it.type }
   private val providableTargetsByType = providableTargets.associateBy { it.type }
   private val factoryInjectionPointsByType =
-      factories.flatMap { it.provisionPoints }.map { it.injectionPoint }.associateBy { it.containerType }
+    factories.flatMap { it.provisionPoints }.map { it.injectionPoint }.associateBy { it.containerType }
 
   fun findComponentByType(componentType: Type.Object): Component? =
-      componentsByType[componentType]
+    componentsByType[componentType]
 
   fun findModuleByType(moduleType: Type.Object): Module? =
-      modulesByType[moduleType]
+    modulesByType[moduleType]
 
   fun findInjectableTargetByType(injectableTargetType: Type.Object): InjectionTarget? =
-      injectableTargetsByType[injectableTargetType]
+    injectableTargetsByType[injectableTargetType]
 
   fun findProvidableTargetByType(providableTargetType: Type.Object): InjectionTarget? =
-      providableTargetsByType[providableTargetType]
+    providableTargetsByType[providableTargetType]
 
   fun findFactoryInjectionPointByType(factoryInjectionPointType: Type.Object): FactoryInjectionPoint? =
-      factoryInjectionPointsByType[factoryInjectionPointType]
+    factoryInjectionPointsByType[factoryInjectionPointType]
 }

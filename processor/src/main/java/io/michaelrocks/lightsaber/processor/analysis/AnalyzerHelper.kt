@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,9 @@ interface AnalyzerHelper {
 }
 
 class AnalyzerHelperImpl(
-    private val classRegistry: ClassRegistry,
-    private val scopeRegistry: ScopeRegistry,
-    private val errorReporter: ErrorReporter
+  private val classRegistry: ClassRegistry,
+  private val scopeRegistry: ScopeRegistry,
+  private val errorReporter: ErrorReporter
 ) : AnalyzerHelper {
 
   override fun convertToInjectionPoint(method: MethodMirror, container: Type.Object): InjectionPoint.Method {
@@ -122,6 +122,7 @@ class AnalyzerHelperImpl(
     return when (scopeProviders.size) {
       0 -> Scope.None
       1 -> Scope.Class(scopeProviders[0])
+
       else -> {
         errorReporter.reportError("Element $this has multiple scopes: $scopeProviders")
         Scope.None

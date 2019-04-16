@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,14 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes.ASM5
 
 class JavaVersionChanger(classVisitor: ClassVisitor, private val newVersion: Int) : ClassVisitor(ASM5, classVisitor) {
-  override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
-      interfaces: Array<String>?) {
+  override fun visit(
+    version: Int,
+    access: Int,
+    name: String,
+    signature: String?,
+    superName: String?,
+    interfaces: Array<String>?
+  ) {
     super.visit(newVersion, access, name, signature, superName, interfaces)
   }
 }

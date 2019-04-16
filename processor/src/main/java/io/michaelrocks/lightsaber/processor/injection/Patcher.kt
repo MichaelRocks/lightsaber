@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,14 +27,20 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 
 class Patcher(
-    classVisitor: ClassVisitor,
-    private val classRegistry: ClassRegistry,
-    private val keyRegistry: KeyRegistry,
-    private val context: InjectionContext
+  classVisitor: ClassVisitor,
+  private val classRegistry: ClassRegistry,
+  private val keyRegistry: KeyRegistry,
+  private val context: InjectionContext
 ) : ClassVisitor(Opcodes.ASM5, classVisitor) {
 
-  override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
-      interfaces: Array<String>?) {
+  override fun visit(
+    version: Int,
+    access: Int,
+    name: String,
+    signature: String?,
+    superName: String?,
+    interfaces: Array<String>?
+  ) {
     val type = getObjectTypeByInternalName(name)
 
     context.findComponentByType(type)?.also {

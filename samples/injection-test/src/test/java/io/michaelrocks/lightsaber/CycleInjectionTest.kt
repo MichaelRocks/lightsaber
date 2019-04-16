@@ -58,6 +58,7 @@ class CycleInjectionTest {
 
   @Component
   private class CycleComponent {
+
     @Import
     fun importCycleModule(): CycleModule = CycleModule()
   }
@@ -65,33 +66,35 @@ class CycleInjectionTest {
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class CycleTarget1 @Inject constructor(
-      val cycleTarget2: CycleTarget2
+    val cycleTarget2: CycleTarget2
   )
 
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class CycleTarget2 @Inject constructor(
-      val cycleTarget1Provider: Provider<CycleTarget1>,
-      val cycleTarget1Lazy: Lazy<CycleTarget1>
+    val cycleTarget1Provider: Provider<CycleTarget1>,
+    val cycleTarget1Lazy: Lazy<CycleTarget1>
   )
 
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class FieldCycleTarget1 @Inject constructor() {
+
     @Inject val fieldCycleTarget2: FieldCycleTarget2 = inject()
   }
 
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class FieldCycleTarget2 @Inject constructor() {
+
     @Inject val fieldCycleTarget1Provider: Provider<FieldCycleTarget1> = inject()
     @Inject val fieldCycleTarget1Lazy: Lazy<FieldCycleTarget1> = inject()
   }
 
-
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class MethodCycleTarget1 @Inject constructor() {
+
     @set:Inject
     lateinit var methodCycleTarget2: MethodCycleTarget2
   }
@@ -99,6 +102,7 @@ class CycleInjectionTest {
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class MethodCycleTarget2 @Inject constructor() {
+
     @set:Inject
     lateinit var methodCycleTarget1Provider: Provider<MethodCycleTarget1>
     @set:Inject

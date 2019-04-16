@@ -22,6 +22,7 @@ import io.michaelrocks.lightsaber.sample.library.LibraryModule
 
 @Component
 internal class LightsaberComponent {
+
   @Import
   private fun importLightsaberModule(): LightsaberModule {
     return LightsaberModule()

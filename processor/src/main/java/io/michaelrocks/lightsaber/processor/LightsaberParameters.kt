@@ -19,10 +19,10 @@ package io.michaelrocks.lightsaber.processor
 import java.io.File
 
 data class LightsaberParameters(
-    var inputs: List<File>,
-    var outputs: List<File>,
-    var classpath: List<File>,
-    var bootClasspath: List<File>,
-    var gen: File,
-    var projectName: String
+  var inputs: List<File>,
+  var outputs: List<File>,
+  var classpath: List<File>,
+  var bootClasspath: List<File>,
+  var gen: File,
+  var projectName: String
 )

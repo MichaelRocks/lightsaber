@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,10 +31,11 @@ import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 
 class Validator(
-    private val classRegistry: ClassRegistry,
-    private val errorReporter: ErrorReporter,
-    private val context: InjectionContext
+  private val classRegistry: ClassRegistry,
+  private val errorReporter: ErrorReporter,
+  private val context: InjectionContext
 ) {
+
   fun validate() {
     performSanityChecks()
     validateComponents()
@@ -52,21 +53,21 @@ class Validator(
     }
 
     context.components
-        .filter { it.parent == null }
-        .forEach { component ->
-          validateNoModuleDuplicates(component, emptyMap())
-          validateNoDependencyDuplicates(component, emptyMap())
-          validateDependenciesAreResolved(component, DependencyResolver(context))
-          validateNoDependencyCycles(component, DependencyGraphBuilder(context, true))
-          validateFactories(component, DependencyResolver(context))
-        }
+      .filter { it.parent == null }
+      .forEach { component ->
+        validateNoModuleDuplicates(component, emptyMap())
+        validateNoDependencyDuplicates(component, emptyMap())
+        validateDependenciesAreResolved(component, DependencyResolver(context))
+        validateNoDependencyCycles(component, DependencyGraphBuilder(context, true))
+        validateFactories(component, DependencyResolver(context))
+      }
 
     validateInjectionTargetsAreResolved(context.injectableTargets, context.components)
   }
 
   private fun validateNoModuleDuplicates(
-      component: Component,
-      moduleToComponentsMap: Map<Type.Object, List<Type.Object>>
+    component: Component,
+    moduleToComponentsMap: Map<Type.Object, List<Type.Object>>
   ) {
     val newModuleTypeToComponentMap = HashMap(moduleToComponentsMap)
     component.modules.forEach { module ->
@@ -82,7 +83,7 @@ class Validator(
           val moduleName = moduleType.className
           val componentNames = componentTypes.joinToString { it.className }
           errorReporter.reportError(
-              "Module $moduleName provided multiple times in a single component hierarchy: $componentNames"
+            "Module $moduleName provided multiple times in a single component hierarchy: $componentNames"
           )
         }
       }
@@ -101,8 +102,8 @@ class Validator(
   }
 
   private fun validateNoDependencyDuplicates(
-      component: Component,
-      dependencyTypeToModuleMap: Map<Dependency, List<Type.Object>>
+    component: Component,
+    dependencyTypeToModuleMap: Map<Dependency, List<Type.Object>>
   ) {
     val newDependencyTypeToModuleMap = HashMap(dependencyTypeToModuleMap)
     component.modules.forEach { module ->
@@ -119,7 +120,7 @@ class Validator(
         if (moduleTypes.size > 1) {
           val moduleNames = moduleTypes.joinToString { it.className }
           errorReporter.reportError(
-              "Dependency $dependency provided multiple times in a single component hierarchy by modules: $moduleNames"
+            "Dependency $dependency provided multiple times in a single component hierarchy by modules: $moduleNames"
           )
         }
       }
@@ -184,11 +185,11 @@ class Validator(
   }
 
   private fun validateFactoryDependency(
-      component: Component,
-      factory: Factory,
-      dependency: Dependency,
-      resolvedDependencies: Set<Dependency>,
-      shouldBeResolved: Boolean
+    component: Component,
+    factory: Factory,
+    dependency: Dependency,
+    resolvedDependencies: Set<Dependency>,
+    shouldBeResolved: Boolean
   ) {
     val isResolved = dependency.boxed() in resolvedDependencies
     if (isResolved != shouldBeResolved) {
@@ -203,8 +204,8 @@ class Validator(
   }
 
   private fun validateInjectionTargetsAreResolved(
-      injectionTargets: Iterable<InjectionTarget>,
-      components: Iterable<Component>
+    injectionTargets: Iterable<InjectionTarget>,
+    components: Iterable<Component>
   ) {
     val dependencyResolver = DependencyResolver(context)
     components.forEach { dependencyResolver.add(it) }
@@ -218,9 +219,9 @@ class Validator(
   }
 
   private fun validateInjectionPointIsResolved(
-      injectionTargetType: Type.Object,
-      injectionPoint: InjectionPoint,
-      resolvedDependencies: Set<Dependency>
+    injectionTargetType: Type.Object,
+    injectionPoint: InjectionPoint,
+    resolvedDependencies: Set<Dependency>
   ) {
     val dependencies = getDependenciesForInjectionPoint(injectionPoint)
     val element = getElementForInjectionPoint(injectionPoint)
@@ -230,7 +231,7 @@ class Validator(
       val injectionTargetName = injectionTargetType.className
       unresolvedDependencies.forEach { dependency ->
         errorReporter.reportError(
-            "Unresolved dependency $dependency in $element at $injectionTargetName"
+          "Unresolved dependency $dependency in $element at $injectionTargetName"
         )
       }
     }

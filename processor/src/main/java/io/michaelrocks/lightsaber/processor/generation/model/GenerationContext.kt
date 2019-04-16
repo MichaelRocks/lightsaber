@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,10 @@ import io.michaelrocks.grip.mirrors.packageName
 import java.util.HashMap
 
 data class GenerationContext(
-    val packageInvaders: Collection<PackageInvader>,
-    val keyRegistry: KeyRegistry
+  val packageInvaders: Collection<PackageInvader>,
+  val keyRegistry: KeyRegistry
 ) {
+
   private val packageInvadersByPackageName = HashMap<String, PackageInvader>()
 
   init {
@@ -31,5 +32,5 @@ data class GenerationContext(
   }
 
   fun findPackageInvaderByTargetType(targetType: Type.Object): PackageInvader? =
-      packageInvadersByPackageName[targetType.packageName]
+    packageInvadersByPackageName[targetType.packageName]
 }

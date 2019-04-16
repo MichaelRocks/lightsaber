@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,32 +55,32 @@ class CompositeMethodVisitorTest {
   @Test
   fun testVisitAnnotationDefault() {
     verifyCompositeMethodInvocations(CompositeMethodVisitor::class,
-        { visitAnnotationDefault() },
-        { visitEnd() }
+      { visitAnnotationDefault() },
+      { visitEnd() }
     )
   }
 
   @Test
   fun testVisitAnnotation() {
     verifyCompositeMethodInvocations(CompositeMethodVisitor::class,
-        { visitAnnotation("Desc", true) },
-        { visitEnd() }
+      { visitAnnotation("Desc", true) },
+      { visitEnd() }
     )
   }
 
   @Test
   fun testVisitTypeAnnotation() {
     verifyCompositeMethodInvocations(CompositeMethodVisitor::class,
-        { visitTypeAnnotation(TypeReference.METHOD_TYPE_PARAMETER, null, "Desc", true) },
-        { visitEnd() }
+      { visitTypeAnnotation(TypeReference.METHOD_TYPE_PARAMETER, null, "Desc", true) },
+      { visitEnd() }
     )
   }
 
   @Test
   fun testVisitParameterAnnotation() {
     verifyCompositeMethodInvocations(CompositeMethodVisitor::class,
-        { visitParameterAnnotation(1, "Desc", true) },
-        { visitEnd() }
+      { visitParameterAnnotation(1, "Desc", true) },
+      { visitEnd() }
     )
   }
 
@@ -195,8 +195,8 @@ class CompositeMethodVisitorTest {
   @Test
   fun testVisitInsnAnnotation() {
     verifyCompositeMethodInvocations(CompositeMethodVisitor::class,
-        { visitInsnAnnotation(TypeReference.METHOD_TYPE_PARAMETER, null, "Desc", true) },
-        { visitEnd() }
+      { visitInsnAnnotation(TypeReference.METHOD_TYPE_PARAMETER, null, "Desc", true) },
+      { visitEnd() }
     )
   }
 
@@ -211,8 +211,8 @@ class CompositeMethodVisitorTest {
   @Test
   fun testVisitTryCatchAnnotation() {
     verifyCompositeMethodInvocations(CompositeMethodVisitor::class,
-        { visitTryCatchAnnotation(TypeReference.METHOD_TYPE_PARAMETER, null, "Desc", true) },
-        { visitEnd() }
+      { visitTryCatchAnnotation(TypeReference.METHOD_TYPE_PARAMETER, null, "Desc", true) },
+      { visitEnd() }
     )
   }
 
@@ -231,8 +231,8 @@ class CompositeMethodVisitorTest {
     val end = arrayOf(Label())
     val index = intArrayOf(1, 2)
     verifyCompositeMethodInvocations(CompositeMethodVisitor::class,
-        { visitLocalVariableAnnotation(TypeReference.METHOD_TYPE_PARAMETER, null, start, end, index, "Desc", true) },
-        { visitEnd() }
+      { visitLocalVariableAnnotation(TypeReference.METHOD_TYPE_PARAMETER, null, start, end, index, "Desc", true) },
+      { visitEnd() }
     )
   }
 

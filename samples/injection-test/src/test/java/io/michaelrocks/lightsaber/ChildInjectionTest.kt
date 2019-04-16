@@ -85,6 +85,7 @@ class ChildInjectionTest {
 
   @Module
   private class ParentModule {
+
     @Provide
     @Singleton
     fun provideString(): String = StringBuilder("Parent String").toString()
@@ -92,6 +93,7 @@ class ChildInjectionTest {
 
   @Module
   private class ChildModule {
+
     @Provide
     @Singleton
     fun provideObject(): Any = StringBuilder("Child Object").toString()
@@ -108,25 +110,27 @@ class ChildInjectionTest {
 
   @Component
   private class ParentComponent {
+
     @Import
     private fun importParentModule(): ParentModule = ParentModule()
   }
 
   @Component(parent = ParentComponent::class)
   private class ChildComponent {
+
     @Import
     private fun importChildModule(): ChildModule = ChildModule()
   }
 
   @ProvidedBy(ChildModule::class)
   class PackageDependency @Inject private constructor(
-      @Named("Child String")
-      val namedString: String
+    @Named("Child String")
+    val namedString: String
   )
 
   @ProvidedBy(ChildModule::class)
   class PackageDependencyTarget @Inject private constructor(
-      @Named("Package Dependency")
-      val packageDependency: PackageDependency
+    @Named("Package Dependency")
+    val packageDependency: PackageDependency
   )
 }

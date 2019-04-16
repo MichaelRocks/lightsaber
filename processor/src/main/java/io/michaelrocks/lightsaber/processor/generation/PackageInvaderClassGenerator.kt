@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,19 +35,21 @@ import org.objectweb.asm.Opcodes.ACC_SUPER
 import org.objectweb.asm.Opcodes.V1_6
 
 class PackageInvaderClassGenerator(
-    private val classRegistry: ClassRegistry,
-    private val packageInvader: PackageInvader
+  private val classRegistry: ClassRegistry,
+  private val packageInvader: PackageInvader
 ) {
+
   fun generate(): ByteArray {
     val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
-        V1_6,
-        ACC_PUBLIC or ACC_SUPER,
-        packageInvader.type.internalName,
-        null,
-        Types.OBJECT_TYPE.internalName,
-        null)
+      V1_6,
+      ACC_PUBLIC or ACC_SUPER,
+      packageInvader.type.internalName,
+      null,
+      Types.OBJECT_TYPE.internalName,
+      null
+    )
 
     generateFields(classVisitor)
     generateStaticInitializer(classVisitor)
@@ -60,11 +62,12 @@ class PackageInvaderClassGenerator(
   private fun generateFields(classVisitor: ClassVisitor) {
     for (field in packageInvader.fields.values) {
       val fieldVisitor = classVisitor.visitField(
-          ACC_PUBLIC or ACC_STATIC or ACC_FINAL,
-          field.name,
-          field.descriptor,
-          null,
-          null)
+        ACC_PUBLIC or ACC_STATIC or ACC_FINAL,
+        field.name,
+        field.descriptor,
+        null,
+        null
+      )
       fieldVisitor.visitEnd()
     }
   }

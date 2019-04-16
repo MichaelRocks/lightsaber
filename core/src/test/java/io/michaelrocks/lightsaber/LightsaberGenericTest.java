@@ -31,7 +31,6 @@ import io.michaelrocks.lightsaber.internal.InjectorConfigurator;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.internal.ParameterizedTypeImpl;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.any;
@@ -75,7 +74,6 @@ public class LightsaberGenericTest {
         .when(configurator).configureInjector(any(LightsaberInjector.class));
     return configurator;
   }
-
 
   private static Type getJvmStringListType() {
     return new TypeReference<List<String>>() {}.getType();

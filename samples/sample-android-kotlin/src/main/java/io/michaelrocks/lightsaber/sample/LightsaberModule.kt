@@ -22,6 +22,7 @@ import io.michaelrocks.lightsaber.sample.library.Droid
 
 @Module(isDefault = true)
 internal class LightsaberModule {
+
   @Provide
   private val darthVader = DarthVader
 

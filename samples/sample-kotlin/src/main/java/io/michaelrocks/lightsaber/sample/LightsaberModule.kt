@@ -23,6 +23,7 @@ import javax.inject.Singleton
 
 @Module(isDefault = true)
 internal class LightsaberModule {
+
   @Provide
   private val darthVader = DarthVader
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ private val DEFAULT_CONSTRUCTOR_DESCRIPTOR = AsmType.getMethodDescriptor(AsmType
 
 private val DEFAULT_CONSTRUCTOR = MethodDescriptor.forConstructor()
 private val STATIC_INITIALIZER =
-    MethodDescriptor.forMethod(MethodDescriptor.STATIC_INITIALIZER_NAME, Type.Primitive.Void)
+  MethodDescriptor.forMethod(MethodDescriptor.STATIC_INITIALIZER_NAME, Type.Primitive.Void)
 
 fun MethodDescriptor(name: String, desc: String) = MethodDescriptor(name, getMethodType(desc))
 

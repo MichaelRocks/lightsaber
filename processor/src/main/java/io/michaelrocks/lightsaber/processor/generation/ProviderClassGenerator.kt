@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,10 +44,11 @@ import org.objectweb.asm.Opcodes.ACC_SUPER
 import org.objectweb.asm.Opcodes.V1_6
 
 class ProviderClassGenerator(
-    private val classRegistry: ClassRegistry,
-    private val keyRegistry: KeyRegistry,
-    private val provider: Provider
+  private val classRegistry: ClassRegistry,
+  private val keyRegistry: KeyRegistry,
+  private val provider: Provider
 ) {
+
   companion object {
     private const val MODULE_FIELD_NAME = "module"
 
@@ -56,9 +57,9 @@ class ProviderClassGenerator(
     private val INJECTOR_FIELD = FieldDescriptor("injector", Types.INJECTOR_TYPE)
 
     private val GET_METHOD =
-        MethodDescriptor.forMethod("get", Types.OBJECT_TYPE)
+      MethodDescriptor.forMethod("get", Types.OBJECT_TYPE)
     private val INJECT_MEMBERS_METHOD =
-        MethodDescriptor.forMethod("injectMembers", Type.Primitive.Void, Types.OBJECT_TYPE)
+      MethodDescriptor.forMethod("injectMembers", Type.Primitive.Void, Types.OBJECT_TYPE)
   }
 
   private val providerConstructor: MethodDescriptor
@@ -74,12 +75,12 @@ class ProviderClassGenerator(
     val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
-        V1_6,
-        ACC_PUBLIC or ACC_SUPER,
-        provider.type.internalName,
-        null,
-        Types.OBJECT_TYPE.internalName,
-        arrayOf(Types.PROVIDER_TYPE.internalName)
+      V1_6,
+      ACC_PUBLIC or ACC_SUPER,
+      provider.type.internalName,
+      null,
+      Types.OBJECT_TYPE.internalName,
+      arrayOf(Types.PROVIDER_TYPE.internalName)
     )
 
     generateFields(classVisitor)
@@ -99,22 +100,23 @@ class ProviderClassGenerator(
 
   private fun generateModuleField(classVisitor: ClassVisitor) {
     val fieldVisitor = classVisitor.visitField(
-        ACC_PRIVATE or ACC_FINAL,
-        MODULE_FIELD_NAME,
-        provider.moduleType.descriptor,
-        null,
-        null
+      ACC_PRIVATE or ACC_FINAL,
+      MODULE_FIELD_NAME,
+      provider.moduleType.descriptor,
+      null,
+      null
     )
     fieldVisitor.visitEnd()
   }
 
   private fun generateInjectorField(classVisitor: ClassVisitor) {
     val fieldVisitor = classVisitor.visitField(
-        ACC_PRIVATE or ACC_FINAL,
-        INJECTOR_FIELD.name,
-        INJECTOR_FIELD.type.descriptor,
-        null,
-        null)
+      ACC_PRIVATE or ACC_FINAL,
+      INJECTOR_FIELD.name,
+      INJECTOR_FIELD.type.descriptor,
+      null,
+      null
+    )
     fieldVisitor.visitEnd()
   }
 

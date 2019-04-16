@@ -39,27 +39,27 @@ class LightsaberTransform(private val project: Project) : Transform() {
     val outputs = inputs.map { input ->
       val format = if (input is JarInput) Format.JAR else Format.DIRECTORY
       invocation.outputProvider.getContentLocation(
-          input.name,
-          input.contentTypes,
-          input.scopes,
-          format
+        input.name,
+        input.contentTypes,
+        input.scopes,
+        format
       )
     }
 
     val parameters = LightsaberParameters(
-        inputs = inputs.map { it.file },
-        outputs = outputs,
-        gen = invocation.outputProvider.getContentLocation(
-            "gen-lightsaber",
-            QualifiedContent.DefaultContentType.CLASSES,
-            QualifiedContent.Scope.PROJECT,
-            Format.DIRECTORY
-        ),
-        classpath = invocation.referencedInputs.flatMap {
-          it.jarInputs.map { it.file } + it.directoryInputs.map { it.file }
-        },
-        bootClasspath = project.android.bootClasspath,
-        projectName = invocation.context.path.replace(":transformClassesWithLightsaberFor", ":").replace(':', '$')
+      inputs = inputs.map { it.file },
+      outputs = outputs,
+      gen = invocation.outputProvider.getContentLocation(
+        "gen-lightsaber",
+        QualifiedContent.DefaultContentType.CLASSES,
+        QualifiedContent.Scope.PROJECT,
+        Format.DIRECTORY
+      ),
+      classpath = invocation.referencedInputs.flatMap {
+        it.jarInputs.map { it.file } + it.directoryInputs.map { it.file }
+      },
+      bootClasspath = project.android.bootClasspath,
+      projectName = invocation.context.path.replace(":transformClassesWithLightsaberFor", ":").replace(':', '$')
     )
     logger.info("Starting Lightsaber processor: {}", parameters)
     val processor = LightsaberProcessor(parameters)
@@ -85,29 +85,29 @@ class LightsaberTransform(private val project: Project) : Transform() {
 
   override fun getScopes(): MutableSet<in QualifiedContent.Scope> {
     return EnumSet.of(
-        QualifiedContent.Scope.PROJECT,
-        QualifiedContent.Scope.SUB_PROJECTS
+      QualifiedContent.Scope.PROJECT,
+      QualifiedContent.Scope.SUB_PROJECTS
     )
   }
 
   override fun getReferencedScopes(): MutableSet<in QualifiedContent.Scope> {
     if (PluginVersion.major >= 3) {
       return EnumSet.of(
-          QualifiedContent.Scope.PROJECT,
-          QualifiedContent.Scope.SUB_PROJECTS,
-          QualifiedContent.Scope.EXTERNAL_LIBRARIES,
-          QualifiedContent.Scope.TESTED_CODE,
-          QualifiedContent.Scope.PROVIDED_ONLY
+        QualifiedContent.Scope.PROJECT,
+        QualifiedContent.Scope.SUB_PROJECTS,
+        QualifiedContent.Scope.EXTERNAL_LIBRARIES,
+        QualifiedContent.Scope.TESTED_CODE,
+        QualifiedContent.Scope.PROVIDED_ONLY
       )
     } else {
       @Suppress("DEPRECATION")
       return EnumSet.of(
-          QualifiedContent.Scope.PROJECT,
-          QualifiedContent.Scope.PROJECT_LOCAL_DEPS,
-          QualifiedContent.Scope.SUB_PROJECTS,
-          QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
-          QualifiedContent.Scope.TESTED_CODE,
-          QualifiedContent.Scope.PROVIDED_ONLY
+        QualifiedContent.Scope.PROJECT,
+        QualifiedContent.Scope.PROJECT_LOCAL_DEPS,
+        QualifiedContent.Scope.SUB_PROJECTS,
+        QualifiedContent.Scope.SUB_PROJECTS_LOCAL_DEPS,
+        QualifiedContent.Scope.TESTED_CODE,
+        QualifiedContent.Scope.PROVIDED_ONLY
       )
     }
   }
@@ -117,10 +117,10 @@ class LightsaberTransform(private val project: Project) : Transform() {
   }
 
   private fun TransformOutputProvider.getContentLocation(
-      name: String,
-      contentType: QualifiedContent.ContentType,
-      scope: QualifiedContent.Scope,
-      format: Format
+    name: String,
+    contentType: QualifiedContent.ContentType,
+    scope: QualifiedContent.Scope,
+    format: Format
   ): File {
     return getContentLocation(name, setOf(contentType), EnumSet.of(scope), format)
   }

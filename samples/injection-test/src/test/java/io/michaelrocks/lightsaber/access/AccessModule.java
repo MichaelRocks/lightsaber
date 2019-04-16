@@ -59,7 +59,6 @@ class AccessModule {
     return new InternalDependencyImpl[] { impl };
   }
 
-
   @Provide
   private InternalGenericDependency<InternalDependency> provideInternalGenericDependency(
       final InternalGenericDependencyImpl impl) {

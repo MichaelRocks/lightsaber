@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,18 +22,19 @@ import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import java.io.File
 
 class Analyzer(
-    private val grip: Grip,
-    private val errorReporter: ErrorReporter,
-    private val projectName: String
+  private val grip: Grip,
+  private val errorReporter: ErrorReporter,
+  private val projectName: String
 ) {
+
   fun analyze(files: Collection<File>): InjectionContext {
     val analyzerHelper: AnalyzerHelper = AnalyzerHelperImpl(grip.classRegistry, ScopeRegistry(), errorReporter)
     val (injectableTargets, providableTargets) =
-        InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).analyze(files)
+      InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).analyze(files)
     val factories = FactoriesAnalyzerImpl(grip, analyzerHelper, errorReporter, projectName).analyze(files)
     val components =
-        ComponentsAnalyzerImpl(grip, analyzerHelper, errorReporter, projectName)
-            .analyze(files, providableTargets, factories)
+      ComponentsAnalyzerImpl(grip, analyzerHelper, errorReporter, projectName)
+        .analyze(files, providableTargets, factories)
     return InjectionContext(components, injectableTargets, providableTargets, factories)
   }
 }

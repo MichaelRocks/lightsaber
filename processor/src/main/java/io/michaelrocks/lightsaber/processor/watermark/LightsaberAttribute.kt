@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,24 @@ import org.objectweb.asm.Label
 class LightsaberAttribute private constructor(type: String) : Attribute(type) {
   constructor() : this("Lightsaber")
 
-  override fun read(classReader: ClassReader, offset: Int, length: Int, buffer: CharArray?, codeOffset: Int,
-      labels: Array<Label>?): LightsaberAttribute {
+  override fun read(
+    classReader: ClassReader,
+    offset: Int,
+    length: Int,
+    buffer: CharArray?,
+    codeOffset: Int,
+    labels: Array<Label>?
+  ): LightsaberAttribute {
     return LightsaberAttribute()
   }
 
-  override fun write(classWriter: ClassWriter?, code: ByteArray?, length: Int, maxStack: Int,
-      maxLocals: Int): ByteVector {
+  override fun write(
+    classWriter: ClassWriter?,
+    code: ByteArray?,
+    length: Int,
+    maxStack: Int,
+    maxLocals: Int
+  ): ByteVector {
     return ByteVector()
   }
 }

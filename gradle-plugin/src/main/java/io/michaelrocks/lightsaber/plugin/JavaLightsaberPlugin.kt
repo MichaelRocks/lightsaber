@@ -68,20 +68,20 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
     val sourceDir = File(lightsaberDir, "src")
     val classpath = compileTask.classpath.toList()
     val bootClasspath =
-        compileTask.options.bootstrapClasspath?.toList()
-            ?: System.getProperty("sun.boot.class.path")?.split(File.pathSeparator)?.map { File(it) }
-            ?: emptyList()
+      compileTask.options.bootstrapClasspath?.toList()
+        ?: System.getProperty("sun.boot.class.path")?.split(File.pathSeparator)?.map { File(it) }
+        ?: emptyList()
     val lightsaberTask =
-        createLightsaberProcessTask(
-            "lightsaberProcess$suffix",
-            classesDirs,
-            backupDirs,
-            sourceDir,
-            classpath,
-            bootClasspath
-        )
+      createLightsaberProcessTask(
+        "lightsaberProcess$suffix",
+        classesDirs,
+        backupDirs,
+        sourceDir,
+        classpath,
+        bootClasspath
+      )
     val backupTask =
-        createBackupClassFilesTask("lightsaberBackupClasses$suffix", classesDirs, backupDirs)
+      createBackupClassFilesTask("lightsaberBackupClasses$suffix", classesDirs, backupDirs)
     configureTasks(lightsaberTask, backupTask, compileTask)
   }
 
@@ -122,12 +122,12 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
   }
 
   private fun createLightsaberProcessTask(
-      taskName: String,
-      classesDirs: List<File>,
-      backupDirs: List<File>,
-      sourceDir: File,
-      classpath: List<File>,
-      bootClasspath: List<File>
+    taskName: String,
+    classesDirs: List<File>,
+    backupDirs: List<File>,
+    sourceDir: File,
+    classpath: List<File>,
+    bootClasspath: List<File>
   ): LightsaberTask {
     logger.info("Creating Lightsaber task {}...", taskName)
     logger.info("  Source classes directories: {}", backupDirs)
@@ -144,9 +144,9 @@ class JavaLightsaberPlugin : BaseLightsaberPlugin() {
   }
 
   private fun createBackupClassFilesTask(
-      taskName: String,
-      classesDirs: List<File>,
-      backupDirs: List<File>
+    taskName: String,
+    classesDirs: List<File>,
+    backupDirs: List<File>
   ): BackupClassesTask {
     return project.tasks.create(taskName, BackupClassesTask::class.java) { task ->
       task.description = "Back up original .class files."

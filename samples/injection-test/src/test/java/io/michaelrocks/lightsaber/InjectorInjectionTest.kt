@@ -74,6 +74,7 @@ class InjectorInjectionTest {
 
   @Component
   private class ParentComponent {
+
     @Import
     private fun imporParentModule(): ParentModule = ParentModule()
   }
@@ -83,6 +84,7 @@ class InjectorInjectionTest {
 
   @Component(parent = ParentComponent::class)
   private class ChildComponent {
+
     @Import
     private fun importChildModule(): ChildModule = ChildModule()
   }

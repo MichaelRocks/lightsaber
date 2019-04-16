@@ -27,7 +27,6 @@ import java.util.List;
 
 import javax.inject.Provider;
 
-
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.only;
