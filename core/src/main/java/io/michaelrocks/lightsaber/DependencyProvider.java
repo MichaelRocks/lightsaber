@@ -16,11 +16,27 @@
 
 package io.michaelrocks.lightsaber;
 
+import java.lang.reflect.Type;
+
 import javax.annotation.Nonnull;
+import javax.inject.Provider;
 
-public interface Injector extends DependencyProvider {
+public interface DependencyProvider {
   @Nonnull
-  Injector createChildInjector(@Nonnull final Object component);
+  <T> T getInstance(@Nonnull Class<? extends T> type);
 
-  void injectMembers(@Nonnull Object target);
+  @Nonnull
+  <T> T getInstance(@Nonnull Type type);
+
+  @Nonnull
+  <T> T getInstance(@Nonnull Key<? extends T> type);
+
+  @Nonnull
+  <T> Provider<T> getProvider(@Nonnull Class<? extends T> type);
+
+  @Nonnull
+  <T> Provider<T> getProvider(@Nonnull Type type);
+
+  @Nonnull
+  <T> Provider<T> getProvider(@Nonnull Key<? extends T> key);
 }
