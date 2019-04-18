@@ -29,7 +29,7 @@ public interface DependencyProvider {
   <T> T getInstance(@Nonnull Type type);
 
   @Nonnull
-  <T> T getInstance(@Nonnull Key<? extends T> type);
+  <T> T getInstance(@Nonnull Key<? extends T> key);
 
   @Nonnull
   <T> Provider<T> getProvider(@Nonnull Class<? extends T> type);
