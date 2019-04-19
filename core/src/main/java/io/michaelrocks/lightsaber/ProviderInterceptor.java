@@ -21,7 +21,10 @@ import javax.inject.Provider;
 
 /**
  * Intercepts dependency {@link Provider} resolving. Can be used to replace real providers with mocks in tests.
+ *
+ * @deprecated Use {@link DependencyResolverInterceptor} instead.
  */
+@SuppressWarnings("DeprecatedIsStillUsed")
 public interface ProviderInterceptor {
   /**
    * This method is called when the {@link Injector} is requested to resolve a {@link Provider} for the given key.

@@ -17,6 +17,7 @@
 package io.michaelrocks.lightsaber;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +28,11 @@ import javax.inject.Provider;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 
 public class Lightsaber {
-  private final List<ProviderInterceptor> interceptors;
+  private final List<DependencyResolverInterceptor> generalDependencyResolverInterceptors;
 
   Lightsaber(final Builder builder) {
-    interceptors = builder.interceptors == null ? null : new ArrayList<ProviderInterceptor>(builder.interceptors);
+    generalDependencyResolverInterceptors = builder.generalDependencyResolverInterceptors == null
+        ? null : new ArrayList<DependencyResolverInterceptor>(builder.generalDependencyResolverInterceptors);
   }
 
   /**
@@ -50,7 +52,7 @@ public class Lightsaber {
 
   @Nonnull
   public Injector createInjector(@Nonnull final Object component) {
-    return new LightsaberInjector(component, null, interceptors);
+    return new LightsaberInjector(component, null, generalDependencyResolverInterceptors);
   }
 
   /** @deprecated Use {@link Injector#createChildInjector(Object)} instead. */
@@ -65,39 +67,63 @@ public class Lightsaber {
       throw new IllegalArgumentException("Cannot create a child injector for a non-Lightsaber injector");
     }
 
-    return new LightsaberInjector(component, (LightsaberInjector) parentInjector, interceptors);
+    return new LightsaberInjector(component, (LightsaberInjector) parentInjector, generalDependencyResolverInterceptors);
   }
 
   @Nonnull
   public static <T> T getInstance(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type) {
-    return injector.getInstance(type);
+    return injector.getGeneralDependencyResolver().getInstance(type);
   }
 
   @Nonnull
   public static <T> T getInstance(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type,
       @Nullable final Annotation annotation) {
-    return injector.getInstance(Key.of(type, annotation));
+    return injector.getGeneralDependencyResolver().getInstance(Key.<T>of(type, annotation));
   }
 
   @Nonnull
-  public static <T> Provider<T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type) {
-    return injector.getProvider(type);
+  public static <T> Provider<? extends T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type) {
+    return injector.getGeneralDependencyResolver().getProvider(type);
   }
 
   @Nonnull
-  public static <T> Provider<T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type,
+  public static <T> Provider<? extends T> getProvider(@Nonnull final Injector injector, @Nonnull final Class<? extends T> type,
       @Nullable final Annotation annotation) {
-    return injector.getProvider(Key.of(type, annotation));
+    return injector.getGeneralDependencyResolver().getProvider(Key.of(type, annotation));
   }
 
   public static class Builder {
-    private List<ProviderInterceptor> interceptors;
+    private List<DependencyResolverInterceptor> generalDependencyResolverInterceptors;
 
     public Builder() {
     }
 
     Builder(@Nonnull final Lightsaber lightsaber) {
-      interceptors = lightsaber.interceptors == null ? null : new ArrayList<ProviderInterceptor>(lightsaber.interceptors);
+      generalDependencyResolverInterceptors = lightsaber.generalDependencyResolverInterceptors == null
+          ? null : new ArrayList<DependencyResolverInterceptor>(lightsaber.generalDependencyResolverInterceptors);
+    }
+
+    /**
+     * Adds a {@link DependencyResolverInterceptor} to the interceptor chain. This interceptor may be invoked when the {@link Injector} creates a
+     * {@link DependencyResolver} for general dependencies. Added interceptors will be invoked in the reverse order.
+     *
+     * @param interceptor
+     *     The {@link DependencyResolverInterceptor} to add to the interceptor chain.
+     * @return The current {@link Builder} instance.
+     */
+    @Nonnull
+    public Builder addGeneralDependencyResolverInterceptor(@Nonnull final DependencyResolverInterceptor interceptor) {
+      // noinspection ConstantConditions
+      if (interceptor == null) {
+        throw new NullPointerException("Interceptor is null");
+      }
+
+      if (generalDependencyResolverInterceptors == null) {
+        generalDependencyResolverInterceptors = new ArrayList<DependencyResolverInterceptor>();
+      }
+
+      generalDependencyResolverInterceptors.add(interceptor);
+      return this;
     }
 
     /**
@@ -110,6 +136,7 @@ public class Lightsaber {
      * @param interceptor
      *     The {@link ProviderInterceptor} to add to the interceptor chain.
      * @return The current {@link Builder} instance.
+     * @deprecated Use {@link DependencyResolverInterceptor} instead.
      */
     @Nonnull
     public Builder addProviderInterceptor(@Nonnull final ProviderInterceptor interceptor) {
@@ -118,11 +145,15 @@ public class Lightsaber {
         throw new NullPointerException("Interceptor is null");
       }
 
-      if (interceptors == null) {
-        interceptors = new ArrayList<ProviderInterceptor>();
-      }
-
-      interceptors.add(interceptor);
+      addGeneralDependencyResolverInterceptor(
+          new DependencyResolverInterceptor() {
+            @Nonnull
+            @Override
+            public DependencyResolver intercept(@Nonnull final Injector injector, @Nonnull final DependencyResolver resolver) {
+              return new ProviderInterceptorDependencyResolver(injector, resolver, interceptor);
+            }
+          }
+      );
       return this;
     }
 
@@ -134,5 +165,72 @@ public class Lightsaber {
 
   private static final class Holder {
     static final Lightsaber INSTANCE = new Lightsaber.Builder().build();
+  }
+
+  @SuppressWarnings("deprecation")
+  private static class ProviderInterceptorDependencyResolver implements DependencyResolver, ProviderInterceptor.Chain {
+    private final Injector injector;
+    private final DependencyResolver resolver;
+    private final ProviderInterceptor interceptor;
+
+    ProviderInterceptorDependencyResolver(final Injector injector, final DependencyResolver resolver, final ProviderInterceptor interceptor) {
+      this.injector = injector;
+      this.resolver = resolver;
+      this.interceptor = interceptor;
+    }
+
+    @Nonnull
+    @Override
+    public <T> T getInstance(@Nonnull final Class<T> type) {
+      return getProviderInternal(Key.of(type)).get();
+    }
+
+    @Nonnull
+    @Override
+    public <T> T getInstance(@Nonnull final Type type) {
+      return getProviderInternal(Key.<T>of(type)).get();
+    }
+
+    @Nonnull
+    @Override
+    public <T> T getInstance(@Nonnull final Key<T> key) {
+      return getProviderInternal(key).get();
+    }
+
+    @Nonnull
+    @Override
+    public <T> Provider<? extends T> getProvider(@Nonnull final Class<T> type) {
+      return getProviderInternal(Key.of(type));
+    }
+
+    @Nonnull
+    @Override
+    public <T> Provider<? extends T> getProvider(@Nonnull final Type type) {
+      return getProviderInternal(Key.<T>of(type));
+    }
+
+    @Nonnull
+    @Override
+    public <T> Provider<? extends T> getProvider(@Nonnull final Key<T> key) {
+      return getProviderInternal(key);
+    }
+
+    @Nonnull
+    @Override
+    public Injector injector() {
+      return injector;
+    }
+
+    @Nonnull
+    @Override
+    public Provider<?> proceed(@Nonnull final Key<?> key) {
+      return resolver.getProvider(key);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Nonnull
+    private <T> Provider<T> getProviderInternal(@Nonnull final Key<? extends T> key) {
+      return (Provider<T>) interceptor.intercept(this, key);
+    }
   }
 }

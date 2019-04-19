@@ -34,6 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("deprecation")
 public class ProviderInterceptorBuilderTest {
   @Test
   public void testAddProviderForClass() {

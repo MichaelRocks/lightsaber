@@ -24,13 +24,13 @@ import kotlin.reflect.KClass
 val lightsaber: Lightsaber
   get() = Lightsaber.get()
 
-fun <T : Any> Injector.getInstance(type: Class<out T>, annotation: Annotation): T =
+fun <T : Any> Injector.getInstance(type: Class<T>, annotation: Annotation): T =
   Lightsaber.getInstance(this, type, annotation)
 
-fun <T : Any> Injector.getInstance(type: KClass<out T>): T =
+fun <T : Any> Injector.getInstance(type: KClass<T>): T =
   Lightsaber.getInstance(this, type.java)
 
-fun <T : Any> Injector.getInstance(type: KClass<out T>, annotation: Annotation): T =
+fun <T : Any> Injector.getInstance(type: KClass<T>, annotation: Annotation): T =
   Lightsaber.getInstance(this, type.java, annotation)
 
 inline fun <reified T : Any> Injector.getInstance(): T =
@@ -39,19 +39,19 @@ inline fun <reified T : Any> Injector.getInstance(): T =
 inline fun <reified T : Any> Injector.getInstance(annotation: Annotation): T =
   getInstance(T::class, annotation)
 
-fun <T : Any> Injector.getProvider(type: Class<out T>, annotation: Annotation): Provider<T> =
+fun <T : Any> Injector.getProvider(type: Class<T>, annotation: Annotation): Provider<out T> =
   Lightsaber.getProvider(this, type, annotation)
 
-fun <T : Any> Injector.getProvider(type: KClass<out T>): Provider<T> =
+fun <T : Any> Injector.getProvider(type: KClass<T>): Provider<out T> =
   Lightsaber.getProvider(this, type.java)
 
-fun <T : Any> Injector.getProvider(type: KClass<out T>, annotation: Annotation): Provider<T> =
+fun <T : Any> Injector.getProvider(type: KClass<T>, annotation: Annotation): Provider<out T> =
   Lightsaber.getProvider(this, type.java, annotation)
 
-inline fun <reified T : Any> Injector.getProvider(): Provider<T> =
+inline fun <reified T : Any> Injector.getProvider(): Provider<out T> =
   getProvider(T::class)
 
-inline fun <reified T : Any> Injector.getProvider(annotation: Annotation): Provider<T> =
+inline fun <reified T : Any> Injector.getProvider(annotation: Annotation): Provider<out T> =
   getProvider(T::class, annotation)
 
 @Suppress("NOTHING_TO_INLINE", "UNCHECKED_CAST")

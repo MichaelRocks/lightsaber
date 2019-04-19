@@ -16,11 +16,65 @@
 
 package io.michaelrocks.lightsaber;
 
+import java.lang.reflect.Type;
+
 import javax.annotation.Nonnull;
+import javax.inject.Provider;
 
 public interface Injector extends DependencyResolver {
+  @Nonnull
+  DependencyResolver getGeneralDependencyResolver();
+
   @Nonnull
   Injector createChildInjector(@Nonnull final Object component);
 
   void injectMembers(@Nonnull Object target);
+
+  /**
+   * @deprecated Get {@link DependencyResolver} by calling {@link #getGeneralDependencyResolver()} and invoke
+   * {@link DependencyResolver#getInstance(Class)} on it.
+   */
+  @Nonnull
+  @Override
+  <T> T getInstance(@Nonnull Class<T> type);
+
+  /**
+   * @deprecated Get {@link DependencyResolver} by calling {@link #getGeneralDependencyResolver()} and invoke
+   * {@link DependencyResolver#getInstance(Type)} on it.
+   */
+  @Nonnull
+  @Override
+  <T> T getInstance(@Nonnull Type type);
+
+  /**
+   * @deprecated Get {@link DependencyResolver} by calling {@link #getGeneralDependencyResolver()} and invoke
+   * {@link DependencyResolver#getInstance(Key)} on it.
+   */
+  @Nonnull
+  @Override
+  <T> T getInstance(@Nonnull Key<T> key);
+
+  /**
+   * @deprecated Get {@link DependencyResolver} by calling {@link #getGeneralDependencyResolver()} and invoke
+   * {@link DependencyResolver#getProvider(Class)} on it.
+   */
+  @Nonnull
+  @Override
+  <T> Provider<? extends T> getProvider(@Nonnull Class<T> type);
+
+  /**
+   * @deprecated Get {@link DependencyResolver} by calling {@link #getGeneralDependencyResolver()} and invoke
+   * {@link DependencyResolver#getProvider(Type)} on it.
+   */
+  @Nonnull
+  @Override
+  <T> Provider<? extends T> getProvider(@Nonnull Type type);
+
+  /**
+   * @deprecated Get {@link DependencyResolver} by calling {@link #getGeneralDependencyResolver()} and invoke
+   * {@link DependencyResolver#getProvider(Key)} on it.
+   */
+  @Nonnull
+  @Override
+  <T> Provider<? extends T> getProvider(@Nonnull Key<T> key);
 }

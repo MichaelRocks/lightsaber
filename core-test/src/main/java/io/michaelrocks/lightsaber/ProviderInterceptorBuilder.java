@@ -42,6 +42,10 @@ public class ProviderInterceptorBuilder {
     return addProviderInternal(Key.of(type, createAnnotation(annotationClass)), provider);
   }
 
+  public ProviderInterceptorBuilder addProviderForType(@Nonnull final Type type, @Nonnull final Provider<?> provider) {
+    return addProviderInternal(Key.of(type), provider);
+  }
+
   public ProviderInterceptorBuilder addProviderForType(@Nonnull final Type type, @Nullable final Annotation annotation,
       @Nonnull final Provider<?> provider) {
     return addProviderInternal(Key.of(type, annotation), provider);
@@ -50,10 +54,6 @@ public class ProviderInterceptorBuilder {
   public ProviderInterceptorBuilder addProviderForType(@Nonnull final Type type, @Nullable final Class<? extends Annotation> annotationClass,
       @Nonnull final Provider<?> provider) {
     return addProviderInternal(Key.of(type, createAnnotation(annotationClass)), provider);
-  }
-
-  public ProviderInterceptorBuilder addProviderForType(@Nonnull final Type type, @Nonnull final Provider<?> provider) {
-    return addProviderInternal(Key.of(type), provider);
   }
 
   public <T> ProviderInterceptorBuilder addProviderForKey(@Nonnull final Key<T> key, @Nonnull final Provider<? extends T> provider) {

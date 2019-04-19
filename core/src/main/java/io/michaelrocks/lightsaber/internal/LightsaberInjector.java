@@ -22,19 +22,25 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
 
-import io.michaelrocks.lightsaber.ConfigurationException;
+import io.michaelrocks.lightsaber.DependencyResolver;
+import io.michaelrocks.lightsaber.DependencyResolverInterceptor;
 import io.michaelrocks.lightsaber.Injector;
 import io.michaelrocks.lightsaber.Key;
-import io.michaelrocks.lightsaber.ProviderInterceptor;
 
 public class LightsaberInjector implements Injector {
-  private final LightsaberInjector parent;
-  private final List<ProviderInterceptor> interceptors;
-  private final IterableMap<Object, Provider<?>> providers = new PolymorphicKeyHashMap<Provider<?>>();
+  private final List<DependencyResolverInterceptor> generalDependencyResolverInterceptors;
 
-  public LightsaberInjector(@Nonnull final Object component, final LightsaberInjector parent, final List<ProviderInterceptor> interceptors) {
-    this.parent = parent;
-    this.interceptors = interceptors;
+  private final ConfigurableDependencyResolver configurableGeneralDependencyResolver;
+  private final DependencyResolver generalDependencyResolver;
+
+  public LightsaberInjector(@Nonnull final Object component, final LightsaberInjector parent,
+      final List<DependencyResolverInterceptor> generalDependencyResolverInterceptors) {
+    this.generalDependencyResolverInterceptors = generalDependencyResolverInterceptors;
+
+    this.configurableGeneralDependencyResolver =
+        new ConfigurableDependencyResolver(parent == null ? null : parent.getConfigurableGeneralDependencyResolver());
+    this.generalDependencyResolver = createWrappedDependencyResolver(configurableGeneralDependencyResolver, generalDependencyResolverInterceptors);
+
     registerProvider(Injector.class, new Provider<Injector>() {
       @Override
       public Injector get() {
@@ -48,13 +54,19 @@ public class LightsaberInjector implements Injector {
 
   @Nonnull
   @Override
+  public DependencyResolver getGeneralDependencyResolver() {
+    return generalDependencyResolver;
+  }
+
+  @Nonnull
+  @Override
   public Injector createChildInjector(@Nonnull final Object component) {
     // noinspection ConstantConditions
     if (component == null) {
       throw new NullPointerException("Trying to create an injector with a null component");
     }
 
-    return new LightsaberInjector(component, this, interceptors);
+    return new LightsaberInjector(component, this, generalDependencyResolverInterceptors);
   }
 
   @Override
@@ -66,141 +78,79 @@ public class LightsaberInjector implements Injector {
     }
   }
 
-  @Nonnull
+  @SuppressWarnings("depreaction")
   @Override
-  public <T> T getInstance(@Nonnull final Class<? extends T> type) {
-    return getProvider(type).get();
+  @Nonnull
+  public <T> T getInstance(@Nonnull final Class<T> type) {
+    return generalDependencyResolver.getInstance(type);
   }
 
-  @Nonnull
+  @SuppressWarnings("depreaction")
   @Override
+  @Nonnull
   public <T> T getInstance(@Nonnull final Type type) {
-    // noinspection unchecked
-    return (T) getProvider(type).get();
+    return generalDependencyResolver.getInstance(type);
   }
 
-  @Nonnull
+  @SuppressWarnings("depreaction")
   @Override
-  public <T> T getInstance(@Nonnull final Key<? extends T> key) {
-    return getProvider(key).get();
+  @Nonnull
+  public <T> T getInstance(@Nonnull final Key<T> key) {
+    return generalDependencyResolver.getInstance(key);
   }
 
-  @Nonnull
+  @SuppressWarnings("depreaction")
   @Override
-  public <T> Provider<T> getProvider(@Nonnull final Class<? extends T> type) {
-    return getProvider((Type) type);
+  @Nonnull
+  public <T> Provider<? extends T> getProvider(@Nonnull final Class<T> type) {
+    return generalDependencyResolver.getProvider(type);
   }
 
-  @Nonnull
+  @SuppressWarnings("depreaction")
   @Override
-  public <T> Provider<T> getProvider(@Nonnull final Type type) {
-    if (interceptors == null) {
-      return getProviderInternal(type);
-    }
-
-    // noinspection unchecked
-    return (Provider<T>) new ProviderResolutionChain().proceed(Key.of(type));
+  @Nonnull
+  public <T> Provider<? extends T> getProvider(@Nonnull final Type type) {
+    return generalDependencyResolver.getProvider(type);
   }
 
-  @Nonnull
+  @SuppressWarnings("depreaction")
   @Override
-  public <T> Provider<T> getProvider(@Nonnull final Key<? extends T> key) {
-    if (interceptors == null) {
-      if (key.getQualifier() != null) {
-        return getProviderInternal(key);
-      } else {
-        return getProvider(key.getType());
-      }
-    }
-
-    // noinspection unchecked
-    return (Provider<T>) new ProviderResolutionChain().proceed(key);
-  }
-
   @Nonnull
-  public IterableMap<Object, Provider<?>> getProviders() {
-    return providers;
+  public <T> Provider<? extends T> getProvider(@Nonnull final Key<T> key) {
+    return generalDependencyResolver.getProvider(key);
   }
 
-  public <T> void registerProvider(final Class<? extends T> type, final Provider<? extends T> provider) {
-    registerProviderInternal(type, provider);
+  public ConfigurableDependencyResolver getConfigurableGeneralDependencyResolver() {
+    return configurableGeneralDependencyResolver;
+  }
+
+  public <T> void registerProvider(final Class<T> type, final Provider<? extends T> provider) {
+    configurableGeneralDependencyResolver.registerProvider(type, provider);
   }
 
   public <T> void registerProvider(final Type type, final Provider<? extends T> provider) {
-    registerProviderInternal(type, provider);
+    configurableGeneralDependencyResolver.registerProvider(type, provider);
   }
 
   public <T> void registerProvider(final Key<T> key, final Provider<? extends T> provider) {
-    if (key.getQualifier() != null) {
-      registerProviderInternal(key, provider);
-    } else {
-      registerProviderInternal(key.getType(), provider);
-    }
+    configurableGeneralDependencyResolver.registerProvider(key, provider);
   }
 
-  @Nonnull
-  private <T> Provider<T> getProviderInternal(@Nonnull final Object key) {
-    // noinspection unchecked
-    final Provider<T> provider = (Provider<T>) providers.get(key);
-    if (provider == null) {
-      if (parent != null) {
-        try {
-          return parent.getProviderInternal(key);
-        } catch (final ConfigurationException exception) {
-          throwConfigurationException(key, exception);
-        }
-      } else {
-        throwConfigurationException(key, null);
-      }
-    }
-    // noinspection ConstantConditions
-    return provider;
-  }
-
-  private <T> void registerProviderInternal(final Object key, final Provider<? extends T> provider) {
-    final Provider<?> oldProvider = providers.put(key, provider);
-    if (oldProvider != null) {
-      throw new ConfigurationException("Provider for " + key + " already registered in " + this);
-    }
-  }
-
-  private void throwConfigurationException(@Nonnull final Object key, final Throwable cause) {
-    final ConfigurationException exception =
-        new ConfigurationException("Provider for " + key + " not found in " + this);
-    if (cause != null) {
-      exception.initCause(cause);
-    }
-    throw exception;
-  }
-
-  private class ProviderResolutionChain implements ProviderInterceptor.Chain {
-    private int index = interceptors.size();
-
-    @Nonnull
-    @Override
-    public Injector injector() {
-      return LightsaberInjector.this;
+  private DependencyResolver createWrappedDependencyResolver(final DependencyResolver resolver,
+      final List<DependencyResolverInterceptor> interceptors) {
+    if (interceptors == null) {
+      return resolver;
     }
 
-    @Nonnull
-    @Override
-    public Provider<?> proceed(@Nonnull final Key<?> key) {
+    DependencyResolver wrappedResolver = resolver;
+    for (final DependencyResolverInterceptor interceptor : interceptors) {
+      wrappedResolver = interceptor.intercept(this, wrappedResolver);
       // noinspection ConstantConditions
-      if (key == null) {
-        throw new NullPointerException("Key is null");
-      }
-
-      index -= 1;
-      if (index >= 0) {
-        final ProviderInterceptor interceptor = interceptors.get(index);
-        return interceptor.intercept(this, key);
-      } else {
-        if (key.getQualifier() != null) {
-          return getProviderInternal(key);
-        } else {
-          return getProviderInternal(key.getType());
-        }
+      if (wrappedResolver == null) {
+        throw new NullPointerException("DependencyResolverInterceptor returned null: " + interceptor);
       }
     }
+
+    return wrappedResolver;
   }
 }

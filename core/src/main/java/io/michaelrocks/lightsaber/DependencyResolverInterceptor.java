@@ -16,27 +16,21 @@
 
 package io.michaelrocks.lightsaber;
 
-import java.lang.reflect.Type;
-
 import javax.annotation.Nonnull;
-import javax.inject.Provider;
 
-public interface DependencyResolver {
+/**
+ * Intercepts {@link DependencyResolver} creation. Can be used to replace real dependencies with mocks in tests.
+ */
+public interface DependencyResolverInterceptor {
+  /**
+   * This method is called when the {@link Injector} creates a {@link DependencyResolver}.
+   *
+   * @param injector
+   *     The {@link Injector} that creates the {@link DependencyResolver}.
+   * @param resolver
+   *     The {@link DependencyResolver} already created for the given injector.
+   * @return A {@link DependencyResolver} that will be used by the injector.
+   */
   @Nonnull
-  <T> T getInstance(@Nonnull Class<T> type);
-
-  @Nonnull
-  <T> T getInstance(@Nonnull Type type);
-
-  @Nonnull
-  <T> T getInstance(@Nonnull Key<T> key);
-
-  @Nonnull
-  <T> Provider<? extends T> getProvider(@Nonnull Class<T> type);
-
-  @Nonnull
-  <T> Provider<? extends T> getProvider(@Nonnull Type type);
-
-  @Nonnull
-  <T> Provider<? extends T> getProvider(@Nonnull Key<T> key);
+  DependencyResolver intercept(@Nonnull Injector injector, @Nonnull DependencyResolver resolver);
 }

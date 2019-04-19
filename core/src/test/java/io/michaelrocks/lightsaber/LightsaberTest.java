@@ -101,11 +101,13 @@ public class LightsaberTest {
     @SuppressWarnings("unchecked")
     final Provider<Object> objectProvider = mock(Provider.class);
     when(objectProvider.get()).thenReturn("ObjectInstanceClass", "ObjectInstanceKey", "ObjectProviderClass", "ObjectProviderKey");
+    @SuppressWarnings("deprecation")
     final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
         .addProviderForClass(String.class, stringProvider)
         .addProviderForClass(Object.class, objectProvider)
         .build();
 
+    @SuppressWarnings("deprecation")
     final Lightsaber lightsaber = new Lightsaber.Builder().addProviderInterceptor(interceptor).build();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();

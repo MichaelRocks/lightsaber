@@ -18,14 +18,15 @@ package io.michaelrocks.lightsaber
 
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.lang.reflect.Type
 import javax.inject.Named
 import javax.inject.Provider
 import javax.inject.Singleton
 
 @Suppress("Deprecation")
-class ProviderInterceptorInjectionTest {
+class DependencyResolverInterceptorInjectionTest {
   @Test
-  fun testInjectionInterceptor() {
+  fun testDependencyResolverInterceptor() {
     val strings = listOf("StringInstanceClass", "StringInstanceKey", "StringProviderClass", "StringProviderKey")
     var stringIndex = 0
     val stringProvider = Provider<String> { strings[stringIndex++] }
@@ -37,17 +38,46 @@ class ProviderInterceptorInjectionTest {
     val stringKey = Key.of(String::class.java)
     val objectKey = Key.of(Any::class.java)
 
-    val interceptor = object : ProviderInterceptor {
-      override fun intercept(chain: ProviderInterceptor.Chain, key: Key<*>): Provider<*> {
-        return when (key) {
-          stringKey -> stringProvider
-          objectKey -> objectProvider
-          else -> chain.proceed(key)
+    val interceptor = object : DependencyResolverInterceptor {
+      override fun intercept(injector: Injector, resolver: DependencyResolver): DependencyResolver {
+        return object : DependencyResolver {
+          override fun <T : Any> getInstance(type: Class<T>): T {
+            return getProviderInternal(Key.of(type)).get()
+          }
+
+          override fun <T : Any> getInstance(type: Type): T {
+            return getProviderInternal(Key.of<T>(type)).get()
+          }
+
+          override fun <T : Any> getInstance(key: Key<T>): T {
+            return getProviderInternal(key).get()
+          }
+
+          override fun <T : Any> getProvider(type: Class<T>): Provider<out T> {
+            return getProviderInternal(Key.of(type))
+          }
+
+          override fun <T : Any> getProvider(type: Type): Provider<out T> {
+            return getProviderInternal(Key.of(type))
+          }
+
+          override fun <T : Any> getProvider(key: Key<T>): Provider<out T> {
+            return getProviderInternal(key)
+          }
+
+          private fun <T : Any> getProviderInternal(key: Key<T>): Provider<out T> {
+            @Suppress("UNCHECKED_CAST")
+            return when (key) {
+              stringKey -> stringProvider as Provider<T>
+              objectKey -> objectProvider as Provider<T>
+              else -> resolver.getProvider(key)
+            }
+          }
         }
       }
     }
 
-    val lightsaber = Lightsaber.Builder().addProviderInterceptor(interceptor).build()
+    val lightsaber = Lightsaber.Builder().addGeneralDependencyResolverInterceptor(interceptor).build()
     val parentComponent = ParentComponent()
     val childComponent = ChildComponent()
 
