@@ -23,7 +23,7 @@ import io.michaelrocks.bimap.HashBiMap
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectType
 import io.michaelrocks.lightsaber.Component
-import io.michaelrocks.lightsaber.DependencyProvider
+import io.michaelrocks.lightsaber.DependencyResolver
 import io.michaelrocks.lightsaber.Factory
 import io.michaelrocks.lightsaber.Import
 import io.michaelrocks.lightsaber.Injector
@@ -56,7 +56,7 @@ object Types {
   val FACTORY_INJECT_TYPE = getObjectType<Factory.Inject>()
   val FACTORY_PARAMETER_TYPE = getObjectType<Factory.Parameter>()
   val INJECTOR_TYPE = getObjectType<Injector>()
-  val DEPENDENCY_PROVIDER_TYPE = getObjectType<DependencyProvider>()
+  val DEPENDENCY_RESOLVER_TYPE = getObjectType<DependencyResolver>()
   val PROVIDER_TYPE = getObjectType<Provider<*>>()
   val LAZY_TYPE = getObjectType<Lazy<*>>()
   val KEY_TYPE = getObjectType<Key<*>>()

@@ -21,7 +21,7 @@ import java.lang.reflect.Type;
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
 
-public interface DependencyProvider {
+public interface DependencyResolver {
   @Nonnull
   <T> T getInstance(@Nonnull Class<? extends T> type);
 

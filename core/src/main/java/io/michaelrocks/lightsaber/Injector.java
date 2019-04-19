@@ -18,7 +18,7 @@ package io.michaelrocks.lightsaber;
 
 import javax.annotation.Nonnull;
 
-public interface Injector extends DependencyProvider {
+public interface Injector extends DependencyResolver {
   @Nonnull
   Injector createChildInjector(@Nonnull final Object component);
 

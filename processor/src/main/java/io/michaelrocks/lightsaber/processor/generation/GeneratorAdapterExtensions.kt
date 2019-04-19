@@ -84,9 +84,9 @@ fun GeneratorAdapter.getProvider(keyRegistry: KeyRegistry, dependency: Dependenc
   val key = pushTypeOrKey(keyRegistry, dependency)
 
   when (key) {
-    null -> invokeInterface(Types.DEPENDENCY_PROVIDER_TYPE, GET_PROVIDER_FOR_CLASS_METHOD)
-    is Key.Type -> invokeInterface(Types.DEPENDENCY_PROVIDER_TYPE, GET_PROVIDER_FOR_TYPE_METHOD)
-    is Key.QualifiedType -> invokeInterface(Types.DEPENDENCY_PROVIDER_TYPE, GET_PROVIDER_FOR_KEY_METHOD)
+    null -> invokeInterface(Types.DEPENDENCY_RESOLVER_TYPE, GET_PROVIDER_FOR_CLASS_METHOD)
+    is Key.Type -> invokeInterface(Types.DEPENDENCY_RESOLVER_TYPE, GET_PROVIDER_FOR_TYPE_METHOD)
+    is Key.QualifiedType -> invokeInterface(Types.DEPENDENCY_RESOLVER_TYPE, GET_PROVIDER_FOR_KEY_METHOD)
   }
 }
 
@@ -94,9 +94,9 @@ fun GeneratorAdapter.getInstance(keyRegistry: KeyRegistry, dependency: Dependenc
   val key = pushTypeOrKey(keyRegistry, dependency)
 
   when (key) {
-    null -> invokeInterface(Types.DEPENDENCY_PROVIDER_TYPE, GET_INSTANCE_FOR_CLASS_METHOD)
-    is Key.Type -> invokeInterface(Types.DEPENDENCY_PROVIDER_TYPE, GET_INSTANCE_FOR_TYPE_METHOD)
-    is Key.QualifiedType -> invokeInterface(Types.DEPENDENCY_PROVIDER_TYPE, GET_INSTANCE_FOR_KEY_METHOD)
+    null -> invokeInterface(Types.DEPENDENCY_RESOLVER_TYPE, GET_INSTANCE_FOR_CLASS_METHOD)
+    is Key.Type -> invokeInterface(Types.DEPENDENCY_RESOLVER_TYPE, GET_INSTANCE_FOR_TYPE_METHOD)
+    is Key.QualifiedType -> invokeInterface(Types.DEPENDENCY_RESOLVER_TYPE, GET_INSTANCE_FOR_KEY_METHOD)
   }
 }
 
