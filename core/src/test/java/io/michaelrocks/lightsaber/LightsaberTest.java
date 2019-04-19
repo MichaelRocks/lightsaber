@@ -135,7 +135,7 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(String.class, new Provider<String>() {
+        injector.registerGeneralProvider(String.class, new Provider<String>() {
           @Nonnull
           @Override
           public String get() {
@@ -155,7 +155,7 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(Key.of(Object.class), new Provider<Object>() {
+        injector.registerGeneralProvider(Key.of(Object.class), new Provider<Object>() {
           @Nonnull
           @Override
           public Object get() {
@@ -175,7 +175,7 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(Key.of(String.class, createNamedAnnotation("Annotated")),
+        injector.registerGeneralProvider(Key.of(String.class, createNamedAnnotation("Annotated")),
             new Provider<String>() {
               @Nonnull
               @Override

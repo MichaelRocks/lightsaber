@@ -61,7 +61,7 @@ public class LightsaberGenericTest {
       @Override
       public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerProvider(getJvmStringListType(), new Provider<List<String>>() {
+        injector.registerGeneralProvider(getJvmStringListType(), new Provider<List<String>>() {
           @Nonnull
           @Override
           public List<String> get() {

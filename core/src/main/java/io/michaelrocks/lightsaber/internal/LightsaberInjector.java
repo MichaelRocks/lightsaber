@@ -41,7 +41,7 @@ public class LightsaberInjector implements Injector {
         new ConfigurableDependencyResolver(parent == null ? null : parent.getConfigurableGeneralDependencyResolver());
     this.generalDependencyResolver = createWrappedDependencyResolver(configurableGeneralDependencyResolver, generalDependencyResolverInterceptors);
 
-    registerProvider(Injector.class, new Provider<Injector>() {
+    registerGeneralProvider(Injector.class, new Provider<Injector>() {
       @Override
       public Injector get() {
         return LightsaberInjector.this;
@@ -124,15 +124,15 @@ public class LightsaberInjector implements Injector {
     return configurableGeneralDependencyResolver;
   }
 
-  public <T> void registerProvider(final Class<T> type, final Provider<? extends T> provider) {
+  public <T> void registerGeneralProvider(final Class<T> type, final Provider<? extends T> provider) {
     configurableGeneralDependencyResolver.registerProvider(type, provider);
   }
 
-  public <T> void registerProvider(final Type type, final Provider<? extends T> provider) {
+  public <T> void registerGeneralProvider(final Type type, final Provider<? extends T> provider) {
     configurableGeneralDependencyResolver.registerProvider(type, provider);
   }
 
-  public <T> void registerProvider(final Key<T> key, final Provider<? extends T> provider) {
+  public <T> void registerGeneralProvider(final Key<T> key, final Provider<? extends T> provider) {
     configurableGeneralDependencyResolver.registerProvider(key, provider);
   }
 
