@@ -221,17 +221,20 @@ the provided instance.
 ### Manual injection
 
 Manual injection is a way to create an instance of a provided type or to perform field and method injection into an
-existing object. An instance can be obtained by calling the `getInstance()` method of the `Injector`:
+existing object. An instance can be obtained by retrieving the injector's `DepencyResolver` and calling its
+`getInstance()` method:
 
 ```
-Droid droid = injector.getInstance(Droid.class);
+Droid droid = 
+    injector.getGeneralDependencyResolver().getInstance(Droid.class);
 ```
 
 If you need a factory that provides instances of a given type you can get a `Provider` object from the `Injector`.
 Then you'll be able to get an instance from the `Provider` by calling its `get()` method: 
 
 ```
-Provider<Droid> droidProvider = injector.getProvider(Droid.class);
+Provider<Droid> droidProvider = 
+    injector.getGeneralDependencyResolver().getProvider(Droid.class);
 Droid droid = droidProvider.get();
 ```
 
@@ -616,8 +619,10 @@ Injector nuclearBatteryInjector =
 Injector plasmBatteryInjector =
     droidInjector.createChildInjector(new BatteryComponent("Plasm"));
 
-Droid nuclearBatteryDroid = nuclearBatteryInjector.getInstance(Droid.class);
-Droid plasmBatteryDroid = plasmBatteryInjector.getInstance(Droid.class);
+Droid nuclearBatteryDroid =
+    nuclearBatteryInjector.getGeneralDependencyResolver().getInstance(Droid.class);
+Droid plasmBatteryDroid = 
+    plasmBatteryInjector.getGeneralDependencyResolver().getInstance(Droid.class);
 ```
 
 In the example above we created two singleton instances of the `ElectricalDroid` class passing different instances of
