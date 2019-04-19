@@ -735,31 +735,23 @@ dependencies {
 }
 ```
 
-This module allows you to build a `ProviderInterceptor` using a convenient builder API. Moreover, it supports creation of annotation proxies at
-runtime, so you'll be able to deal with qualified dependencies easily.
+This module allows you to build a `DependencyResolverInterceptor` using a convenient builder API.
+Moreover, it supports creation of annotation proxies at runtime, so you'll be able to deal with qualified dependencies easily.
 
 ```java
-// Create a provider of Battery instances.
-Provider<Battery> provider = new Provider<Battery>() {
-  @Override
-  public Battery get() {
-    return new TestBattery();
-  }
-};
-
 // Create a proxy for @Named("primary") annotation.
 Named annotation = new AnnotationBuilder<Named>(Named.class)
     .addMember("value", "primary")
     .build();
 
 // Create a provider interceptor that replaces the primary battery with the test one.
-ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
-    .addProviderForClass(Battery.class, annotation, provider)
+DependencyResolverInterceptor interceptor = new DependencyResolverInterceptorBuilder()
+    .addInstanceForClass(Battery.class, annotation, new TestBattery())
     .build();
 
 // Create a Lightsaber instance for unit testing. 
 Lightsaber lightsaber = new Lightsaber.Builder()
-    .addProviderInterceptor(interceptor)
+    .addGeneralDependencyResolverInterceptor(interceptor)
     .build();
 ``` 
 
