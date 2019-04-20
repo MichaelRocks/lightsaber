@@ -27,6 +27,8 @@ import java.util.Map;
 
 import javax.annotation.Nonnull;
 
+import io.michaelrocks.lightsaber.internal.AnnotationInvocationHandler;
+
 public class AnnotationBuilder<T extends Annotation> {
   private final Class<? extends T> annotationClass;
   private Map<String, Object> values = null;

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber;
+package io.michaelrocks.lightsaber.internal;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.IncompleteAnnotationException;
@@ -33,11 +33,11 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-class AnnotationInvocationHandler implements InvocationHandler {
+public class AnnotationInvocationHandler implements InvocationHandler {
   private final Class<? extends Annotation> annotationClass;
   private final Map<String, Member> members;
 
-  AnnotationInvocationHandler(@Nonnull final Class<? extends Annotation> annotationClass, @Nonnull final Map<String, ?> values) {
+  public AnnotationInvocationHandler(@Nonnull final Class<? extends Annotation> annotationClass, @Nonnull final Map<String, ?> values) {
     this.annotationClass = annotationClass;
     this.members = AccessController.doPrivileged(
         new PrivilegedAction<Map<String, Member>>() {
