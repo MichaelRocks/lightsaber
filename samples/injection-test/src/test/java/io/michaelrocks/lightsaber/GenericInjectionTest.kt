@@ -52,7 +52,7 @@ class GenericInjectionTest {
     val token = object : TypeToken<List<@JvmSuppressWildcards String>>() {}
     val type = (token.javaClass.genericSuperclass as ParameterizedType).actualTypeArguments[0]
     val key = Key.of<List<String>>(type)
-    assertEquals(listOf("Hello", "world"), injector.getInstance(key))
+    assertEquals(listOf("Hello", "world"), injector.generalDependencyResolver.getInstance(key))
   }
 
   private fun validateTarget(module: GenericModule, target: Target) {
