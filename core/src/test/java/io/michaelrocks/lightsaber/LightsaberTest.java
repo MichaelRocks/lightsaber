@@ -24,6 +24,7 @@ import javax.annotation.Nonnull;
 import javax.inject.Named;
 import javax.inject.Provider;
 
+import io.michaelrocks.lightsaber.internal.ConfigurableDependencyResolver;
 import io.michaelrocks.lightsaber.internal.InjectorConfigurator;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 
@@ -135,7 +136,8 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerGeneralProvider(String.class, new Provider<String>() {
+        final ConfigurableDependencyResolver resolver = injector.getConfigurableGeneralDependencyResolver();
+        resolver.registerProvider(String.class, new Provider<String>() {
           @Nonnull
           @Override
           public String get() {
@@ -155,7 +157,8 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerGeneralProvider(Key.of(Object.class), new Provider<Object>() {
+        final ConfigurableDependencyResolver resolver = injector.getConfigurableGeneralDependencyResolver();
+        resolver.registerProvider(Key.of(Object.class), new Provider<Object>() {
           @Nonnull
           @Override
           public Object get() {
@@ -175,7 +178,8 @@ public class LightsaberTest {
       @Override
       public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerGeneralProvider(Key.of(String.class, createNamedAnnotation("Annotated")),
+        final ConfigurableDependencyResolver resolver = injector.getConfigurableGeneralDependencyResolver();
+        resolver.registerProvider(Key.of(String.class, createNamedAnnotation("Annotated")),
             new Provider<String>() {
               @Nonnull
               @Override

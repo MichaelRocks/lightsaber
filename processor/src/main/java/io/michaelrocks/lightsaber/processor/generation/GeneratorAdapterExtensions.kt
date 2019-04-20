@@ -48,12 +48,12 @@ private val GET_INSTANCE_FOR_TYPE_METHOD =
 private val GET_INSTANCE_FOR_KEY_METHOD =
   MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.KEY_TYPE)
 
-private val REGISTER_GENERAL_PROVIDER_FOR_CLASS_METHOD =
-  MethodDescriptor.forMethod("registerGeneralProvider", Type.Primitive.Void, Types.CLASS_TYPE, Types.PROVIDER_TYPE)
-private val REGISTER_GENERAL_PROVIDER_FOR_TYPE_METHOD =
-  MethodDescriptor.forMethod("registerGeneralProvider", Type.Primitive.Void, Types.TYPE_TYPE, Types.PROVIDER_TYPE)
-private val REGISTER_GENERAL_PROVIDER_FOR_KEY_METHOD =
-  MethodDescriptor.forMethod("registerGeneralProvider", Type.Primitive.Void, Types.KEY_TYPE, Types.PROVIDER_TYPE)
+private val REGISTER_PROVIDER_FOR_CLASS_METHOD =
+  MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.CLASS_TYPE, Types.PROVIDER_TYPE)
+private val REGISTER_PROVIDER_FOR_TYPE_METHOD =
+  MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.TYPE_TYPE, Types.PROVIDER_TYPE)
+private val REGISTER_PROVIDER_FOR_KEY_METHOD =
+  MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.KEY_TYPE, Types.PROVIDER_TYPE)
 
 private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
 
@@ -109,9 +109,9 @@ fun GeneratorAdapter.registerProvider(keyRegistry: KeyRegistry, provider: Provid
   }
 
   when (key) {
-    null -> invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_GENERAL_PROVIDER_FOR_CLASS_METHOD)
-    is Key.Type -> invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_GENERAL_PROVIDER_FOR_TYPE_METHOD)
-    is Key.QualifiedType -> invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, REGISTER_GENERAL_PROVIDER_FOR_KEY_METHOD)
+    null -> invokeVirtual(LightsaberTypes.CONFIGURABLE_DEPENDENCY_RESOLVER_TYPE, REGISTER_PROVIDER_FOR_CLASS_METHOD)
+    is Key.Type -> invokeVirtual(LightsaberTypes.CONFIGURABLE_DEPENDENCY_RESOLVER_TYPE, REGISTER_PROVIDER_FOR_TYPE_METHOD)
+    is Key.QualifiedType -> invokeVirtual(LightsaberTypes.CONFIGURABLE_DEPENDENCY_RESOLVER_TYPE, REGISTER_PROVIDER_FOR_KEY_METHOD)
   }
 }
 

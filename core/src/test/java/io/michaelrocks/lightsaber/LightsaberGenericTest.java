@@ -27,6 +27,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.inject.Provider;
 
+import io.michaelrocks.lightsaber.internal.ConfigurableDependencyResolver;
 import io.michaelrocks.lightsaber.internal.InjectorConfigurator;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.internal.ParameterizedTypeImpl;
@@ -61,7 +62,8 @@ public class LightsaberGenericTest {
       @Override
       public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
-        injector.registerGeneralProvider(getJvmStringListType(), new Provider<List<String>>() {
+        final ConfigurableDependencyResolver resolver = injector.getConfigurableGeneralDependencyResolver();
+        resolver.registerProvider(getJvmStringListType(), new Provider<List<String>>() {
           @Nonnull
           @Override
           public List<String> get() {

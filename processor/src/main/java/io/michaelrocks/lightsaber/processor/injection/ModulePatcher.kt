@@ -131,6 +131,7 @@ class ModulePatcher(
   private fun GeneratorAdapter.registerProviders() {
     module.providers.forEach { provider ->
       loadArg(0)
+      invokeVirtual(LightsaberTypes.LIGHTSABER_INJECTOR_TYPE, GET_CONFIGURABLE_DEPENDENCY_RESOLVER_METHOD)
       registerProvider(keyRegistry, provider) {
         if (provider.isConstructorProvider) {
           newConstructorProvider(provider)
@@ -156,5 +157,10 @@ class ModulePatcher(
     loadArg(0)
     val constructor = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
     invokeConstructor(provider.type, constructor)
+  }
+
+  companion object {
+    private val GET_CONFIGURABLE_DEPENDENCY_RESOLVER_METHOD =
+      MethodDescriptor.forMethod("getConfigurableGeneralDependencyResolver", LightsaberTypes.CONFIGURABLE_DEPENDENCY_RESOLVER_TYPE)
   }
 }
