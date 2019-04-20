@@ -25,6 +25,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Provider;
 
+import io.michaelrocks.lightsaber.internal.InstanceProvider;
+
 public class DependencyResolverInterceptorBuilder {
   private final Map<Object, Provider<?>> providers = new HashMap<Object, Provider<?>>();
 
@@ -127,20 +129,6 @@ public class DependencyResolverInterceptorBuilder {
     }
 
     return this;
-  }
-
-  private static class InstanceProvider<T> implements Provider<T> {
-    @Nonnull
-    private final T instance;
-
-    private InstanceProvider(@Nonnull final T instance) {
-      this.instance = instance;
-    }
-
-    @Override
-    public T get() {
-      return instance;
-    }
   }
 
   private static class ImmutableDependencyResolverInterceptor implements DependencyResolverInterceptor {
