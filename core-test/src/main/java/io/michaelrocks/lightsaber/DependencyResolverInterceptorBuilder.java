@@ -114,12 +114,7 @@ public class DependencyResolverInterceptorBuilder {
   }
 
   private DependencyResolverInterceptorBuilder addInstanceInternal(@Nonnull final Object key, @Nonnull final Object instance) {
-    final Provider<?> oldProvider = providers.put(key, new InstanceProvider<Object>(instance));
-    if (oldProvider != null) {
-      throw new IllegalArgumentException("Provider for key " + key + " already exists");
-    }
-
-    return this;
+    return addProviderInternal(key, new InstanceProvider<Object>(instance));
   }
 
   private DependencyResolverInterceptorBuilder addProviderInternal(@Nonnull final Object key, @Nonnull final Provider<?> provider) {
