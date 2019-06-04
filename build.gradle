@@ -19,14 +19,14 @@ allprojects {
   group = 'io.michaelrocks'
 
   ext.javaVersion = JavaVersion.VERSION_1_6
-  ext.kotlinVersion = '1.3.30'
+  ext.kotlinVersion = '1.3.31'
   ext.kotlinRuntimeVariant = ''
   ext.pabloVersion = '1.0.4'
 
   ext.javaxInjectVersion = '1'
   ext.jsr305Version = '3.0.2'
-  ext.asmVersion = '6.2.1'
-  ext.gripVersion = '0.6.3-beta'
+  ext.asmVersion = '7.1'
+  ext.gripVersion = '0.7.0-beta'
   ext.bimapVersion = '1.0.2'
   ext.logbackVersion = '1.2.3'
 
@@ -38,11 +38,11 @@ allprojects {
   ext.androidTargetSdkVersion = 28
   ext.androidMinSdkVersion = 16
   ext.androidBuildToolsVersion = '28.0.3'
-  ext.androidToolsVersion = '3.3.2'
+  ext.androidToolsVersion = '3.4.1'
   ext.androidxAnnotationVersion = '1.0.2'
-  ext.androidxEspressoVersion = '3.1.1'
-  ext.androidxTestRunnerVersion = '1.1.1'
-  ext.androidxTestExtJunitVersion = '1.1.0'
+  ext.androidxEspressoVersion = '3.2.0'
+  ext.androidxTestRunnerVersion = '1.2.0'
+  ext.androidxTestExtJunitVersion = '1.1.1'
 
   buildscript {
     repositories {
