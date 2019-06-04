@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,10 @@ class LightsaberTransform(private val project: Project) : Transform() {
   private val logger = getLogger()
 
   override fun transform(invocation: TransformInvocation) {
+    if (!invocation.isIncremental) {
+      invocation.outputProvider.deleteAll()
+    }
+
     val inputs = invocation.inputs.flatMap { it.jarInputs + it.directoryInputs }
     val outputs = inputs.map { input ->
       val format = if (input is JarInput) Format.JAR else Format.DIRECTORY
