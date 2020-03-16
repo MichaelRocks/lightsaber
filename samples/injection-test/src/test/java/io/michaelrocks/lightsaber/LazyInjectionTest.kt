@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,8 +86,10 @@ class LazyInjectionTest {
   private class FieldInjectionTarget : Target {
     @Inject
     override lateinit var string: String
+
     @Inject
     override lateinit var lazyString1: Lazy<String>
+
     @Inject
     override lateinit var lazyString2: Lazy<String>
   }
@@ -95,8 +97,10 @@ class LazyInjectionTest {
   private class MethodInjectionTarget : Target {
     @set:Inject
     override var string: String = inject()
+
     @set:Inject
     override var lazyString1: Lazy<String> = inject()
+
     @set:Inject
     override var lazyString2: Lazy<String> = inject()
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,13 @@ import javax.inject.Provider
 class MainActivity : Activity() {
   @Inject
   private lateinit var wookiee: Wookiee
+
   @Inject
   private lateinit var wookieeProvider: Provider<Wookiee>
 
   @Inject
   private lateinit var droid: Droid
+
   @Inject
   private lateinit var droidProvider: Provider<Droid>
 

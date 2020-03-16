@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,6 +113,7 @@ private fun <T, R, V> verifyCompositeMethodInvocation(
   val visitors = ArrayList<V>(empties.size)
   for (empty in empties) {
     val answer = if (empty) RETURNS_DEFAULTS else RETURNS_DEEP_STUBS
+
     @Suppress("UNCHECKED_CAST")
     val visitor = mock(compositeVisitor.javaClass.superclass as Class<V>, answer)
     visitors.add(visitor)

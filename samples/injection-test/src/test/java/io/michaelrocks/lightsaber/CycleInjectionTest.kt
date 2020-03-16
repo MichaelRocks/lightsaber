@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,7 @@ class CycleInjectionTest {
 
     @set:Inject
     lateinit var methodCycleTarget1Provider: Provider<MethodCycleTarget1>
+
     @set:Inject
     lateinit var methodCycleTarget1Lazy: Lazy<MethodCycleTarget1>
   }

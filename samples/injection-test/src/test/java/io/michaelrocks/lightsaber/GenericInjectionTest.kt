@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,12 +137,16 @@ class GenericInjectionTest {
   private class FieldInjectionTarget : Target {
     @Inject
     override val stringList: List<String> = inject()
+
     @Inject
     override val intList: List<Int> = inject()
+
     @Inject
     override val intArrayList: List<IntArray> = inject()
+
     @Inject
     override val intListArray: Array<List<Int>> = inject()
+
     @Inject
     override val intListArrayArray: Array<Array<List<Int>>> = inject()
   }
@@ -150,12 +154,16 @@ class GenericInjectionTest {
   private class MethodInjectionTarget : Target {
     @set:Inject
     override var stringList: List<String> = inject()
+
     @set:Inject
     override var intList: List<Int> = inject()
+
     @set:Inject
     override var intArrayList: List<IntArray> = inject()
+
     @set:Inject
     override var intListArray: Array<List<Int>> = inject()
+
     @set:Inject
     override var intListArrayArray: Array<Array<List<Int>>> = inject()
   }
