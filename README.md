@@ -615,7 +615,7 @@ public class Droid {
   private final String model;
   
   @Factory.Inject
-  public Droid(Battery battery, String model) {
+  public Droid(Battery battery, @Factory.Parameter String model) {
     this.battery = battery;
     this.model = model;
   }
@@ -653,9 +653,9 @@ public interface DroidFactory {
 The factory must be an interface annotated with `@Factory` annotation and may contain any number of factory methods. 
 The factory method may contain any number of parameters with unique types. If you need the factory method to contain 
 multiple parameters of the same type they have to be annotated with different qualifiers like `@Named("parameterName")`.
-Lightsaber matches factory method's parameters with constructor's parameters by a type and a qualifier. A component
-that provides a factory mustn't provide dependencies with the same type and qualifier as declared by factory methods'
-parameters.
+Lightsaber matches factory method's parameters with constructor's parameters annotated with `@Factory.Parameter` by
+a type and a qualifier. A component that provides a factory must provide dependencies for all constructor's parameters
+that aren't annotated with `@Factory.Parameter`.
 
 After the factory is defined as shown above it can be injected or retrieved manually from an injector as any other
 dependency:
