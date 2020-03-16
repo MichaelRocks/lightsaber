@@ -26,7 +26,7 @@ class InjectorInjectionTest {
   fun testInjectorFromParentInjectionTarget() {
     val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     assertSame(parentInjector, parentInjector.getInstance<ParentInjectionTarget>().injector)
     assertSame(parentInjector, childInjector.getInstance<ParentInjectionTarget>().injector)
   }
@@ -35,7 +35,7 @@ class InjectorInjectionTest {
   fun testInjectorFromChildInjectionTarget() {
     val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     assertSame(childInjector, childInjector.getInstance<ChildInjectionTarget>().injector)
   }
 
@@ -43,7 +43,7 @@ class InjectorInjectionTest {
   fun testInjectorFromSingletonParentInjectionTarget() {
     val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     val parentTarget = parentInjector.getInstance<SingletonParentInjectionTarget>()
     val childTarget = childInjector.getInstance<SingletonParentInjectionTarget>()
     assertSame(parentTarget, childTarget)
@@ -55,7 +55,7 @@ class InjectorInjectionTest {
   fun testInjectorFromSingletonParentInjectionTargetChildFirst() {
     val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     val childTarget = childInjector.getInstance<SingletonParentInjectionTarget>()
     val parentTarget = parentInjector.getInstance<SingletonParentInjectionTarget>()
     assertSame(parentTarget, childTarget)
@@ -67,15 +67,16 @@ class InjectorInjectionTest {
   fun testInjectorFromSingletonChildInjectionTarget() {
     val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     val childTarget = childInjector.getInstance<SingletonChildInjectionTarget>()
     assertSame(childInjector, childTarget.injector)
   }
 
   @Component
   private class ParentComponent {
-    @Provides
-    private fun provideParentModule(): ParentModule = ParentModule()
+
+    @Import
+    private fun imporParentModule(): ParentModule = ParentModule()
   }
 
   @Module
@@ -83,8 +84,9 @@ class InjectorInjectionTest {
 
   @Component(parent = ParentComponent::class)
   private class ChildComponent {
-    @Provides
-    private fun provideChildModule(): ChildModule = ChildModule()
+
+    @Import
+    private fun importChildModule(): ChildModule = ChildModule()
   }
 
   @Module

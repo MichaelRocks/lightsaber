@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,25 +35,25 @@ import io.michaelrocks.lightsaber.processor.model.Scope
 private val ADAPTER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
 
 private val GET_PROVIDER_FOR_CLASS_METHOD =
-    MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.CLASS_TYPE)
+  MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.CLASS_TYPE)
 private val GET_PROVIDER_FOR_TYPE_METHOD =
-    MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.TYPE_TYPE)
+  MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.TYPE_TYPE)
 private val GET_PROVIDER_FOR_KEY_METHOD =
-    MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE)
+  MethodDescriptor.forMethod("getProvider", Types.PROVIDER_TYPE, Types.KEY_TYPE)
 
 private val GET_INSTANCE_FOR_CLASS_METHOD =
-    MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.CLASS_TYPE)
+  MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.CLASS_TYPE)
 private val GET_INSTANCE_FOR_TYPE_METHOD =
-    MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.TYPE_TYPE)
+  MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.TYPE_TYPE)
 private val GET_INSTANCE_FOR_KEY_METHOD =
-    MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.KEY_TYPE)
+  MethodDescriptor.forMethod("getInstance", Types.OBJECT_TYPE, Types.KEY_TYPE)
 
 private val REGISTER_PROVIDER_FOR_CLASS_METHOD =
-    MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.CLASS_TYPE, Types.PROVIDER_TYPE)
+  MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.CLASS_TYPE, Types.PROVIDER_TYPE)
 private val REGISTER_PROVIDER_FOR_TYPE_METHOD =
-    MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.TYPE_TYPE, Types.PROVIDER_TYPE)
+  MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.TYPE_TYPE, Types.PROVIDER_TYPE)
 private val REGISTER_PROVIDER_FOR_KEY_METHOD =
-    MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.KEY_TYPE, Types.PROVIDER_TYPE)
+  MethodDescriptor.forMethod("registerProvider", Type.Primitive.Void, Types.KEY_TYPE, Types.PROVIDER_TYPE)
 
 private val DELEGATE_PROVIDER_CONSTRUCTOR = MethodDescriptor.forConstructor(Types.PROVIDER_TYPE)
 
@@ -62,12 +62,14 @@ fun GeneratorAdapter.getDependency(keyRegistry: KeyRegistry, injectee: Injectee)
     is Converter.Identity -> {
       getProvider(keyRegistry, injectee.dependency)
     }
+
     is Converter.Instance -> {
       if (injectee.dependency.type.rawType != Types.INJECTOR_TYPE || injectee.dependency.qualifier != null) {
         getInstance(keyRegistry, injectee.dependency)
         unbox(injectee.dependency.type.rawType)
       }
     }
+
     is Converter.Adapter -> {
       getProvider(keyRegistry, injectee.dependency)
       newInstance(injectee.converter.adapterType)

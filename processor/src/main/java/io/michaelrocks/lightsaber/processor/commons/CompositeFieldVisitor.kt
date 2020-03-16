@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,16 +31,20 @@ class CompositeFieldVisitor : FieldVisitor(Opcodes.ASM5), CompositeVisitor<Field
   }
 
   override fun visitAnnotation(desc: String, visible: Boolean): AnnotationVisitor? =
-      addVisitorsTo(CompositeAnnotationVisitor()) { visitAnnotation(desc, visible) }
+    addVisitorsTo(CompositeAnnotationVisitor()) { visitAnnotation(desc, visible) }
 
-  override fun visitTypeAnnotation(typeRef: Int, typePath: TypePath?, desc: String,
-      visible: Boolean): AnnotationVisitor? {
+  override fun visitTypeAnnotation(
+    typeRef: Int,
+    typePath: TypePath?,
+    desc: String,
+    visible: Boolean
+  ): AnnotationVisitor? {
     return addVisitorsTo(CompositeAnnotationVisitor()) { visitTypeAnnotation(typeRef, typePath, desc, visible) }
   }
 
   override fun visitAttribute(attr: Attribute) =
-      forEachVisitor { visitAttribute(attr) }
+    forEachVisitor { visitAttribute(attr) }
 
   override fun visitEnd() =
-      forEachVisitor { visitEnd() }
+    forEachVisitor { visitEnd() }
 }

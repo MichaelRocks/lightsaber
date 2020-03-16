@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import org.objectweb.asm.FieldVisitor
 import org.objectweb.asm.Opcodes.ASM5
 
 open class ProcessorFieldVisitor @JvmOverloads constructor(
-    val errorReporter: ErrorReporter,
-    fieldVisitor: FieldVisitor? = null
+  val errorReporter: ErrorReporter,
+  fieldVisitor: FieldVisitor? = null
 ) : FieldVisitor(ASM5, fieldVisitor) {
 
   fun reportError(errorMessage: String) {

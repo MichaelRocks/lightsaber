@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes.ASM5
 
 abstract class ProcessorClassVisitor @JvmOverloads constructor(
-    val errorReporter: ErrorReporter,
-    classVisitor: ClassVisitor? = null
+  val errorReporter: ErrorReporter,
+  classVisitor: ClassVisitor? = null
 ) : ClassVisitor(ASM5, classVisitor) {
 
   fun reportError(errorMessage: String) {

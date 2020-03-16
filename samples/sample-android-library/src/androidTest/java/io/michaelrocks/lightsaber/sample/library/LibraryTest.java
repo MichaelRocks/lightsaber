@@ -27,7 +27,6 @@ import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 

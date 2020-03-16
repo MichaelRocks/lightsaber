@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,21 +41,22 @@ import org.objectweb.asm.Opcodes.ACC_SUPER
 import org.objectweb.asm.Opcodes.V1_6
 
 class FactoryClassGenerator(
-    private val classRegistry: ClassRegistry,
-    private val keyRegistry: KeyRegistry,
-    private val injectionContext: InjectionContext,
-    private val factory: Factory
+  private val classRegistry: ClassRegistry,
+  private val keyRegistry: KeyRegistry,
+  private val injectionContext: InjectionContext,
+  private val factory: Factory
 ) {
+
   fun generate(): ByteArray {
     val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
-        V1_6,
-        ACC_PUBLIC or ACC_SUPER,
-        factory.implementationType.internalName,
-        null,
-        Types.OBJECT_TYPE.internalName,
-        arrayOf(factory.type.internalName)
+      V1_6,
+      ACC_PUBLIC or ACC_SUPER,
+      factory.implementationType.internalName,
+      null,
+      Types.OBJECT_TYPE.internalName,
+      arrayOf(factory.type.internalName)
     )
 
     generateFields(classVisitor)
@@ -72,11 +73,12 @@ class FactoryClassGenerator(
 
   private fun generateInjectorField(classVisitor: ClassVisitor) {
     val fieldVisitor = classVisitor.visitField(
-        ACC_PRIVATE or ACC_FINAL,
-        INJECTOR_FIELD.name,
-        INJECTOR_FIELD.type.descriptor,
-        null,
-        null)
+      ACC_PRIVATE or ACC_FINAL,
+      INJECTOR_FIELD.name,
+      INJECTOR_FIELD.type.descriptor,
+      null,
+      null
+    )
     fieldVisitor.visitEnd()
   }
 
@@ -141,6 +143,6 @@ class FactoryClassGenerator(
     private val CONSTRUCTOR = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
 
     private val INJECT_MEMBERS_METHOD =
-        MethodDescriptor.forMethod("injectMembers", Type.Primitive.Void, Types.OBJECT_TYPE)
+      MethodDescriptor.forMethod("injectMembers", Type.Primitive.Void, Types.OBJECT_TYPE)
   }
 }

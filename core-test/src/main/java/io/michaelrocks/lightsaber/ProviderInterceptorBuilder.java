@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class ProviderInterceptorBuilder {
     return this;
   }
 
-  private class ImmutableProviderInterceptor implements ProviderInterceptor {
+  private static class ImmutableProviderInterceptor implements ProviderInterceptor {
     private final Map<Key<?>, Provider<?>> providers;
 
     ImmutableProviderInterceptor(@Nonnull final ProviderInterceptorBuilder builder) {

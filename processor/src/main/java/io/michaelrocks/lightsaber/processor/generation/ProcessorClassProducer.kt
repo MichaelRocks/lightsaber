@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,10 @@ import io.michaelrocks.lightsaber.processor.logging.getLogger
 import java.io.IOException
 
 class ProcessorClassProducer(
-    private val fileSink: FileSink,
-    private val errorReporter: ErrorReporter
+  private val fileSink: FileSink,
+  private val errorReporter: ErrorReporter
 ) : ClassProducer {
+
   private val logger = getLogger()
 
   override fun produceClass(internalName: String, classData: ByteArray) {

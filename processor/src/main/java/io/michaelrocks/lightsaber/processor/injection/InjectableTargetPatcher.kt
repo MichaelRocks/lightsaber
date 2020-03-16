@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,10 +34,10 @@ import org.objectweb.asm.Opcodes.ACC_PUBLIC
 import java.util.ArrayList
 
 class InjectableTargetPatcher(
-    classVisitor: ClassVisitor,
-    private val keyRegistry: KeyRegistry,
-    private val injectableTarget: InjectionTarget,
-    private val hasSuperMembersInjector: Boolean
+  classVisitor: ClassVisitor,
+  private val keyRegistry: KeyRegistry,
+  private val injectableTarget: InjectionTarget,
+  private val hasSuperMembersInjector: Boolean
 ) : BaseInjectionClassVisitor(classVisitor) {
 
   private val fields: Collection<InjectionPoint.Field>
@@ -61,8 +61,10 @@ class InjectableTargetPatcher(
     this.methods = methods
   }
 
-  override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
-      interfaces: Array<String>?) {
+  override fun visit(
+    version: Int, access: Int, name: String, signature: String?, superName: String?,
+    interfaces: Array<String>?
+  ) {
     val membersInjectorType = LightsaberTypes.MEMBERS_INJECTOR_TYPE.internalName
     if (interfaces == null || membersInjectorType !in interfaces) {
       val newInterfaces = if (interfaces == null) arrayOf(membersInjectorType) else interfaces + membersInjectorType
@@ -119,8 +121,8 @@ class InjectableTargetPatcher(
 
   companion object {
     private val INJECT_FIELDS_METHOD =
-        MethodDescriptor.forMethod("injectFields", Type.Primitive.Void, Types.INJECTOR_TYPE)
+      MethodDescriptor.forMethod("injectFields", Type.Primitive.Void, Types.INJECTOR_TYPE)
     private val INJECT_METHODS_METHOD =
-        MethodDescriptor.forMethod("injectMethods", Type.Primitive.Void, Types.INJECTOR_TYPE)
+      MethodDescriptor.forMethod("injectMethods", Type.Primitive.Void, Types.INJECTOR_TYPE)
   }
 }

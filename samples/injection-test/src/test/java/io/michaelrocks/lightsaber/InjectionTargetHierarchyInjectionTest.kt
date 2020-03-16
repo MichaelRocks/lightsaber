@@ -45,15 +45,17 @@ class InjectionTargetHierarchyInjectionTest {
 
   @Component
   private class InjectionTargetHierarchyComponent {
-    @Provides
-    private fun provideInjectionTargetHierarchyModule(): InjectionTargetHierarchyModule {
+
+    @Import
+    private fun importInjectionTargetHierarchyModule(): InjectionTargetHierarchyModule {
       return InjectionTargetHierarchyModule()
     }
   }
 
   @Module
   class InjectionTargetHierarchyModule {
-    @Provides
+
+    @Provide
     private fun provideString(): String {
       return "InjectionTargetHierarchy"
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/** @deprecated Use {@link Provide @Provide} for providing dependencies and {@link Import @Import} for importing modules. */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
 @Documented

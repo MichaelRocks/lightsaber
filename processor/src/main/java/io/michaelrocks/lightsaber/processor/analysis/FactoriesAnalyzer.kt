@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,11 +47,12 @@ interface FactoriesAnalyzer {
 }
 
 class FactoriesAnalyzerImpl(
-    private val grip: Grip,
-    private val analyzerHelper: AnalyzerHelper,
-    private val errorReporter: ErrorReporter,
-    private val projectName: String
+  private val grip: Grip,
+  private val analyzerHelper: AnalyzerHelper,
+  private val errorReporter: ErrorReporter,
+  private val projectName: String
 ) : FactoriesAnalyzer {
+
   override fun analyze(files: Collection<File>): Collection<Factory> {
     val factoriesQuery = grip select classes from files where annotatedWith(Types.FACTORY_TYPE)
     return factoriesQuery.execute().classes.mapNotNull {
@@ -86,7 +87,7 @@ class FactoriesAnalyzerImpl(
     }
 
     val implementationType =
-        getObjectTypeByInternalName(mirror.type.internalName + "\$Lightsaber\$Factory\$$projectName")
+      getObjectTypeByInternalName(mirror.type.internalName + "\$Lightsaber\$Factory\$$projectName")
     val qualifier = analyzerHelper.findQualifier(mirror)
     val dependency = Dependency(GenericType.Raw(mirror.type), qualifier)
     return Factory(mirror.type, implementationType, dependency, provisionPoints)
@@ -106,7 +107,7 @@ class FactoriesAnalyzerImpl(
 
     val dependencyMirror = grip.classRegistry.getClassMirror(returnType)
     val dependencyConstructorsQuery =
-        grip select methods from dependencyMirror where (isConstructor() and annotatedWith(Types.FACTORY_INJECT_TYPE))
+      grip select methods from dependencyMirror where (isConstructor() and annotatedWith(Types.FACTORY_INJECT_TYPE))
     val dependencyConstructors = dependencyConstructorsQuery.execute().values.singleOrNull().orEmpty()
     if (dependencyConstructors.isEmpty()) {
       error("Class ${dependencyMirror.type.className} must have a constructor annotated with @Factory.Inject")
@@ -121,20 +122,27 @@ class FactoriesAnalyzerImpl(
     val methodInjectionPoint = analyzerHelper.convertToInjectionPoint(method, mirror.type)
     validateNoDuplicateInjectees(methodInjectionPoint)
     val argumentIndexToInjecteeMap = methodInjectionPoint.injectees.associateByIndexedTo(
-        HashMap(),
-        keySelector = { _, injectee -> injectee },
-        valueSelector = { index, _ -> index }
+      HashMap(),
+      keySelector = { _, injectee -> injectee },
+      valueSelector = { index, _ -> index }
     )
 
     val constructor = dependencyConstructors.single()
     val constructorInjectionPoint = analyzerHelper.convertToInjectionPoint(constructor, mirror.type)
 
-    val factoryInjectees = constructorInjectionPoint.injectees.map { injectee ->
-      val argumentIndex = argumentIndexToInjecteeMap[injectee]
-      if (argumentIndex == null) {
-        FactoryInjectee.FromInjector(injectee)
+    val factoryInjectees = constructorInjectionPoint.injectees.mapNotNull { injectee ->
+      if (Types.FACTORY_PARAMETER_TYPE in injectee.annotations) {
+        val argumentIndex = argumentIndexToInjecteeMap[injectee]
+        if (argumentIndex == null) {
+          val dependencyClassName = dependencyMirror.type.className
+          val factoryClassName = mirror.type.className
+          error("Class $dependencyClassName contains a @Factory.Parameter not provided by factory $factoryClassName: ${injectee.dependency}")
+          null
+        } else {
+          FactoryInjectee.FromMethod(injectee, argumentIndex)
+        }
       } else {
-        FactoryInjectee.FromMethod(injectee, argumentIndex)
+        FactoryInjectee.FromInjector(injectee)
       }
     }
 

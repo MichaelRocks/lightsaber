@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,10 +45,11 @@ import org.objectweb.asm.commons.GeneratorAdapter.XOR
 import java.util.Arrays
 
 class AnnotationProxyGenerator(
-    private val classRegistry: ClassRegistry,
-    private val annotation: ClassMirror,
-    private val proxyType: Type
+  private val classRegistry: ClassRegistry,
+  private val annotation: ClassMirror,
+  private val proxyType: Type
 ) {
+
   companion object {
     private val ARRAYS_TYPE = getObjectType<Arrays>()
     private val OBJECT_ARRAY_TYPE = getArrayType<Array<Any>>()
@@ -58,9 +59,9 @@ class AnnotationProxyGenerator(
     private val EQUALS_METHOD = MethodDescriptor.forMethod("equals", Type.Primitive.Boolean, Types.OBJECT_TYPE)
     private val TO_STRING_METHOD = MethodDescriptor.forMethod("toString", Types.STRING_TYPE)
     private val FLOAT_TO_INT_BITS_METHOD =
-        MethodDescriptor.forMethod("floatToIntBits", Type.Primitive.Int, Type.Primitive.Float)
+      MethodDescriptor.forMethod("floatToIntBits", Type.Primitive.Int, Type.Primitive.Float)
     private val DOUBLE_TO_LONG_BITS_METHOD =
-        MethodDescriptor.forMethod("doubleToLongBits", Type.Primitive.Long, Type.Primitive.Double)
+      MethodDescriptor.forMethod("doubleToLongBits", Type.Primitive.Long, Type.Primitive.Double)
     private val ANNOTATION_TYPE_METHOD = MethodDescriptor.forMethod("annotationType", Types.CLASS_TYPE)
 
     private val CACHED_HASH_CODE_FIELD = FieldDescriptor("\$cachedHashCode", Types.BOXED_INT_TYPE)
@@ -73,12 +74,12 @@ class AnnotationProxyGenerator(
     val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_MAXS or ClassWriter.COMPUTE_FRAMES, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
-        V1_6,
-        ACC_PUBLIC or ACC_SUPER,
-        proxyType.internalName,
-        null,
-        Types.OBJECT_TYPE.internalName,
-        arrayOf(annotation.type.internalName)
+      V1_6,
+      ACC_PUBLIC or ACC_SUPER,
+      proxyType.internalName,
+      null,
+      Types.OBJECT_TYPE.internalName,
+      arrayOf(annotation.type.internalName)
     )
 
     generateFields(classVisitor)
@@ -96,28 +97,31 @@ class AnnotationProxyGenerator(
   private fun generateFields(classVisitor: ClassVisitor) {
     for (method in annotation.methods) {
       val fieldVisitor = classVisitor.visitField(
-          ACC_PRIVATE or ACC_FINAL,
-          method.name,
-          method.type.returnType.descriptor,
-          null,
-          null)
+        ACC_PRIVATE or ACC_FINAL,
+        method.name,
+        method.type.returnType.descriptor,
+        null,
+        null
+      )
       fieldVisitor.visitEnd()
     }
 
     val cachedHashCodeField = classVisitor.visitField(
-        ACC_PRIVATE,
-        CACHED_HASH_CODE_FIELD.name,
-        CACHED_HASH_CODE_FIELD.descriptor,
-        null,
-        null)
+      ACC_PRIVATE,
+      CACHED_HASH_CODE_FIELD.name,
+      CACHED_HASH_CODE_FIELD.descriptor,
+      null,
+      null
+    )
     cachedHashCodeField.visitEnd()
 
     val cachedToStringField = classVisitor.visitField(
-        ACC_PRIVATE,
-        CACHED_TO_STRING_FIELD.name,
-        CACHED_TO_STRING_FIELD.descriptor,
-        null,
-        null)
+      ACC_PRIVATE,
+      CACHED_TO_STRING_FIELD.name,
+      CACHED_TO_STRING_FIELD.descriptor,
+      null,
+      null
+    )
     cachedToStringField.visitEnd()
   }
 
@@ -174,7 +178,8 @@ class AnnotationProxyGenerator(
     val fieldsNotEqualLabel = generator.newLabel()
     for (method in annotation.methods) {
       generateEqualsInvocationForField(
-          generator, method.name, method.type.returnType, annotationLocal, fieldsNotEqualLabel)
+        generator, method.name, method.type.returnType, annotationLocal, fieldsNotEqualLabel
+      )
     }
     generator.push(true)
 
@@ -189,8 +194,13 @@ class AnnotationProxyGenerator(
     generator.endMethod()
   }
 
-  private fun generateEqualsInvocationForField(generator: GeneratorAdapter, fieldName: String, fieldType: Type,
-      annotationLocal: Int, fieldsNotEqualLabel: Label) {
+  private fun generateEqualsInvocationForField(
+    generator: GeneratorAdapter,
+    fieldName: String,
+    fieldType: Type,
+    annotationLocal: Int,
+    fieldsNotEqualLabel: Label
+  ) {
     val fieldAccessor = MethodDescriptor.forMethod(fieldName, fieldType)
 
     generator.loadThis()
@@ -206,7 +216,7 @@ class AnnotationProxyGenerator(
       val elementType = fieldType.elementType
       val argumentType = if (elementType.isPrimitive) fieldType else OBJECT_ARRAY_TYPE
       val equalsMethod =
-          MethodDescriptor.forMethod(EQUALS_METHOD.name, Type.Primitive.Boolean, argumentType, argumentType)
+        MethodDescriptor.forMethod(EQUALS_METHOD.name, Type.Primitive.Boolean, argumentType, argumentType)
       generator.invokeStatic(ARRAYS_TYPE, equalsMethod)
       generator.ifZCmp(EQ, fieldsNotEqualLabel)
     } else if (fieldType is Type.Primitive) {

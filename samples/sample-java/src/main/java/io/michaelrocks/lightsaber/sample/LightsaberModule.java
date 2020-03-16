@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,24 +20,24 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 
 import io.michaelrocks.lightsaber.Module;
-import io.michaelrocks.lightsaber.Provides;
+import io.michaelrocks.lightsaber.Provide;
 
 @Module(isDefault = true)
 class LightsaberModule {
-  @Provides
+  @Provide
   private final DarthVader darthVader = DarthVader.INSTANCE;
 
-  @Provides
+  @Provide
   private Wookiee provideWookiee(final Chewbacca chewbacca) {
     return chewbacca;
   }
 
-  @Provides
+  @Provide
   private Droid provideDroid(final DroidFactory factory) {
     return factory.produceR2D2("Silver");
   }
 
-  @Provides
+  @Provide
   @Singleton
   private Planet providePlanet(final Provider<Kashyyyk> kashyyykProvider) {
     return kashyyykProvider.get();

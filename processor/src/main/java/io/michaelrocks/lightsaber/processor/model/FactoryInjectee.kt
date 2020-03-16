@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ sealed class FactoryInjectee {
   val dependency: Dependency get() = injectee.dependency
 
   data class FromInjector(
-      override val injectee: Injectee
+    override val injectee: Injectee
   ) : FactoryInjectee()
 
   data class FromMethod(
-      override val injectee: Injectee,
-      val argumentIndex: Int
+    override val injectee: Injectee,
+    val argumentIndex: Int
   ) : FactoryInjectee()
 }

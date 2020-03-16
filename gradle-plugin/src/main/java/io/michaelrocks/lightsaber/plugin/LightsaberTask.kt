@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,17 @@ import java.io.File
 open class LightsaberTask : DefaultTask() {
   @InputFiles
   var backupDirs: List<File> = emptyList()
+
   @OutputDirectories
   var classesDirs: List<File> = emptyList()
+
   @OutputDirectory
   var sourceDir: File? = null
+
   @InputFiles
   @Classpath
   var classpath: List<File> = emptyList()
+
   @InputFiles
   @Classpath
   var bootClasspath: List<File> = emptyList()
@@ -52,14 +56,12 @@ open class LightsaberTask : DefaultTask() {
     validate()
 
     val parameters = LightsaberParameters(
-        inputs = backupDirs,
-        outputs = classesDirs,
-        classpath = classpath,
-        bootClasspath = bootClasspath,
-        gen = classesDirs[0],
-        projectName = name.orEmpty().replace(":lightsaberProcess", ":").replace(':', '$'),
-        debug = logger.isDebugEnabled,
-        info = logger.isInfoEnabled
+      inputs = backupDirs,
+      outputs = classesDirs,
+      classpath = classpath,
+      bootClasspath = bootClasspath,
+      gen = classesDirs[0],
+      projectName = name.orEmpty().replace(":lightsaberProcess", ":").replace(':', '$')
     )
 
     logger.info("Starting Lightsaber processor: {}", parameters)

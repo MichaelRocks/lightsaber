@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,18 +27,17 @@ import java.util.List;
 
 import javax.inject.Provider;
 
-
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.only;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 public class ProviderInterceptorBuilderTest {
   @Test
   public void testAddProviderForClass() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
         .addProviderForClass(String.class, provider)
@@ -50,7 +49,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test
   public void testAddProviderForType() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<List<String>> provider = mock(Provider.class);
     final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
         .addProviderForType(new TypeToken<List<String>>() {}.getType(), provider)
@@ -62,7 +61,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test
   public void testAddProviderForKey() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
         .addProviderForKey(Key.of(String.class), provider)
@@ -74,11 +73,11 @@ public class ProviderInterceptorBuilderTest {
 
   @Test
   public void testAddProviderForClassWithAnnotation() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider1 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider2 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider3 = mock(Provider.class);
 
     final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
@@ -97,11 +96,11 @@ public class ProviderInterceptorBuilderTest {
 
   @Test
   public void testAddProviderForTypeWithAnnotation() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<List<String>> provider1 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<List<String>> provider2 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<List<String>> provider3 = mock(Provider.class);
 
     final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
@@ -120,11 +119,11 @@ public class ProviderInterceptorBuilderTest {
 
   @Test
   public void testAddProviderForKeyWithAnnotation() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider1 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider2 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider3 = mock(Provider.class);
 
     final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
@@ -143,17 +142,17 @@ public class ProviderInterceptorBuilderTest {
 
   @Test
   public void testAddProviderForClassTypeAndKeyWithAnnotation() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider1 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider2 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider3 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider4 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider5 = mock(Provider.class);
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider6 = mock(Provider.class);
 
     final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
@@ -181,7 +180,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForSameClassThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForClass(String.class, provider)
@@ -191,7 +190,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForSameClassWithImplicitAnnotationThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForClass(String.class, Annotated.class, provider)
@@ -201,7 +200,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForSameClassWithExplicitAnnotationThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForClass(String.class, createAnnotation("explicit"), provider)
@@ -211,7 +210,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForSameTypeThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForType(new TypeToken<List<String>>() {}.getType(), provider)
@@ -221,7 +220,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForSameTypeWithImplicitAnnotationThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForType(new TypeToken<List<String>>() {}.getType(), Annotated.class, provider)
@@ -231,7 +230,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForSameTypeWithExplicitAnnotationThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForType(new TypeToken<List<String>>() {}.getType(), createAnnotation("explicit"), provider)
@@ -241,7 +240,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForSameKeyThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForKey(Key.of(String.class), provider)
@@ -251,7 +250,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForSameKeyWithExplicitAnnotationThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForKey(Key.of(String.class, createAnnotation("explicit")), provider)
@@ -261,7 +260,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForClassAndEqualKeyThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForClass(String.class, provider)
@@ -271,7 +270,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForClassAndEqualKeyWithImplicitAnnotationThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForClass(String.class, Annotated.class, provider)
@@ -281,7 +280,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForClassAndEqualKeyWithExplicitAnnotationThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForClass(String.class, createAnnotation("explicit"), provider)
@@ -291,7 +290,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForTypeAndEqualKeyThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForType(new TypeToken<List<String>>() {}.getType(), provider)
@@ -301,7 +300,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForTypeAndEqualKeyWithImplicitAnnotationThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForType(new TypeToken<List<String>>() {}.getType(), Annotated.class, provider)
@@ -311,7 +310,7 @@ public class ProviderInterceptorBuilderTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void testAddProviderForTypeAndEqualKeyWithExplicitAnnotationThrowsException() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> provider = mock(Provider.class);
     new ProviderInterceptorBuilder()
         .addProviderForType(new TypeToken<List<String>>() {}.getType(), createAnnotation("explicit"), provider)
@@ -331,7 +330,7 @@ public class ProviderInterceptorBuilderTest {
   private void assertIntercepted(final ProviderInterceptor interceptor, final Key<?> key, final Provider<?> expectedProvider) {
     final ProviderInterceptor.Chain chain = mock(ProviderInterceptor.Chain.class);
     assertSame(expectedProvider, interceptor.intercept(chain, key));
-    verifyZeroInteractions(chain);
+    verifyNoMoreInteractions(chain);
   }
 
   private void assertNotIntercepted(final ProviderInterceptor interceptor, final Key<?> key) {

@@ -186,8 +186,17 @@ class PrimitiveInjectionTest {
     @Inject var longField: Long = 0
     @Inject var shortField: Short = 0
 
-    @Inject fun unboxedMethod(booleanArg: Boolean, byteArg: Byte, charArg: Char, doubleArg: Double,
-        floatArg: Float, intArg: Int, longArg: Long, shortArg: Short) {
+    @Inject
+    fun unboxedMethod(
+      booleanArg: Boolean,
+      byteArg: Byte,
+      charArg: Char,
+      doubleArg: Double,
+      floatArg: Float,
+      intArg: Int,
+      longArg: Long,
+      shortArg: Short
+    ) {
       assertEquals(booleanField, booleanArg)
       assertEquals(byteField.toLong(), byteArg.toLong())
       assertEquals(charField.toLong(), charArg.toLong())
@@ -198,9 +207,17 @@ class PrimitiveInjectionTest {
       assertEquals(shortField.toLong(), shortArg.toLong())
     }
 
-    @Inject fun boxedMethod(booleanArg: Boolean?, byteArg: Byte?, characterArg: Char?,
-        doubleArg: Double?, floatArg: Float?, integerArg: Int?, longArg: Long?,
-        shortArg: Short?) {
+    @Inject
+    fun boxedMethod(
+      booleanArg: Boolean?,
+      byteArg: Byte?,
+      characterArg: Char?,
+      doubleArg: Double?,
+      floatArg: Float?,
+      integerArg: Int?,
+      longArg: Long?,
+      shortArg: Short?
+    ) {
       assertEquals(booleanField, booleanArg)
       assertEquals(byteField.toLong(), (byteArg as Byte).toLong())
       assertEquals(charField.toLong(), (characterArg as Char).toLong())
@@ -222,8 +239,17 @@ class PrimitiveInjectionTest {
     @Inject var longField: Long? = null
     @Inject var shortField: Short? = null
 
-    @Inject fun unboxedMethod(booleanArg: Boolean, byteArg: Byte, charArg: Char, doubleArg: Double,
-        floatArg: Float, intArg: Int, longArg: Long, shortArg: Short) {
+    @Inject
+    fun unboxedMethod(
+      booleanArg: Boolean,
+      byteArg: Byte,
+      charArg: Char,
+      doubleArg: Double,
+      floatArg: Float,
+      intArg: Int,
+      longArg: Long,
+      shortArg: Short
+    ) {
       assertEquals(booleanField, booleanArg)
       assertEquals(byteField, java.lang.Byte.valueOf(byteArg))
       assertEquals(characterField, Character.valueOf(charArg))
@@ -234,15 +260,16 @@ class PrimitiveInjectionTest {
       assertEquals(shortField, java.lang.Short.valueOf(shortArg))
     }
 
-    @Inject fun boxedMethod(
-        booleanArg: Boolean?,
-        byteArg: Byte?,
-        characterArg: Char?,
-        doubleArg: Double?,
-        floatArg: Float?,
-        integerArg: Int?,
-        longArg: Long?,
-        shortArg: Short?
+    @Inject
+    fun boxedMethod(
+      booleanArg: Boolean?,
+      byteArg: Byte?,
+      characterArg: Char?,
+      doubleArg: Double?,
+      floatArg: Float?,
+      integerArg: Int?,
+      longArg: Long?,
+      shortArg: Short?
     ) {
       assertEquals(booleanField, booleanArg)
       assertEquals(byteField, byteArg)
@@ -257,31 +284,41 @@ class PrimitiveInjectionTest {
 
   @Module
   private class UnboxedPrimitiveModule {
-    @Provides fun provideBoolean(): Boolean = true
 
-    @Provides fun provideByte(): Byte = 42
+    @Provide
+    fun provideBoolean(): Boolean = true
 
-    @Provides fun provideChar(): Char = 'x'
+    @Provide
+    fun provideByte(): Byte = 42
 
-    @Provides fun provideDouble(): Double = Math.PI
+    @Provide
+    fun provideChar(): Char = 'x'
 
-    @Provides fun provideFloat(): Float = Math.E.toFloat()
+    @Provide
+    fun provideDouble(): Double = Math.PI
 
-    @Provides fun provideInt(): Int = 42424242
+    @Provide
+    fun provideFloat(): Float = Math.E.toFloat()
 
-    @Provides fun provideLong(): Long = 4242424242424242L
+    @Provide
+    fun provideInt(): Int = 42424242
 
-    @Provides fun provideShort(): Short = 4242
+    @Provide
+    fun provideLong(): Long = 4242424242424242L
 
-    @Provides fun consumeUnboxed(
-        booleanArg: Boolean,
-        byteArg: Byte,
-        charArg: Char,
-        doubleArg: Double,
-        floatArg: Float,
-        intArg: Int,
-        longArg: Long,
-        shortArg: Short
+    @Provide
+    fun provideShort(): Short = 4242
+
+    @Provide
+    fun consumeUnboxed(
+      booleanArg: Boolean,
+      byteArg: Byte,
+      charArg: Char,
+      doubleArg: Double,
+      floatArg: Float,
+      intArg: Int,
+      longArg: Long,
+      shortArg: Short
     ): UnboxedResult {
       assertEquals(provideBoolean(), booleanArg)
       assertEquals(provideByte().toLong(), byteArg.toLong())
@@ -294,15 +331,16 @@ class PrimitiveInjectionTest {
       return UnboxedResult()
     }
 
-    @Provides fun consumeBoxed(
-        booleanArg: Boolean?,
-        byteArg: Byte?,
-        characterArg: Char?,
-        doubleArg: Double?,
-        floatArg: Float?,
-        integerArg: Int?,
-        longArg: Long?,
-        shortArg: Short?
+    @Provide
+    fun consumeBoxed(
+      booleanArg: Boolean?,
+      byteArg: Byte?,
+      characterArg: Char?,
+      doubleArg: Double?,
+      floatArg: Float?,
+      integerArg: Int?,
+      longArg: Long?,
+      shortArg: Short?
     ): BoxedResult {
       assertEquals(provideBoolean(), booleanArg)
       assertEquals(provideByte().toLong(), (byteArg as Byte).toLong())
@@ -318,31 +356,41 @@ class PrimitiveInjectionTest {
 
   @Module
   private class BoxedPrimitiveModule {
-    @Provides fun provideBoolean(): Boolean? = false
 
-    @Provides fun provideByte(): Byte? = -42
+    @Provide
+    fun provideBoolean(): Boolean? = false
 
-    @Provides fun provideCharacter(): Char? = 'X'
+    @Provide
+    fun provideByte(): Byte? = -42
 
-    @Provides fun provideDouble(): Double? = -Math.PI
+    @Provide
+    fun provideCharacter(): Char? = 'X'
 
-    @Provides fun provideFloat(): Float? = (-Math.E).toFloat()
+    @Provide
+    fun provideDouble(): Double? = -Math.PI
 
-    @Provides fun provideInteger(): Int? = -42424242
+    @Provide
+    fun provideFloat(): Float? = (-Math.E).toFloat()
 
-    @Provides fun provideLong(): Long? = -4242424242424242L
+    @Provide
+    fun provideInteger(): Int? = -42424242
 
-    @Provides fun provideShort(): Short? = -4242
+    @Provide
+    fun provideLong(): Long? = -4242424242424242L
 
-    @Provides fun consumeUnboxed(
-        booleanArg: Boolean,
-        byteArg: Byte,
-        charArg: Char,
-        doubleArg: Double,
-        floatArg: Float,
-        intArg: Int,
-        longArg: Long,
-        shortArg: Short
+    @Provide
+    fun provideShort(): Short? = -4242
+
+    @Provide
+    fun consumeUnboxed(
+      booleanArg: Boolean,
+      byteArg: Byte,
+      charArg: Char,
+      doubleArg: Double,
+      floatArg: Float,
+      intArg: Int,
+      longArg: Long,
+      shortArg: Short
     ): UnboxedResult {
       assertEquals(provideBoolean(), booleanArg)
       assertEquals(provideByte(), java.lang.Byte.valueOf(byteArg))
@@ -355,15 +403,16 @@ class PrimitiveInjectionTest {
       return UnboxedResult()
     }
 
-    @Provides fun consumeBoxed(
-        booleanArg: Boolean?,
-        byteArg: Byte?,
-        characterArg: Char?,
-        doubleArg: Double?,
-        floatArg: Float?,
-        integerArg: Int?,
-        longArg: Long?,
-        shortArg: Short?
+    @Provide
+    fun consumeBoxed(
+      booleanArg: Boolean?,
+      byteArg: Byte?,
+      characterArg: Char?,
+      doubleArg: Double?,
+      floatArg: Float?,
+      integerArg: Int?,
+      longArg: Long?,
+      shortArg: Short?
     ): BoxedResult {
       assertEquals(provideBoolean(), booleanArg)
       assertEquals(provideByte(), byteArg)
@@ -379,14 +428,16 @@ class PrimitiveInjectionTest {
 
   @Component
   private class UnboxedPrimitiveComponent {
-    @Provides
-    private fun provideUnboxedPrimitiveModule(): UnboxedPrimitiveModule = UnboxedPrimitiveModule()
+
+    @Import
+    private fun importUnboxedPrimitiveModule(): UnboxedPrimitiveModule = UnboxedPrimitiveModule()
   }
 
   @Component
   private class BoxedPrimitiveComponent {
-    @Provides
-    private fun provideBoxedPrimitiveModule(): BoxedPrimitiveModule = BoxedPrimitiveModule()
+
+    @Import
+    private fun importBoxedPrimitiveModule(): BoxedPrimitiveModule = BoxedPrimitiveModule()
   }
 
   private class UnboxedResult
@@ -395,25 +446,25 @@ class PrimitiveInjectionTest {
 
   @ProvidedBy(UnboxedPrimitiveModule::class, BoxedPrimitiveModule::class)
   private class UnboxedConstructableContainer @Inject constructor(
-      val booleanField: Boolean,
-      val byteField: Byte,
-      val charField: Char,
-      val doubleField: Double,
-      val floatField: Float,
-      val intField: Int,
-      val longField: Long,
-      val shortField: Short
+    val booleanField: Boolean,
+    val byteField: Byte,
+    val charField: Char,
+    val doubleField: Double,
+    val floatField: Float,
+    val intField: Int,
+    val longField: Long,
+    val shortField: Short
   )
 
   @ProvidedBy(UnboxedPrimitiveModule::class, BoxedPrimitiveModule::class)
   private class BoxedConstructableContainer @Inject constructor(
-      val booleanField: Boolean?,
-      val byteField: Byte?,
-      val characterField: Char?,
-      val doubleField: Double?,
-      val floatField: Float?,
-      val integerField: Int?,
-      val longField: Long?,
-      val shortField: Short?
+    val booleanField: Boolean?,
+    val byteField: Byte?,
+    val characterField: Char?,
+    val doubleField: Double?,
+    val floatField: Float?,
+    val integerField: Int?,
+    val longField: Long?,
+    val shortField: Short?
   )
 }

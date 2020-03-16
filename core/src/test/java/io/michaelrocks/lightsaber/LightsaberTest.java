@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import javax.inject.Provider;
 import io.michaelrocks.lightsaber.internal.InjectorConfigurator;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.any;
@@ -39,7 +38,7 @@ import static org.mockito.Mockito.when;
 
 public class LightsaberTest {
   @Test
-  public void testCreateInjector() throws Exception {
+  public void testCreateInjector() {
     final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
 
@@ -53,13 +52,13 @@ public class LightsaberTest {
   }
 
   @Test
-  public void testCreateChildInjector() throws Exception {
+  public void testCreateChildInjector() {
     final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childComponent = createChildComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);
-    final Injector childInjector = lightsaber.createChildInjector(injector, childComponent);
+    final Injector childInjector = injector.createChildInjector(childComponent);
 
     verify(parentComponent).configureInjector((LightsaberInjector) injector);
     verifyNoMoreInteractions(parentComponent);
@@ -74,14 +73,13 @@ public class LightsaberTest {
   }
 
   @Test
-  public void testCreateChildInjectorWithAnnotation() throws Exception {
+  public void testCreateChildInjectorWithAnnotation() {
     final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
     final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);
-    final Injector childInjector =
-        lightsaber.createChildInjector(injector, childAnnotatedComponent);
+    final Injector childInjector = injector.createChildInjector(childAnnotatedComponent);
 
     verify(parentComponent).configureInjector((LightsaberInjector) injector);
     verifyNoMoreInteractions(parentComponent);
@@ -97,10 +95,10 @@ public class LightsaberTest {
 
   @Test
   public void testInjectionInterceptor() {
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<String> stringProvider = mock(Provider.class);
     when(stringProvider.get()).thenReturn("StringInstanceClass", "StringInstanceKey", "StringProviderClass", "StringProviderKey");
-    // noinspection unchecked
+    @SuppressWarnings("unchecked")
     final Provider<Object> objectProvider = mock(Provider.class);
     when(objectProvider.get()).thenReturn("ObjectInstanceClass", "ObjectInstanceKey", "ObjectProviderClass", "ObjectProviderKey");
     final ProviderInterceptor interceptor = new ProviderInterceptorBuilder()
@@ -113,7 +111,7 @@ public class LightsaberTest {
     final InjectorConfigurator childAnnotatedComponent = createChildAnnotatedComponent();
 
     final Injector injector = lightsaber.createInjector(parentComponent);
-    final Injector childInjector = lightsaber.createChildInjector(injector, childAnnotatedComponent);
+    final Injector childInjector = injector.createChildInjector(childAnnotatedComponent);
 
     assertEquals("StringInstanceClass", childInjector.getInstance(String.class));
     assertEquals("StringInstanceKey", childInjector.getInstance(Key.of(String.class)));
@@ -133,7 +131,7 @@ public class LightsaberTest {
     final InjectorConfigurator configurator = mock(InjectorConfigurator.class);
     doAnswer(new Answer<Object>() {
       @Override
-      public Object answer(final InvocationOnMock invocation) throws Throwable {
+      public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
         injector.registerProvider(String.class, new Provider<String>() {
           @Nonnull
@@ -153,7 +151,7 @@ public class LightsaberTest {
     final InjectorConfigurator configurator = mock(InjectorConfigurator.class);
     doAnswer(new Answer<Object>() {
       @Override
-      public Object answer(final InvocationOnMock invocation) throws Throwable {
+      public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
         injector.registerProvider(Key.of(Object.class), new Provider<Object>() {
           @Nonnull
@@ -173,7 +171,7 @@ public class LightsaberTest {
     final InjectorConfigurator configurator = mock(InjectorConfigurator.class);
     doAnswer(new Answer<Object>() {
       @Override
-      public Object answer(final InvocationOnMock invocation) throws Throwable {
+      public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
         injector.registerProvider(Key.of(String.class, createNamedAnnotation("Annotated")),
             new Provider<String>() {

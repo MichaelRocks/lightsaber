@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,18 @@ import org.objectweb.asm.Opcodes.ACC_PROTECTED
 import org.objectweb.asm.Opcodes.ACC_PUBLIC
 
 class FactoryInjectionPointPatcher(
-    classVisitor: ClassVisitor,
-    private val factoryInjectionPoint: FactoryInjectionPoint
+  classVisitor: ClassVisitor,
+  private val factoryInjectionPoint: FactoryInjectionPoint
 ) : BaseInjectionClassVisitor(classVisitor) {
 
-  override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
-      interfaces: Array<String>?) {
+  override fun visit(
+    version: Int,
+    access: Int,
+    name: String,
+    signature: String?,
+    superName: String?,
+    interfaces: Array<String>?
+  ) {
     val newAccess = (access and (ACC_PRIVATE or ACC_PROTECTED).inv()) or ACC_PUBLIC
     super.visit(version, access, name, signature, superName, interfaces)
     if (newAccess != access) {
@@ -37,8 +43,13 @@ class FactoryInjectionPointPatcher(
     }
   }
 
-  override fun visitMethod(access: Int, name: String, desc: String, signature: String?,
-      exceptions: Array<String>?): MethodVisitor? {
+  override fun visitMethod(
+    access: Int,
+    name: String,
+    desc: String,
+    signature: String?,
+    exceptions: Array<String>?
+  ): MethodVisitor? {
     return if (shouldMethodBePatched(name, desc)) {
       val newAccess = access and ACC_PRIVATE.inv()
       if (newAccess != access) {

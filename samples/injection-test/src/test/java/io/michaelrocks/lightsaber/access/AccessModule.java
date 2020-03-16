@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,61 +19,60 @@ package io.michaelrocks.lightsaber.access;
 import javax.inject.Singleton;
 
 import io.michaelrocks.lightsaber.Module;
-import io.michaelrocks.lightsaber.Provides;
+import io.michaelrocks.lightsaber.Provide;
 
 @Module
 class AccessModule {
-  @Provides
+  @Provide
   private InternalDependency provideInternalDependency(final InternalDependencyImpl impl) {
     return impl;
   }
 
-  @Provides
+  @Provide
   @InternalQualifier
   private InternalDependency provideQualifiedInternalDependency(final InternalDependencyImpl impl) {
     return impl;
   }
 
-  @Provides
+  @Provide
   @Singleton
   @SingletonQualifier
   private InternalDependency provideSingletonInternalDependency(final InternalDependencyImpl impl) {
     return impl;
   }
 
-  @Provides
+  @Provide
   private InternalDependency[] provideInternalDependencyArray(final InternalDependencyImpl impl) {
     return new InternalDependency[] { impl };
   }
 
-  @Provides
+  @Provide
   @InternalQualifier
   private InternalDependency[] provideQualifiedInternalDependencyArray(final InternalDependencyImpl impl) {
     return new InternalDependencyImpl[] { impl };
   }
 
-  @Provides
+  @Provide
   @Singleton
   @SingletonQualifier
   private InternalDependency[] provideSingletonInternalDependencyArray(final InternalDependencyImpl impl) {
     return new InternalDependencyImpl[] { impl };
   }
 
-
-  @Provides
+  @Provide
   private InternalGenericDependency<InternalDependency> provideInternalGenericDependency(
       final InternalGenericDependencyImpl impl) {
     return impl;
   }
 
-  @Provides
+  @Provide
   @InternalQualifier
   private InternalGenericDependency<InternalDependency> provideQualifiedInternalGenericDependency(
       final InternalGenericDependencyImpl impl) {
     return impl;
   }
 
-  @Provides
+  @Provide
   @Singleton
   @SingletonQualifier
   private InternalGenericDependency<InternalDependency> provideSingletonInternalGenericDependency(
@@ -81,20 +80,20 @@ class AccessModule {
     return impl;
   }
 
-  @Provides
+  @Provide
   private InternalGenericDependency<InternalDependency>[] provideInternalGenericDependencyArray(
       final InternalGenericDependencyImpl impl) {
     return new InternalGenericDependencyImpl[] { impl };
   }
 
-  @Provides
+  @Provide
   @InternalQualifier
   private InternalGenericDependency<InternalDependency>[] provideQualifiedInternalGenericDependencyArray(
       final InternalGenericDependencyImpl impl) {
     return new InternalGenericDependencyImpl[] { impl };
   }
 
-  @Provides
+  @Provide
   @Singleton
   @SingletonQualifier
   private InternalGenericDependency<InternalDependency>[] provideSingletonInternalGenericDependencyArray(

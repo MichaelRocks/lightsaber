@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,22 +93,28 @@ class GenericInjectionTest {
 
   @Module
   private class GenericModule {
-    @Provides
+
+    @Provide
     fun provideStringList(): List<String> = listOf("Hello", "world")
-    @Provides
+
+    @Provide
     fun provideIntList(): List<Int> = listOf(42, 43)
-    @Provides
+
+    @Provide
     fun provideIntArrayList(): List<IntArray> = listOf(intArrayOf(42, 43))
-    @Provides
+
+    @Provide
     fun provideIntListArray(): Array<List<Int>> = arrayOf(listOf(42, 43))
-    @Provides
+
+    @Provide
     fun provideIntListArrayArray(): Array<Array<List<Int>>> = arrayOf(arrayOf(listOf(42, 43)))
   }
 
   @Component
   private class GenericComponent {
-    @Provides
-    fun provideGenericModule(): GenericModule = GenericModule()
+
+    @Import
+    fun importGenericModule(): GenericModule = GenericModule()
   }
 
   private interface Target {
@@ -121,22 +127,26 @@ class GenericInjectionTest {
 
   @ProvidedBy(GenericModule::class)
   private class ConstructorInjectionTarget @Inject constructor(
-      override val stringList: List<String>,
-      override val intList: List<Int>,
-      override val intArrayList: List<IntArray>,
-      override val intListArray: Array<List<Int>>,
-      override val intListArrayArray: Array<Array<List<Int>>>
+    override val stringList: List<String>,
+    override val intList: List<Int>,
+    override val intArrayList: List<IntArray>,
+    override val intListArray: Array<List<Int>>,
+    override val intListArrayArray: Array<Array<List<Int>>>
   ) : Target
 
   private class FieldInjectionTarget : Target {
     @Inject
     override val stringList: List<String> = inject()
+
     @Inject
     override val intList: List<Int> = inject()
+
     @Inject
     override val intArrayList: List<IntArray> = inject()
+
     @Inject
     override val intListArray: Array<List<Int>> = inject()
+
     @Inject
     override val intListArrayArray: Array<Array<List<Int>>> = inject()
   }
@@ -144,12 +154,16 @@ class GenericInjectionTest {
   private class MethodInjectionTarget : Target {
     @set:Inject
     override var stringList: List<String> = inject()
+
     @set:Inject
     override var intList: List<Int> = inject()
+
     @set:Inject
     override var intArrayList: List<IntArray> = inject()
+
     @set:Inject
     override var intListArray: Array<List<Int>> = inject()
+
     @set:Inject
     override var intListArrayArray: Array<Array<List<Int>>> = inject()
   }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import io.michaelrocks.lightsaber.internal.InjectorConfigurator;
 import io.michaelrocks.lightsaber.internal.LightsaberInjector;
 import io.michaelrocks.lightsaber.internal.ParameterizedTypeImpl;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.any;
@@ -42,7 +41,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class LightsaberGenericTest {
   @Test
-  public void testCreateInjector() throws Exception {
+  public void testCreateInjector() {
     final Lightsaber lightsaber = new Lightsaber.Builder().build();
     final InjectorConfigurator parentComponent = createParentComponent();
 
@@ -60,7 +59,7 @@ public class LightsaberGenericTest {
     final InjectorConfigurator configurator = mock(InjectorConfigurator.class, RETURNS_DEEP_STUBS);
     doAnswer(new Answer<Object>() {
       @Override
-      public Object answer(final InvocationOnMock invocation) throws Throwable {
+      public Object answer(final InvocationOnMock invocation) {
         final LightsaberInjector injector = (LightsaberInjector) invocation.getArguments()[0];
         injector.registerProvider(getJvmStringListType(), new Provider<List<String>>() {
           @Nonnull
@@ -75,7 +74,6 @@ public class LightsaberGenericTest {
         .when(configurator).configureInjector(any(LightsaberInjector.class));
     return configurator;
   }
-
 
   private static Type getJvmStringListType() {
     return new TypeReference<List<String>>() {}.getType();

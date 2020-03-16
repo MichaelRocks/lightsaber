@@ -28,7 +28,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'io.michaelrocks:lightsaber-gradle-plugin:0.11.1-beta'
+    classpath 'io.michaelrocks:lightsaber-gradle-plugin:0.12.0-beta'
   }
 }
 
@@ -42,7 +42,7 @@ apply plugin: 'io.michaelrocks.lightsaber'
 
 // Optional, just if you need Kotlin extension functions.
 dependencies {
-  implementation 'io.michaelrocks:lightsaber-core-kotlin:0.11.1-beta'
+  implementation 'io.michaelrocks:lightsaber-core-kotlin:0.12.0-beta'
 }
 ```
 
@@ -123,14 +123,14 @@ Lightsaber requires provider methods to be defined in modules that need to be co
 
 A module is a logical unit responsible for providing dependencies belonging to the module. Module classes must be
 annotated with the `@Module` annotation. A module can contain a number of provider methods. Lightsaber treats a method
-as a provider method if it's annotated with the `@Provides` annotation. When a type is provided by a provider method
+as a provider method if it's annotated with the `@Provide` annotation. When a type is provided by a provider method
 it can be injected into a class in other parts of the project. Neither the module nor its provider methods are required
 to be `public`.
 
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   public Droid provideDroid() {
     return new Droid();
   }
@@ -144,15 +144,15 @@ instance. But you can do that via [manual injection](#manual-injection) or by cr
 ##### Components
 
 To make Lightsaber aware of modules and their provided dependencies the modules have to be organized into a component.
-A component is just a class annotated with the `@Component` annotation. The goal of this class is to provide modules
-to Lightsaber. Every method that provides a module must be annotated with `@Provides`. Neither the component class
+A component is just a class annotated with the `@Component` annotation. The goal of this class is to import modules
+to Lightsaber. Every method that imports a module must be annotated with `@Import`. Neither the component class
 itself not its provider methods have to be `public`.
 
 ```java
 @Component
 public class DroidComponent {
-  @Provides
-  public DroidModule provideDroidModule() {
+  @Import
+  public DroidModule importDroidModule() {
     return new DroidModule();
   }
 }
@@ -250,7 +250,7 @@ manually injecting dependencies into the instance using the `injectMembers()` me
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   public Droid provideDroid(Injector injector) {
     Droid droid = new ElectircalDroid();
     injector.injectMemebers(droid);
@@ -278,7 +278,7 @@ class ElectricalDroid implements Droid {
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   public Droid provideDroid(ElectricalDroid droid) {
     return droid;
   }
@@ -301,7 +301,7 @@ class ElectricalDroid implements Droid {
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   @Singleton
   public Droid provideDroid(ElectricalDroid droid) {
     return droid;
@@ -377,21 +377,21 @@ Lightsaber distinguish between these dependencies we will annotate them with the
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   @Singleton
   @Named("R2-D2")
   public Droid provideR2D2() {
     return new Droid("R2-D2");
   }
 
-  @Provides
+  @Provide
   @Singleton
   @Named("C-3PO")
   public Droid provideC3PO() {
     return new Droid("C-3PO");
   }
 
-  @Provides
+  @Provide
   @Singleton
   public Droid provideUnknownDroid() {
     return new Droid("Unknown");
@@ -438,14 +438,14 @@ public @interface Model {
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   @Singleton
   @Model(DroidType.R2D2)
   public Droid provideR2D2() {
     return new Droid("R2-D2");
   }
 
-  @Provides
+  @Provide
   @Singleton
   @Model(DroidType.C3PO)
   public Droid provideC3PO() {
@@ -489,7 +489,7 @@ And these types you cannot use:
 
 When defining a component you can specify any number of parent components of the component. Given an injector created
 with one of the parent components you can create a child injector by passing an instance of the child component to
-the `createChildInjector()` method of the `Lightsaber` class.
+the `createChildInjector()` method of the `Injector` interface.
 
 The child injector inherits all the dependencies of its ancestor components, overrides the `Injector` dependency with
 itself, and adds dependencies defined in its component. At the moment Lightsaber doesn't support dependency overriding
@@ -516,7 +516,7 @@ class ElectricalDroid implements Droid {
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   @Singleton
   public Droid provideDroid(ElectricalDroid droid) {
     return droid;
@@ -527,8 +527,8 @@ public class DroidModule {
 ```java
 @Component
 public class DroidComponent {
-  @Provides
-  public DroidModule provideDroidModule() {
+  @Import
+  public DroidModule importDroidModule() {
     return new DroidModule();
   }
 }
@@ -559,7 +559,7 @@ public class BatteryModule {
     this.name = name;
   }
 
-  @Provides
+  @Provide
   public Droid provideBattery() {
     return new Battery(name);
   }
@@ -575,8 +575,8 @@ public class BatteryComponent {
     this.name = name;
   }
 
-  @Provides
-  public BatteryModule provideBatteryModule() {
+  @Import
+  public BatteryModule importBatteryModule() {
     return new BatteryModule(name);
   }
 }
@@ -588,10 +588,10 @@ Now we can create child injectors passing different instances of the `BatteryCom
 ```
 Lightsaber lightsaber = new Lightsaber.Builder().build();
 Injector droidInjector = lightsaber.createInjector(new DroidComponent());
-Injector nuclearBatteryInjector =
-    lightsaber.createChildInjector(droidInjector, new BatteryComponent("Nuclear"));
+Injector nuclearBatteryInjector = 
+    droidInjector.createChildInjector(new BatteryComponent("Nuclear"));
 Injector plasmBatteryInjector =
-    lightsaber.createChildInjector(droidInjector, new BatteryComponent("Plasm"));
+    droidInjector.createChildInjector(new BatteryComponent("Plasm"));
 
 Droid nuclearBatteryDroid = nuclearBatteryInjector.getInstance(Droid.class);
 Droid plasmBatteryDroid = plasmBatteryInjector.getInstance(Droid.class);
@@ -615,7 +615,7 @@ public class Droid {
   private final String model;
   
   @Factory.Inject
-  public Droid(Battery battery, String model) {
+  public Droid(Battery battery, @Factory.Parameter String model) {
     this.battery = battery;
     this.model = model;
   }
@@ -631,7 +631,7 @@ will be used for providing a `Battery` for the `Droid`:
 ```java
 @Module
 public class DroidModule {
-  @Provides
+  @Provide
   public Battery provideBattery() {
     return new Battery();
   }
@@ -653,9 +653,9 @@ public interface DroidFactory {
 The factory must be an interface annotated with `@Factory` annotation and may contain any number of factory methods. 
 The factory method may contain any number of parameters with unique types. If you need the factory method to contain 
 multiple parameters of the same type they have to be annotated with different qualifiers like `@Named("parameterName")`.
-Lightsaber matches factory method's parameters with constructor's parameters by a type and a qualifier. A component
-that provides a factory mustn't provide dependencies with the same type and qualifier as declared by factory methods'
-parameters.
+Lightsaber matches factory method's parameters with constructor's parameters annotated with `@Factory.Parameter` by
+a type and a qualifier. A component that provides a factory must provide dependencies for all constructor's parameters
+that aren't annotated with `@Factory.Parameter`.
 
 After the factory is defined as shown above it can be injected or retrieved manually from an injector as any other
 dependency:
@@ -703,7 +703,7 @@ To simplify unit testing and dependency substitution you can add a special testi
 
 ```groovy
 dependencies {
-  testImplementation 'io.michaelrocks:lightsaber-test:0.11.1-beta'
+  testImplementation 'io.michaelrocks:lightsaber-test:0.12.0-beta'
 }
 ```
 

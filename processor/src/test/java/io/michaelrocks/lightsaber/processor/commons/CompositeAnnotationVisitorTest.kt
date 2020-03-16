@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,16 +56,16 @@ class CompositeAnnotationVisitorTest {
   @Test
   fun testVisitAnnotation() {
     verifyCompositeMethodInvocations(CompositeAnnotationVisitor::class,
-        { visitAnnotation("Name", "Desc") },
-        { visitEnd() }
+      { visitAnnotation("Name", "Desc") },
+      { visitEnd() }
     )
   }
 
   @Test
   fun testVisitArray() {
     verifyCompositeMethodInvocations(CompositeAnnotationVisitor::class,
-        { visitArray("Name") },
-        { visitEnd() }
+      { visitArray("Name") },
+      { visitEnd() }
     )
   }
 

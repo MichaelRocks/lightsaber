@@ -25,7 +25,7 @@ class ProvidedByInjectionTest {
   fun testProvidedByInjection() {
     val lightsaber = Lightsaber.Builder().build()
     val parentInjector = lightsaber.createInjector(ParentComponent())
-    val childInjector = lightsaber.createChildInjector(parentInjector, ChildComponent())
+    val childInjector = parentInjector.createChildInjector(ChildComponent())
     assertEquals("ProvidedBy", parentInjector.getInstance<ParentInjectionTarget>().string)
     assertEquals("ProvidedBy", childInjector.getInstance<ParentInjectionTarget>().string)
     assertEquals("ProvidedBy", childInjector.getInstance<ChildInjectionTarget>().parent.string)
@@ -33,12 +33,14 @@ class ProvidedByInjectionTest {
 
   @Component
   private class ParentComponent {
-    @Provides
-    private fun provideParentModule(): ParentModule = ParentModule()
+
+    @Import
+    private fun importParentModule(): ParentModule = ParentModule()
 
     @Module
     class ParentModule {
-      @Provides
+
+      @Provide
       private fun provideString(): String {
         return "ProvidedBy"
       }
@@ -47,8 +49,9 @@ class ProvidedByInjectionTest {
 
   @Component(parent = ParentComponent::class)
   private class ChildComponent {
-    @Provides
-    private fun provideChildModule(): ChildModule = ChildModule()
+
+    @Import
+    private fun importChildModule(): ChildModule = ChildModule()
 
     @Module
     class ChildModule

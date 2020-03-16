@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,14 +58,16 @@ class LazyInjectionTest {
 
   @Module
   private class LazyModule {
-    @Provides
+
+    @Provide
     fun provideString(): String = StringBuilder("String").toString()
   }
 
   @Component
   private class LazyComponent {
-    @Provides
-    fun provideLazyModule(): LazyModule = LazyModule()
+
+    @Import
+    fun importLazyModule(): LazyModule = LazyModule()
   }
 
   private interface Target {
@@ -76,16 +78,18 @@ class LazyInjectionTest {
 
   @ProvidedBy(LazyModule::class)
   private class ConstructorInjectionTarget @Inject constructor(
-      override val string: String,
-      override val lazyString1: Lazy<String>,
-      override val lazyString2: Lazy<String>
+    override val string: String,
+    override val lazyString1: Lazy<String>,
+    override val lazyString2: Lazy<String>
   ) : Target
 
   private class FieldInjectionTarget : Target {
     @Inject
     override lateinit var string: String
+
     @Inject
     override lateinit var lazyString1: Lazy<String>
+
     @Inject
     override lateinit var lazyString2: Lazy<String>
   }
@@ -93,8 +97,10 @@ class LazyInjectionTest {
   private class MethodInjectionTarget : Target {
     @set:Inject
     override var string: String = inject()
+
     @set:Inject
     override var lazyString1: Lazy<String> = inject()
+
     @set:Inject
     override var lazyString2: Lazy<String> = inject()
   }

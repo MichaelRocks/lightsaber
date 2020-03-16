@@ -14,20 +14,18 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.processor.model
+package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.grip.mirrors.Type
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-data class Provider(
-  val type: Type.Object,
-  val provisionPoint: ProvisionPoint,
-  val moduleType: Type.Object,
-  val scope: Scope
-) {
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-  val dependency: Dependency
-    get() = provisionPoint.dependency
+@Target({ METHOD, FIELD })
+@Retention(RUNTIME)
+@Documented
+public @interface Import {
 }
-
-val Provider.isConstructorProvider: Boolean
-  get() = provisionPoint is ProvisionPoint.Constructor

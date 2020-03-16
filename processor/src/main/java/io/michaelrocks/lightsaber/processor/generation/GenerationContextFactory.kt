@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,47 +37,48 @@ import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import java.util.HashMap
 
 class GenerationContextFactory(
-    private val fileRegistry: FileRegistry,
-    private val classRegistry: ClassRegistry,
-    private val projectName: String
+  private val fileRegistry: FileRegistry,
+  private val classRegistry: ClassRegistry,
+  private val projectName: String
 ) {
+
   fun createGenerationContext(injectionContext: InjectionContext): GenerationContext {
     val dependencies = findAllDependencies(injectionContext)
     return GenerationContext(
-        composePackageInvaders(dependencies),
-        composeKeyRegistry(dependencies)
+      composePackageInvaders(dependencies),
+      composeKeyRegistry(dependencies)
     )
   }
 
   private fun findAllDependencies(context: InjectionContext): Collection<Dependency> {
     return context.components.asSequence()
-        .flatMap { it.modules.asSequence() }
-        .flatMap { it.providers.asSequence() }
-        .map { it.dependency }
-        .toSet()
+      .flatMap { it.modules.asSequence() }
+      .flatMap { it.providers.asSequence() }
+      .map { it.dependency }
+      .toSet()
   }
 
   private fun composePackageInvaders(dependencies: Collection<Dependency>): Collection<PackageInvader> {
     return dependencies
-        .flatMap { extractObjectTypes(it.type) }
-        .distinct()
-        .filterNot { isPublicType(it) }
-        .groupByTo(
-            HashMap(),
-            { extractPackageName(it) },
-            { it }
+      .flatMap { extractObjectTypes(it.type) }
+      .distinct()
+      .filterNot { isPublicType(it) }
+      .groupByTo(
+        HashMap(),
+        { extractPackageName(it) },
+        { it }
+      )
+      .map {
+        val (packageName, types) = it
+        val packageInvaderType =
+          createUniqueObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader\$$projectName")
+        val fields = types.associateByIndexedTo(
+          HashMap(),
+          { _, type -> type },
+          { index, _ -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
         )
-        .map {
-          val (packageName, types) = it
-          val packageInvaderType =
-              createUniqueObjectTypeByInternalName("$packageName/Lightsaber\$PackageInvader\$$projectName")
-          val fields = types.associateByIndexedTo(
-              HashMap(),
-              { _, type -> type },
-              { index, _ -> FieldDescriptor("class$index", Types.CLASS_TYPE) }
-          )
-          PackageInvader(packageInvaderType, packageName, fields)
-        }
+        PackageInvader(packageInvaderType, packageName, fields)
+      }
   }
 
   private fun extractObjectTypes(type: GenericType): List<Type> {
@@ -120,9 +121,9 @@ class GenerationContextFactory(
   private fun composeKeyRegistry(dependencies: Collection<Dependency>): KeyRegistry {
     val type = createUniqueObjectTypeByInternalName("io/michaelrocks/lightsaber/KeyRegistry\$$projectName")
     val keys = dependencies.associateByIndexedNotNullTo(
-        HashMap(),
-        { _, dependency -> dependency.boxed() },
-        { index, dependency -> maybeComposeKey("key$index", dependency) }
+      HashMap(),
+      { _, dependency -> dependency.boxed() },
+      { index, dependency -> maybeComposeKey("key$index", dependency) }
     )
     return KeyRegistry(type, keys)
   }

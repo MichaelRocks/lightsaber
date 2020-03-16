@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,18 +55,22 @@ class LambdaInjectionTest {
 
   @Module
   private class LambdaModule {
-    @Provides
+
+    @Provide
     fun provideGreeting1(): () -> String = { "Hello, world!" }
-    @Provides
+
+    @Provide
     fun provideGreeting2(): (String) -> String = { "Hello, $it!" }
-    @Provides
+
+    @Provide
     fun provideGreeting3(): (String, String) -> String = { greeting, name -> "$greeting, $name!" }
   }
 
   @Component
   private class LambdaComponent {
-    @Provides
-    fun provideLambdaModule(): LambdaModule = LambdaModule()
+
+    @Import
+    fun importLambdaModule(): LambdaModule = LambdaModule()
   }
 
   private interface Target {
@@ -78,26 +82,31 @@ class LambdaInjectionTest {
   @JvmSuppressWildcards
   @ProvidedBy(LambdaModule::class)
   private class ConstructorInjectionTarget @Inject constructor(
-      override val greeting1: () -> String,
-      override val greeting2: (String) -> String,
-      override val greeting3: (String, String) -> String
+    override val greeting1: () -> String,
+    override val greeting2: (String) -> String,
+    override val greeting3: (String, String) -> String
   ) : Target
 
   private class FieldInjectionTarget : Target {
     @Inject
     override val greeting1: () -> String = inject()
+
     @Inject
     override val greeting2: (String) -> String = inject()
+
     @Inject
     override val greeting3: (String, String) -> String = inject()
   }
 
   @JvmSuppressWildcards
   private class MethodInjectionTarget : Target {
+
     @set:Inject
     override var greeting1: () -> String = inject()
+
     @set:Inject
     override var greeting2: (String) -> String = inject()
+
     @set:Inject
     override var greeting3: (String, String) -> String = inject()
   }

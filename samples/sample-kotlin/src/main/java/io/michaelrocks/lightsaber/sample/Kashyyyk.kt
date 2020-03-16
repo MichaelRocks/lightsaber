@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import javax.inject.Singleton
 
 @Singleton
 internal class Kashyyyk @Inject private constructor() : Planet {
+
   override val name = "Kashyyyk"
   override val sector = "Mytaranor"
 

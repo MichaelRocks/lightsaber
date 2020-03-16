@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,16 +67,16 @@ class CompositeClassVisitorTest {
   @Test
   fun testVisitAnnotation() {
     verifyCompositeMethodInvocations(CompositeClassVisitor::class,
-        { visitAnnotation("Desc", true) },
-        { visitEnd() }
+      { visitAnnotation("Desc", true) },
+      { visitEnd() }
     )
   }
 
   @Test
   fun testVisitTypeAnnotation() {
     verifyCompositeMethodInvocations(CompositeClassVisitor::class,
-        { visitTypeAnnotation(TypeReference.FIELD, null, "Desc", true) },
-        { visitEnd() }
+      { visitTypeAnnotation(TypeReference.FIELD, null, "Desc", true) },
+      { visitEnd() }
     )
   }
 
@@ -97,8 +97,8 @@ class CompositeClassVisitorTest {
   fun testVisitField() {
     val value = Object()
     verifyCompositeMethodInvocations(CompositeClassVisitor::class,
-        { visitField(Opcodes.ACC_PUBLIC, "Name", "Desc", "Signature", value) },
-        { visitEnd() }
+      { visitField(Opcodes.ACC_PUBLIC, "Name", "Desc", "Signature", value) },
+      { visitEnd() }
     )
   }
 
@@ -106,8 +106,8 @@ class CompositeClassVisitorTest {
   fun testVisitMethod() {
     val exceptions = arrayOf("Exception")
     verifyCompositeMethodInvocations(CompositeClassVisitor::class,
-        { visitMethod(Opcodes.ACC_PUBLIC, "Name", "Desc", "Signature", exceptions) },
-        { visitEnd() }
+      { visitMethod(Opcodes.ACC_PUBLIC, "Name", "Desc", "Signature", exceptions) },
+      { visitEnd() }
     )
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,28 +50,30 @@ private val PARAMETERIZED_TYPE_IMPL_TYPE = getObjectType<ParameterizedTypeImpl>(
 private val GENERIC_ARRAY_TYPE_IMPL_TYPE = getObjectType<GenericArrayTypeImpl>()
 
 private val PARAMETERIZED_TYPE_IMPL_CONSTRUCTOR =
-    MethodDescriptor.forConstructor(Types.TYPE_TYPE, Types.CLASS_TYPE, Types.TYPE_TYPE.toArrayType())
+  MethodDescriptor.forConstructor(Types.TYPE_TYPE, Types.CLASS_TYPE, Types.TYPE_TYPE.toArrayType())
 private val GENERIC_ARRAY_TYPE_IMPL_CONSTRUCTOR =
-    MethodDescriptor.forConstructor(Types.TYPE_TYPE)
+  MethodDescriptor.forConstructor(Types.TYPE_TYPE)
 
 class KeyRegistryClassGenerator(
-    private val classProducer: ClassProducer,
-    private val classRegistry: ClassRegistry,
-    private val annotationCreator: AnnotationCreator,
-    private val generationContext: GenerationContext
+  private val classProducer: ClassProducer,
+  private val classRegistry: ClassRegistry,
+  private val annotationCreator: AnnotationCreator,
+  private val generationContext: GenerationContext
 ) {
+
   private val keyRegistry = generationContext.keyRegistry
 
   fun generate() {
     val classWriter = StandaloneClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS, classRegistry)
     val classVisitor = WatermarkClassVisitor(classWriter, true)
     classVisitor.visit(
-        V1_6,
-        ACC_PUBLIC or ACC_SUPER,
-        keyRegistry.type.internalName,
-        null,
-        Types.OBJECT_TYPE.internalName,
-        null)
+      V1_6,
+      ACC_PUBLIC or ACC_SUPER,
+      keyRegistry.type.internalName,
+      null,
+      Types.OBJECT_TYPE.internalName,
+      null
+    )
 
     generateFields(classVisitor)
     generateStaticInitializer(classVisitor)
@@ -86,11 +88,12 @@ class KeyRegistryClassGenerator(
     for (key in keyRegistry.keys.values) {
       val field = key.field
       val fieldVisitor = classVisitor.visitField(
-          ACC_PUBLIC or ACC_STATIC or ACC_FINAL,
-          field.name,
-          field.descriptor,
-          null,
-          null)
+        ACC_PUBLIC or ACC_STATIC or ACC_FINAL,
+        field.name,
+        field.descriptor,
+        null,
+        null
+      )
       fieldVisitor.visitEnd()
     }
   }

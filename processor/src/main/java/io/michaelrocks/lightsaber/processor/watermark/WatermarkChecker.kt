@@ -37,8 +37,10 @@ class WatermarkChecker : ClassVisitor(Opcodes.ASM5) {
 
       val classReader = ClassReader(file.readBytes())
       val checker = WatermarkChecker()
-      classReader.accept(checker, arrayOf<Attribute>(LightsaberAttribute()),
-          ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES)
+      classReader.accept(
+        checker, arrayOf<Attribute>(LightsaberAttribute()),
+        ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES
+      )
       return checker.isLightsaberClass
     }
   }
@@ -46,8 +48,14 @@ class WatermarkChecker : ClassVisitor(Opcodes.ASM5) {
   var isLightsaberClass: Boolean = false
     private set
 
-  override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
-      interfaces: Array<String>?) {
+  override fun visit(
+    version: Int,
+    access: Int,
+    name: String,
+    signature: String?,
+    superName: String?,
+    interfaces: Array<String>?
+  ) {
     isLightsaberClass = false
   }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import io.michaelrocks.grip.mirrors.getMethodType
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.grip.not
+import io.michaelrocks.grip.or
 import io.michaelrocks.grip.returns
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -55,34 +56,35 @@ import org.objectweb.asm.Opcodes.ACC_SYNTHETIC
 
 interface ModuleParser {
   fun parseModule(
-      type: Type.Object,
-      providableTargets: Collection<InjectionTarget>,
-      factories: Collection<Factory>
+    type: Type.Object,
+    providableTargets: Collection<InjectionTarget>,
+    factories: Collection<Factory>
   ): Module
 }
 
 class ModuleParserImpl(
-    private val grip: Grip,
-    private val analyzerHelper: AnalyzerHelper,
-    private val errorReporter: ErrorReporter,
-    private val projectName: String
+  private val grip: Grip,
+  private val analyzerHelper: AnalyzerHelper,
+  private val errorReporter: ErrorReporter,
+  private val projectName: String
 ) : ModuleParser {
+
   private val logger = getLogger()
 
   private val bridgeRegistry = BridgeRegistry()
 
   override fun parseModule(
-      type: Type.Object,
-      providableTargets: Collection<InjectionTarget>,
-      factories: Collection<Factory>
+    type: Type.Object,
+    providableTargets: Collection<InjectionTarget>,
+    factories: Collection<Factory>
   ): Module {
     return convertToModule(grip.classRegistry.getClassMirror(type), providableTargets, factories)
   }
 
   private fun convertToModule(
-      mirror: ClassMirror,
-      providableTargets: Collection<InjectionTarget>,
-      factories: Collection<Factory>
+    mirror: ClassMirror,
+    providableTargets: Collection<InjectionTarget>,
+    factories: Collection<Factory>
   ): Module {
     if (mirror.signature.typeVariables.isNotEmpty()) {
       errorReporter.reportError("Module cannot have a type parameters: ${mirror.type.className}")
@@ -97,10 +99,11 @@ class ModuleParserImpl(
     bridgeRegistry.clear()
     mirror.methods.forEach { bridgeRegistry.reserveMethod(it.toMethodDescriptor()) }
 
+    val isProvidable = (annotatedWith(Types.PROVIDES_TYPE) or annotatedWith(Types.PROVIDE_TYPE)) and not(isStatic())
     val methodsQuery = grip select methods from mirror where
-        (annotatedWith(Types.PROVIDES_TYPE) and methodType(not(returns(Type.Primitive.Void))) and not(isStatic()))
+        (isProvidable and methodType(not(returns(Type.Primitive.Void))))
     val fieldsQuery = grip select fields from mirror where
-        (annotatedWith(Types.PROVIDES_TYPE) and not(isStatic()))
+        (isProvidable and not(isStatic()))
 
     logger.debug("Module: {}", mirror.type.className)
     val constructors = providableTargets.map { target ->
@@ -153,10 +156,10 @@ class ModuleParserImpl(
     val mirror = grip.classRegistry.getClassMirror(type)
     val providerType = getObjectTypeByInternalName("${type.internalName}\$FactoryProvider\$$projectName")
     val constructorMirror = MethodMirror.Builder()
-        .access(ACC_PUBLIC)
-        .name(MethodDescriptor.CONSTRUCTOR_NAME)
-        .type(getMethodType(Type.Primitive.Void, Types.INJECTOR_TYPE))
-        .build()
+      .access(ACC_PUBLIC)
+      .name(MethodDescriptor.CONSTRUCTOR_NAME)
+      .type(getMethodType(Type.Primitive.Void, Types.INJECTOR_TYPE))
+      .build()
     val constructorInjectee = Injectee(Dependency(GenericType.Raw(Types.INJECTOR_TYPE)), Converter.Instance)
     val injectionPoint = InjectionPoint.Method(implementationType, constructorMirror, listOf(constructorInjectee))
     val provisionPoint = ProvisionPoint.Constructor(dependency, injectionPoint)
@@ -200,9 +203,9 @@ class ModuleParserImpl(
 
   private fun createBridgeMirror(bridge: MethodDescriptor): MethodMirror {
     return MethodMirror.Builder()
-        .access(ACC_PUBLIC or ACC_SYNTHETIC)
-        .name(bridge.name)
-        .type(bridge.type)
-        .build()
+      .access(ACC_PUBLIC or ACC_SYNTHETIC)
+      .name(bridge.name)
+      .type(bridge.type)
+      .build()
   }
 }

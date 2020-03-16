@@ -23,7 +23,6 @@ import java.lang.annotation.IncompleteAnnotationException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -1204,6 +1203,7 @@ public class AnnotationBuilderTest {
   @Retention(RetentionPolicy.RUNTIME)
   @interface UninitializedAnnotation {
     String value1();
+
     String value2();
   }
 }

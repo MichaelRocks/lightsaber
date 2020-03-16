@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,15 +21,21 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.Opcodes
 
 open class WatermarkClassVisitor(
-    classVisitor: ClassVisitor,
-    private val isDirtyByDefault: Boolean
+  classVisitor: ClassVisitor,
+  private val isDirtyByDefault: Boolean
 ) : ClassVisitor(Opcodes.ASM5, classVisitor) {
 
   var isDirty: Boolean = false
   private var isAttributeAdded: Boolean = false
 
-  override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
-      interfaces: Array<String>?) {
+  override fun visit(
+    version: Int,
+    access: Int,
+    name: String,
+    signature: String?,
+    superName: String?,
+    interfaces: Array<String>?
+  ) {
     isDirty = isDirtyByDefault
     isAttributeAdded = false
     super.visit(version, access, name, signature, superName, interfaces)

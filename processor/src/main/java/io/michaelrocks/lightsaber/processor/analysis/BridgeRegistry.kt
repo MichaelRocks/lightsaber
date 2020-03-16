@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ class BridgeRegistry {
   }
 
   private tailrec fun reserveBridge(baseName: String, index: Int, type: Type.Method): MethodDescriptor {
-    val bridgeName ="$baseName\$Lightsaber\$$index"
+    val bridgeName = "$baseName\$Lightsaber\$$index"
     val bridge = MethodDescriptor(bridgeName, type)
     if (reservedMethods.add(bridge)) {
       return bridge

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,9 +29,10 @@ import java.lang.reflect.Array
 import java.util.HashSet
 
 class AnnotationCreator(
-    private val classProducer: ClassProducer,
-    private val classRegistry: ClassRegistry
+  private val classProducer: ClassProducer,
+  private val classRegistry: ClassRegistry
 ) {
+
   private val generatedAnnotationProxies = HashSet<Type.Object>()
 
   fun newAnnotation(generator: GeneratorAdapter, data: AnnotationMirror) {
@@ -43,7 +44,7 @@ class AnnotationCreator(
   }
 
   private fun composeAnnotationProxyType(annotationType: Type.Object): Type.Object =
-      getObjectTypeByInternalName(annotationType.internalName + "\$Lightsaber\$Proxy")
+    getObjectTypeByInternalName(annotationType.internalName + "\$Lightsaber\$Proxy")
 
   private fun generateAnnotationProxyClassIfNecessary(annotation: ClassMirror, annotationProxyType: Type.Object) {
     if (generatedAnnotationProxies.add(annotationProxyType)) {
@@ -53,8 +54,12 @@ class AnnotationCreator(
     }
   }
 
-  private fun constructAnnotationProxy(generator: GeneratorAdapter, annotation: ClassMirror,
-      data: AnnotationMirror, annotationProxyType: Type) {
+  private fun constructAnnotationProxy(
+    generator: GeneratorAdapter,
+    annotation: ClassMirror,
+    data: AnnotationMirror,
+    annotationProxyType: Type
+  ) {
     generator.newInstance(annotationProxyType)
     generator.dup()
 
@@ -74,6 +79,7 @@ class AnnotationCreator(
         // TODO: Check if the value class corresponds to fieldType.
         generator.visitLdcInsn(normalizeConstant(value))
       }
+
       is Type.Array -> createArray(generator, fieldType, value)
       is Type.Object -> createObject(generator, value)
       else -> throw IllegalArgumentException("Unsupported annotation field type: $fieldType")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,10 +40,11 @@ import org.objectweb.asm.Opcodes.ACC_PUBLIC
 import org.objectweb.asm.Opcodes.ACC_SYNTHETIC
 
 class ModulePatcher(
-    classVisitor: ClassVisitor,
-    private val keyRegistry: KeyRegistry,
-    private val module: Module
+  classVisitor: ClassVisitor,
+  private val keyRegistry: KeyRegistry,
+  private val module: Module
 ) : BaseInjectionClassVisitor(classVisitor) {
+
   private val providableFields: MutableSet<FieldDescriptor>
   private val providableMethods: MutableSet<MethodDescriptor>
 
@@ -61,12 +62,18 @@ class ModulePatcher(
     }
   }
 
-  override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?,
-      interfaces: Array<String>?) {
+  override fun visit(
+    version: Int,
+    access: Int,
+    name: String,
+    signature: String?,
+    superName: String?,
+    interfaces: Array<String>?
+  ) {
     val injectorConfiguratorType = LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE.internalName
     if (interfaces == null || injectorConfiguratorType !in interfaces) {
       val newInterfaces =
-          if (interfaces == null) arrayOf(injectorConfiguratorType) else interfaces + injectorConfiguratorType
+        if (interfaces == null) arrayOf(injectorConfiguratorType) else interfaces + injectorConfiguratorType
       super.visit(version, access, name, signature, superName, newInterfaces)
       isDirty = true
     } else {
@@ -152,6 +159,6 @@ class ModulePatcher(
 
   companion object {
     private val CONFIGURE_INJECTOR_METHOD =
-        MethodDescriptor.forMethod("configureInjector", Type.Primitive.Void, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE)
+      MethodDescriptor.forMethod("configureInjector", Type.Primitive.Void, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE)
   }
 }

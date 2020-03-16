@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,74 +74,6 @@ import java.lang.reflect.Proxy
 import java.util.TreeMap
 
 class AnnotationProxyGeneratorTest {
-  companion object {
-    @field:EmptyAnnotation
-    @field:BooleanAnnotation
-    @field:ByteAnnotation
-    @field:CharAnnotation
-    @field:FloatAnnotation
-    @field:DoubleAnnotation
-    @field:IntAnnotation
-    @field:LongAnnotation
-    @field:ShortAnnotation
-    @field:StringAnnotation
-    @field:EnumAnnotation
-    @field:ClassAnnotation
-    @field:AnnotationAnnotation
-    @field:BooleanArrayAnnotation
-    @field:ByteArrayAnnotation
-    @field:CharArrayAnnotation
-    @field:FloatArrayAnnotation
-    @field:DoubleArrayAnnotation
-    @field:IntArrayAnnotation
-    @field:LongArrayAnnotation
-    @field:ShortArrayAnnotation
-    @field:StringArrayAnnotation
-    @field:EnumArrayAnnotation
-    @field:ClassArrayAnnotation
-    @field:AnnotationArrayAnnotation
-    @field:CompositeAnnotation
-    private val ANNOTATION_HOLDER = Object()
-
-    private fun getAnnotationProxyClassName(annotationClass: Class<out Annotation>): String {
-      return annotationClass.simpleName + "Proxy"
-    }
-
-    private fun getAnnotationDescriptor(annotationClass: Class<out Annotation>): ClassMirror {
-      val orderedMethods = TreeMap<Int, Method>()
-      for (method in annotationClass.declaredMethods) {
-        val orderAnnotation = method.getAnnotation(Order::class.java)
-        val order = if (orderAnnotation == null) 0 else orderAnnotation.value
-        val oldMethod = orderedMethods.put(order, method)
-        assertNull("Method order must be distinct", oldMethod)
-      }
-
-      return ClassMirror.Builder()
-          .name(annotationClass.internalName)
-          .run {
-            for (method in orderedMethods.values) {
-              addMethod(
-                  MethodMirror.Builder()
-                      .name(method.name)
-                      .type(getMethodType(method.returnType.toType()))
-                      .build()
-              )
-            }
-            build()
-          }
-    }
-
-    private fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T {
-      for (annotation in AnnotationProxyGeneratorTest::class.java.getDeclaredField("ANNOTATION_HOLDER").annotations) {
-        if (annotation.annotationClass.java == annotationClass) {
-          return annotationClass.cast(annotation)
-        }
-      }
-      fail("Annotation for class $annotationClass not found")
-      throw RuntimeException()
-    }
-  }
-
   private lateinit var classLoader: ArrayClassLoader
 
   @Before
@@ -320,30 +252,31 @@ class AnnotationProxyGeneratorTest {
   @Test
   fun testCompositeAnnotation() {
     assertAnnotationEquals<CompositeAnnotation>(
-        true,
-        42.toByte(),
-        'x',
-        2.7182818284590452354f,
-        3.14159265358979323846,
-        42,
-        42L,
-        42.toShort(),
-        "Value",
-        RetentionPolicy.RUNTIME,
-        Any::class.java,
-        createAnnotationProxy<IntAnnotation>(42),
-        booleanArrayOf(true),
-        byteArrayOf(42.toByte()),
-        charArrayOf('x'),
-        floatArrayOf(2.7182818284590452354f),
-        doubleArrayOf(3.14159265358979323846),
-        intArrayOf(42),
-        longArrayOf(42L),
-        shortArrayOf(42.toShort()),
-        arrayOf("Value"),
-        arrayOf(RetentionPolicy.RUNTIME),
-        arrayOf<Class<*>>(Any::class.java),
-        arrayOf(createAnnotationProxy<IntAnnotation>(42)))
+      true,
+      42.toByte(),
+      'x',
+      2.7182818284590452354f,
+      3.14159265358979323846,
+      42,
+      42L,
+      42.toShort(),
+      "Value",
+      RetentionPolicy.RUNTIME,
+      Any::class.java,
+      createAnnotationProxy<IntAnnotation>(42),
+      booleanArrayOf(true),
+      byteArrayOf(42.toByte()),
+      charArrayOf('x'),
+      floatArrayOf(2.7182818284590452354f),
+      doubleArrayOf(3.14159265358979323846),
+      intArrayOf(42),
+      longArrayOf(42L),
+      shortArrayOf(42.toShort()),
+      arrayOf("Value"),
+      arrayOf(RetentionPolicy.RUNTIME),
+      arrayOf<Class<*>>(Any::class.java),
+      arrayOf(createAnnotationProxy<IntAnnotation>(42))
+    )
   }
 
   @Test
@@ -357,30 +290,31 @@ class AnnotationProxyGeneratorTest {
   @Test
   fun testCompositeToString() {
     val annotation = createAnnotationProxy<CompositeAnnotation>(
-        true,
-        42.toByte(),
-        'x',
-        Float.NaN,
-        Double.POSITIVE_INFINITY,
-        42,
-        42L,
-        42.toShort(),
-        "Value",
-        RetentionPolicy.RUNTIME,
-        Any::class.java,
-        createAnnotationProxy<IntAnnotation>(42),
-        booleanArrayOf(true, false),
-        byteArrayOf(42, 43),
-        charArrayOf('x', 'y'),
-        floatArrayOf(Float.NaN, Float.POSITIVE_INFINITY),
-        doubleArrayOf(Double.POSITIVE_INFINITY, Double.NaN),
-        intArrayOf(42, 43),
-        longArrayOf(42L, 43L),
-        shortArrayOf(42, 43),
-        arrayOf("Value1", "Value2"),
-        arrayOf(RetentionPolicy.RUNTIME, RetentionPolicy.CLASS),
-        arrayOf<Class<*>>(Any::class.java),
-        arrayOf(createAnnotationProxy<IntAnnotation>(42), createAnnotationProxy(43)))
+      true,
+      42.toByte(),
+      'x',
+      Float.NaN,
+      Double.POSITIVE_INFINITY,
+      42,
+      42L,
+      42.toShort(),
+      "Value",
+      RetentionPolicy.RUNTIME,
+      Any::class.java,
+      createAnnotationProxy<IntAnnotation>(42),
+      booleanArrayOf(true, false),
+      byteArrayOf(42, 43),
+      charArrayOf('x', 'y'),
+      floatArrayOf(Float.NaN, Float.POSITIVE_INFINITY),
+      doubleArrayOf(Double.POSITIVE_INFINITY, Double.NaN),
+      intArrayOf(42, 43),
+      longArrayOf(42L, 43L),
+      shortArrayOf(42, 43),
+      arrayOf("Value1", "Value2"),
+      arrayOf(RetentionPolicy.RUNTIME, RetentionPolicy.CLASS),
+      arrayOf<Class<*>>(Any::class.java),
+      arrayOf(createAnnotationProxy<IntAnnotation>(42), createAnnotationProxy(43))
+    )
 
     val expected = "@${CompositeAnnotation::class.java.name}(" +
         "booleanValue=true, " +
@@ -466,8 +400,11 @@ class AnnotationProxyGeneratorTest {
     }
     @Suppress("UNCHECKED_CAST")
     val annotationProxyClass = classLoader.loadClass(annotationProxyClassName) as Class<T>
-    assertEquals("Annotation proxy must have the only constructor",
-        1, annotationProxyClass.declaredConstructors.size.toLong())
+    assertEquals(
+      "Annotation proxy must have the only constructor",
+      1,
+      annotationProxyClass.declaredConstructors.size.toLong()
+    )
     @Suppress("UNCHECKED_CAST")
     val constructor = annotationProxyClass.declaredConstructors[0] as Constructor<T>
     return constructor.newInstance(*values)
@@ -490,5 +427,73 @@ class AnnotationProxyGeneratorTest {
   }
 
   private inline fun <reified T : Any> newProxyInstance(handler: InvocationHandler): T =
-      Proxy.newProxyInstance(T::class.java.classLoader, arrayOf(T::class.java), handler) as T
+    Proxy.newProxyInstance(T::class.java.classLoader, arrayOf(T::class.java), handler) as T
+
+  companion object {
+    @field:EmptyAnnotation
+    @field:BooleanAnnotation
+    @field:ByteAnnotation
+    @field:CharAnnotation
+    @field:FloatAnnotation
+    @field:DoubleAnnotation
+    @field:IntAnnotation
+    @field:LongAnnotation
+    @field:ShortAnnotation
+    @field:StringAnnotation
+    @field:EnumAnnotation
+    @field:ClassAnnotation
+    @field:AnnotationAnnotation
+    @field:BooleanArrayAnnotation
+    @field:ByteArrayAnnotation
+    @field:CharArrayAnnotation
+    @field:FloatArrayAnnotation
+    @field:DoubleArrayAnnotation
+    @field:IntArrayAnnotation
+    @field:LongArrayAnnotation
+    @field:ShortArrayAnnotation
+    @field:StringArrayAnnotation
+    @field:EnumArrayAnnotation
+    @field:ClassArrayAnnotation
+    @field:AnnotationArrayAnnotation
+    @field:CompositeAnnotation
+    private val ANNOTATION_HOLDER = Object()
+
+    private fun getAnnotationProxyClassName(annotationClass: Class<out Annotation>): String {
+      return annotationClass.simpleName + "Proxy"
+    }
+
+    private fun getAnnotationDescriptor(annotationClass: Class<out Annotation>): ClassMirror {
+      val orderedMethods = TreeMap<Int, Method>()
+      for (method in annotationClass.declaredMethods) {
+        val orderAnnotation = method.getAnnotation(Order::class.java)
+        val order = if (orderAnnotation == null) 0 else orderAnnotation.value
+        val oldMethod = orderedMethods.put(order, method)
+        assertNull("Method order must be distinct", oldMethod)
+      }
+
+      return ClassMirror.Builder()
+        .name(annotationClass.internalName)
+        .run {
+          for (method in orderedMethods.values) {
+            addMethod(
+              MethodMirror.Builder()
+                .name(method.name)
+                .type(getMethodType(method.returnType.toType()))
+                .build()
+            )
+          }
+          build()
+        }
+    }
+
+    private fun <T : Annotation> getAnnotation(annotationClass: Class<T>): T {
+      for (annotation in AnnotationProxyGeneratorTest::class.java.getDeclaredField("ANNOTATION_HOLDER").annotations) {
+        if (annotation.annotationClass.java == annotationClass) {
+          return annotationClass.cast(annotation)
+        }
+      }
+      fail("Annotation for class $annotationClass not found")
+      throw RuntimeException()
+    }
+  }
 }

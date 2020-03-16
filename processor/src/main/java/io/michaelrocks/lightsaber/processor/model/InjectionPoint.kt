@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,14 +24,14 @@ sealed class InjectionPoint {
   abstract val containerType: Type.Object
 
   data class Method(
-      override val containerType: Type.Object,
-      val method: MethodMirror,
-      val injectees: List<Injectee>
+    override val containerType: Type.Object,
+    val method: MethodMirror,
+    val injectees: List<Injectee>
   ) : InjectionPoint()
 
   data class Field(
-      override val containerType: Type.Object,
-      val field: FieldMirror,
-      val injectee: Injectee
+    override val containerType: Type.Object,
+    val field: FieldMirror,
+    val injectee: Injectee
   ) : InjectionPoint()
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,6 @@ import io.michaelrocks.grip.mirrors.AnnotationMirror
 import io.michaelrocks.grip.mirrors.signature.GenericType
 
 data class Dependency(
-    val type: GenericType,
-    val qualifier: AnnotationMirror? = null
+  val type: GenericType,
+  val qualifier: AnnotationMirror? = null
 )

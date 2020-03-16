@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,9 +42,9 @@ interface AnalyzerHelper {
 }
 
 class AnalyzerHelperImpl(
-    private val classRegistry: ClassRegistry,
-    private val scopeRegistry: ScopeRegistry,
-    private val errorReporter: ErrorReporter
+  private val classRegistry: ClassRegistry,
+  private val scopeRegistry: ScopeRegistry,
+  private val errorReporter: ErrorReporter
 ) : AnalyzerHelper {
 
   override fun convertToInjectionPoint(method: MethodMirror, container: Type.Object): InjectionPoint.Method {
@@ -59,20 +59,20 @@ class AnalyzerHelperImpl(
     return ArrayList<Injectee>(parameters.size).apply {
       parameters.forEachIndexed { index, parameter ->
         val type = signature.parameterTypes[index]
-        val qualifier = findQualifier(parameter)
-        add(type.toInjectee(qualifier))
+        add(newInjectee(type, parameter))
       }
     }
   }
 
   private fun FieldMirror.getInjectee(): Injectee {
-    return signature.type.toInjectee(findQualifier(this))
+    return newInjectee(signature.type, this)
   }
 
-  private fun GenericType.toInjectee(qualifier: AnnotationMirror?): Injectee {
-    val dependency = toDependency(qualifier)
-    val converter = getConverter()
-    return Injectee(dependency, converter)
+  private fun newInjectee(type: GenericType, holder: Annotated): Injectee {
+    val qualifier = findQualifier(holder)
+    val dependency = type.toDependency(qualifier)
+    val converter = type.getConverter()
+    return Injectee(dependency, converter, holder.annotations)
   }
 
   private fun GenericType.getConverter(): Converter {
@@ -122,6 +122,7 @@ class AnalyzerHelperImpl(
     return when (scopeProviders.size) {
       0 -> Scope.None
       1 -> Scope.Class(scopeProviders[0])
+
       else -> {
         errorReporter.reportError("Element $this has multiple scopes: $scopeProviders")
         Scope.None

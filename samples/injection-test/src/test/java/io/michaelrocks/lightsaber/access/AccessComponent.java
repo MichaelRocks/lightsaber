@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 package io.michaelrocks.lightsaber.access;
 
 import io.michaelrocks.lightsaber.Component;
-import io.michaelrocks.lightsaber.Provides;
+import io.michaelrocks.lightsaber.Import;
 
 @Component
 class AccessComponent {
-  @Provides
-  private AccessModule provideAccessModule() {
+  @Import
+  private AccessModule importAccessModule() {
     return new AccessModule();
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,19 +28,19 @@ import kotlin.reflect.KClass
 
 private val MAX_VISITOR_COUNT = 3
 private val EMPTIES_PERMUTATIONS = arrayOf(
-    booleanArrayOf(),
-    booleanArrayOf(true),
-    booleanArrayOf(false),
-    booleanArrayOf(true, true),
-    booleanArrayOf(false, true),
-    booleanArrayOf(true, false),
-    booleanArrayOf(false, false),
-    booleanArrayOf(true, true, true),
-    booleanArrayOf(true, true, false),
-    booleanArrayOf(true, false, true),
-    booleanArrayOf(false, true, true),
-    booleanArrayOf(true, false, false),
-    booleanArrayOf(false, false, false)
+  booleanArrayOf(),
+  booleanArrayOf(true),
+  booleanArrayOf(false),
+  booleanArrayOf(true, true),
+  booleanArrayOf(false, true),
+  booleanArrayOf(true, false),
+  booleanArrayOf(false, false),
+  booleanArrayOf(true, true, true),
+  booleanArrayOf(true, true, false),
+  booleanArrayOf(true, false, true),
+  booleanArrayOf(false, true, true),
+  booleanArrayOf(true, false, false),
+  booleanArrayOf(false, false, false)
 )
 
 fun <T, V> verifyMethodInvocations(compositeVisitorClass: KClass<T>, action: V.() -> Any?)
@@ -76,31 +76,44 @@ private fun <T, V> verifyMethodInvocation(compositeVisitor: T, action: V.() -> A
 }
 
 inline fun <reified T, R, V> verifyCompositeMethodInvocations(
-    noinline action: V.() -> R, noinline innerAction: R.() -> Any?)
+  noinline action: V.() -> R,
+  noinline innerAction: R.() -> Any?
+)
     where T : CompositeVisitor<V>, V : Any {
   verifyCompositeMethodInvocations(T::class.java, action, innerAction)
 }
 
-fun <T, R, V> verifyCompositeMethodInvocations(compositeVisitorClass: KClass<T>, action: V.() -> R,
-    innerAction: R.() -> Any?)
+fun <T, R, V> verifyCompositeMethodInvocations(
+  compositeVisitorClass: KClass<T>,
+  action: V.() -> R,
+  innerAction: R.() -> Any?
+)
     where T : CompositeVisitor<V>, V : Any {
   verifyCompositeMethodInvocations(compositeVisitorClass.java, action, innerAction)
 }
 
-fun <T, R, V> verifyCompositeMethodInvocations(compositeVisitorClass: Class<T>, action: V.() -> R,
-    innerAction: R.() -> Any?)
+fun <T, R, V> verifyCompositeMethodInvocations(
+  compositeVisitorClass: Class<T>,
+  action: V.() -> R,
+  innerAction: R.() -> Any?
+)
     where T : CompositeVisitor<V>, V : Any {
   for (empties in EMPTIES_PERMUTATIONS) {
     verifyCompositeMethodInvocation(compositeVisitorClass.newInstance(), action, innerAction, empties)
   }
 }
 
-private fun <T, R, V> verifyCompositeMethodInvocation(compositeVisitor: T,
-    action: V.() -> R, innerAction: R.() -> Any?, empties: BooleanArray)
+private fun <T, R, V> verifyCompositeMethodInvocation(
+  compositeVisitor: T,
+  action: V.() -> R,
+  innerAction: R.() -> Any?,
+  empties: BooleanArray
+)
     where T : CompositeVisitor<V>, V : Any {
   val visitors = ArrayList<V>(empties.size)
   for (empty in empties) {
     val answer = if (empty) RETURNS_DEFAULTS else RETURNS_DEEP_STUBS
+
     @Suppress("UNCHECKED_CAST")
     val visitor = mock(compositeVisitor.javaClass.superclass as Class<V>, answer)
     visitors.add(visitor)

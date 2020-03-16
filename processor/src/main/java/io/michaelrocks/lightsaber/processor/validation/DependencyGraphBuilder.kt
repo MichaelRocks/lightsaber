@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,10 @@ import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.Module
 
 class DependencyGraphBuilder(
-    private val context: InjectionContext,
-    private val includeDependenciesOnlyWithInstanceConverter: Boolean = false
+  private val context: InjectionContext,
+  private val includeDependenciesOnlyWithInstanceConverter: Boolean = false
 ) {
+
   private val graph = HashDirectedGraph<Dependency>()
 
   init {

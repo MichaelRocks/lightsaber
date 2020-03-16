@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2019 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,10 @@ import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import org.objectweb.asm.Opcodes
 
 class SanityChecker(
-    private val classRegistry: ClassRegistry,
-    private val errorReporter: ErrorReporter
+  private val classRegistry: ClassRegistry,
+  private val errorReporter: ErrorReporter
 ) {
+
   fun performSanityChecks(context: InjectionContext) {
     checkStaticInjectionPoints(context)
     checkProvidableTargetsAreConstructable(context)
@@ -46,9 +47,9 @@ class SanityChecker(
       injectableTarget.injectionPoints.forEach { injectionPoint ->
         when (injectionPoint) {
           is InjectionPoint.Field ->
-              if (injectionPoint.field.isStatic) {
-                errorReporter.reportError("Static field injection is not supported yet: " + injectionPoint.field)
-              }
+            if (injectionPoint.field.isStatic) {
+              errorReporter.reportError("Static field injection is not supported yet: " + injectionPoint.field)
+            }
           is InjectionPoint.Method ->
             if (injectionPoint.method.isStatic) {
               errorReporter.reportError("Static method injection is not supported yet: " + injectionPoint.method)
@@ -87,7 +88,8 @@ class SanityChecker(
   private fun checkProvidableTargetAccessFlagNotSet(mirror: ClassMirror, flag: Int) {
     if ((mirror.access and flag) != 0) {
       errorReporter.reportError(
-          "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${mirror.type}")
+        "Providable class cannot be ${AccessFlagStringifier.classAccessFlagToString(flag)}: ${mirror.type}"
+      )
     }
   }
 

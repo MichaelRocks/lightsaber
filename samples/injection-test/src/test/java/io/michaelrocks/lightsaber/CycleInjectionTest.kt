@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,40 +58,43 @@ class CycleInjectionTest {
 
   @Component
   private class CycleComponent {
-    @Provides
-    fun provideCycleModule(): CycleModule = CycleModule()
+
+    @Import
+    fun importCycleModule(): CycleModule = CycleModule()
   }
 
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class CycleTarget1 @Inject constructor(
-      val cycleTarget2: CycleTarget2
+    val cycleTarget2: CycleTarget2
   )
 
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class CycleTarget2 @Inject constructor(
-      val cycleTarget1Provider: Provider<CycleTarget1>,
-      val cycleTarget1Lazy: Lazy<CycleTarget1>
+    val cycleTarget1Provider: Provider<CycleTarget1>,
+    val cycleTarget1Lazy: Lazy<CycleTarget1>
   )
 
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class FieldCycleTarget1 @Inject constructor() {
+
     @Inject val fieldCycleTarget2: FieldCycleTarget2 = inject()
   }
 
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class FieldCycleTarget2 @Inject constructor() {
+
     @Inject val fieldCycleTarget1Provider: Provider<FieldCycleTarget1> = inject()
     @Inject val fieldCycleTarget1Lazy: Lazy<FieldCycleTarget1> = inject()
   }
 
-
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class MethodCycleTarget1 @Inject constructor() {
+
     @set:Inject
     lateinit var methodCycleTarget2: MethodCycleTarget2
   }
@@ -99,8 +102,10 @@ class CycleInjectionTest {
   @ProvidedBy(CycleModule::class)
   @Singleton
   private class MethodCycleTarget2 @Inject constructor() {
+
     @set:Inject
     lateinit var methodCycleTarget1Provider: Provider<MethodCycleTarget1>
+
     @set:Inject
     lateinit var methodCycleTarget1Lazy: Lazy<MethodCycleTarget1>
   }
