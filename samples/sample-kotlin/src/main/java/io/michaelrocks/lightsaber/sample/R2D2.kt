@@ -26,7 +26,7 @@ internal class R2D2 @Factory.Inject private constructor(
 ) : Droid {
 
   override fun repair() {
-    System.out.println("BEEP BEEP BEEEEEP")
+    println("BEEP BEEP BEEEEEP")
   }
 
   override fun toString(): String {

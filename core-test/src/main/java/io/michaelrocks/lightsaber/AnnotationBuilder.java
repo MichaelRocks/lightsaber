@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,10 +138,10 @@ public class AnnotationBuilder<T extends Annotation> {
   public T build() {
     return AccessController.doPrivileged(
         new PrivilegedAction<T>() {
+          @SuppressWarnings("unchecked")
           public T run() {
             final Map<String, ?> explicitValues = values == null ? Collections.<String, Object>emptyMap() : values;
             final InvocationHandler handler = new AnnotationInvocationHandler(annotationClass, explicitValues);
-            // noinspection unchecked
             return (T) Proxy.newProxyInstance(annotationClass.getClassLoader(), new Class<?>[] { annotationClass }, handler);
           }
         }
