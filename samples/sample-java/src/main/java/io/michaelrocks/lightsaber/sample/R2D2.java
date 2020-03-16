@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ public class R2D2 implements Droid {
   private final String color;
 
   @Factory.Inject
-  public R2D2(final Body body, final String color) {
+  public R2D2(final Body body, @Factory.Parameter final String color) {
     this.body = body;
     this.color = color;
   }
