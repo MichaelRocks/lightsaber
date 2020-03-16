@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,20 +59,20 @@ class AnalyzerHelperImpl(
     return ArrayList<Injectee>(parameters.size).apply {
       parameters.forEachIndexed { index, parameter ->
         val type = signature.parameterTypes[index]
-        val qualifier = findQualifier(parameter)
-        add(type.toInjectee(qualifier))
+        add(newInjectee(type, parameter))
       }
     }
   }
 
   private fun FieldMirror.getInjectee(): Injectee {
-    return signature.type.toInjectee(findQualifier(this))
+    return newInjectee(signature.type, this)
   }
 
-  private fun GenericType.toInjectee(qualifier: AnnotationMirror?): Injectee {
-    val dependency = toDependency(qualifier)
-    val converter = getConverter()
-    return Injectee(dependency, converter)
+  private fun newInjectee(type: GenericType, holder: Annotated): Injectee {
+    val qualifier = findQualifier(holder)
+    val dependency = type.toDependency(qualifier)
+    val converter = type.getConverter()
+    return Injectee(dependency, converter, holder.annotations)
   }
 
   private fun GenericType.getConverter(): Converter {

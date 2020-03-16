@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,41 @@
 
 package io.michaelrocks.lightsaber.processor.model
 
+import io.michaelrocks.grip.mirrors.Annotated
+import io.michaelrocks.grip.mirrors.AnnotationCollection
+import io.michaelrocks.grip.mirrors.AnnotationMirror
+import io.michaelrocks.grip.mirrors.Type
+
 data class Injectee(
   val dependency: Dependency,
-  val converter: Converter
-)
+  val converter: Converter,
+  override val annotations: AnnotationCollection = EmptyAnnotationCollection
+) : Annotated {
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (javaClass != other?.javaClass) return false
+
+    other as Injectee
+
+    if (dependency != other.dependency) return false
+    if (converter != other.converter) return false
+
+    return true
+  }
+
+  override fun hashCode(): Int {
+    var result = dependency.hashCode()
+    result = 31 * result + converter.hashCode()
+    return result
+  }
+
+  override fun toString(): String {
+    return "Injectee(dependency=$dependency, converter=$converter)"
+  }
+
+  private object EmptyAnnotationCollection : AnnotationCollection, Collection<AnnotationMirror> by emptyList() {
+    override fun contains(type: Type.Object): Boolean = false
+    override fun get(type: Type.Object): AnnotationMirror? = null
+  }
+}
