@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ object Types {
   val SINGLETON_TYPE = getObjectType<Singleton>()
   val FACTORY_TYPE = getObjectType<Factory>()
   val FACTORY_INJECT_TYPE = getObjectType<Factory.Inject>()
+  val FACTORY_PARAMETER_TYPE = getObjectType<Factory.Parameter>()
   val INJECTOR_TYPE = getObjectType<Injector>()
   val PROVIDER_TYPE = getObjectType<Provider<*>>()
   val LAZY_TYPE = getObjectType<Lazy<*>>()

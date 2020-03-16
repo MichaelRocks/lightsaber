@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,12 +130,19 @@ class FactoriesAnalyzerImpl(
     val constructor = dependencyConstructors.single()
     val constructorInjectionPoint = analyzerHelper.convertToInjectionPoint(constructor, mirror.type)
 
-    val factoryInjectees = constructorInjectionPoint.injectees.map { injectee ->
-      val argumentIndex = argumentIndexToInjecteeMap[injectee]
-      if (argumentIndex == null) {
-        FactoryInjectee.FromInjector(injectee)
+    val factoryInjectees = constructorInjectionPoint.injectees.mapNotNull { injectee ->
+      if (Types.FACTORY_PARAMETER_TYPE in injectee.annotations) {
+        val argumentIndex = argumentIndexToInjecteeMap[injectee]
+        if (argumentIndex == null) {
+          val dependencyClassName = dependencyMirror.type.className
+          val factoryClassName = mirror.type.className
+          error("Class $dependencyClassName contains a @Factory.Parameter not provided by factory $factoryClassName: ${injectee.dependency}")
+          null
+        } else {
+          FactoryInjectee.FromMethod(injectee, argumentIndex)
+        }
       } else {
-        FactoryInjectee.FromMethod(injectee, argumentIndex)
+        FactoryInjectee.FromInjector(injectee)
       }
     }
 
