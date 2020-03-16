@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -192,14 +192,10 @@ class Validator(
     shouldBeResolved: Boolean
   ) {
     val isResolved = dependency.boxed() in resolvedDependencies
-    if (isResolved != shouldBeResolved) {
+    if (!isResolved && shouldBeResolved) {
       val factoryName = factory.type.className
       val componentName = component.type.className
-      if (shouldBeResolved) {
-        errorReporter.reportError("Unresolved dependency $dependency in factory $factoryName in component $componentName")
-      } else {
-        errorReporter.reportError("Ambiguous dependency $dependency in factory $factoryName in component $componentName")
-      }
+      errorReporter.reportError("Unresolved dependency $dependency in factory $factoryName in component $componentName")
     }
   }
 

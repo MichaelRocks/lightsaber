@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,25 +111,65 @@ class FactoryInjectionTest {
     assertArrayEquals(arrayOf("Annotated", "String"), target.annotatedStringArray)
     assertEquals(listOf(Int.MAX_VALUE), target.annotatedIntList)
     assertEquals(listOf("Annotated", "String"), target.annotatedStringList)
+    assertEquals(true, target.injectedDefaultBoolean)
+    assertEquals(42.toByte(), target.injectedDefaultByte)
+    assertEquals('x', target.injectedDefaultChar)
+    assertEquals(Double.NaN, target.injectedDefaultDouble, Double.MIN_VALUE)
+    assertEquals(Float.NaN, target.injectedDefaultFloat, Float.MIN_VALUE)
+    assertEquals(42, target.injectedDefaultInt)
+    assertEquals(42L, target.injectedDefaultLong)
+    assertEquals(42.toShort(), target.injectedDefaultShort)
+    assertEquals("Default", target.injectedDefaultString)
+    assertArrayEquals(booleanArrayOf(true, false), target.injectedDefaultBooleanArray)
+    assertArrayEquals(byteArrayOf(42), target.injectedDefaultByteArray)
+    assertArrayEquals(charArrayOf('x'), target.injectedDefaultCharArray)
+    assertArrayEquals(doubleArrayOf(Double.NaN), target.injectedDefaultDoubleArray, Double.MIN_VALUE)
+    assertArrayEquals(floatArrayOf(Float.NaN), target.injectedDefaultFloatArray, Float.MIN_VALUE)
+    assertArrayEquals(intArrayOf(42), target.injectedDefaultIntArray)
+    assertArrayEquals(longArrayOf(42L), target.injectedDefaultLongArray)
+    assertArrayEquals(shortArrayOf(42), target.injectedDefaultShortArray)
+    assertArrayEquals(arrayOf("Default", "String"), target.injectedDefaultStringArray)
+    assertEquals(listOf(42), target.injectedDefaultIntList)
+    assertEquals(listOf("Default", "String"), target.injectedDefaultStringList)
+    assertEquals(false, target.injectedAnnotatedBoolean)
+    assertEquals(43.toByte(), target.injectedAnnotatedByte)
+    assertEquals('y', target.injectedAnnotatedChar)
+    assertEquals(Double.MAX_VALUE, target.injectedAnnotatedDouble, Double.MIN_VALUE)
+    assertEquals(Float.MAX_VALUE, target.injectedAnnotatedFloat, Float.MIN_VALUE)
+    assertEquals(43, target.injectedAnnotatedInt)
+    assertEquals(43L, target.injectedAnnotatedLong)
+    assertEquals(43.toShort(), target.injectedAnnotatedShort)
+    assertEquals("Annotated", target.injectedAnnotatedString)
+    assertArrayEquals(booleanArrayOf(false, true), target.injectedAnnotatedBooleanArray)
+    assertArrayEquals(byteArrayOf(43), target.injectedAnnotatedByteArray)
+    assertArrayEquals(charArrayOf('y'), target.injectedAnnotatedCharArray)
+    assertArrayEquals(doubleArrayOf(Double.MAX_VALUE), target.injectedAnnotatedDoubleArray, Double.MIN_VALUE)
+    assertArrayEquals(floatArrayOf(Float.MAX_VALUE), target.injectedAnnotatedFloatArray, Float.MIN_VALUE)
+    assertArrayEquals(intArrayOf(43), target.injectedAnnotatedIntArray)
+    assertArrayEquals(longArrayOf(43L), target.injectedAnnotatedLongArray)
+    assertArrayEquals(shortArrayOf(43), target.injectedAnnotatedShortArray)
+    assertArrayEquals(arrayOf("Annotated", "String"), target.injectedAnnotatedStringArray)
+    assertEquals(listOf(43), target.injectedAnnotatedIntList)
+    assertEquals(listOf("Annotated", "String"), target.injectedAnnotatedStringList)
     assertEquals(true, target.injectedBoolean)
-    assertEquals(42.toByte(), target.injectedByte)
-    assertEquals('x', target.injectedChar)
-    assertEquals(Double.NaN, target.injectedDouble, Double.MIN_VALUE)
-    assertEquals(Float.NaN, target.injectedFloat, Float.MIN_VALUE)
-    assertEquals(42, target.injectedInt)
-    assertEquals(42L, target.injectedLong)
-    assertEquals(42.toShort(), target.injectedShort)
+    assertEquals(44.toByte(), target.injectedByte)
+    assertEquals('z', target.injectedChar)
+    assertEquals(Double.MIN_VALUE, target.injectedDouble, Double.MIN_VALUE)
+    assertEquals(Float.MIN_VALUE, target.injectedFloat, Float.MIN_VALUE)
+    assertEquals(44, target.injectedInt)
+    assertEquals(44L, target.injectedLong)
+    assertEquals(44.toShort(), target.injectedShort)
     assertEquals("Injected", target.injectedString)
-    assertArrayEquals(booleanArrayOf(true, false), target.injectedBooleanArray)
-    assertArrayEquals(byteArrayOf(42), target.injectedByteArray)
-    assertArrayEquals(charArrayOf('x'), target.injectedCharArray)
-    assertArrayEquals(doubleArrayOf(Double.NaN), target.injectedDoubleArray, Double.MIN_VALUE)
-    assertArrayEquals(floatArrayOf(Float.NaN), target.injectedFloatArray, Float.MIN_VALUE)
-    assertArrayEquals(intArrayOf(42), target.injectedIntArray)
-    assertArrayEquals(longArrayOf(42L), target.injectedLongArray)
-    assertArrayEquals(shortArrayOf(42), target.injectedShortArray)
+    assertArrayEquals(booleanArrayOf(true, true), target.injectedBooleanArray)
+    assertArrayEquals(byteArrayOf(44), target.injectedByteArray)
+    assertArrayEquals(charArrayOf('z'), target.injectedCharArray)
+    assertArrayEquals(doubleArrayOf(Double.MIN_VALUE), target.injectedDoubleArray, Double.MIN_VALUE)
+    assertArrayEquals(floatArrayOf(Float.MIN_VALUE), target.injectedFloatArray, Float.MIN_VALUE)
+    assertArrayEquals(intArrayOf(44), target.injectedIntArray)
+    assertArrayEquals(longArrayOf(44L), target.injectedLongArray)
+    assertArrayEquals(shortArrayOf(44), target.injectedShortArray)
     assertArrayEquals(arrayOf("Injected", "String"), target.injectedStringArray)
-    assertEquals(listOf(42), target.injectedIntList)
+    assertEquals(listOf(44), target.injectedIntList)
     assertEquals(listOf("Injected", "String"), target.injectedStringList)
   }
 
@@ -165,84 +205,224 @@ class FactoryInjectionTest {
   private class ParentFactoryModule {
 
     @Provide
-    @Named("Injected")
     private fun provideBoolean(): Boolean = true
 
     @Provide
-    @Named("Injected")
     private fun provideByte(): Byte = 42
 
     @Provide
-    @Named("Injected")
     private fun provideChar(): Char = 'x'
 
     @Provide
-    @Named("Injected")
     private fun provideDouble(): Double = Double.NaN
 
     @Provide
-    @Named("Injected")
     private fun provideFloat(): Float = Float.NaN
 
     @Provide
-    @Named("Injected")
     private fun provideInt(): Int = 42
 
     @Provide
-    @Named("Injected")
     private fun provideLong(): Long = 42L
 
     @Provide
-    @Named("Injected")
     private fun provideShort(): Short = 42
 
     @Provide
-    @Named("Injected")
-    private fun provideString(): String = "Injected"
+    private fun provideString(): String = "Default"
 
     @Provide
-    @Named("Injected")
     private fun provideBooleanArray(): BooleanArray = booleanArrayOf(true, false)
 
     @Provide
-    @Named("Injected")
     private fun provideByteArray(): ByteArray = byteArrayOf(42)
 
     @Provide
-    @Named("Injected")
     private fun provideCharArray(): CharArray = charArrayOf('x')
 
     @Provide
-    @Named("Injected")
     private fun provideDoubleArray(): DoubleArray = doubleArrayOf(Double.NaN)
 
     @Provide
-    @Named("Injected")
     private fun provideFloatArray(): FloatArray = floatArrayOf(Float.NaN)
 
     @Provide
-    @Named("Injected")
     private fun provideIntArray(): IntArray = intArrayOf(42)
 
     @Provide
-    @Named("Injected")
     private fun provideLongArray(): LongArray = longArrayOf(42L)
 
     @Provide
-    @Named("Injected")
     private fun provideShortArray(): ShortArray = shortArrayOf(42)
 
     @Provide
-    @Named("Injected")
-    private fun provideStringArray(): Array<String> = arrayOf("Injected", "String")
+    private fun provideStringArray(): Array<String> = arrayOf("Default", "String")
 
     @Provide
-    @Named("Injected")
     private fun provideIntList(): List<Int> = listOf(42)
 
     @Provide
+    private fun provideStringList(): List<String> = listOf("Default", "String")
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedBoolean(): Boolean = false
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedByte(): Byte = 43
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedChar(): Char = 'y'
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedDouble(): Double = Double.MAX_VALUE
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedFloat(): Float = Float.MAX_VALUE
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedInt(): Int = 43
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedLong(): Long = 43L
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedShort(): Short = 43
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedString(): String = "Annotated"
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedBooleanArray(): BooleanArray = booleanArrayOf(false, true)
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedByteArray(): ByteArray = byteArrayOf(43)
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedCharArray(): CharArray = charArrayOf('y')
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedDoubleArray(): DoubleArray = doubleArrayOf(Double.MAX_VALUE)
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedFloatArray(): FloatArray = floatArrayOf(Float.MAX_VALUE)
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedIntArray(): IntArray = intArrayOf(43)
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedLongArray(): LongArray = longArrayOf(43L)
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedShortArray(): ShortArray = shortArrayOf(43)
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedStringArray(): Array<String> = arrayOf("Annotated", "String")
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedIntList(): List<Int> = listOf(43)
+
+    @Provide
+    @Named("Annotated")
+    private fun provideAnnotatedStringList(): List<String> = listOf("Annotated", "String")
+
+    @Provide
     @Named("Injected")
-    private fun provideStringList(): List<String> = listOf("Injected", "String")
+    private fun provideInjectedBoolean(): Boolean = true
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedByte(): Byte = 44
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedChar(): Char = 'z'
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedDouble(): Double = Double.MIN_VALUE
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedFloat(): Float = Float.MIN_VALUE
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedInt(): Int = 44
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedLong(): Long = 44L
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedShort(): Short = 44
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedString(): String = "Injected"
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedBooleanArray(): BooleanArray = booleanArrayOf(true, true)
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedByteArray(): ByteArray = byteArrayOf(44)
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedCharArray(): CharArray = charArrayOf('z')
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedDoubleArray(): DoubleArray = doubleArrayOf(Double.MIN_VALUE)
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedFloatArray(): FloatArray = floatArrayOf(Float.MIN_VALUE)
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedIntArray(): IntArray = intArrayOf(44)
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedLongArray(): LongArray = longArrayOf(44L)
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedShortArray(): ShortArray = shortArrayOf(44)
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedStringArray(): Array<String> = arrayOf("Injected", "String")
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedIntList(): List<Int> = listOf(44)
+
+    @Provide
+    @Named("Injected")
+    private fun provideInjectedStringList(): List<String> = listOf("Injected", "String")
   }
 
   @Component(parent = ParentFactoryComponent::class)
@@ -256,6 +436,7 @@ class FactoryInjectionTest {
   private class ChildFactoryModule {
 
     @Provide
+    @Named("Child")
     private fun provideString(): String = "Child"
   }
 
@@ -308,46 +489,86 @@ class FactoryInjectionTest {
   }
 
   class SingleMethodTarget @Factory.Inject private constructor(
-    val boolean: Boolean,
-    val byte: Byte,
-    val char: Char,
-    val double: Double,
-    val float: Float,
-    val int: Int,
-    val long: Long,
-    val short: Short,
-    val string: String,
-    val booleanArray: BooleanArray,
-    val byteArray: ByteArray,
-    val charArray: CharArray,
-    val doubleArray: DoubleArray,
-    val floatArray: FloatArray,
-    val intArray: IntArray,
-    val longArray: LongArray,
-    val shortArray: ShortArray,
-    val stringArray: Array<String>,
-    val intList: List<Int>,
-    val stringList: List<String>,
-    @Named("Annotated") val annotatedBoolean: Boolean,
-    @Named("Annotated") val annotatedByte: Byte,
-    @Named("Annotated") val annotatedChar: Char,
-    @Named("Annotated") val annotatedDouble: Double,
-    @Named("Annotated") val annotatedFloat: Float,
-    @Named("Annotated") val annotatedInt: Int,
-    @Named("Annotated") val annotatedLong: Long,
-    @Named("Annotated") val annotatedShort: Short,
-    @Named("Annotated") val annotatedString: String,
-    @Named("Annotated") val annotatedBooleanArray: BooleanArray,
-    @Named("Annotated") val annotatedByteArray: ByteArray,
-    @Named("Annotated") val annotatedCharArray: CharArray,
-    @Named("Annotated") val annotatedDoubleArray: DoubleArray,
-    @Named("Annotated") val annotatedFloatArray: FloatArray,
-    @Named("Annotated") val annotatedIntArray: IntArray,
-    @Named("Annotated") val annotatedLongArray: LongArray,
-    @Named("Annotated") val annotatedShortArray: ShortArray,
-    @Named("Annotated") val annotatedStringArray: Array<String>,
-    @Named("Annotated") val annotatedIntList: List<Int>,
-    @Named("Annotated") val annotatedStringList: List<String>,
+    @Factory.Parameter val boolean: Boolean,
+    @Factory.Parameter val byte: Byte,
+    @Factory.Parameter val char: Char,
+    @Factory.Parameter val double: Double,
+    @Factory.Parameter val float: Float,
+    @Factory.Parameter val int: Int,
+    @Factory.Parameter val long: Long,
+    @Factory.Parameter val short: Short,
+    @Factory.Parameter val string: String,
+    @Factory.Parameter val booleanArray: BooleanArray,
+    @Factory.Parameter val byteArray: ByteArray,
+    @Factory.Parameter val charArray: CharArray,
+    @Factory.Parameter val doubleArray: DoubleArray,
+    @Factory.Parameter val floatArray: FloatArray,
+    @Factory.Parameter val intArray: IntArray,
+    @Factory.Parameter val longArray: LongArray,
+    @Factory.Parameter val shortArray: ShortArray,
+    @Factory.Parameter val stringArray: Array<String>,
+    @Factory.Parameter val intList: List<Int>,
+    @Factory.Parameter val stringList: List<String>,
+    @Factory.Parameter @Named("Annotated") val annotatedBoolean: Boolean,
+    @Factory.Parameter @Named("Annotated") val annotatedByte: Byte,
+    @Factory.Parameter @Named("Annotated") val annotatedChar: Char,
+    @Factory.Parameter @Named("Annotated") val annotatedDouble: Double,
+    @Factory.Parameter @Named("Annotated") val annotatedFloat: Float,
+    @Factory.Parameter @Named("Annotated") val annotatedInt: Int,
+    @Factory.Parameter @Named("Annotated") val annotatedLong: Long,
+    @Factory.Parameter @Named("Annotated") val annotatedShort: Short,
+    @Factory.Parameter @Named("Annotated") val annotatedString: String,
+    @Factory.Parameter @Named("Annotated") val annotatedBooleanArray: BooleanArray,
+    @Factory.Parameter @Named("Annotated") val annotatedByteArray: ByteArray,
+    @Factory.Parameter @Named("Annotated") val annotatedCharArray: CharArray,
+    @Factory.Parameter @Named("Annotated") val annotatedDoubleArray: DoubleArray,
+    @Factory.Parameter @Named("Annotated") val annotatedFloatArray: FloatArray,
+    @Factory.Parameter @Named("Annotated") val annotatedIntArray: IntArray,
+    @Factory.Parameter @Named("Annotated") val annotatedLongArray: LongArray,
+    @Factory.Parameter @Named("Annotated") val annotatedShortArray: ShortArray,
+    @Factory.Parameter @Named("Annotated") val annotatedStringArray: Array<String>,
+    @Factory.Parameter @Named("Annotated") val annotatedIntList: List<Int>,
+    @Factory.Parameter @Named("Annotated") val annotatedStringList: List<String>,
+    val injectedDefaultBoolean: Boolean,
+    val injectedDefaultByte: Byte,
+    val injectedDefaultChar: Char,
+    val injectedDefaultDouble: Double,
+    val injectedDefaultFloat: Float,
+    val injectedDefaultInt: Int,
+    val injectedDefaultLong: Long,
+    val injectedDefaultShort: Short,
+    val injectedDefaultString: String,
+    val injectedDefaultBooleanArray: BooleanArray,
+    val injectedDefaultByteArray: ByteArray,
+    val injectedDefaultCharArray: CharArray,
+    val injectedDefaultDoubleArray: DoubleArray,
+    val injectedDefaultFloatArray: FloatArray,
+    val injectedDefaultIntArray: IntArray,
+    val injectedDefaultLongArray: LongArray,
+    val injectedDefaultShortArray: ShortArray,
+    val injectedDefaultStringArray: Array<String>,
+    val injectedDefaultIntList: List<Int>,
+    val injectedDefaultStringList: List<String>,
+    @Named("Annotated") val injectedAnnotatedBoolean: Boolean,
+    @Named("Annotated") val injectedAnnotatedByte: Byte,
+    @Named("Annotated") val injectedAnnotatedChar: Char,
+    @Named("Annotated") val injectedAnnotatedDouble: Double,
+    @Named("Annotated") val injectedAnnotatedFloat: Float,
+    @Named("Annotated") val injectedAnnotatedInt: Int,
+    @Named("Annotated") val injectedAnnotatedLong: Long,
+    @Named("Annotated") val injectedAnnotatedShort: Short,
+    @Named("Annotated") val injectedAnnotatedString: String,
+    @Named("Annotated") val injectedAnnotatedBooleanArray: BooleanArray,
+    @Named("Annotated") val injectedAnnotatedByteArray: ByteArray,
+    @Named("Annotated") val injectedAnnotatedCharArray: CharArray,
+    @Named("Annotated") val injectedAnnotatedDoubleArray: DoubleArray,
+    @Named("Annotated") val injectedAnnotatedFloatArray: FloatArray,
+    @Named("Annotated") val injectedAnnotatedIntArray: IntArray,
+    @Named("Annotated") val injectedAnnotatedLongArray: LongArray,
+    @Named("Annotated") val injectedAnnotatedShortArray: ShortArray,
+    @Named("Annotated") val injectedAnnotatedStringArray: Array<String>,
+    @Named("Annotated") val injectedAnnotatedIntList: List<Int>,
+    @Named("Annotated") val injectedAnnotatedStringList: List<String>,
     @Named("Injected") val injectedBoolean: Boolean,
     @Named("Injected") val injectedByte: Byte,
     @Named("Injected") val injectedChar: Char,
@@ -381,30 +602,31 @@ class FactoryInjectionTest {
   }
 
   class MultipleMethodTarget1 @Factory.Inject private constructor(
-    val stringFromInjector: String
+    @Named("Child") val stringFromInjector: String
   )
 
   class MultipleMethodTarget2 @Factory.Inject private constructor(
-    @Named("FromMethod") val stringFromMethod: String
+    @Factory.Parameter @Named("FromMethod") val stringFromMethod: String
   )
 
   class MultipleMethodTarget3 @Factory.Inject private constructor(
-    val stringFromInjector: String,
-    @Named("FromMethod") val stringFromMethod: String
+    @Named("Child") val stringFromInjector: String,
+    @Factory.Parameter @Named("FromMethod") val stringFromMethod: String
   )
 
   class MultipleMethodTarget4 @Factory.Inject private constructor(
-    val stringFromInjector: String,
-    @Named("FromMethod") val stringFromMethod: String
+    @Named("Child") val stringFromInjector: String,
+    @Factory.Parameter @Named("FromMethod") val stringFromMethod: String
   ) {
 
     @Inject
+    @field:Named("Child")
     val stringFromFieldInjection: String = inject()
     lateinit var stringFromMethodInjection: String
       private set
 
     @Inject
-    private fun injectString(string: String) {
+    private fun injectString(@Named("Child") string: String) {
       stringFromMethodInjection = string
     }
   }
