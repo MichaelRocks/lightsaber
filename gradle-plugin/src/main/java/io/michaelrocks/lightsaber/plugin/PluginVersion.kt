@@ -16,8 +16,6 @@
 
 package io.michaelrocks.lightsaber.plugin
 
-import com.android.Version
-
 object PluginVersion {
   val major: Int
   val minor: Int
@@ -25,12 +23,21 @@ object PluginVersion {
   val suffix: String
 
   init {
-    val version = Version.ANDROID_GRADLE_PLUGIN_VERSION
+    val version = getAndroidGradlePluginVersion()
     suffix = version.substringAfter('-', "")
     val prefix = version.substringBefore('-')
     val parts = prefix.split('.', limit = 3)
     major = parts.getOrNull(0)?.toIntOrNull() ?: 0
     minor = parts.getOrNull(1)?.toIntOrNull() ?: 0
     patch = parts.getOrNull(2)?.toIntOrNull() ?: 0
+  }
+
+  private fun getAndroidGradlePluginVersion(): String {
+    return try {
+      com.android.Version.ANDROID_GRADLE_PLUGIN_VERSION
+    } catch (exception: NoClassDefFoundError) {
+      @Suppress("DEPRECATION")
+      com.android.builder.model.Version.ANDROID_GRADLE_PLUGIN_VERSION
+    }
   }
 }
