@@ -1,0 +1,132 @@
+/*
+ * Copyright 2020 Michael Rozumyanskiy
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package io.michaelrocks.lightsaber.processor.analysis
+
+import io.michaelrocks.grip.Grip
+import io.michaelrocks.grip.annotatedWith
+import io.michaelrocks.grip.classes
+import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.lightsaber.processor.ErrorReporter
+import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.model.Factory
+import io.michaelrocks.lightsaber.processor.model.InjectionTarget
+import io.michaelrocks.lightsaber.processor.model.Module
+import java.io.File
+import java.util.HashMap
+
+interface ModuleRegistry {
+  fun getModule(moduleType: Type.Object): Module
+}
+
+class ModuleRegistryImpl(
+  private val grip: Grip,
+  private val moduleParser: ModuleParser,
+  private val errorReporter: ErrorReporter,
+  providableTargets: Collection<InjectionTarget>,
+  factories: Collection<Factory>,
+  files: Collection<File>
+) : ModuleRegistry {
+
+  private val typeToModuleMap by lazy {
+    val defaultModulesQuery = grip select classes from files where annotatedWith(Types.MODULE_TYPE) { _, annotation ->
+      annotation.values["isDefault"] == true
+    }
+
+    val defaultModuleTypes = defaultModulesQuery.execute().types
+    val providableTargetsByModules = groupProvidableTargetsByModules(providableTargets, defaultModuleTypes)
+    val factoriesByModules = groupFactoriesByModules(factories, defaultModuleTypes)
+    val moduleTypes = providableTargetsByModules.keys + factoriesByModules.keys
+
+    HashMap<Type.Object, Module>().also { typeToModuleMap ->
+      moduleTypes.forEach { moduleType ->
+        val providableTargetsForModuleType = providableTargetsByModules[moduleType].orEmpty()
+        val factoriesForModuleType = factoriesByModules[moduleType].orEmpty()
+        typeToModuleMap.getOrPut(moduleType) {
+          moduleParser.parseModule(moduleType, providableTargetsForModuleType, factoriesForModuleType)
+        }
+      }
+    }
+  }
+
+  override fun getModule(moduleType: Type.Object): Module {
+    return typeToModuleMap.getOrPut(moduleType) { moduleParser.parseModule(moduleType, emptyList(), emptyList()) }
+  }
+
+  private fun groupProvidableTargetsByModules(
+    providableTargets: Collection<InjectionTarget>,
+    defaultModuleTypes: Collection<Type.Object>
+  ): Map<Type.Object, List<InjectionTarget>> {
+    return HashMap<Type.Object, MutableList<InjectionTarget>>().also { providableTargetsByModule ->
+      providableTargets.forEach { target ->
+        val mirror = grip.classRegistry.getClassMirror(target.type)
+        val providedByAnnotation = mirror.annotations[Types.PROVIDED_BY_TYPE]
+        val moduleTypes =
+          if (providedByAnnotation != null) providedByAnnotation.values["value"] as List<*> else defaultModuleTypes
+
+        if (moduleTypes.isEmpty()) {
+          errorReporter.reportError(
+            "Class ${target.type.className} should be bounds to at least one module. " +
+                "You can annotate it with @ProvidedBy with a module list " +
+                "or make some of your modules default with @Module(isDefault = true)"
+          )
+        } else {
+          moduleTypes.forEach { moduleType ->
+            if (moduleType is Type.Object) {
+              providableTargetsByModule.getOrPut(moduleType, ::ArrayList).add(target)
+            } else {
+              errorReporter.reportError(
+                "A non-class type is specified in @ProvidedBy annotation for ${mirror.type.className}"
+              )
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private fun groupFactoriesByModules(
+    factories: Collection<Factory>,
+    defaultModuleTypes: Collection<Type.Object>
+  ): Map<Type.Object, List<Factory>> {
+    return HashMap<Type.Object, MutableList<Factory>>().also { factoriesByModule ->
+      factories.forEach { factory ->
+        val mirror = grip.classRegistry.getClassMirror(factory.type)
+        val providedByAnnotation = mirror.annotations[Types.PROVIDED_BY_TYPE]
+        val moduleTypes =
+          if (providedByAnnotation != null) providedByAnnotation.values["value"] as List<*> else defaultModuleTypes
+
+        if (moduleTypes.isEmpty()) {
+          errorReporter.reportError(
+            "Class ${factory.type.className} should be bounds to at least one module. " +
+                "You can annotate it with @ProvidedBy with a module list " +
+                "or make some of your modules default with @Module(isDefault = true)"
+          )
+        } else {
+          moduleTypes.forEach { moduleType ->
+            if (moduleType is Type.Object) {
+              factoriesByModule.getOrPut(moduleType, ::ArrayList).add(factory)
+            } else {
+              errorReporter.reportError(
+                "A non-class type is specified in @ProvidedBy annotation for ${mirror.type.className}"
+              )
+            }
+          }
+        }
+      }
+    }
+  }
+}

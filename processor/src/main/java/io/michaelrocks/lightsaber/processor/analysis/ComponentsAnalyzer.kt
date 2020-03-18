@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,55 +40,24 @@ import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
 import io.michaelrocks.lightsaber.processor.graph.reversed
 import io.michaelrocks.lightsaber.processor.logging.getLogger
 import io.michaelrocks.lightsaber.processor.model.Component
-import io.michaelrocks.lightsaber.processor.model.Factory
-import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 import io.michaelrocks.lightsaber.processor.model.Module
 import io.michaelrocks.lightsaber.processor.model.ModuleProvider
 import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
 import java.io.File
-import java.util.HashMap
 
 interface ComponentsAnalyzer {
-  fun analyze(
-    files: Collection<File>,
-    providableTargets: Collection<InjectionTarget>,
-    factories: Collection<Factory>
-  ): Collection<Component>
+  fun analyze(files: Collection<File>): Collection<Component>
 }
 
 class ComponentsAnalyzerImpl(
   private val grip: Grip,
-  private val analyzerHelper: AnalyzerHelper,
-  private val errorReporter: ErrorReporter,
-  private val projectName: String
+  private val moduleRegistry: ModuleRegistry,
+  private val errorReporter: ErrorReporter
 ) : ComponentsAnalyzer {
 
   private val logger = getLogger()
 
-  private val moduleParser: ModuleParser = ModuleParserImpl(grip, analyzerHelper, errorReporter, projectName)
-  private val moduleRegistry = HashMap<Type.Object, Module>()
-
-  override fun analyze(
-    files: Collection<File>,
-    providableTargets: Collection<InjectionTarget>,
-    factories: Collection<Factory>
-  ): Collection<Component> {
-    val defaultModulesQuery = grip select classes from files where annotatedWith(Types.MODULE_TYPE) { _, annotation ->
-      annotation.values["isDefault"] == true
-    }
-    val defaultModuleTypes = defaultModulesQuery.execute().types
-    val providableTargetsByModules = groupProvidableTargetsByModules(providableTargets, defaultModuleTypes)
-    val factoriesByModules = groupFactoriesByModules(factories, defaultModuleTypes)
-    val moduleTypes = providableTargetsByModules.keys + factoriesByModules.keys
-
-    moduleTypes.forEach { moduleType ->
-      val providableTargetsForModuleType = providableTargetsByModules[moduleType].orEmpty()
-      val factoriesForModuleType = factoriesByModules[moduleType].orEmpty()
-      moduleRegistry.getOrPut(moduleType) {
-        moduleParser.parseModule(moduleType, providableTargetsForModuleType, factoriesForModuleType)
-      }
-    }
-
+  override fun analyze(files: Collection<File>): Collection<Component> {
     val componentsQuery = grip select classes from files where annotatedWith(Types.COMPONENT_TYPE)
     val graph = buildComponentGraph(componentsQuery.execute().types)
     val reversedGraph = graph.reversed()
@@ -99,70 +68,6 @@ class ComponentsAnalyzerImpl(
         val subcomponents = graph.getAdjacentVertices(type).orEmpty()
         createComponent(type, parent, subcomponents)
       }
-  }
-
-  private fun groupProvidableTargetsByModules(
-    providableTargets: Collection<InjectionTarget>,
-    defaultModuleTypes: Collection<Type.Object>
-  ): Map<Type.Object, List<InjectionTarget>> {
-    return HashMap<Type.Object, MutableList<InjectionTarget>>().also { providableTargetsByModule ->
-      providableTargets.forEach { target ->
-        val mirror = grip.classRegistry.getClassMirror(target.type)
-        val providedByAnnotation = mirror.annotations[Types.PROVIDED_BY_TYPE]
-        val moduleTypes =
-          if (providedByAnnotation != null) providedByAnnotation.values["value"] as List<*> else defaultModuleTypes
-
-        if (moduleTypes.isEmpty()) {
-          errorReporter.reportError(
-            "Class ${target.type.className} should be bounds to at least one module. " +
-                "You can annotate it with @ProvidedBy with a module list " +
-                "or make some of your modules default with @Module(isDefault = true)"
-          )
-        } else {
-          moduleTypes.forEach { moduleType ->
-            if (moduleType is Type.Object) {
-              providableTargetsByModule.getOrPut(moduleType, ::ArrayList).add(target)
-            } else {
-              errorReporter.reportError(
-                "A non-class type is specified in @ProvidedBy annotation for ${mirror.type.className}"
-              )
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private fun groupFactoriesByModules(
-    factories: Collection<Factory>,
-    defaultModuleTypes: Collection<Type.Object>
-  ): Map<Type.Object, List<Factory>> {
-    return HashMap<Type.Object, MutableList<Factory>>().also { factoriesByModule ->
-      factories.forEach { factory ->
-        val mirror = grip.classRegistry.getClassMirror(factory.type)
-        val providedByAnnotation = mirror.annotations[Types.PROVIDED_BY_TYPE]
-        val moduleTypes =
-          if (providedByAnnotation != null) providedByAnnotation.values["value"] as List<*> else defaultModuleTypes
-
-        if (moduleTypes.isEmpty()) {
-          errorReporter.reportError(
-            "Class ${factory.type.className} should be bounds to at least one module. " +
-                "You can annotate it with @ProvidedBy with a module list " +
-                "or make some of your modules default with @Module(isDefault = true)"
-          )
-        } else {
-          moduleTypes.forEach { moduleType ->
-            if (moduleType is Type.Object) {
-              factoriesByModule.getOrPut(moduleType, ::ArrayList).add(factory)
-            } else {
-              errorReporter.reportError(
-                "A non-class type is specified in @ProvidedBy annotation for ${mirror.type.className}"
-              )
-            }
-          }
-        }
-      }
-    }
   }
 
   private fun buildComponentGraph(types: Collection<Type.Object>): DirectedGraph<Type.Object> {
@@ -251,6 +156,6 @@ class ComponentsAnalyzerImpl(
       return Module(type, emptyList(), emptyList())
     }
 
-    return moduleRegistry.getOrPut(type) { moduleParser.parseModule(type, emptyList(), emptyList()) }
+    return moduleRegistry.getModule(type)
   }
 }

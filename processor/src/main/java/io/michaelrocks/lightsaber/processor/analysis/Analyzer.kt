@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,13 +28,12 @@ class Analyzer(
 ) {
 
   fun analyze(files: Collection<File>): InjectionContext {
-    val analyzerHelper: AnalyzerHelper = AnalyzerHelperImpl(grip.classRegistry, ScopeRegistry(), errorReporter)
-    val (injectableTargets, providableTargets) =
-      InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).analyze(files)
+    val analyzerHelper = AnalyzerHelperImpl(grip.classRegistry, ScopeRegistry(), errorReporter)
+    val (injectableTargets, providableTargets) = InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).analyze(files)
     val factories = FactoriesAnalyzerImpl(grip, analyzerHelper, errorReporter, projectName).analyze(files)
-    val components =
-      ComponentsAnalyzerImpl(grip, analyzerHelper, errorReporter, projectName)
-        .analyze(files, providableTargets, factories)
+    val moduleParser = ModuleParserImpl(grip, analyzerHelper, errorReporter, projectName)
+    val moduleRegistry = ModuleRegistryImpl(grip, moduleParser, errorReporter, providableTargets, factories, files)
+    val components = ComponentsAnalyzerImpl(grip, moduleRegistry, errorReporter).analyze(files)
     return InjectionContext(components, injectableTargets, providableTargets, factories)
   }
 }
