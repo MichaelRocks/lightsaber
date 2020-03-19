@@ -58,12 +58,14 @@ interface ModuleParser {
   fun parseModule(
     type: Type.Object,
     providableTargets: Collection<InjectionTarget>,
-    factories: Collection<Factory>
+    factories: Collection<Factory>,
+    moduleRegistry: ModuleRegistry
   ): Module
 }
 
 class ModuleParserImpl(
   private val grip: Grip,
+  private val moduleProviderParser: ModuleProviderParser,
   private val analyzerHelper: AnalyzerHelper,
   private val projectName: String
 ) : ModuleParser {
@@ -75,15 +77,17 @@ class ModuleParserImpl(
   override fun parseModule(
     type: Type.Object,
     providableTargets: Collection<InjectionTarget>,
-    factories: Collection<Factory>
+    factories: Collection<Factory>,
+    moduleRegistry: ModuleRegistry
   ): Module {
-    return convertToModule(grip.classRegistry.getClassMirror(type), providableTargets, factories)
+    return parseModule(grip.classRegistry.getClassMirror(type), providableTargets, factories, moduleRegistry)
   }
 
-  private fun convertToModule(
+  private fun parseModule(
     mirror: ClassMirror,
     providableTargets: Collection<InjectionTarget>,
-    factories: Collection<Factory>
+    factories: Collection<Factory>,
+    moduleRegistry: ModuleRegistry
   ): Module {
     if (mirror.signature.typeVariables.isNotEmpty()) {
       throw ModuleParserException("Module cannot have a type parameters: ${mirror.type.className}")
@@ -92,6 +96,8 @@ class ModuleParserImpl(
     if (Types.MODULE_TYPE !in mirror.annotations) {
       throw ModuleParserException("Class ${mirror.type.className} is not a module")
     }
+
+    val moduleProviders = moduleProviderParser.parseModuleProviders(mirror, moduleRegistry, includeProvidesAnnotation = false)
 
     bridgeRegistry.clear()
     mirror.methods.forEach { bridgeRegistry.reserveMethod(it.toMethodDescriptor()) }
@@ -119,7 +125,7 @@ class ModuleParserImpl(
     }
 
     val factoryProviders = factories.map { it.toProvider(mirror.type) }
-    return Module(mirror.type, constructors + methods + fields + factoryProviders, factories)
+    return Module(mirror.type, moduleProviders, constructors + methods + fields + factoryProviders, factories)
   }
 
   private fun InjectionTarget.toProvider(container: Type.Object): Provider {

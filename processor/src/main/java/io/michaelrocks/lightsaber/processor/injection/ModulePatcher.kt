@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package io.michaelrocks.lightsaber.processor.injection
 
 import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
-import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
@@ -85,7 +84,9 @@ class ModulePatcher(
   override fun visitEnd() {
     if (!isInjectorConfigurator) {
       generateBridges()
-      newMethod(ACC_PUBLIC, CONFIGURE_INJECTOR_METHOD) { configureInjector() }
+      InjectorConfiguratorImplementor(this, module.type).implementInjectorConfigurator(module.moduleProviders) {
+        registerProviders()
+      }
     }
     super.visitEnd()
   }
@@ -127,7 +128,7 @@ class ModulePatcher(
     invokeMethod(module.type, method)
   }
 
-  private fun GeneratorAdapter.configureInjector() {
+  private fun GeneratorAdapter.registerProviders() {
     module.providers.forEach { provider ->
       loadArg(0)
       registerProvider(keyRegistry, provider) {
@@ -155,10 +156,5 @@ class ModulePatcher(
     loadArg(0)
     val constructor = MethodDescriptor.forConstructor(Types.INJECTOR_TYPE)
     invokeConstructor(provider.type, constructor)
-  }
-
-  companion object {
-    private val CONFIGURE_INJECTOR_METHOD =
-      MethodDescriptor.forMethod("configureInjector", Type.Primitive.Void, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE)
   }
 }

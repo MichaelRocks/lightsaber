@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,15 +66,15 @@ class SanityChecker(
   }
 
   private fun checkProviderMethodsReturnValues(context: InjectionContext) {
-    for (component in context.components) {
-      for (module in component.modules) {
-        for (provider in module.providers) {
-          if (!provider.isConstructorProvider && provider.dependency.type.rawType == Type.Primitive.Void) {
-            errorReporter.reportError("Provider returns void: " + provider.provisionPoint)
-          }
+    context.components.asSequence()
+      .flatMap { component -> component.getModulesWithDescendants() }
+      .distinctBy { module -> module.type }
+      .flatMap { module -> module.providers.asSequence() }
+      .forEach { provider ->
+        if (!provider.isConstructorProvider && provider.dependency.type.rawType == Type.Primitive.Void) {
+          errorReporter.reportError("Provider returns void: " + provider.provisionPoint)
         }
       }
-    }
   }
 
   private fun checkProvidableTargetIsConstructable(providableTarget: Type.Object) {

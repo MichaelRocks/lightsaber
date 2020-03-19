@@ -55,8 +55,12 @@ class ModuleRegistryImpl(
 
   private val modulesByTypes = HashMap<Type.Object, Module>()
 
+  private val moduleTypeStack = ArrayList<Type.Object>()
+
   override fun getModule(moduleType: Type.Object): Module {
-    return maybeParseModule(moduleType)
+    return withModuleTypeInStack(moduleType) {
+      maybeParseModule(moduleType)
+    }
   }
 
   private fun groupProvidableTargetsByModules(
@@ -128,7 +132,22 @@ class ModuleRegistryImpl(
     val providableTargetsForModuleType = externals.providableTargetsByModules[moduleType].orEmpty()
     val factoriesForModuleType = externals.factoriesByModules[moduleType].orEmpty()
     return modulesByTypes.getOrPut(moduleType) {
-      moduleParser.parseModule(moduleType, providableTargetsForModuleType, factoriesForModuleType)
+      moduleParser.parseModule(moduleType, providableTargetsForModuleType, factoriesForModuleType, this)
+    }
+  }
+
+  private inline fun <T : Any> withModuleTypeInStack(moduleType: Type.Object, action: () -> T): T {
+    moduleTypeStack += moduleType
+    return try {
+      if (moduleTypeStack.indexOf(moduleType) == moduleTypeStack.lastIndex) {
+        action()
+      } else {
+        val cycle = moduleTypeStack.joinToString(" -> ") { it.className }
+        throw ModuleParserException("Module cycle: $cycle")
+      }
+    } finally {
+      val removedModuleType = moduleTypeStack.removeAt(moduleTypeStack.lastIndex)
+      check(removedModuleType === moduleType)
     }
   }
 

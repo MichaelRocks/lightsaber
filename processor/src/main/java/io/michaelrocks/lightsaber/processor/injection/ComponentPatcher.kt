@@ -16,20 +16,9 @@
 
 package io.michaelrocks.lightsaber.processor.injection
 
-import io.michaelrocks.grip.mirrors.Type
-import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.lightsaber.LightsaberTypes
-import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
-import io.michaelrocks.lightsaber.processor.commons.invokeMethod
-import io.michaelrocks.lightsaber.processor.commons.newMethod
-import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
-import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
-import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.model.Component
-import io.michaelrocks.lightsaber.processor.model.ModuleProvider
-import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
 import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.Opcodes.ACC_PUBLIC
 
 class ComponentPatcher(
   classVisitor: ClassVisitor,
@@ -60,50 +49,8 @@ class ComponentPatcher(
 
   override fun visitEnd() {
     if (!isInjectorConfigurator) {
-      newMethod(ACC_PUBLIC, CONFIGURE_INJECTOR_METHOD) { configureInjector() }
+      InjectorConfiguratorImplementor(this, component.type).implementInjectorConfigurator(component.providers)
     }
     super.visitEnd()
-  }
-
-  private fun GeneratorAdapter.configureInjector() {
-    component.providers.forEach { configureInjectorWithModule(it) }
-  }
-
-  private fun GeneratorAdapter.configureInjectorWithModule(moduleProvider: ModuleProvider) {
-    loadModule(moduleProvider.provisionPoint)
-    // TODO: It would be better to throw ConfigurationException here.
-    checkCast(LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE)
-    loadArg(0)
-    invokeInterface(LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE, CONFIGURE_INJECTOR_METHOD)
-  }
-
-  private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint) {
-    return when (provisionPoint) {
-      is ModuleProvisionPoint.Method -> loadModule(provisionPoint)
-      is ModuleProvisionPoint.Field -> loadModule(provisionPoint)
-    }
-  }
-
-  private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint.Method) {
-    if (!provisionPoint.method.isStatic) {
-      loadThis()
-      invokeMethod(component.type, provisionPoint.method)
-    } else {
-      invokeStatic(component.type, provisionPoint.method.toMethodDescriptor())
-    }
-  }
-
-  private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint.Field) {
-    if (!provisionPoint.field.isStatic) {
-      loadThis()
-      getField(component.type, provisionPoint.field.toFieldDescriptor())
-    } else {
-      getStatic(component.type, provisionPoint.field.toFieldDescriptor())
-    }
-  }
-
-  companion object {
-    private val CONFIGURE_INJECTOR_METHOD =
-      MethodDescriptor.forMethod("configureInjector", Type.Primitive.Void, LightsaberTypes.LIGHTSABER_INJECTOR_TYPE)
   }
 }
