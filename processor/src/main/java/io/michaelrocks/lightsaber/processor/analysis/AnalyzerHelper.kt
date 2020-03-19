@@ -25,6 +25,7 @@ import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.ErrorReporter
+import io.michaelrocks.lightsaber.processor.ProcessingException
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.model.Converter
@@ -130,8 +131,7 @@ class AnalyzerHelperImpl(
         if (this is GenericType.Parameterized) {
           return Dependency(typeArguments[0], qualifier)
         } else {
-          errorReporter.reportError("Type $this must be parameterized")
-          return Dependency(this, qualifier)
+          throw ProcessingException("Type $this must be parameterized")
         }
     }
 

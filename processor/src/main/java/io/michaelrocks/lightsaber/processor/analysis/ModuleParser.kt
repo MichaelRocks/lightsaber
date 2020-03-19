@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.grip.not
 import io.michaelrocks.grip.or
 import io.michaelrocks.grip.returns
-import io.michaelrocks.lightsaber.processor.ErrorReporter
+import io.michaelrocks.lightsaber.processor.ProcessingException
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.contains
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
@@ -65,7 +65,6 @@ interface ModuleParser {
 class ModuleParserImpl(
   private val grip: Grip,
   private val analyzerHelper: AnalyzerHelper,
-  private val errorReporter: ErrorReporter,
   private val projectName: String
 ) : ModuleParser {
 
@@ -87,13 +86,11 @@ class ModuleParserImpl(
     factories: Collection<Factory>
   ): Module {
     if (mirror.signature.typeVariables.isNotEmpty()) {
-      errorReporter.reportError("Module cannot have a type parameters: ${mirror.type.className}")
-      return Module(mirror.type, emptyList(), emptyList())
+      throw ModuleParserException("Module cannot have a type parameters: ${mirror.type.className}")
     }
 
     if (Types.MODULE_TYPE !in mirror.annotations) {
-      errorReporter.reportError("Class ${mirror.type.className} is not a module")
-      return Module(mirror.type, emptyList(), emptyList())
+      throw ModuleParserException("Class ${mirror.type.className} is not a module")
     }
 
     bridgeRegistry.clear()
@@ -209,3 +206,5 @@ class ModuleParserImpl(
       .build()
   }
 }
+
+class ModuleParserException(message: String) : ProcessingException(message)

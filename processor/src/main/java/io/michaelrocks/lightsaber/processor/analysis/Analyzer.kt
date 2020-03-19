@@ -31,7 +31,7 @@ class Analyzer(
     val analyzerHelper = AnalyzerHelperImpl(grip.classRegistry, ScopeRegistry(), errorReporter)
     val (injectableTargets, providableTargets) = InjectionTargetsAnalyzerImpl(grip, analyzerHelper, errorReporter).analyze(files)
     val factories = FactoriesAnalyzerImpl(grip, analyzerHelper, errorReporter, projectName).analyze(files)
-    val moduleParser = ModuleParserImpl(grip, analyzerHelper, errorReporter, projectName)
+    val moduleParser = ModuleParserImpl(grip, analyzerHelper, projectName)
     val moduleRegistry = ModuleRegistryImpl(grip, moduleParser, errorReporter, providableTargets, factories, files)
     val components = ComponentsAnalyzerImpl(grip, moduleRegistry, errorReporter).analyze(files)
     return InjectionContext(components, injectableTargets, providableTargets, factories)

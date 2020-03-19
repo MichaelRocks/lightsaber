@@ -33,6 +33,7 @@ import io.michaelrocks.grip.not
 import io.michaelrocks.grip.or
 import io.michaelrocks.grip.returns
 import io.michaelrocks.lightsaber.processor.ErrorReporter
+import io.michaelrocks.lightsaber.processor.ProcessingException
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.graph.DirectedGraph
 import io.michaelrocks.lightsaber.processor.graph.HashDirectedGraph
@@ -114,45 +115,52 @@ class ComponentsAnalyzerImpl(
     val fieldsQuery = grip select fields from mirror where isImportable
 
     logger.debug("Component: {}", mirror.type.className)
-    val methods = methodsQuery.execute()[mirror.type].orEmpty().map { method ->
+    val methods = methodsQuery.execute()[mirror.type].orEmpty().mapNotNull { method ->
       logger.debug("  Method: {}", method)
-      ModuleProvider(createModule(method), ModuleProvisionPoint.Method(method))
+      tryParseModuleProvider(method)
     }
 
-    val fields = fieldsQuery.execute()[mirror.type].orEmpty().map { field ->
+    val fields = fieldsQuery.execute()[mirror.type].orEmpty().mapNotNull { field ->
       logger.debug("  Field: {}", field)
-      ModuleProvider(createModule(field), ModuleProvisionPoint.Field(field))
+      tryParseModuleProvider(field)
     }
 
     return Component(mirror.type, methods + fields, parent, subcomponents)
   }
 
-  private fun createModule(method: MethodMirror): Module {
-    return createModule(method.signature.returnType)
+  private fun tryParseModuleProvider(method: MethodMirror): ModuleProvider? {
+    val module = tryParseModule(method.signature.returnType) ?: return null
+    return ModuleProvider(module, ModuleProvisionPoint.Method(method))
   }
 
-  private fun createModule(field: FieldMirror): Module {
-    return createModule(field.signature.type)
+  private fun tryParseModuleProvider(field: FieldMirror): ModuleProvider? {
+    val module = tryParseModule(field.signature.type) ?: return null
+    return ModuleProvider(module, ModuleProvisionPoint.Field(field))
   }
 
-  private fun createModule(generic: GenericType): Module {
+  private fun tryParseModule(generic: GenericType): Module? {
     if (generic !is GenericType.Raw) {
       errorReporter.reportError("Module provider cannot have a generic type: $generic")
-      return Module(Types.OBJECT_TYPE, emptyList(), emptyList())
+      return null
     }
 
     val type = generic.type
     if (type !is Type.Object) {
       errorReporter.reportError("Module provider cannot have an array type: $generic")
-      return Module(Types.OBJECT_TYPE, emptyList(), emptyList())
+      return null
     }
 
     val mirror = grip.classRegistry.getClassMirror(type)
     if (Types.MODULE_TYPE !in mirror.annotations) {
       errorReporter.reportError("Module is not annotated with @Module: $generic")
-      return Module(type, emptyList(), emptyList())
+      return null
     }
 
-    return moduleRegistry.getModule(type)
+    return try {
+      moduleRegistry.getModule(type)
+    } catch (exception: ProcessingException) {
+      errorReporter.reportError(exception)
+      null
+    }
   }
 }
