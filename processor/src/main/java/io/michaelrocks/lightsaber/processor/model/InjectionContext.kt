@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,10 @@ data class InjectionContext(
 ) {
 
   private val componentsByType = components.associateBy { it.type }
-  private val modulesByType = components.flatMap { it.modules }.associateBy { it.type }
+  private val modulesByType = components.asSequence().flatMap { it.getModulesWithDescendants() }.associateBy { it.type }
   private val injectableTargetsByType = injectableTargets.associateBy { it.type }
   private val providableTargetsByType = providableTargets.associateBy { it.type }
-  private val factoryInjectionPointsByType =
-    factories.flatMap { it.provisionPoints }.map { it.injectionPoint }.associateBy { it.containerType }
+  private val factoryInjectionPointsByType = factories.flatMap { it.provisionPoints }.map { it.injectionPoint }.associateBy { it.containerType }
 
   fun findComponentByType(componentType: Type.Object): Component? =
     componentsByType[componentType]

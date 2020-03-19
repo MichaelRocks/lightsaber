@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import io.michaelrocks.lightsaber.processor.model.Component
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.model.InjectionTarget
+import io.michaelrocks.lightsaber.processor.model.Module
 import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 import io.michaelrocks.lightsaber.processor.validation.Validator
 import org.objectweb.asm.ClassReader
@@ -140,20 +141,28 @@ class ClassProcessor(
   private fun Component.dump() {
     logger.debug("Component: {}", type)
     for (module in modules) {
-      logger.debug("  Module: {}", module.type)
-      for (provider in module.providers) {
-        if (provider.provisionPoint is ProvisionPoint.AbstractMethod) {
-          logger.debug("   Provides: {}", provider.provisionPoint.method)
-        } else if (provider.provisionPoint is ProvisionPoint.Field) {
-          logger.debug("   Provides: {}", provider.provisionPoint.field)
-        } else {
-          logger.debug("   Provides: {}", provider.provisionPoint)
-        }
-      }
+      module.dump("  ")
     }
 
     for (subcomponent in subcomponents) {
       logger.debug("  Subcomponent: {}", subcomponent)
+    }
+  }
+
+  private fun Module.dump(indent: String = "") {
+    val nextIntent = "$indent  "
+    logger.debug("${indent}Module: {}", type)
+    for (provider in providers) {
+      when (provider.provisionPoint) {
+        is ProvisionPoint.AbstractMethod ->
+          logger.debug("${nextIntent}Provides: {}", provider.provisionPoint.method)
+        is ProvisionPoint.Field ->
+          logger.debug("${nextIntent}Provides: {}", provider.provisionPoint.field)
+      }
+    }
+
+    for (module in modules) {
+      module.dump(nextIntent)
     }
   }
 

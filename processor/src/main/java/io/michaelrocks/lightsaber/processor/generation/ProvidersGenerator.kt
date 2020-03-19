@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ class ProvidersGenerator(
 
   fun generate(injectionContext: InjectionContext, generationContext: GenerationContext) {
     injectionContext.components.asSequence()
-      .flatMap { it.modules.asSequence() }
+      .flatMap { it.getModulesWithDescendants() }
       .flatMap { it.providers.asSequence() }
       .forEach { provider ->
         logger.debug("Generating provider {}", provider.type.internalName)

@@ -169,6 +169,29 @@ Injector injector = lightsaber.createInjector(DroidComponent());
 The `createInjector()` method accepts a single component and returns an injector that can provide any dependency from
 any module of the component and from any class with an [injectable constructor](#injectable-constructors).
 
+##### Nested modules 
+
+Not only components can import modules but modules can import other modules too. So if you have a reusable module
+with some common dependencies you can import it to another module the same way you import it to a component:
+
+```java
+@Module
+public class CommonDroidModule {
+  @Provide
+  public Battery provideBattery() {
+    return new Battery();
+  }
+}
+
+@Module
+public class DroidModule {
+  @Import
+  public CommonDroidModule importCommonDroidModule() {
+    return new CommonDroidModule();
+  }
+}
+```  
+
 #### Injectable constructors
 
 A class may have one and only one injectable constructor. This constructor must be annotated with `@Inject` and can

@@ -70,7 +70,7 @@ class Validator(
     moduleToComponentsMap: Map<Type.Object, List<Type.Object>>
   ) {
     val newModuleTypeToComponentMap = HashMap(moduleToComponentsMap)
-    component.modules.forEach { module ->
+    component.getModulesWithDescendants().forEach { module ->
       val oldComponents = newModuleTypeToComponentMap[module.type]
       val newComponents = if (oldComponents == null) listOf(component.type) else oldComponents + component.type
       newModuleTypeToComponentMap[module.type] = newComponents
@@ -106,7 +106,7 @@ class Validator(
     dependencyTypeToModuleMap: Map<Dependency, List<Type.Object>>
   ) {
     val newDependencyTypeToModuleMap = HashMap(dependencyTypeToModuleMap)
-    component.modules.forEach { module ->
+    component.getModulesWithDescendants().forEach { module ->
       module.providers.forEach { provider ->
         val oldModules = newDependencyTypeToModuleMap[provider.dependency]
         val newModules = if (oldModules == null) listOf(module.type) else oldModules + listOf(module.type)
@@ -164,17 +164,19 @@ class Validator(
 
   private fun validateFactories(component: Component, resolver: DependencyResolver) {
     resolver.add(component)
-    val factories = component.modules.flatMap { it.factories }.distinctBy { it.type }
-    for (factory in factories) {
-      for (provisionPoint in factory.provisionPoints) {
-        val injectees = provisionPoint.injectionPoint.injectees
-        val resolvedDependencies = resolver.getResolvedDependencies()
-        for (injectee in injectees) {
-          val shouldBeResolved = shouldFactoryInjecteeBeResolved(injectee)
-          validateFactoryDependency(component, factory, injectee.dependency, resolvedDependencies, shouldBeResolved)
+    component.getModulesWithDescendants()
+      .flatMap { module -> module.factories.asSequence() }
+      .distinctBy { factory -> factory.type }
+      .forEach { factory ->
+        for (provisionPoint in factory.provisionPoints) {
+          val injectees = provisionPoint.injectionPoint.injectees
+          val resolvedDependencies = resolver.getResolvedDependencies()
+          for (injectee in injectees) {
+            val shouldBeResolved = shouldFactoryInjecteeBeResolved(injectee)
+            validateFactoryDependency(component, factory, injectee.dependency, resolvedDependencies, shouldBeResolved)
+          }
         }
       }
-    }
   }
 
   private fun shouldFactoryInjecteeBeResolved(injectee: FactoryInjectee): Boolean {
