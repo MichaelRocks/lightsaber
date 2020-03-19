@@ -22,7 +22,6 @@ import io.michaelrocks.grip.annotatedWith
 import io.michaelrocks.grip.classes
 import io.michaelrocks.grip.fields
 import io.michaelrocks.grip.from
-import io.michaelrocks.grip.isStatic
 import io.michaelrocks.grip.methodType
 import io.michaelrocks.grip.methods
 import io.michaelrocks.grip.mirrors.ClassMirror
@@ -110,11 +109,9 @@ class ComponentsAnalyzerImpl(
   }
 
   private fun createComponent(mirror: ClassMirror, parent: Type.Object?, subcomponents: List<Type.Object>): Component {
-    val isImportable = (annotatedWith(Types.PROVIDES_TYPE) or annotatedWith(Types.IMPORT_TYPE)) and not(isStatic())
-    val methodsQuery = grip select methods from mirror where
-        (isImportable and methodType(not(returns(Type.Primitive.Void))) and not(isStatic()))
-    val fieldsQuery = grip select fields from mirror where
-        (isImportable and not(isStatic()))
+    val isImportable = (annotatedWith(Types.PROVIDES_TYPE) or annotatedWith(Types.IMPORT_TYPE))
+    val methodsQuery = grip select methods from mirror where (isImportable and methodType(not(returns(Type.Primitive.Void))))
+    val fieldsQuery = grip select fields from mirror where isImportable
 
     logger.debug("Component: {}", mirror.type.className)
     val methods = methodsQuery.execute()[mirror.type].orEmpty().map { method ->
