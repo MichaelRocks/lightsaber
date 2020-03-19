@@ -625,7 +625,7 @@ public class AnnotationBuilderTest {
   }
 
   @Test
-  public void testFloatEquality() throws Exception {
+  public void testFloatEquality() {
     @FloatEqualityAnnotation
     class TestDefault {}
 
@@ -696,7 +696,7 @@ public class AnnotationBuilderTest {
   }
 
   @Test
-  public void testFloatArrayEquality() throws Exception {
+  public void testFloatArrayEquality() {
     @FloatEqualityArrayAnnotation
     class TestDefault {}
 
@@ -774,14 +774,13 @@ public class AnnotationBuilderTest {
   }
 
   @Test
-  public void testDoubleEquality() throws Exception {
+  public void testDoubleEquality() {
     @DoubleEqualityAnnotation
     class TestDefault {}
 
     @DoubleEqualityAnnotation(0.0)
     class TestPositiveZero {}
 
-    @SuppressWarnings("DefaultAnnotationParam")
     @DoubleEqualityAnnotation(-0.0)
     class TestNegativeZero {}
 
@@ -845,7 +844,7 @@ public class AnnotationBuilderTest {
   }
 
   @Test
-  public void testDoubleArrayEquality() throws Exception {
+  public void testDoubleArrayEquality() {
     @DoubleEqualityArrayAnnotation
     class TestDefault {}
 
@@ -927,15 +926,13 @@ public class AnnotationBuilderTest {
   public void testThrowsIfNotAnnotation() {
     class NotAnnotation {}
 
-    // noinspection unchecked
-    new AnnotationBuilder<Annotation>((Class) NotAnnotation.class);
+    @SuppressWarnings("unchecked")
+    final Class<Annotation> annotationClass = (Class) NotAnnotation.class;
+    new AnnotationBuilder<Annotation>(annotationClass);
   }
 
   @Test(expected = IllegalArgumentException.class)
   public void testThrowsIfAnnotationClass() {
-    class NotAnnotation {}
-
-    // noinspection unchecked
     new AnnotationBuilder<Annotation>(Annotation.class);
   }
 
@@ -966,7 +963,7 @@ public class AnnotationBuilderTest {
     assertAnnotationEquals(expectedAnnotation, actualAnnotation);
   }
 
-  private <T extends Annotation> void assertAnnotationEquals(final T expectedAnnotation, final T actualAnnotation) throws Exception {
+  private <T extends Annotation> void assertAnnotationEquals(final T expectedAnnotation, final T actualAnnotation) {
     assertEquals(expectedAnnotation, actualAnnotation);
     assertEquals(actualAnnotation, expectedAnnotation);
     assertEquals(expectedAnnotation.hashCode(), actualAnnotation.hashCode());
@@ -979,7 +976,7 @@ public class AnnotationBuilderTest {
     assertAnnotationNotEquals(unexpectedAnnotation, actualAnnotation);
   }
 
-  private <T extends Annotation> void assertAnnotationNotEquals(final T unexpectedAnnotation, final T actualAnnotation) throws Exception {
+  private <T extends Annotation> void assertAnnotationNotEquals(final T unexpectedAnnotation, final T actualAnnotation) {
     assertNotEquals(unexpectedAnnotation, actualAnnotation);
     assertEquals(unexpectedAnnotation.annotationType(), actualAnnotation.annotationType());
   }

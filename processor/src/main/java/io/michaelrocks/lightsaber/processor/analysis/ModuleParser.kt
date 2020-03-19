@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.grip.not
 import io.michaelrocks.grip.or
 import io.michaelrocks.grip.returns
-import io.michaelrocks.lightsaber.processor.ErrorReporter
+import io.michaelrocks.lightsaber.processor.ProcessingException
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.contains
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
@@ -58,14 +58,15 @@ interface ModuleParser {
   fun parseModule(
     type: Type.Object,
     providableTargets: Collection<InjectionTarget>,
-    factories: Collection<Factory>
+    factories: Collection<Factory>,
+    moduleRegistry: ModuleRegistry
   ): Module
 }
 
 class ModuleParserImpl(
   private val grip: Grip,
+  private val moduleProviderParser: ModuleProviderParser,
   private val analyzerHelper: AnalyzerHelper,
-  private val errorReporter: ErrorReporter,
   private val projectName: String
 ) : ModuleParser {
 
@@ -76,25 +77,27 @@ class ModuleParserImpl(
   override fun parseModule(
     type: Type.Object,
     providableTargets: Collection<InjectionTarget>,
-    factories: Collection<Factory>
+    factories: Collection<Factory>,
+    moduleRegistry: ModuleRegistry
   ): Module {
-    return convertToModule(grip.classRegistry.getClassMirror(type), providableTargets, factories)
+    return parseModule(grip.classRegistry.getClassMirror(type), providableTargets, factories, moduleRegistry)
   }
 
-  private fun convertToModule(
+  private fun parseModule(
     mirror: ClassMirror,
     providableTargets: Collection<InjectionTarget>,
-    factories: Collection<Factory>
+    factories: Collection<Factory>,
+    moduleRegistry: ModuleRegistry
   ): Module {
     if (mirror.signature.typeVariables.isNotEmpty()) {
-      errorReporter.reportError("Module cannot have a type parameters: ${mirror.type.className}")
-      return Module(mirror.type, emptyList(), emptyList())
+      throw ModuleParserException("Module cannot have a type parameters: ${mirror.type.className}")
     }
 
     if (Types.MODULE_TYPE !in mirror.annotations) {
-      errorReporter.reportError("Class ${mirror.type.className} is not a module")
-      return Module(mirror.type, emptyList(), emptyList())
+      throw ModuleParserException("Class ${mirror.type.className} is not a module")
     }
+
+    val moduleProviders = moduleProviderParser.parseModuleProviders(mirror, moduleRegistry, includeProvidesAnnotation = false)
 
     bridgeRegistry.clear()
     mirror.methods.forEach { bridgeRegistry.reserveMethod(it.toMethodDescriptor()) }
@@ -122,7 +125,7 @@ class ModuleParserImpl(
     }
 
     val factoryProviders = factories.map { it.toProvider(mirror.type) }
-    return Module(mirror.type, constructors + methods + fields + factoryProviders, factories)
+    return Module(mirror.type, moduleProviders, constructors + methods + fields + factoryProviders, factories)
   }
 
   private fun InjectionTarget.toProvider(container: Type.Object): Provider {
@@ -209,3 +212,5 @@ class ModuleParserImpl(
       .build()
   }
 }
+
+class ModuleParserException(message: String) : ProcessingException(message)

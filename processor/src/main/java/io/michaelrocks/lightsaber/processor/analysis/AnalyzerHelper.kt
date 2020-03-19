@@ -25,6 +25,7 @@ import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.ErrorReporter
+import io.michaelrocks.lightsaber.processor.ProcessingException
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.model.Converter
@@ -32,11 +33,12 @@ import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.Injectee
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.model.Scope
-import java.util.ArrayList
 
 interface AnalyzerHelper {
   fun convertToInjectionPoint(method: MethodMirror, container: Type.Object): InjectionPoint.Method
-  fun convertToInjectionPoint(mirror: FieldMirror, container: Type.Object): InjectionPoint.Field
+  fun convertToInjectionPoint(field: FieldMirror, container: Type.Object): InjectionPoint.Field
+  fun convertToInjectee(method: MethodMirror, parameterIndex: Int): Injectee
+  fun convertToInjectee(field: FieldMirror): Injectee
   fun findQualifier(annotated: Annotated): AnnotationMirror?
   fun findScope(annotated: Annotated): Scope
 }
@@ -48,54 +50,20 @@ class AnalyzerHelperImpl(
 ) : AnalyzerHelper {
 
   override fun convertToInjectionPoint(method: MethodMirror, container: Type.Object): InjectionPoint.Method {
-    return InjectionPoint.Method(container, method, method.getInjectees())
+    return InjectionPoint.Method(container, method, getInjectees(method))
   }
 
-  override fun convertToInjectionPoint(mirror: FieldMirror, container: Type.Object): InjectionPoint.Field {
-    return InjectionPoint.Field(container, mirror, mirror.getInjectee())
+  override fun convertToInjectionPoint(field: FieldMirror, container: Type.Object): InjectionPoint.Field {
+    return InjectionPoint.Field(container, field, getInjectee(field))
   }
 
-  private fun MethodMirror.getInjectees(): List<Injectee> {
-    return ArrayList<Injectee>(parameters.size).apply {
-      parameters.forEachIndexed { index, parameter ->
-        val type = signature.parameterTypes[index]
-        add(newInjectee(type, parameter))
-      }
-    }
+  override fun convertToInjectee(method: MethodMirror, parameterIndex: Int): Injectee {
+    val type = method.signature.parameterTypes[parameterIndex]
+    return newInjectee(type, method.parameters[parameterIndex])
   }
 
-  private fun FieldMirror.getInjectee(): Injectee {
-    return newInjectee(signature.type, this)
-  }
-
-  private fun newInjectee(type: GenericType, holder: Annotated): Injectee {
-    val qualifier = findQualifier(holder)
-    val dependency = type.toDependency(qualifier)
-    val converter = type.getConverter()
-    return Injectee(dependency, converter, holder.annotations)
-  }
-
-  private fun GenericType.getConverter(): Converter {
-    return when (rawType) {
-      Types.PROVIDER_TYPE -> Converter.Identity
-      Types.LAZY_TYPE -> Converter.Adapter(LightsaberTypes.LAZY_ADAPTER_TYPE)
-      else -> Converter.Instance
-    }
-  }
-
-  private fun GenericType.toDependency(qualifier: AnnotationMirror?): Dependency {
-    when (rawType) {
-      Types.PROVIDER_TYPE,
-      Types.LAZY_TYPE ->
-        if (this is GenericType.Parameterized) {
-          return Dependency(typeArguments[0], qualifier)
-        } else {
-          errorReporter.reportError("Type $this must be parameterized")
-          return Dependency(this, qualifier)
-        }
-    }
-
-    return Dependency(this, qualifier)
+  override fun convertToInjectee(field: FieldMirror): Injectee {
+    return newInjectee(field.signature.type, field)
   }
 
   override fun findQualifier(annotated: Annotated): AnnotationMirror? {
@@ -128,5 +96,45 @@ class AnalyzerHelperImpl(
         Scope.None
       }
     }
+  }
+
+  private fun getInjectees(method: MethodMirror): List<Injectee> {
+    return method.parameters.mapIndexed { index, parameter ->
+      val type = method.signature.parameterTypes[index]
+      newInjectee(type, parameter)
+    }
+  }
+
+  private fun getInjectee(field: FieldMirror): Injectee {
+    return newInjectee(field.signature.type, field)
+  }
+
+  private fun newInjectee(type: GenericType, holder: Annotated): Injectee {
+    val qualifier = findQualifier(holder)
+    val dependency = type.toDependency(qualifier)
+    val converter = type.getConverter()
+    return Injectee(dependency, converter, holder.annotations)
+  }
+
+  private fun GenericType.getConverter(): Converter {
+    return when (rawType) {
+      Types.PROVIDER_TYPE -> Converter.Identity
+      Types.LAZY_TYPE -> Converter.Adapter(LightsaberTypes.LAZY_ADAPTER_TYPE)
+      else -> Converter.Instance
+    }
+  }
+
+  private fun GenericType.toDependency(qualifier: AnnotationMirror?): Dependency {
+    when (rawType) {
+      Types.PROVIDER_TYPE,
+      Types.LAZY_TYPE ->
+        if (this is GenericType.Parameterized) {
+          return Dependency(typeArguments[0], qualifier)
+        } else {
+          throw ProcessingException("Type $this must be parameterized")
+        }
+    }
+
+    return Dependency(this, qualifier)
   }
 }

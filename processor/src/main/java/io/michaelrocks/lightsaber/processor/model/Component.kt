@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,4 +26,17 @@ data class Component(
 ) {
 
   val modules: Collection<Module> = providers.map { it.module }
+
+  fun getModulesWithDescendants(): Sequence<Module> = sequence {
+    yieldModulesWithDescendants(modules)
+  }
+
+  private suspend fun SequenceScope<Module>.yieldModulesWithDescendants(modules: Iterable<Module>) {
+    modules.forEach { yieldModulesWithDescendants(it) }
+  }
+
+  private suspend fun SequenceScope<Module>.yieldModulesWithDescendants(module: Module) {
+    yield(module)
+    yieldModulesWithDescendants(module.modules)
+  }
 }
