@@ -15,7 +15,7 @@
  */
 
 allprojects {
-  version = '0.13.0-beta'
+  version = '0.14.0-beta'
   group = 'io.michaelrocks'
 
   ext.javaVersion = JavaVersion.VERSION_1_6
