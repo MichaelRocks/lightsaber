@@ -41,29 +41,22 @@ class ModuleRegistryImpl(
   files: Collection<File>
 ) : ModuleRegistry {
 
-  private val typeToModuleMap by lazy {
+  private val externals by lazy(LazyThreadSafetyMode.NONE) {
     val defaultModulesQuery = grip select classes from files where annotatedWith(Types.MODULE_TYPE) { _, annotation ->
-      annotation.values["isDefault"] == true
+      annotation.values[io.michaelrocks.lightsaber.Module::isDefault.name] == true
     }
 
     val defaultModuleTypes = defaultModulesQuery.execute().types
-    val providableTargetsByModules = groupProvidableTargetsByModules(providableTargets, defaultModuleTypes)
-    val factoriesByModules = groupFactoriesByModules(factories, defaultModuleTypes)
-    val moduleTypes = providableTargetsByModules.keys + factoriesByModules.keys
-
-    HashMap<Type.Object, Module>().also { typeToModuleMap ->
-      moduleTypes.forEach { moduleType ->
-        val providableTargetsForModuleType = providableTargetsByModules[moduleType].orEmpty()
-        val factoriesForModuleType = factoriesByModules[moduleType].orEmpty()
-        typeToModuleMap.getOrPut(moduleType) {
-          moduleParser.parseModule(moduleType, providableTargetsForModuleType, factoriesForModuleType)
-        }
-      }
-    }
+    Externals(
+      providableTargetsByModules = groupProvidableTargetsByModules(providableTargets, defaultModuleTypes),
+      factoriesByModules = groupFactoriesByModules(factories, defaultModuleTypes)
+    )
   }
 
+  private val modulesByTypes = HashMap<Type.Object, Module>()
+
   override fun getModule(moduleType: Type.Object): Module {
-    return typeToModuleMap.getOrPut(moduleType) { moduleParser.parseModule(moduleType, emptyList(), emptyList()) }
+    return maybeParseModule(moduleType)
   }
 
   private fun groupProvidableTargetsByModules(
@@ -129,4 +122,18 @@ class ModuleRegistryImpl(
       }
     }
   }
+
+  private fun maybeParseModule(moduleType: Type.Object): Module {
+    val externals = externals
+    val providableTargetsForModuleType = externals.providableTargetsByModules[moduleType].orEmpty()
+    val factoriesForModuleType = externals.factoriesByModules[moduleType].orEmpty()
+    return modulesByTypes.getOrPut(moduleType) {
+      moduleParser.parseModule(moduleType, providableTargetsForModuleType, factoriesForModuleType)
+    }
+  }
+
+  private class Externals(
+    val providableTargetsByModules: Map<Type.Object, List<InjectionTarget>>,
+    val factoriesByModules: Map<Type.Object, List<Factory>>
+  )
 }
