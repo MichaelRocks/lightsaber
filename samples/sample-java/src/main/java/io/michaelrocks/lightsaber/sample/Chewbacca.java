@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,10 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import io.michaelrocks.lightsaber.ProvidedAs;
+
 @Singleton
+@ProvidedAs(Wookiee.class)
 class Chewbacca implements Wookiee {
   private final Planet planet;
 

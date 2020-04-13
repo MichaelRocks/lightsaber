@@ -14,27 +14,9 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.sample;
+package io.michaelrocks.lightsaber.processor.model
 
-import javax.inject.Provider;
-import javax.inject.Singleton;
-
-import io.michaelrocks.lightsaber.Module;
-import io.michaelrocks.lightsaber.Provide;
-
-@Module(isDefault = true)
-class LightsaberModule {
-  @Provide
-  private final DarthVader darthVader = DarthVader.INSTANCE;
-
-  @Provide
-  private Droid provideDroid(final DroidFactory factory) {
-    return factory.produceR2D2("Silver");
-  }
-
-  @Provide
-  @Singleton
-  private Planet providePlanet(final Provider<Kashyyyk> kashyyykProvider) {
-    return kashyyykProvider.get();
-  }
-}
+data class Binding(
+  val dependency: Dependency,
+  val ancestor: Dependency
+)

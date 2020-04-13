@@ -16,15 +16,19 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
-import io.michaelrocks.lightsaber.processor.model.Converter
-import io.michaelrocks.lightsaber.processor.model.Injectee
-import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
+import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.Grip
+import io.michaelrocks.grip.mirrors.Type
 
-fun ProvisionPoint.getInjectees(): Collection<Injectee> {
-  return when (this) {
-    is ProvisionPoint.Constructor -> injectionPoint.injectees
-    is ProvisionPoint.Method -> injectionPoint.injectees
-    is ProvisionPoint.Field -> emptyList()
-    is ProvisionPoint.Binding -> listOf(Injectee(binding, Converter.Instance))
-  }
+fun Grip.getAncestors(type: Type.Object): Sequence<Type.Object> = classRegistry.getAncestors(type)
+
+fun ClassRegistry.getAncestors(type: Type.Object): Sequence<Type.Object> = sequence {
+  yieldAncestors(type, this@getAncestors)
+}
+
+private suspend fun SequenceScope<Type.Object>.yieldAncestors(type: Type.Object, classRegistry: ClassRegistry) {
+  yield(type)
+  val mirror = classRegistry.getClassMirror(type)
+  mirror.superType?.let { yieldAncestors(it, classRegistry) }
+  mirror.interfaces.forEach { yieldAncestors(it, classRegistry) }
 }

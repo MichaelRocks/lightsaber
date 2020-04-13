@@ -30,6 +30,7 @@ import io.michaelrocks.lightsaber.Key
 import io.michaelrocks.lightsaber.Lazy
 import io.michaelrocks.lightsaber.Module
 import io.michaelrocks.lightsaber.Provide
+import io.michaelrocks.lightsaber.ProvidedAs
 import io.michaelrocks.lightsaber.ProvidedBy
 import io.michaelrocks.lightsaber.Provides
 import javax.inject.Inject
@@ -45,6 +46,7 @@ object Types {
   val IMPORT_TYPE = getObjectType<Import>()
   val PROVIDE_TYPE = getObjectType<Provide>()
   val PROVIDES_TYPE = getObjectType<Provides>()
+  val PROVIDED_AS_TYPE = getObjectType<ProvidedAs>()
   val PROVIDED_BY_TYPE = getObjectType<ProvidedBy>()
   val COMPONENT_TYPE = getObjectType<Component>()
   val COMPONENT_NONE_TYPE = getObjectType<Component.None>()

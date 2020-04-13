@@ -14,27 +14,18 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.sample;
+package io.michaelrocks.lightsaber;
 
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import io.michaelrocks.lightsaber.Module;
-import io.michaelrocks.lightsaber.Provide;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@Module(isDefault = true)
-class LightsaberModule {
-  @Provide
-  private final DarthVader darthVader = DarthVader.INSTANCE;
-
-  @Provide
-  private Droid provideDroid(final DroidFactory factory) {
-    return factory.produceR2D2("Silver");
-  }
-
-  @Provide
-  @Singleton
-  private Planet providePlanet(final Provider<Kashyyyk> kashyyykProvider) {
-    return kashyyykProvider.get();
-  }
+@Target({ TYPE })
+@Retention(RUNTIME)
+@Documented
+public @interface ProvidedAs {
+  Class<?> value();
 }
