@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import io.michaelrocks.grip.mirrors.isPrimitive
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.exhaustive
 import io.michaelrocks.lightsaber.processor.commons.newMethod
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
@@ -149,11 +150,14 @@ class ProviderClassGenerator(
         provideFromMethod(bridge)
       } else {
         val provisionPoint = provider.provisionPoint
-        when (provisionPoint) {
-          is ProvisionPoint.Field -> provideFromField(provisionPoint)
-          is ProvisionPoint.Constructor -> provideFromConstructor(provisionPoint)
-          is ProvisionPoint.Method -> provideFromMethod(provisionPoint)
-        }
+        exhaustive(
+          when (provisionPoint) {
+            is ProvisionPoint.Field -> provideFromField(provisionPoint)
+            is ProvisionPoint.Constructor -> provideFromConstructor(provisionPoint)
+            is ProvisionPoint.Method -> provideFromMethod(provisionPoint)
+            is ProvisionPoint.Binding -> provideFromBinding(provisionPoint)
+          }
+        )
       }
 
       valueOf(provider.dependency.type.rawType)
@@ -215,5 +219,12 @@ class ProviderClassGenerator(
     getField(provider.type, INJECTOR_FIELD)
     swap()
     invokeInterface(Types.INJECTOR_TYPE, INJECT_MEMBERS_METHOD)
+  }
+
+  private fun GeneratorAdapter.provideFromBinding(provisionPoint: ProvisionPoint.Binding) {
+    loadThis()
+    getField(provider.type, INJECTOR_FIELD)
+    getInstance(keyRegistry, provisionPoint.binding)
+    checkCast(provisionPoint.dependency.type.rawType)
   }
 }

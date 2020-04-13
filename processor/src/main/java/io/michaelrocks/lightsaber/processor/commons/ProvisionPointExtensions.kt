@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,15 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
+import io.michaelrocks.lightsaber.processor.model.Converter
 import io.michaelrocks.lightsaber.processor.model.Injectee
 import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
 
 fun ProvisionPoint.getInjectees(): Collection<Injectee> {
   return when (this) {
-    is ProvisionPoint.AbstractMethod -> injectionPoint.injectees
+    is ProvisionPoint.Constructor -> injectionPoint.injectees
+    is ProvisionPoint.Method -> injectionPoint.injectees
     is ProvisionPoint.Field -> emptyList()
+    is ProvisionPoint.Binding -> listOf(Injectee(binding, Converter.Instance))
   }
 }

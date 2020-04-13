@@ -22,6 +22,7 @@ import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.lightsaber.LightsaberTypes
 import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.Types
+import io.michaelrocks.lightsaber.processor.commons.exhaustive
 import io.michaelrocks.lightsaber.processor.commons.invokeMethod
 import io.michaelrocks.lightsaber.processor.commons.newMethod
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
@@ -54,21 +55,18 @@ class ModulePatcher(
     providableMethods = HashSet(module.providers.size)
     for (provider in module.providers) {
       val provisionPoint = provider.provisionPoint
-      when (provisionPoint) {
-        is ProvisionPoint.Field -> providableFields.add(provisionPoint.field.toFieldDescriptor())
-        is ProvisionPoint.AbstractMethod -> providableMethods.add(provisionPoint.method.toMethodDescriptor())
-      }
+      exhaustive(
+        when (provisionPoint) {
+          is ProvisionPoint.Field -> providableFields.add(provisionPoint.field.toFieldDescriptor())
+          is ProvisionPoint.Constructor -> providableMethods.add(provisionPoint.method.toMethodDescriptor())
+          is ProvisionPoint.Method -> providableMethods.add(provisionPoint.method.toMethodDescriptor())
+          is ProvisionPoint.Binding -> Unit
+        }
+      )
     }
   }
 
-  override fun visit(
-    version: Int,
-    access: Int,
-    name: String,
-    signature: String?,
-    superName: String?,
-    interfaces: Array<String>?
-  ) {
+  override fun visit(version: Int, access: Int, name: String, signature: String?, superName: String?, interfaces: Array<String>?) {
     val injectorConfiguratorType = LightsaberTypes.INJECTOR_CONFIGURATOR_TYPE.internalName
     if (interfaces == null || injectorConfiguratorType !in interfaces) {
       val newInterfaces =
