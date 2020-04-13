@@ -112,8 +112,9 @@ following order.
 ### Providing dependencies
 
 In order to be able to inject a dependency you have to provide this dependency first. In other words you have to tell
-Lightsaber what it have to return when requested a dependency of some type. This can be done in two ways: using modules
-and their provider methods and via injectable constructors mentioned earlier.
+Lightsaber what it have to return when requested a dependency of some type. This can be done in three ways: using
+modules and their provider methods, via injectable constructors mentioned earlier, and by using the `@ProvidedAs`
+annotation.
 
 #### Provider methods
 
@@ -218,6 +219,50 @@ need to be provided by this module.
 When providing a dependency using an injectable constructor Lightsaber will perform field and method injection into
 the provided instance.
 
+#### `@ProvidedAs` annotation
+
+The `@ProvidedAs` annotation can be used to bind an interface to an implementation when you don't want to define a
+provider method in a module. Let's assume you have a `Droid` interface and its `ElectricalDroid` implementation and
+you want to provide an `ElectricalDroid` instance as a `Droid` dependency.
+
+```java
+public interface Droid {
+}
+
+public class ElectricalDroid implements Droid {
+  private Battery battery;
+
+  @Inject
+  public ElectricalDroid(Battery battery) {
+    this.battery = battery;
+  }
+
+  /* ... */
+}
+```
+
+You can achieve that by adding a provider method to a module:
+
+```java
+@Module
+public class DroidModule {
+  @Provide
+  public Droid provideDroid(final ElectricalDroid droid) {
+    return droid;
+  }
+}
+```
+
+But this approach would require the `DroidModule` to be aware of the `ElectricalDroid` implementation, which isn't
+always the case. Another way to do that is to annotate `ElectricalDroid` with the `@ProvidedAs` annotation:
+
+```java
+@ProvidedAs(Droid.class)
+public class ElectricalDroid implements Droid {
+  /* ... */
+}
+```
+
 ### Manual injection
 
 Manual injection is a way to create an instance of a provided type or to perform field and method injection into an
@@ -286,7 +331,7 @@ While this is a working example it can be refactored to using constructor inject
 becomes unnecessary.
 
 ```java
-class ElectricalDroid implements Droid {
+public class ElectricalDroid implements Droid {
   private Battery battery;
 
   @Inject
@@ -316,7 +361,7 @@ Lightsaber will return a single instance of the dependency for a given injector.
 
 ```java
 @Singleton
-class ElectricalDroid implements Droid {
+public class ElectricalDroid implements Droid {
   /* ... */
 }
 ```
@@ -524,7 +569,7 @@ a construction point we need to inject a battery of the corresponding type into 
 The following classes define a component that provides droids. Each droid accepts a `Battery` as a dependency.
 
 ```java
-class ElectricalDroid implements Droid {
+public class ElectricalDroid implements Droid {
   private Battery battery;
 
   @Inject
