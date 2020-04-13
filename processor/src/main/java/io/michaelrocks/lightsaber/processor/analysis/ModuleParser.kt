@@ -37,10 +37,12 @@ import io.michaelrocks.grip.returns
 import io.michaelrocks.lightsaber.processor.ProcessingException
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.contains
+import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.commons.toFieldDescriptor
 import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
 import io.michaelrocks.lightsaber.processor.logging.getLogger
+import io.michaelrocks.lightsaber.processor.model.Binding
 import io.michaelrocks.lightsaber.processor.model.Converter
 import io.michaelrocks.lightsaber.processor.model.Dependency
 import io.michaelrocks.lightsaber.processor.model.Factory
@@ -66,6 +68,7 @@ interface ModuleParser {
 class ModuleParserImpl(
   private val grip: Grip,
   private val moduleProviderParser: ModuleProviderParser,
+  private val bindingRegistry: BindingRegistry,
   private val analyzerHelper: AnalyzerHelper,
   private val projectName: String
 ) : ModuleParser {
@@ -102,70 +105,107 @@ class ModuleParserImpl(
     bridgeRegistry.clear()
     mirror.methods.forEach { bridgeRegistry.reserveMethod(it.toMethodDescriptor()) }
 
-    val isProvidable = (annotatedWith(Types.PROVIDES_TYPE) or annotatedWith(Types.PROVIDE_TYPE)) and not(isStatic())
-    val methodsQuery = grip select methods from mirror where
-        (isProvidable and methodType(not(returns(Type.Primitive.Void))))
-    val fieldsQuery = grip select fields from mirror where
-        (isProvidable and not(isStatic()))
-
-    logger.debug("Module: {}", mirror.type.className)
-    val constructors = providableTargets.map { target ->
-      logger.debug("  Constructor: {}", target.injectionPoints.first())
-      target.toProvider(target.type)
-    }
-
-    val methods = methodsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, method ->
-      logger.debug("  Method: {}", method)
-      method.toProvider(mirror.type, index)
-    }
-
-    val fields = fieldsQuery.execute()[mirror.type].orEmpty().mapIndexed { index, field ->
-      logger.debug("  Field: {}", field)
-      field.toProvider(mirror.type, index)
-    }
-
-    val factoryProviders = factories.map { it.toProvider(mirror.type) }
-    return Module(mirror.type, moduleProviders, constructors + methods + fields + factoryProviders, factories)
+    val providers = createProviders(mirror, providableTargets, factories)
+    return Module(mirror.type, moduleProviders, providers, factories)
   }
 
-  private fun InjectionTarget.toProvider(container: Type.Object): Provider {
-    val mirror = grip.classRegistry.getClassMirror(type)
-    val providerType = getObjectTypeByInternalName("${type.internalName}\$ConstructorProvider\$$projectName")
-    val dependency = Dependency(GenericType.Raw(type), analyzerHelper.findQualifier(mirror))
-    val injectionPoint = injectionPoints.first() as InjectionPoint.Method
+  private fun createProviders(
+    module: ClassMirror,
+    providableTargets: Collection<InjectionTarget>,
+    factories: Collection<Factory>
+  ): Collection<Provider> {
+    val isProvidable = (annotatedWith(Types.PROVIDES_TYPE) or annotatedWith(Types.PROVIDE_TYPE)) and not(isStatic())
+    val methodsQuery = grip select methods from module where (isProvidable and methodType(not(returns(Type.Primitive.Void))))
+    val fieldsQuery = grip select fields from module where isProvidable
+
+    logger.debug("Module: {}", module.type.className)
+    val constructorProviders = providableTargets.map { target ->
+      logger.debug("  Constructor: {}", target.injectionPoints.first())
+      newConstructorProvider(target.type, target)
+    }
+
+    val methodProviders = methodsQuery.execute()[module.type].orEmpty().mapIndexed { index, method ->
+      logger.debug("  Method: {}", method)
+      newMethodProvider(module.type, method, index)
+    }
+
+    val fieldProviders = fieldsQuery.execute()[module.type].orEmpty().mapIndexed { index, field ->
+      logger.debug("  Field: {}", field)
+      newFieldProvider(module.type, field, index)
+    }
+
+    val directProviders = constructorProviders + methodProviders + fieldProviders
+    val moduleBindings = directProviders.mapNotNull { provider ->
+      bindingRegistry.findBindingByDependency(provider.dependency)?.let { binding ->
+        provider to binding
+      }
+    }
+
+    val bindingProviders = moduleBindings.mapIndexed { index, (provider, binding) ->
+      logger.debug("  Binding: {} -> {}", binding.dependency, binding.ancestor)
+      newBindingProvider(module.type, provider, binding, index)
+    }
+
+    val factoryProviders = factories.map { factory ->
+      logger.debug("  Factory: {}", factory)
+      newFactoryProvider(module.type, factory)
+    }
+
+    val providerCount = constructorProviders.size + methodProviders.size + fieldProviders.size + bindingProviders.size + factoryProviders.size
+    return ArrayList<Provider>(providerCount).apply {
+      addAll(constructorProviders)
+      addAll(methodProviders)
+      addAll(fieldProviders)
+      addAll(bindingProviders)
+      addAll(factoryProviders)
+    }
+  }
+
+  private fun newConstructorProvider(container: Type.Object, target: InjectionTarget): Provider {
+    val mirror = grip.classRegistry.getClassMirror(target.type)
+    val providerType = getObjectTypeByInternalName("${target.type.internalName}\$ConstructorProvider\$$projectName")
+    val dependency = Dependency(GenericType.Raw(target.type), analyzerHelper.findQualifier(mirror))
+    val injectionPoint = target.injectionPoints.first() as InjectionPoint.Method
     val provisionPoint = ProvisionPoint.Constructor(dependency, injectionPoint)
     val scope = analyzerHelper.findScope(mirror)
     return Provider(providerType, provisionPoint, container, scope)
   }
 
-  private fun MethodMirror.toProvider(container: Type.Object, index: Int): Provider {
+  private fun newMethodProvider(container: Type.Object, method: MethodMirror, index: Int): Provider {
     val providerType = getObjectTypeByInternalName("${container.internalName}\$MethodProvider\$$index\$$projectName")
-    val dependency = Dependency(signature.returnType, analyzerHelper.findQualifier(this))
-    val injectionPoint = analyzerHelper.convertToInjectionPoint(this, container)
+    val dependency = Dependency(method.signature.returnType, analyzerHelper.findQualifier(method))
+    val injectionPoint = analyzerHelper.convertToInjectionPoint(method, container)
     val provisionPoint = ProvisionPoint.Method(dependency, injectionPoint, null).withBridge()
-    val scope = analyzerHelper.findScope(this)
+    val scope = analyzerHelper.findScope(method)
     return Provider(providerType, provisionPoint, container, scope)
   }
 
-  private fun FieldMirror.toProvider(container: Type.Object, index: Int): Provider {
+  private fun newFieldProvider(container: Type.Object, field: FieldMirror, index: Int): Provider {
     val providerType = getObjectTypeByInternalName("${container.internalName}\$FieldProvider\$$index\$$projectName")
-    val dependency = Dependency(signature.type, analyzerHelper.findQualifier(this))
-    val provisionPoint = ProvisionPoint.Field(container, dependency, null, this).withBridge()
-    val scope = analyzerHelper.findScope(this)
+    val dependency = Dependency(field.signature.type, analyzerHelper.findQualifier(field))
+    val provisionPoint = ProvisionPoint.Field(container, dependency, null, field).withBridge()
+    val scope = analyzerHelper.findScope(field)
     return Provider(providerType, provisionPoint, container, scope)
   }
 
-  private fun Factory.toProvider(container: Type.Object): Provider {
-    val mirror = grip.classRegistry.getClassMirror(type)
-    val providerType = getObjectTypeByInternalName("${type.internalName}\$FactoryProvider\$$projectName")
+  private fun newBindingProvider(container: Type.Object, provider: Provider, binding: Binding, index: Int): Provider {
+    val bindingType = binding.dependency.type.rawType as Type.Object
+    val providerType = getObjectTypeByInternalName("${bindingType.internalName}\$BindingProvider\$$index\$$projectName")
+    val provisionPoint = ProvisionPoint.Binding(container, binding.ancestor, binding.dependency)
+    return Provider(providerType, provisionPoint, container, provider.scope)
+  }
+
+  private fun newFactoryProvider(container: Type.Object, factory: Factory): Provider {
+    val mirror = grip.classRegistry.getClassMirror(factory.type)
+    val providerType = getObjectTypeByInternalName("${factory.type.internalName}\$FactoryProvider\$$projectName")
     val constructorMirror = MethodMirror.Builder()
       .access(ACC_PUBLIC)
       .name(MethodDescriptor.CONSTRUCTOR_NAME)
       .type(getMethodType(Type.Primitive.Void, Types.INJECTOR_TYPE))
       .build()
     val constructorInjectee = Injectee(Dependency(GenericType.Raw(Types.INJECTOR_TYPE)), Converter.Instance)
-    val injectionPoint = InjectionPoint.Method(implementationType, constructorMirror, listOf(constructorInjectee))
-    val provisionPoint = ProvisionPoint.Constructor(dependency, injectionPoint)
+    val injectionPoint = InjectionPoint.Method(factory.implementationType, constructorMirror, listOf(constructorInjectee))
+    val provisionPoint = ProvisionPoint.Constructor(factory.dependency, injectionPoint)
     val scope = analyzerHelper.findScope(mirror)
     return Provider(providerType, provisionPoint, container, scope)
   }

@@ -21,6 +21,7 @@ import io.michaelrocks.grip.GripFactory
 import io.michaelrocks.lightsaber.processor.analysis.Analyzer
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.closeQuietly
+import io.michaelrocks.lightsaber.processor.commons.exhaustive
 import io.michaelrocks.lightsaber.processor.generation.GenerationContextFactory
 import io.michaelrocks.lightsaber.processor.generation.Generator
 import io.michaelrocks.lightsaber.processor.generation.model.GenerationContext
@@ -153,12 +154,18 @@ class ClassProcessor(
     val nextIntent = "$indent  "
     logger.debug("${indent}Module: {}", type)
     for (provider in providers) {
-      when (provider.provisionPoint) {
-        is ProvisionPoint.AbstractMethod ->
-          logger.debug("${nextIntent}Provides: {}", provider.provisionPoint.method)
-        is ProvisionPoint.Field ->
-          logger.debug("${nextIntent}Provides: {}", provider.provisionPoint.field)
-      }
+      exhaustive(
+        when (val provisionPoint = provider.provisionPoint) {
+          is ProvisionPoint.Constructor ->
+            logger.debug("${nextIntent}Constructor: {}", provisionPoint.method)
+          is ProvisionPoint.Method ->
+            logger.debug("${nextIntent}Method: {}", provisionPoint.method)
+          is ProvisionPoint.Field ->
+            logger.debug("${nextIntent}Field: {}", provisionPoint.field)
+          is ProvisionPoint.Binding ->
+            logger.debug("${nextIntent}Binding: {} -> {}", provisionPoint.dependency, provisionPoint.binding)
+        }
+      )
     }
 
     for (module in modules) {
