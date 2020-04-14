@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 package io.michaelrocks.lightsaber.sample
 
 import io.michaelrocks.lightsaber.Factory
+import io.michaelrocks.lightsaber.sample.library.Droid
 
 @Factory
 internal interface DroidFactory {
 
-  fun produceR2D2(color: String): R2D2
+  @Factory.Return(R2D2::class)
+  fun produceR2D2(color: String): Droid
 }

@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber.processor.validation
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.isInterface
 import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.grip.mirrors.signature.GenericType
 import io.michaelrocks.lightsaber.processor.ErrorReporter
@@ -27,6 +28,8 @@ import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.getAncestors
 import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.model.Binding
+import io.michaelrocks.lightsaber.processor.model.Factory
+import io.michaelrocks.lightsaber.processor.model.FactoryProvisionPoint
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
 import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
@@ -43,6 +46,7 @@ class SanityChecker(
     checkProviderMethodsReturnValues(context)
     checkSubcomponentsAreComponents(context)
     checkComponentsAndModulesExtendObject(context)
+    checkFactories(context)
     checkBindingsConnectValidClasses(context)
   }
 
@@ -120,6 +124,61 @@ class SanityChecker(
     val mirror = classRegistry.getClassMirror(type)
     if (mirror.superType != Types.OBJECT_TYPE) {
       errorReporter.reportError("${type.className} has a super type of ${mirror.type.className} instead of Object")
+    }
+  }
+
+  private fun checkFactories(context: InjectionContext) {
+    for (factory in context.factories) {
+      checkFactory(factory)
+    }
+  }
+
+  private fun checkFactory(factory: Factory) {
+    val mirror = classRegistry.getClassMirror(factory.type)
+
+    if (!mirror.isInterface) {
+      errorReporter.reportError("Factory ${mirror.type.className} must be an interface")
+      return
+    }
+
+    if (mirror.signature.typeVariables.isNotEmpty()) {
+      errorReporter.reportError("Factory ${mirror.type.className} mustn't contain generic parameters")
+      return
+    }
+
+    if (mirror.interfaces.isNotEmpty()) {
+      errorReporter.reportError("Factory ${mirror.type.className} mustn't extend any interfaces")
+      return
+    }
+
+    if (mirror.methods.isEmpty()) {
+      errorReporter.reportError("Factory ${mirror.type.className} must contain at least one method")
+      return
+    }
+
+    for (provisionPoint in factory.provisionPoints) {
+      checkFactoryProvisionPoint(provisionPoint)
+    }
+  }
+
+  private fun checkFactoryProvisionPoint(provisionPoint: FactoryProvisionPoint) {
+    val method = provisionPoint.method
+
+    if (method.signature.typeVariables.isNotEmpty()) {
+      errorReporter.reportError("Method ${provisionPoint.containerType.className}.${method.name} mustn't contain generic parameters")
+      return
+    }
+
+    val dependencyType = provisionPoint.injectionPoint.containerType
+    val returnType = provisionPoint.method.type.returnType
+    if (dependencyType != returnType) {
+      if (returnType !in classRegistry.getAncestors(dependencyType)) {
+        errorReporter.reportError(
+          "Method ${provisionPoint.containerType.className}.${method.name} returns ${returnType.className} which isn't an ancestor of " +
+              "${dependencyType.className} from the @Factory.Return annotation"
+        )
+        return
+      }
     }
   }
 
