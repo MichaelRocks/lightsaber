@@ -738,6 +738,35 @@ public class DroidParty {
 }
 ```
 
+The dependency type is resolved from the return type of the factory method by default. You can change this behavior by annotating
+the factory method with `@Factory.Return` annotation with the actual dependency type as an argument:
+
+```java
+public interface Droid {
+  /* ... */
+}
+
+public class ElectricalDroid {
+  private final Battery battery;
+  private final String model;
+  
+  @Factory.Inject
+  public Droid(Battery battery, @Factory.Parameter String model) {
+    this.battery = battery;
+    this.model = model;
+  }
+  
+  /* ... */
+}
+
+@Factory
+@ProvidedBy(DroidModule.class)
+public interface DroidFactory {
+  @Factory.Return(ElectricalDroid.class)
+  Droid assembleDroid(String model);
+}
+```
+
 ### Provider interceptors
 
 When writing tests you may need to substitute a real dependency with a mock. To be able to do that you can register a `ProviderInterceptor` when
