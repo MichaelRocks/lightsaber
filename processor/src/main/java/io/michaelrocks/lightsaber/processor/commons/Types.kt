@@ -56,6 +56,7 @@ object Types {
   val FACTORY_TYPE = getObjectType<Factory>()
   val FACTORY_INJECT_TYPE = getObjectType<Factory.Inject>()
   val FACTORY_PARAMETER_TYPE = getObjectType<Factory.Parameter>()
+  val FACTORY_RETURN_TYPE = getObjectType<Factory.Return>()
   val INJECTOR_TYPE = getObjectType<Injector>()
   val PROVIDER_TYPE = getObjectType<Provider<*>>()
   val LAZY_TYPE = getObjectType<Lazy<*>>()
