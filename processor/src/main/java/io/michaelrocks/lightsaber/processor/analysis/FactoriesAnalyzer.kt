@@ -28,6 +28,7 @@ import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
 import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.lightsaber.Factory.Return
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.associateByIndexedTo
@@ -123,7 +124,7 @@ class FactoriesAnalyzerImpl(
   private fun tryExtractReturnTypeFromFactoryMethod(mirror: ClassMirror, method: MethodMirror): Type.Object? {
     val returnAnnotation = method.annotations[Types.FACTORY_RETURN_TYPE]
     if (returnAnnotation != null) {
-      val returnType = returnAnnotation.values["value"]
+      val returnType = returnAnnotation.values[Return::value.name]
       if (returnType !is Type) {
         error("Method ${mirror.type.className}.${method.name} is annotated with @Factory.Return that has a wrong parameter $returnType")
         return null

@@ -22,6 +22,7 @@ import io.michaelrocks.grip.classes
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.lightsaber.ProvidedAs
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.model.Binding
@@ -62,7 +63,7 @@ class BindingsAnalyzerImpl(
     val providedAs = mirror.annotations[Types.PROVIDED_AS_TYPE] ?: return null
 
     @Suppress("UNCHECKED_CAST")
-    val ancestorType = providedAs.values["value"] as Type? ?: return null
+    val ancestorType = providedAs.values[ProvidedAs::value.name] as Type? ?: return null
     if (ancestorType !is Type.Object) {
       error("Class ${mirror.type.className} has invalid type in its @ProvidedAs annotation: ${ancestorType.className}")
       return null

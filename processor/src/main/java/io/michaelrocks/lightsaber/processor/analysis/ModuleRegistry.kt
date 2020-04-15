@@ -20,6 +20,7 @@ import io.michaelrocks.grip.Grip
 import io.michaelrocks.grip.annotatedWith
 import io.michaelrocks.grip.classes
 import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.lightsaber.ProvidedBy
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.model.Factory
@@ -71,8 +72,7 @@ class ModuleRegistryImpl(
       providableTargets.forEach { target ->
         val mirror = grip.classRegistry.getClassMirror(target.type)
         val providedByAnnotation = mirror.annotations[Types.PROVIDED_BY_TYPE]
-        val moduleTypes =
-          if (providedByAnnotation != null) providedByAnnotation.values["value"] as List<*> else defaultModuleTypes
+        val moduleTypes = if (providedByAnnotation != null) providedByAnnotation.values[ProvidedBy::value.name] as List<*> else defaultModuleTypes
 
         if (moduleTypes.isEmpty()) {
           errorReporter.reportError(
@@ -103,8 +103,7 @@ class ModuleRegistryImpl(
       factories.forEach { factory ->
         val mirror = grip.classRegistry.getClassMirror(factory.type)
         val providedByAnnotation = mirror.annotations[Types.PROVIDED_BY_TYPE]
-        val moduleTypes =
-          if (providedByAnnotation != null) providedByAnnotation.values["value"] as List<*> else defaultModuleTypes
+        val moduleTypes = if (providedByAnnotation != null) providedByAnnotation.values[ProvidedBy::value.name] as List<*> else defaultModuleTypes
 
         if (moduleTypes.isEmpty()) {
           errorReporter.reportError(
