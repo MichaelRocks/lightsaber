@@ -63,13 +63,13 @@ class DependencyResolver(
     }
   }
 
-  fun resolveAllDepepdencies() {
+  fun resolveAllDependencies() {
     requiredDependencies.clear()
   }
 
-  fun getUnresolvedDependenciesAndResolveAllDepepdencies(): Set<Dependency> {
+  fun getUnresolvedDependenciesAndResolveAllDependencies(): Set<Dependency> {
     return getUnresolvedDependencies().also {
-      resolveAllDepepdencies()
+      resolveAllDependencies()
     }
   }
 }
