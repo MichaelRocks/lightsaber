@@ -25,6 +25,7 @@ import io.michaelrocks.grip.mirrors.getObjectType
 import io.michaelrocks.lightsaber.Component
 import io.michaelrocks.lightsaber.Factory
 import io.michaelrocks.lightsaber.Import
+import io.michaelrocks.lightsaber.ImportedBy
 import io.michaelrocks.lightsaber.Injector
 import io.michaelrocks.lightsaber.Key
 import io.michaelrocks.lightsaber.Lazy
@@ -44,6 +45,7 @@ object Types {
   val STRING_TYPE = getObjectType<String>()
   val INJECT_TYPE = getObjectType<Inject>()
   val IMPORT_TYPE = getObjectType<Import>()
+  val IMPORTED_BY_TYPE = getObjectType<ImportedBy>()
   val PROVIDE_TYPE = getObjectType<Provide>()
   val PROVIDES_TYPE = getObjectType<Provides>()
   val PROVIDED_AS_TYPE = getObjectType<ProvidedAs>()

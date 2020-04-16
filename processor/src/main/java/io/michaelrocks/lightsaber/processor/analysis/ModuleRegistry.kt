@@ -19,7 +19,9 @@ package io.michaelrocks.lightsaber.processor.analysis
 import io.michaelrocks.grip.Grip
 import io.michaelrocks.grip.annotatedWith
 import io.michaelrocks.grip.classes
+import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.lightsaber.ImportedBy
 import io.michaelrocks.lightsaber.ProvidedBy
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
@@ -43,12 +45,16 @@ class ModuleRegistryImpl(
 ) : ModuleRegistry {
 
   private val externals by lazy(LazyThreadSafetyMode.NONE) {
-    val defaultModulesQuery = grip select classes from files where annotatedWith(Types.MODULE_TYPE) { _, annotation ->
-      annotation.values[io.michaelrocks.lightsaber.Module::isDefault.name] == true
+    val modulesQuery = grip select classes from files where annotatedWith(Types.MODULE_TYPE)
+    val modules = modulesQuery.execute().classes
+
+    val defaultModuleTypes = modules.mapNotNull { mirror ->
+      val annotation = checkNotNull(mirror.annotations[Types.MODULE_TYPE])
+      if (annotation.values[io.michaelrocks.lightsaber.Module::isDefault.name] == true) mirror.type else null
     }
 
-    val defaultModuleTypes = defaultModulesQuery.execute().types
     Externals(
+      importeeModulesByImporterModules = groupImporteeModulesByImporterModules(modules),
       providableTargetsByModules = groupProvidableTargetsByModules(providableTargets, defaultModuleTypes),
       factoriesByModules = groupFactoriesByModules(factories, defaultModuleTypes)
     )
@@ -61,6 +67,42 @@ class ModuleRegistryImpl(
   override fun getModule(moduleType: Type.Object): Module {
     return withModuleTypeInStack(moduleType) {
       maybeParseModule(moduleType)
+    }
+  }
+
+  private fun groupImporteeModulesByImporterModules(modules: Collection<ClassMirror>): Map<Type.Object, Collection<Type.Object>> {
+    return HashMap<Type.Object, MutableList<Type.Object>>().also { importeeModulesByImporterModules ->
+      modules.forEach { importee ->
+        extractImporterModulesFromModule(importee).forEach { importerType ->
+          importeeModulesByImporterModules.getOrPut(importerType, ::ArrayList).add(importee.type)
+        }
+      }
+    }
+  }
+
+  private fun extractImporterModulesFromModule(importee: ClassMirror): List<Type.Object> {
+    val annotation = importee.annotations[Types.IMPORTED_BY_TYPE] ?: return emptyList()
+    val importerTypes = annotation.values[ImportedBy::value.name] as List<*>
+
+    if (importerTypes.isEmpty()) {
+      errorReporter.reportError("Module ${importee.type.className} should be imported by at least one module")
+      return emptyList()
+    } else {
+      return importerTypes.mapNotNull {
+        val importerType = it as? Type.Object
+        if (importerType == null) {
+          errorReporter.reportError("A non-class type is specified in @ProvidedBy annotation for ${importee.type.className}")
+          return@mapNotNull null
+        }
+
+        val importer = grip.classRegistry.getClassMirror(importerType)
+        if (Types.MODULE_TYPE !in importer.annotations && Types.COMPONENT_TYPE !in importer.annotations) {
+          errorReporter.reportError("Module ${importee.type.className} is imported by ${importerType.className}, which isn't a module")
+          return@mapNotNull null
+        }
+
+        importerType
+      }
     }
   }
 
@@ -107,7 +149,7 @@ class ModuleRegistryImpl(
 
         if (moduleTypes.isEmpty()) {
           errorReporter.reportError(
-            "Class ${factory.type.className} should be bounds to at least one module. " +
+            "Class ${factory.type.className} should be bound to at least one module. " +
                 "You can annotate it with @ProvidedBy with a module list " +
                 "or make some of your modules default with @Module(isDefault = true)"
           )
@@ -116,9 +158,7 @@ class ModuleRegistryImpl(
             if (moduleType is Type.Object) {
               factoriesByModule.getOrPut(moduleType, ::ArrayList).add(factory)
             } else {
-              errorReporter.reportError(
-                "A non-class type is specified in @ProvidedBy annotation for ${mirror.type.className}"
-              )
+              errorReporter.reportError("A non-class type is specified in @ProvidedBy annotation for ${mirror.type.className}")
             }
           }
         }
@@ -128,10 +168,11 @@ class ModuleRegistryImpl(
 
   private fun maybeParseModule(moduleType: Type.Object): Module {
     val externals = externals
+    val importeeModuleTypes = externals.importeeModulesByImporterModules[moduleType].orEmpty()
     val providableTargetsForModuleType = externals.providableTargetsByModules[moduleType].orEmpty()
     val factoriesForModuleType = externals.factoriesByModules[moduleType].orEmpty()
     return modulesByTypes.getOrPut(moduleType) {
-      moduleParser.parseModule(moduleType, providableTargetsForModuleType, factoriesForModuleType, this)
+      moduleParser.parseModule(moduleType, importeeModuleTypes, providableTargetsForModuleType, factoriesForModuleType, this)
     }
   }
 
@@ -151,7 +192,8 @@ class ModuleRegistryImpl(
   }
 
   private class Externals(
-    val providableTargetsByModules: Map<Type.Object, List<InjectionTarget>>,
-    val factoriesByModules: Map<Type.Object, List<Factory>>
+    val importeeModulesByImporterModules: Map<Type.Object, Collection<Type.Object>>,
+    val providableTargetsByModules: Map<Type.Object, Collection<InjectionTarget>>,
+    val factoriesByModules: Map<Type.Object, Collection<Factory>>
   )
 }

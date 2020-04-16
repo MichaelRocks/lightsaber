@@ -41,7 +41,12 @@ import io.michaelrocks.lightsaber.processor.model.ModuleProvider
 import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
 
 interface ModuleProviderParser {
-  fun parseModuleProviders(mirror: ClassMirror, moduleRegistry: ModuleRegistry, isComponentDefaultModule: Boolean): Collection<ModuleProvider>
+  fun parseModuleProviders(
+    mirror: ClassMirror,
+    moduleRegistry: ModuleRegistry,
+    importeeModuleTypes: Collection<Type.Object>,
+    isComponentDefaultModule: Boolean
+  ): Collection<ModuleProvider>
 }
 
 class ModuleProviderParserImpl(
@@ -54,6 +59,7 @@ class ModuleProviderParserImpl(
   override fun parseModuleProviders(
     mirror: ClassMirror,
     moduleRegistry: ModuleRegistry,
+    importeeModuleTypes: Collection<Type.Object>,
     isComponentDefaultModule: Boolean
   ): Collection<ModuleProvider> {
     val isImportable = createImportAnnotationMatcher(includeProvidesAnnotation = !isComponentDefaultModule)
@@ -72,7 +78,13 @@ class ModuleProviderParserImpl(
       tryParseModuleProvider(field, moduleRegistry)
     }
 
-    return methods + fields
+    val inverseImports = importeeModuleTypes.map { importeeType ->
+      logger.debug("  Inverse import: {}", importeeType.className)
+      val module = moduleRegistry.getModule(importeeType)
+      ModuleProvider(module, ModuleProvisionPoint.InverseImport(mirror.type, importeeType))
+    }
+
+    return methods + fields + inverseImports
   }
 
   private fun createImportAnnotationMatcher(includeProvidesAnnotation: Boolean): (Grip, Annotated) -> Boolean {

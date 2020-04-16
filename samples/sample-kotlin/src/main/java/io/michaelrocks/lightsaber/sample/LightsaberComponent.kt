@@ -17,7 +17,6 @@
 package io.michaelrocks.lightsaber.sample
 
 import io.michaelrocks.lightsaber.Component
-import io.michaelrocks.lightsaber.Import
 import io.michaelrocks.lightsaber.Provide
 
 @Component
@@ -25,9 +24,4 @@ internal class LightsaberComponent {
 
   @Provide
   private val darthVader = DarthVader
-
-  @Import
-  private fun importLightsaberModule(): LightsaberModule {
-    return LightsaberModule()
-  }
 }

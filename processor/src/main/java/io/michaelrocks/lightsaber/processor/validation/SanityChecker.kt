@@ -19,6 +19,7 @@ package io.michaelrocks.lightsaber.processor.validation
 import io.michaelrocks.grip.ClassRegistry
 import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.Type
+import io.michaelrocks.grip.mirrors.isDefaultConstructor
 import io.michaelrocks.grip.mirrors.isInterface
 import io.michaelrocks.grip.mirrors.isStatic
 import io.michaelrocks.grip.mirrors.signature.GenericType
@@ -32,6 +33,7 @@ import io.michaelrocks.lightsaber.processor.model.Factory
 import io.michaelrocks.lightsaber.processor.model.FactoryProvisionPoint
 import io.michaelrocks.lightsaber.processor.model.InjectionContext
 import io.michaelrocks.lightsaber.processor.model.InjectionPoint
+import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
 import io.michaelrocks.lightsaber.processor.model.isConstructorProvider
 import org.objectweb.asm.Opcodes
 
@@ -46,6 +48,7 @@ class SanityChecker(
     checkProviderMethodsReturnValues(context)
     checkSubcomponentsAreComponents(context)
     checkComponentsAndModulesExtendObject(context)
+    checkModulesWithImportedByAreDefaultConstructible(context)
     checkFactories(context)
     checkBindingsConnectValidClasses(context)
   }
@@ -118,6 +121,21 @@ class SanityChecker(
         checkClassExtendsObject(module.type)
       }
     }
+  }
+
+  private fun checkModulesWithImportedByAreDefaultConstructible(context: InjectionContext) {
+    context.components.asSequence()
+      .flatMap { component -> component.getModuleProvidersWithDescendants() }
+      .map { provider -> provider.provisionPoint }
+      .filterIsInstance<ModuleProvisionPoint.InverseImport>()
+      .distinctBy { provisionPoint -> provisionPoint.importeeType }
+      .forEach { provisionPoint ->
+        val type = provisionPoint.importeeType
+        val mirror = classRegistry.getClassMirror(type)
+        if (mirror.constructors.none { it.isDefaultConstructor }) {
+          errorReporter.reportError("Module ${type.className} with @ImportedBy annotation must have a default constructor")
+        }
+      }
   }
 
   private fun checkClassExtendsObject(type: Type.Object) {

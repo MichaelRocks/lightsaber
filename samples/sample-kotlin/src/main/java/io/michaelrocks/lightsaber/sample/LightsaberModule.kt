@@ -16,12 +16,14 @@
 
 package io.michaelrocks.lightsaber.sample
 
+import io.michaelrocks.lightsaber.ImportedBy
 import io.michaelrocks.lightsaber.Module
 import io.michaelrocks.lightsaber.Provide
 import javax.inject.Provider
 import javax.inject.Singleton
 
 @Module(isDefault = true)
+@ImportedBy(LightsaberComponent::class)
 internal class LightsaberModule {
 
   @Provide

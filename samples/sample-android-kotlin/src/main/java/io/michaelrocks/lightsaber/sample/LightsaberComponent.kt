@@ -28,11 +28,6 @@ internal class LightsaberComponent {
   private val darthVader = DarthVader
 
   @Import
-  private fun importLightsaberModule(): LightsaberModule {
-    return LightsaberModule()
-  }
-
-  @Import
   private fun importLibraryModule(): LibraryModule {
     return LibraryModule()
   }
