@@ -29,10 +29,21 @@ data class Component(
     yieldModulesWithDescendants(listOf(defaultModule))
   }
 
+  fun getModuleProvidersWithDescendants(): Sequence<ModuleProvider> = sequence {
+    yieldModuleProvidersWithDescendants(defaultModule.moduleProviders)
+  }
+
   private suspend fun SequenceScope<Module>.yieldModulesWithDescendants(modules: Iterable<Module>) {
     modules.forEach { module ->
       yield(module)
       yieldModulesWithDescendants(module.modules)
+    }
+  }
+
+  private suspend fun SequenceScope<ModuleProvider>.yieldModuleProvidersWithDescendants(providers: Iterable<ModuleProvider>) {
+    providers.forEach { provider ->
+      yield(provider)
+      yieldModuleProvidersWithDescendants(provider.module.moduleProviders)
     }
   }
 }

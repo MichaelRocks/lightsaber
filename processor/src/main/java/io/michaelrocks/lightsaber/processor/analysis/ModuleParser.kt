@@ -59,6 +59,7 @@ import org.objectweb.asm.Opcodes.ACC_SYNTHETIC
 interface ModuleParser {
   fun parseModule(
     type: Type.Object,
+    importeeModuleTypes: Collection<Type.Object>,
     providableTargets: Collection<InjectionTarget>,
     factories: Collection<Factory>,
     moduleRegistry: ModuleRegistry
@@ -79,15 +80,17 @@ class ModuleParserImpl(
 
   override fun parseModule(
     type: Type.Object,
+    importeeModuleTypes: Collection<Type.Object>,
     providableTargets: Collection<InjectionTarget>,
     factories: Collection<Factory>,
     moduleRegistry: ModuleRegistry
   ): Module {
-    return parseModule(grip.classRegistry.getClassMirror(type), providableTargets, factories, moduleRegistry)
+    return parseModule(grip.classRegistry.getClassMirror(type), importeeModuleTypes, providableTargets, factories, moduleRegistry)
   }
 
   private fun parseModule(
     mirror: ClassMirror,
+    importeeModuleTypes: Collection<Type.Object>,
     providableTargets: Collection<InjectionTarget>,
     factories: Collection<Factory>,
     moduleRegistry: ModuleRegistry
@@ -102,7 +105,7 @@ class ModuleParserImpl(
       else -> throw ModuleParserException("Class ${mirror.type.className} is neither a component nor a module")
     }
 
-    val moduleProviders = moduleProviderParser.parseModuleProviders(mirror, moduleRegistry, isComponentDefaultModule)
+    val moduleProviders = moduleProviderParser.parseModuleProviders(mirror, moduleRegistry, importeeModuleTypes, isComponentDefaultModule)
 
     bridgeRegistry.clear()
     mirror.methods.forEach { bridgeRegistry.reserveMethod(it.toMethodDescriptor()) }

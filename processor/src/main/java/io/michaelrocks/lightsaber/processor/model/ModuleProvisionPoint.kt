@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,14 @@ package io.michaelrocks.lightsaber.processor.model
 
 import io.michaelrocks.grip.mirrors.FieldMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
+import io.michaelrocks.grip.mirrors.Type
 
 sealed class ModuleProvisionPoint {
   data class Method(val method: MethodMirror) : ModuleProvisionPoint()
   data class Field(val field: FieldMirror) : ModuleProvisionPoint()
+
+  data class InverseImport(
+    val importerType: Type.Object,
+    val importeeType: Type.Object
+  ) : ModuleProvisionPoint()
 }
