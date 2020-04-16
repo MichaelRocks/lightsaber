@@ -74,10 +74,7 @@ class ComponentModuleTest {
 
   @ProvidedBy(ComponentWithoutModules::class, ComponentWithModules::class)
   class InjectionContainer @Inject private constructor(
-    @Inject
     val componentString: String,
-    @Inject
-    @field:Named("Module")
-    val moduleString: String
+    @Named("Module") val moduleString: String
   )
 }
