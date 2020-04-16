@@ -114,7 +114,7 @@ class SanityChecker(
   private fun checkComponentsAndModulesExtendObject(context: InjectionContext) {
     for (component in context.components) {
       checkClassExtendsObject(component.type)
-      for (module in component.modules) {
+      component.getModulesWithDescendants().forEach { module ->
         checkClassExtendsObject(module.type)
       }
     }

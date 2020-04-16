@@ -24,8 +24,5 @@ import io.michaelrocks.lightsaber.sample.library.Droid
 internal class LightsaberModule {
 
   @Provide
-  private val darthVader = DarthVader
-
-  @Provide
   private fun provideDroid(factory: DroidFactory): Droid = factory.produceR2D2("Silver")
 }

@@ -146,8 +146,9 @@ instance. But you can do that via [manual injection](#manual-injection) or by cr
 
 To make Lightsaber aware of modules and their provided dependencies the modules have to be organized into a component.
 A component is just a class annotated with the `@Component` annotation. The goal of this class is to import modules
-to Lightsaber. Every method that imports a module must be annotated with `@Import`. Neither the component class
-itself not its provider methods have to be `public`.
+to Lightsaber. Every method that imports a module must be annotated with `@Import`. Moreover, a component can provide
+its own dependencies, just like a module. Neither the component class itself nor its provider methods have to be
+`public`.
 
 ```java
 @Component

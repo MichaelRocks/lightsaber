@@ -141,9 +141,7 @@ class ClassProcessor(
 
   private fun Component.dump() {
     logger.debug("Component: {}", type)
-    for (module in modules) {
-      module.dump("  ")
-    }
+    defaultModule.dump("  ")
 
     for (subcomponent in subcomponents) {
       logger.debug("  Subcomponent: {}", subcomponent)

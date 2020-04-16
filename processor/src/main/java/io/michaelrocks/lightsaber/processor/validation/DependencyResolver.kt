@@ -50,7 +50,7 @@ class DependencyResolver(
   }
 
   fun add(component: Component): DependencyResolver = apply {
-    add(component.modules)
+    add(component.defaultModule)
   }
 
   fun getResolvedDependencies(): Set<Dependency> {

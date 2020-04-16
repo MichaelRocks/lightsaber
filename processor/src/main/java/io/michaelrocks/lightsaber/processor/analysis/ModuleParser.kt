@@ -96,11 +96,13 @@ class ModuleParserImpl(
       throw ModuleParserException("Module cannot have a type parameters: ${mirror.type.className}")
     }
 
-    if (Types.MODULE_TYPE !in mirror.annotations) {
-      throw ModuleParserException("Class ${mirror.type.className} is not a module")
+    val isComponentDefaultModule = when {
+      Types.COMPONENT_TYPE in mirror.annotations -> true
+      Types.MODULE_TYPE in mirror.annotations -> false
+      else -> throw ModuleParserException("Class ${mirror.type.className} is neither a component nor a module")
     }
 
-    val moduleProviders = moduleProviderParser.parseModuleProviders(mirror, moduleRegistry, includeProvidesAnnotation = false)
+    val moduleProviders = moduleProviderParser.parseModuleProviders(mirror, moduleRegistry, isComponentDefaultModule)
 
     bridgeRegistry.clear()
     mirror.methods.forEach { bridgeRegistry.reserveMethod(it.toMethodDescriptor()) }
