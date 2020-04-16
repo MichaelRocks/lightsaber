@@ -41,7 +41,7 @@ import io.michaelrocks.lightsaber.processor.model.ModuleProvider
 import io.michaelrocks.lightsaber.processor.model.ModuleProvisionPoint
 
 interface ModuleProviderParser {
-  fun parseModuleProviders(mirror: ClassMirror, moduleRegistry: ModuleRegistry, includeProvidesAnnotation: Boolean): Collection<ModuleProvider>
+  fun parseModuleProviders(mirror: ClassMirror, moduleRegistry: ModuleRegistry, isComponentDefaultModule: Boolean): Collection<ModuleProvider>
 }
 
 class ModuleProviderParserImpl(
@@ -54,13 +54,14 @@ class ModuleProviderParserImpl(
   override fun parseModuleProviders(
     mirror: ClassMirror,
     moduleRegistry: ModuleRegistry,
-    includeProvidesAnnotation: Boolean
+    isComponentDefaultModule: Boolean
   ): Collection<ModuleProvider> {
-    val isImportable = createImportAnnotationMatcher(includeProvidesAnnotation)
+    val isImportable = createImportAnnotationMatcher(includeProvidesAnnotation = !isComponentDefaultModule)
     val methodsQuery = grip select methods from mirror where (isImportable and methodType(not(returns(Type.Primitive.Void))))
     val fieldsQuery = grip select fields from mirror where isImportable
 
-    logger.debug("Component: {}", mirror.type.className)
+    val kind = if (isComponentDefaultModule) "Component" else "Module"
+    logger.debug("{}}: {}", kind, mirror.type.className)
     val methods = methodsQuery.execute()[mirror.type].orEmpty().mapNotNull { method ->
       logger.debug("  Method: {}", method)
       tryParseModuleProvider(method, moduleRegistry)
@@ -98,12 +99,6 @@ class ModuleProviderParserImpl(
     val type = generic.type
     if (type !is Type.Object) {
       errorReporter.reportError("Module provider cannot have an array type: $generic")
-      return null
-    }
-
-    val mirror = grip.classRegistry.getClassMirror(type)
-    if (Types.MODULE_TYPE !in mirror.annotations) {
-      errorReporter.reportError("Module is not annotated with @Module: $generic")
       return null
     }
 

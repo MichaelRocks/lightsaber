@@ -35,7 +35,7 @@ class Analyzer(
     val moduleProviderParser = ModuleProviderParserImpl(grip, errorReporter)
     val moduleParser = ModuleParserImpl(grip, moduleProviderParser, bindingRegistry, analyzerHelper, projectName)
     val moduleRegistry = ModuleRegistryImpl(grip, moduleParser, errorReporter, providableTargets, factories, files)
-    val components = ComponentsAnalyzerImpl(grip, moduleRegistry, moduleProviderParser, errorReporter).analyze(files)
+    val components = ComponentsAnalyzerImpl(grip, moduleRegistry, errorReporter).analyze(files)
     return InjectionContext(components, injectableTargets, providableTargets, factories, bindingRegistry.bindings)
   }
 }

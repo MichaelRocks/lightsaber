@@ -35,7 +35,6 @@ interface ComponentsAnalyzer {
 class ComponentsAnalyzerImpl(
   private val grip: Grip,
   private val moduleRegistry: ModuleRegistry,
-  private val moduleProviderParser: ModuleProviderParser,
   private val errorReporter: ErrorReporter
 ) : ComponentsAnalyzer {
 
@@ -46,11 +45,10 @@ class ComponentsAnalyzerImpl(
     return graph.vertices
       .filterNot { it == Types.COMPONENT_NONE_TYPE }
       .map { type ->
-        val mirror = grip.classRegistry.getClassMirror(type)
         val parent = reversedGraph.getAdjacentVertices(type)?.first()?.takeIf { it != Types.COMPONENT_NONE_TYPE }
+        val defaultModule = moduleRegistry.getModule(type)
         val subcomponents = graph.getAdjacentVertices(type).orEmpty().toList()
-        val providers = moduleProviderParser.parseModuleProviders(mirror, moduleRegistry, includeProvidesAnnotation = true)
-        Component(type, providers, parent, subcomponents)
+        Component(type, parent, defaultModule, subcomponents)
       }
   }
 
