@@ -19,10 +19,12 @@ package io.michaelrocks.lightsaber.sample;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import io.michaelrocks.lightsaber.ImportedBy;
 import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.Provide;
 
 @Module(isDefault = true)
+@ImportedBy(LightsaberComponent.class)
 class LightsaberModule {
   @Provide
   private Droid provideDroid(final DroidFactory factory) {

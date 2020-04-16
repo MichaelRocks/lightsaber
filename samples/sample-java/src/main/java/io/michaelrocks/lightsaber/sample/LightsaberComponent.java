@@ -17,16 +17,10 @@
 package io.michaelrocks.lightsaber.sample;
 
 import io.michaelrocks.lightsaber.Component;
-import io.michaelrocks.lightsaber.Import;
 import io.michaelrocks.lightsaber.Provide;
 
 @Component
 class LightsaberComponent {
   @Provide
   private final DarthVader darthVader = DarthVader.INSTANCE;
-
-  @Import
-  private LightsaberModule importLightsaberModule() {
-    return new LightsaberModule();
-  }
 }
