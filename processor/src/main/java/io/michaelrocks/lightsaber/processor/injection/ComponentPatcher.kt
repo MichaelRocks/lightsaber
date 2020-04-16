@@ -49,7 +49,7 @@ class ComponentPatcher(
 
   override fun visitEnd() {
     if (!isInjectorConfigurator) {
-      InjectorConfiguratorImplementor(this, component.type).implementInjectorConfigurator(component.providers)
+      InjectorConfiguratorImplementor(this, component.type).implementInjectorConfigurator(component.moduleProviders)
     }
     super.visitEnd()
   }
