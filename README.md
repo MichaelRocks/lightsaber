@@ -194,6 +194,24 @@ public class DroidModule {
 }
 ```  
 
+##### Inversion of import
+
+Sometimes you may want to specify that a module should be imported by another modules and/or components without
+modifying them. It can be achieved by applying the `@ImportedBy` annotation to the module that needs to be imported:
+
+```java
+@Component
+public class DroidComponent {
+  /* ... */
+}
+
+@Module
+@ImportedBy(DroidComponent.class)
+public class DroidModule {
+  /* ... */
+}
+``` 
+
 #### Injectable constructors
 
 A class may have one and only one injectable constructor. This constructor must be annotated with `@Inject` and can
