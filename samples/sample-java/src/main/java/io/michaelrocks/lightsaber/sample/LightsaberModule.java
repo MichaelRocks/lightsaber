@@ -25,9 +25,6 @@ import io.michaelrocks.lightsaber.Provide;
 @Module(isDefault = true)
 class LightsaberModule {
   @Provide
-  private final DarthVader darthVader = DarthVader.INSTANCE;
-
-  @Provide
   private Droid provideDroid(final DroidFactory factory) {
     return factory.produceR2D2("Silver");
   }

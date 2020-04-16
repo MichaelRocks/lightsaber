@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,13 @@ package io.michaelrocks.lightsaber.sample
 
 import io.michaelrocks.lightsaber.Component
 import io.michaelrocks.lightsaber.Import
+import io.michaelrocks.lightsaber.Provide
 
 @Component
 internal class LightsaberComponent {
+
+  @Provide
+  private val darthVader = DarthVader
 
   @Import
   private fun importLightsaberModule(): LightsaberModule {
