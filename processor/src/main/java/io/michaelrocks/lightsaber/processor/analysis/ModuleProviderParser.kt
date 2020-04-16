@@ -61,7 +61,7 @@ class ModuleProviderParserImpl(
     val fieldsQuery = grip select fields from mirror where isImportable
 
     val kind = if (isComponentDefaultModule) "Component" else "Module"
-    logger.debug("{}}: {}", kind, mirror.type.className)
+    logger.debug("{}: {}", kind, mirror.type.className)
     val methods = methodsQuery.execute()[mirror.type].orEmpty().mapNotNull { method ->
       logger.debug("  Method: {}", method)
       tryParseModuleProvider(method, moduleRegistry)
