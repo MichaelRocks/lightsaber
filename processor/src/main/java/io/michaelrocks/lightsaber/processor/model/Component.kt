@@ -32,11 +32,9 @@ data class Component(
   }
 
   private suspend fun SequenceScope<Module>.yieldModulesWithDescendants(modules: Iterable<Module>) {
-    modules.forEach { yieldModulesWithDescendants(it) }
-  }
-
-  private suspend fun SequenceScope<Module>.yieldModulesWithDescendants(module: Module) {
-    yield(module)
-    yieldModulesWithDescendants(module.modules)
+    modules.forEach { module ->
+      yield(module)
+      yieldModulesWithDescendants(module.modules)
+    }
   }
 }
