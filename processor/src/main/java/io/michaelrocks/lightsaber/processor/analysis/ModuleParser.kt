@@ -140,8 +140,8 @@ class ModuleParserImpl(
     }
 
     val directProviders = constructorProviders + methodProviders + fieldProviders
-    val moduleBindings = directProviders.mapNotNull { provider ->
-      bindingRegistry.findBindingByDependency(provider.dependency)?.let { binding ->
+    val moduleBindings = directProviders.flatMap { provider ->
+      bindingRegistry.findBindingsByDependency(provider.dependency).map { binding ->
         provider to binding
       }
     }

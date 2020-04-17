@@ -43,7 +43,7 @@ class BindingsAnalyzerImpl(
     val bindingRegistry = BindingRegistryImpl()
     val bindingsQuery = grip select classes from files where annotatedWith(Types.PROVIDED_AS_TYPE)
     bindingsQuery.execute().classes.forEach { mirror ->
-      createBindingForClass(mirror)?.also { binding ->
+      createBindingsForClass(mirror).forEach { binding ->
         bindingRegistry.registerBinding(binding)
       }
     }
@@ -51,25 +51,34 @@ class BindingsAnalyzerImpl(
     return bindingRegistry
   }
 
-  private fun createBindingForClass(mirror: ClassMirror): Binding? {
-    val ancestorType = extractAncestorTypeFromClass(mirror) ?: return null
-    val dependency = Dependency(GenericType.Raw(mirror.type))
-    val qualifier = analyzerHelper.findQualifier(mirror)
-    val ancestor = Dependency(GenericType.Raw(ancestorType), qualifier)
-    return Binding(dependency, ancestor)
+  private fun createBindingsForClass(mirror: ClassMirror): Collection<Binding> {
+    return extractAncestorTypesFromClass(mirror).map { ancestorType ->
+      val dependency = Dependency(GenericType.Raw(mirror.type))
+      val qualifier = analyzerHelper.findQualifier(mirror)
+      val ancestor = Dependency(GenericType.Raw(ancestorType), qualifier)
+      Binding(dependency, ancestor)
+    }
   }
 
-  private fun extractAncestorTypeFromClass(mirror: ClassMirror): Type.Object? {
-    val providedAs = mirror.annotations[Types.PROVIDED_AS_TYPE] ?: return null
+  private fun extractAncestorTypesFromClass(mirror: ClassMirror): Collection<Type.Object> {
+    val providedAs = mirror.annotations[Types.PROVIDED_AS_TYPE] ?: return emptyList()
 
     @Suppress("UNCHECKED_CAST")
-    val ancestorType = providedAs.values[ProvidedAs::value.name] as Type? ?: return null
-    if (ancestorType !is Type.Object) {
-      error("Class ${mirror.type.className} has invalid type in its @ProvidedAs annotation: ${ancestorType.className}")
-      return null
+    val ancestorTypes = providedAs.values[ProvidedAs::value.name] as? List<*>
+    if (ancestorTypes == null) {
+      error("Class ${mirror.type.className} has invalid type in its @ProvidedAs annotation: $ancestorTypes")
+      return emptyList()
     }
 
-    return ancestorType
+    return ancestorTypes.mapNotNull {
+      val ancestorType = it as? Type.Object
+      if (ancestorType == null) {
+        error("Class ${mirror.type.className} has a non-class type in its @ProvidedAs annotation: $it")
+        return@mapNotNull null
+      }
+
+      ancestorType
+    }
   }
 
   private fun error(message: String) {

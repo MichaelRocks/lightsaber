@@ -23,7 +23,7 @@ import io.michaelrocks.lightsaber.processor.model.Dependency
 interface BindingRegistry {
   val bindings: Collection<Binding>
 
-  fun findBindingByDependency(dependency: Dependency): Binding?
+  fun findBindingsByDependency(dependency: Dependency): Collection<Binding>
   fun findBindingsByAncestor(ancestor: Dependency): Collection<Binding>
 }
 
@@ -32,12 +32,13 @@ interface MutableBindingRegistry : BindingRegistry {
 }
 
 class BindingRegistryImpl : MutableBindingRegistry {
-  private val dependencyToBindingMap = HashMap<Dependency, Binding>()
+  private val dependencyToBindingMap = HashMap<Dependency, MutableCollection<Binding>>()
   private val ancestorToBindingsMap = HashMap<Dependency, MutableCollection<Binding>>()
-  override val bindings: Collection<Binding> get() = dependencyToBindingMap.values.toList()
 
-  override fun findBindingByDependency(dependency: Dependency): Binding? {
-    return dependencyToBindingMap[dependency]
+  override val bindings = LinkedHashSet<Binding>()
+
+  override fun findBindingsByDependency(dependency: Dependency): Collection<Binding> {
+    return dependencyToBindingMap[dependency].orEmpty()
   }
 
   override fun findBindingsByAncestor(ancestor: Dependency): Collection<Binding> {
@@ -45,15 +46,15 @@ class BindingRegistryImpl : MutableBindingRegistry {
   }
 
   override fun registerBinding(binding: Binding) {
-    dependencyToBindingMap.put(binding.dependency, binding)?.let {
-      throw ProcessingException("Cannot register ancestor ${binding.ancestor} for ${binding.dependency} because another ancestor is registered: ${it.ancestor}")
+    if (!bindings.add(binding)) {
+      throw ProcessingException("$binding is already registered")
     }
 
-    val bindings = ancestorToBindingsMap.getOrPut(binding.ancestor) { HashSet() }
-    if (binding in bindings) {
-      throw ProcessingException("Cannot register ancestor ${binding.ancestor} for ${binding.dependency} because it's already registered")
-    }
+    dependencyToBindingMap.putBinding(binding.dependency, binding)
+    ancestorToBindingsMap.putBinding(binding.ancestor, binding)
+  }
 
-    bindings += binding
+  private fun MutableMap<Dependency, MutableCollection<Binding>>.putBinding(key: Dependency, binding: Binding) {
+    getOrPut(key, ::ArrayList).add(binding)
   }
 }

@@ -24,7 +24,7 @@ import org.junit.Test
 import javax.inject.Inject
 import javax.inject.Singleton
 
-class BindingInjectionTest {
+class ProvidedAsInjectionTest {
   @Test
   fun testDirectBinding() {
     val lightsaber = Lightsaber.Builder().build()
@@ -66,6 +66,31 @@ class BindingInjectionTest {
   }
 
   @Test
+  fun testMultipleIndirectBinding() {
+    val lightsaber = Lightsaber.Builder().build()
+    val component = BindingComponent()
+    val injector = lightsaber.createInjector(component)
+
+    val target11 = injector.getInstance<MultipleTarget1>()
+    val target12 = injector.getInstance<MultipleTarget1>()
+    val target21 = injector.getInstance<MultipleTarget2>()
+    val target22 = injector.getInstance<MultipleTarget2>()
+    val targetImpl1 = injector.getInstance<MultipleTargetImpl>()
+    val targetImpl2 = injector.getInstance<MultipleTargetImpl>()
+
+    assertTrue(target11 is MultipleTargetImpl)
+    assertTrue(target12 is MultipleTargetImpl)
+    assertTrue(target21 is MultipleTargetImpl)
+    assertTrue(target22 is MultipleTargetImpl)
+    assertNotSame(target11, target12)
+    assertNotSame(target21, target22)
+    assertNotSame(targetImpl1, targetImpl2)
+
+    val targets = setOf(target11, target12, target21, target22, targetImpl1, targetImpl2)
+    assertEquals(6, targets.size)
+  }
+
+  @Test
   fun testSingletonBinding() {
     val lightsaber = Lightsaber.Builder().build()
     val component = BindingComponent()
@@ -87,7 +112,7 @@ class BindingInjectionTest {
 
   interface DirectTarget
 
-  @ProvidedBy(BindingModule::class)
+  @ProvidedBy(BindingComponent::class)
   @ProvidedAs(DirectTarget::class)
   class DirectTargetImpl @Inject private constructor() : DirectTarget
 
@@ -95,26 +120,25 @@ class BindingInjectionTest {
 
   abstract class AbstractIndirectTarget : IndirectTarget
 
-  @ProvidedBy(BindingModule::class)
+  @ProvidedBy(BindingComponent::class)
   @ProvidedAs(IndirectTarget::class)
   class IndirectTargetImpl @Inject private constructor() : AbstractIndirectTarget()
 
+  interface MultipleTarget1
+
+  interface MultipleTarget2 : MultipleTarget1
+
+  @ProvidedBy(BindingComponent::class)
+  @ProvidedAs(MultipleTarget1::class, MultipleTarget2::class)
+  class MultipleTargetImpl @Inject private constructor() : MultipleTarget2
+
   interface SingletonTarget
 
-  abstract class AbstractSingletonTarget : SingletonTarget
-
   @Singleton
-  @ProvidedBy(BindingModule::class)
+  @ProvidedBy(BindingComponent::class)
   @ProvidedAs(SingletonTarget::class)
-  class SingletonTargetImpl @Inject private constructor() : AbstractSingletonTarget()
+  class SingletonTargetImpl @Inject private constructor() : SingletonTarget
 
   @Component
-  class BindingComponent {
-
-    @Import
-    private fun importBindingModule() = BindingModule()
-  }
-
-  @Module
-  class BindingModule
+  class BindingComponent
 }

@@ -27,5 +27,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Documented
 public @interface ProvidedAs {
-  Class<?> value();
+  Class<?>[] value();
 }
