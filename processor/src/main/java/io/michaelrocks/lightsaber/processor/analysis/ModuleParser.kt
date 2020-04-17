@@ -194,7 +194,7 @@ class ModuleParserImpl(
 
   private fun newBindingProvider(container: Type.Object, binding: Binding, index: Int): Provider {
     val bindingType = binding.dependency.type.rawType as Type.Object
-    val providerType = getObjectTypeByInternalName("${bindingType.internalName}\$BindingProvider\$$index\$$projectName")
+    val providerType = getObjectTypeByInternalName("${container.internalName}\$${bindingType.internalName}\$BindingProvider\$$index\$$projectName")
     val provisionPoint = ProvisionPoint.Binding(container, binding.ancestor, binding.dependency)
     return Provider(providerType, provisionPoint, container, Scope.None)
   }
