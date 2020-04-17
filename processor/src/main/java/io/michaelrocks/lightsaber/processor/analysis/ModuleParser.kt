@@ -52,6 +52,7 @@ import io.michaelrocks.lightsaber.processor.model.InjectionTarget
 import io.michaelrocks.lightsaber.processor.model.Module
 import io.michaelrocks.lightsaber.processor.model.Provider
 import io.michaelrocks.lightsaber.processor.model.ProvisionPoint
+import io.michaelrocks.lightsaber.processor.model.Scope
 import org.objectweb.asm.Opcodes.ACC_PRIVATE
 import org.objectweb.asm.Opcodes.ACC_PUBLIC
 import org.objectweb.asm.Opcodes.ACC_SYNTHETIC
@@ -141,14 +142,12 @@ class ModuleParserImpl(
 
     val directProviders = constructorProviders + methodProviders + fieldProviders
     val moduleBindings = directProviders.flatMap { provider ->
-      bindingRegistry.findBindingsByDependency(provider.dependency).map { binding ->
-        provider to binding
-      }
+      bindingRegistry.findBindingsByDependency(provider.dependency)
     }
 
-    val bindingProviders = moduleBindings.mapIndexed { index, (provider, binding) ->
+    val bindingProviders = moduleBindings.mapIndexed { index, binding ->
       logger.debug("  Binding: {} -> {}", binding.dependency, binding.ancestor)
-      newBindingProvider(module.type, provider, binding, index)
+      newBindingProvider(module.type, binding, index)
     }
 
     val factoryProviders = factories.map { factory ->
@@ -193,11 +192,11 @@ class ModuleParserImpl(
     return Provider(providerType, provisionPoint, container, scope)
   }
 
-  private fun newBindingProvider(container: Type.Object, provider: Provider, binding: Binding, index: Int): Provider {
+  private fun newBindingProvider(container: Type.Object, binding: Binding, index: Int): Provider {
     val bindingType = binding.dependency.type.rawType as Type.Object
     val providerType = getObjectTypeByInternalName("${bindingType.internalName}\$BindingProvider\$$index\$$projectName")
     val provisionPoint = ProvisionPoint.Binding(container, binding.ancestor, binding.dependency)
-    return Provider(providerType, provisionPoint, container, provider.scope)
+    return Provider(providerType, provisionPoint, container, Scope.None)
   }
 
   private fun newFactoryProvider(container: Type.Object, factory: Factory): Provider {
