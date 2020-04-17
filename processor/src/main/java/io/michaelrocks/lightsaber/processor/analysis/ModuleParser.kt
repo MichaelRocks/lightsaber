@@ -201,7 +201,7 @@ class ModuleParserImpl(
 
   private fun newFactoryProvider(container: Type.Object, factory: Factory): Provider {
     val mirror = grip.classRegistry.getClassMirror(factory.type)
-    val providerType = getObjectTypeByInternalName("${factory.type.internalName}\$FactoryProvider\$$projectName")
+    val providerType = getObjectTypeByInternalName("${container.internalName}\$${factory.type.internalName}\$FactoryProvider\$$projectName")
     val constructorMirror = MethodMirror.Builder()
       .access(ACC_PUBLIC)
       .name(MethodDescriptor.CONSTRUCTOR_NAME)
