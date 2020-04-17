@@ -25,11 +25,13 @@ import io.michaelrocks.grip.mirrors.getObjectType
 import io.michaelrocks.lightsaber.Component
 import io.michaelrocks.lightsaber.Factory
 import io.michaelrocks.lightsaber.Import
+import io.michaelrocks.lightsaber.ImportedBy
 import io.michaelrocks.lightsaber.Injector
 import io.michaelrocks.lightsaber.Key
 import io.michaelrocks.lightsaber.Lazy
 import io.michaelrocks.lightsaber.Module
 import io.michaelrocks.lightsaber.Provide
+import io.michaelrocks.lightsaber.ProvidedAs
 import io.michaelrocks.lightsaber.ProvidedBy
 import io.michaelrocks.lightsaber.Provides
 import javax.inject.Inject
@@ -43,8 +45,10 @@ object Types {
   val STRING_TYPE = getObjectType<String>()
   val INJECT_TYPE = getObjectType<Inject>()
   val IMPORT_TYPE = getObjectType<Import>()
+  val IMPORTED_BY_TYPE = getObjectType<ImportedBy>()
   val PROVIDE_TYPE = getObjectType<Provide>()
   val PROVIDES_TYPE = getObjectType<Provides>()
+  val PROVIDED_AS_TYPE = getObjectType<ProvidedAs>()
   val PROVIDED_BY_TYPE = getObjectType<ProvidedBy>()
   val COMPONENT_TYPE = getObjectType<Component>()
   val COMPONENT_NONE_TYPE = getObjectType<Component.None>()
@@ -54,6 +58,7 @@ object Types {
   val FACTORY_TYPE = getObjectType<Factory>()
   val FACTORY_INJECT_TYPE = getObjectType<Factory.Inject>()
   val FACTORY_PARAMETER_TYPE = getObjectType<Factory.Parameter>()
+  val FACTORY_RETURN_TYPE = getObjectType<Factory.Return>()
   val INJECTOR_TYPE = getObjectType<Injector>()
   val PROVIDER_TYPE = getObjectType<Provider<*>>()
   val LAZY_TYPE = getObjectType<Lazy<*>>()

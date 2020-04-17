@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.sample
+package io.michaelrocks.lightsaber;
 
-import io.michaelrocks.lightsaber.ImportedBy
-import io.michaelrocks.lightsaber.Module
-import io.michaelrocks.lightsaber.Provide
-import io.michaelrocks.lightsaber.sample.library.Droid
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-@Module(isDefault = true)
-@ImportedBy(LightsaberComponent::class)
-internal class LightsaberModule {
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-  @Provide
-  private fun provideDroid(factory: DroidFactory): Droid = factory.produceR2D2("Silver")
+@Target({ TYPE })
+@Retention(RUNTIME)
+@Documented
+public @interface ImportedBy {
+  Class<?>[] value();
 }

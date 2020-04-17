@@ -27,8 +27,8 @@ import io.michaelrocks.grip.mirrors.ClassMirror
 import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.Type
 import io.michaelrocks.grip.mirrors.getObjectTypeByInternalName
-import io.michaelrocks.grip.mirrors.isInterface
 import io.michaelrocks.grip.mirrors.signature.GenericType
+import io.michaelrocks.lightsaber.Factory.Return
 import io.michaelrocks.lightsaber.processor.ErrorReporter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.associateByIndexedTo
@@ -61,26 +61,6 @@ class FactoriesAnalyzerImpl(
   }
 
   private fun maybeCreateFactory(mirror: ClassMirror): Factory? {
-    if (!mirror.isInterface) {
-      error("Factory ${mirror.type.className} must be an interface")
-      return null
-    }
-
-    if (mirror.signature.typeVariables.isNotEmpty()) {
-      error("Factory ${mirror.type.className} mustn't contain generic parameters")
-      return null
-    }
-
-    if (mirror.interfaces.isNotEmpty()) {
-      error("Factory ${mirror.type.className} mustn't extend any interfaces")
-      return null
-    }
-
-    if (mirror.methods.isEmpty()) {
-      error("Factory ${mirror.type.className} must contain at least one method")
-      return null
-    }
-
     val provisionPoints = mirror.methods.mapNotNull { maybeCreateFactoryProvisionPoint(mirror, it) }
     if (provisionPoints.isEmpty()) {
       return null
@@ -94,16 +74,7 @@ class FactoriesAnalyzerImpl(
   }
 
   private fun maybeCreateFactoryProvisionPoint(mirror: ClassMirror, method: MethodMirror): FactoryProvisionPoint? {
-    val returnType = method.type.returnType
-    if (returnType !is Type.Object) {
-      error("Method ${mirror.type.className}.${method.name} returns ${returnType.className}, but must return a class")
-      return null
-    }
-
-    if (mirror.signature.typeVariables.isNotEmpty()) {
-      error("Method ${mirror.type.className}.${method.name} mustn't contain generic parameters")
-      return null
-    }
+    val returnType = tryExtractReturnTypeFromFactoryMethod(mirror, method) ?: return null
 
     val dependencyMirror = grip.classRegistry.getClassMirror(returnType)
     val dependencyConstructorsQuery =
@@ -147,7 +118,33 @@ class FactoriesAnalyzerImpl(
     }
 
     val factoryInjectionPoint = FactoryInjectionPoint(returnType, constructor, factoryInjectees)
-    return FactoryProvisionPoint(mirror.type, method, method.signature.returnType, factoryInjectionPoint)
+    return FactoryProvisionPoint(mirror.type, method, factoryInjectionPoint)
+  }
+
+  private fun tryExtractReturnTypeFromFactoryMethod(mirror: ClassMirror, method: MethodMirror): Type.Object? {
+    val returnAnnotation = method.annotations[Types.FACTORY_RETURN_TYPE]
+    if (returnAnnotation != null) {
+      val returnType = returnAnnotation.values[Return::value.name]
+      if (returnType !is Type) {
+        error("Method ${mirror.type.className}.${method.name} is annotated with @Factory.Return that has a wrong parameter $returnType")
+        return null
+      }
+
+      if (returnType !is Type.Object) {
+        error("Method ${mirror.type.className}.${method.name} is annotated with @Factory.Return with ${returnType.className} value, but its value must be a class")
+        return null
+      }
+
+      return returnType
+    }
+
+    val returnType = method.type.returnType
+    if (returnType !is Type.Object) {
+      error("Method ${mirror.type.className}.${method.name} returns ${returnType.className}, but must return a class")
+      return null
+    }
+
+    return returnType
   }
 
   private fun validateNoDuplicateInjectees(injectionPoint: InjectionPoint.Method) {

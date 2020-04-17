@@ -28,7 +28,7 @@ buildscript {
   }
 
   dependencies {
-    classpath 'io.michaelrocks:lightsaber-gradle-plugin:0.12.0-beta'
+    classpath 'io.michaelrocks:lightsaber-gradle-plugin:0.14.0-beta'
   }
 }
 
@@ -42,7 +42,7 @@ apply plugin: 'io.michaelrocks.lightsaber'
 
 // Optional, just if you need Kotlin extension functions.
 dependencies {
-  implementation 'io.michaelrocks:lightsaber-core-kotlin:0.12.0-beta'
+  implementation 'io.michaelrocks:lightsaber-core-kotlin:0.14.0-beta'
 }
 ```
 
@@ -112,8 +112,9 @@ following order.
 ### Providing dependencies
 
 In order to be able to inject a dependency you have to provide this dependency first. In other words you have to tell
-Lightsaber what it have to return when requested a dependency of some type. This can be done in two ways: using modules
-and their provider methods and via injectable constructors mentioned earlier.
+Lightsaber what it have to return when requested a dependency of some type. This can be done in three ways: using
+modules and their provider methods, via injectable constructors mentioned earlier, and by using the `@ProvidedAs`
+annotation.
 
 #### Provider methods
 
@@ -145,8 +146,9 @@ instance. But you can do that via [manual injection](#manual-injection) or by cr
 
 To make Lightsaber aware of modules and their provided dependencies the modules have to be organized into a component.
 A component is just a class annotated with the `@Component` annotation. The goal of this class is to import modules
-to Lightsaber. Every method that imports a module must be annotated with `@Import`. Neither the component class
-itself not its provider methods have to be `public`.
+to Lightsaber. Every method that imports a module must be annotated with `@Import`. Moreover, a component can provide
+its own dependencies, just like a module. Neither the component class itself nor its provider methods have to be
+`public`.
 
 ```java
 @Component
@@ -192,6 +194,24 @@ public class DroidModule {
 }
 ```  
 
+##### Inversion of import
+
+Sometimes you may want to specify that a module should be imported by another modules and/or components without
+modifying them. It can be achieved by applying the `@ImportedBy` annotation to the module that needs to be imported:
+
+```java
+@Component
+public class DroidComponent {
+  /* ... */
+}
+
+@Module
+@ImportedBy(DroidComponent.class)
+public class DroidModule {
+  /* ... */
+}
+``` 
+
 #### Injectable constructors
 
 A class may have one and only one injectable constructor. This constructor must be annotated with `@Inject` and can
@@ -217,6 +237,50 @@ need to be provided by this module.
 
 When providing a dependency using an injectable constructor Lightsaber will perform field and method injection into
 the provided instance.
+
+#### `@ProvidedAs` annotation
+
+The `@ProvidedAs` annotation can be used to bind an interface to an implementation when you don't want to define a
+provider method in a module. Let's assume you have a `Droid` interface and its `ElectricalDroid` implementation and
+you want to provide an `ElectricalDroid` instance as a `Droid` dependency.
+
+```java
+public interface Droid {
+}
+
+public class ElectricalDroid implements Droid {
+  private Battery battery;
+
+  @Inject
+  public ElectricalDroid(Battery battery) {
+    this.battery = battery;
+  }
+
+  /* ... */
+}
+```
+
+You can achieve that by adding a provider method to a module:
+
+```java
+@Module
+public class DroidModule {
+  @Provide
+  public Droid provideDroid(final ElectricalDroid droid) {
+    return droid;
+  }
+}
+```
+
+But this approach would require the `DroidModule` to be aware of the `ElectricalDroid` implementation, which isn't
+always the case. Another way to do that is to annotate `ElectricalDroid` with the `@ProvidedAs` annotation:
+
+```java
+@ProvidedAs(Droid.class)
+public class ElectricalDroid implements Droid {
+  /* ... */
+}
+```
 
 ### Manual injection
 
@@ -286,7 +350,7 @@ While this is a working example it can be refactored to using constructor inject
 becomes unnecessary.
 
 ```java
-class ElectricalDroid implements Droid {
+public class ElectricalDroid implements Droid {
   private Battery battery;
 
   @Inject
@@ -316,7 +380,7 @@ Lightsaber will return a single instance of the dependency for a given injector.
 
 ```java
 @Singleton
-class ElectricalDroid implements Droid {
+public class ElectricalDroid implements Droid {
   /* ... */
 }
 ```
@@ -524,7 +588,7 @@ a construction point we need to inject a battery of the corresponding type into 
 The following classes define a component that provides droids. Each droid accepts a `Battery` as a dependency.
 
 ```java
-class ElectricalDroid implements Droid {
+public class ElectricalDroid implements Droid {
   private Battery battery;
 
   @Inject
@@ -693,6 +757,35 @@ public class DroidParty {
 }
 ```
 
+The dependency type is resolved from the return type of the factory method by default. You can change this behavior by annotating
+the factory method with `@Factory.Return` annotation with the actual dependency type as an argument:
+
+```java
+public interface Droid {
+  /* ... */
+}
+
+public class ElectricalDroid {
+  private final Battery battery;
+  private final String model;
+  
+  @Factory.Inject
+  public Droid(Battery battery, @Factory.Parameter String model) {
+    this.battery = battery;
+    this.model = model;
+  }
+  
+  /* ... */
+}
+
+@Factory
+@ProvidedBy(DroidModule.class)
+public interface DroidFactory {
+  @Factory.Return(ElectricalDroid.class)
+  Droid assembleDroid(String model);
+}
+```
+
 ### Provider interceptors
 
 When writing tests you may need to substitute a real dependency with a mock. To be able to do that you can register a `ProviderInterceptor` when
@@ -726,7 +819,7 @@ To simplify unit testing and dependency substitution you can add a special testi
 
 ```groovy
 dependencies {
-  testImplementation 'io.michaelrocks:lightsaber-test:0.12.0-beta'
+  testImplementation 'io.michaelrocks:lightsaber-test:0.14.0-beta'
 }
 ```
 

@@ -14,17 +14,9 @@
  * limitations under the License.
  */
 
-package io.michaelrocks.lightsaber.sample
+package io.michaelrocks.lightsaber.processor.model
 
-import io.michaelrocks.lightsaber.ImportedBy
-import io.michaelrocks.lightsaber.Module
-import io.michaelrocks.lightsaber.Provide
-import io.michaelrocks.lightsaber.sample.library.Droid
-
-@Module(isDefault = true)
-@ImportedBy(LightsaberComponent::class)
-internal class LightsaberModule {
-
-  @Provide
-  private fun provideDroid(factory: DroidFactory): Droid = factory.produceR2D2("Silver")
-}
+data class Binding(
+  val dependency: Dependency,
+  val ancestor: Dependency
+)

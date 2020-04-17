@@ -53,7 +53,7 @@ class DependencyGraphBuilder(
   }
 
   fun add(component: Component): DependencyGraphBuilder = apply {
-    add(component.modules)
+    add(component.defaultModule)
   }
 
   fun build(): DirectedGraph<Dependency> {

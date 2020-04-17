@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,19 +19,13 @@ package io.michaelrocks.lightsaber.sample;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import io.michaelrocks.lightsaber.ImportedBy;
 import io.michaelrocks.lightsaber.Module;
 import io.michaelrocks.lightsaber.Provide;
 
 @Module(isDefault = true)
+@ImportedBy(LightsaberComponent.class)
 class LightsaberModule {
-  @Provide
-  private final DarthVader darthVader = DarthVader.INSTANCE;
-
-  @Provide
-  private Wookiee provideWookiee(final Chewbacca chewbacca) {
-    return chewbacca;
-  }
-
   @Provide
   private Droid provideDroid(final DroidFactory factory) {
     return factory.produceR2D2("Silver");

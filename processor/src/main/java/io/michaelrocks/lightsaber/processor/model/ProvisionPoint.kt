@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,36 +23,44 @@ import io.michaelrocks.grip.mirrors.Type
 sealed class ProvisionPoint {
   abstract val containerType: Type.Object
   abstract val dependency: Dependency
-  abstract val bridge: ProvisionPoint.Method?
+  abstract val bridge: Method?
 
-  abstract class AbstractMethod : ProvisionPoint() {
-    override val containerType: Type.Object
-      get() = injectionPoint.containerType
-
-    abstract val injectionPoint: InjectionPoint.Method
-
-    val method: MethodMirror
-      get() = injectionPoint.method
+  interface AbstractMethod {
+    val injectionPoint: InjectionPoint.Method
+    val method: MethodMirror get() = injectionPoint.method
   }
 
   data class Constructor(
     override val dependency: Dependency,
     override val injectionPoint: InjectionPoint.Method
-  ) : AbstractMethod() {
+  ) : ProvisionPoint(), AbstractMethod {
 
-    override val bridge: ProvisionPoint.Method? get() = null
+    override val containerType: Type.Object get() = injectionPoint.containerType
+    override val bridge: Method? get() = null
   }
 
   data class Method(
     override val dependency: Dependency,
     override val injectionPoint: InjectionPoint.Method,
-    override val bridge: ProvisionPoint.Method?
-  ) : AbstractMethod()
+    override val bridge: Method?
+  ) : ProvisionPoint(), AbstractMethod {
+
+    override val containerType: Type.Object get() = injectionPoint.containerType
+  }
 
   data class Field(
     override val containerType: Type.Object,
     override val dependency: Dependency,
-    override val bridge: ProvisionPoint.Method?,
+    override val bridge: Method?,
     val field: FieldMirror
   ) : ProvisionPoint()
+
+  data class Binding(
+    override val containerType: Type.Object,
+    override val dependency: Dependency,
+    val binding: Dependency
+  ) : ProvisionPoint() {
+
+    override val bridge: Method? get() = null
+  }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import io.michaelrocks.lightsaber.processor.commons.GeneratorAdapter
 import io.michaelrocks.lightsaber.processor.commons.StandaloneClassWriter
 import io.michaelrocks.lightsaber.processor.commons.Types
 import io.michaelrocks.lightsaber.processor.commons.newMethod
-import io.michaelrocks.lightsaber.processor.commons.rawType
 import io.michaelrocks.lightsaber.processor.commons.toMethodDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.FieldDescriptor
 import io.michaelrocks.lightsaber.processor.descriptors.MethodDescriptor
@@ -102,11 +101,14 @@ class FactoryClassGenerator(
   }
 
   private fun GeneratorAdapter.newProvisionPoint(provisionPoint: FactoryProvisionPoint) {
-    val dependencyType = provisionPoint.dependencyType.rawType as Type.Object
+    val dependencyType = provisionPoint.injectionPoint.containerType
     newInstance(dependencyType)
     dup()
     provisionPoint.injectionPoint.injectees.forEach { loadArgument(it) }
     invokeConstructor(dependencyType, provisionPoint.injectionPoint.method.toMethodDescriptor())
+    if (dependencyType != provisionPoint.method.type.returnType) {
+      checkCast(provisionPoint.method.type.returnType)
+    }
 
     injectionContext.findInjectableTargetByType(dependencyType)?.also {
       injectMembers()

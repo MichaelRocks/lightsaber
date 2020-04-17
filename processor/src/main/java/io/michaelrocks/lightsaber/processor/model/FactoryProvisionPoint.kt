@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ package io.michaelrocks.lightsaber.processor.model
 
 import io.michaelrocks.grip.mirrors.MethodMirror
 import io.michaelrocks.grip.mirrors.Type
-import io.michaelrocks.grip.mirrors.signature.GenericType
 
 data class FactoryProvisionPoint(
   val containerType: Type.Object,
   val method: MethodMirror,
-  val dependencyType: GenericType,
   val injectionPoint: FactoryInjectionPoint
 )

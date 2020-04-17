@@ -50,7 +50,7 @@ class DependencyResolver(
   }
 
   fun add(component: Component): DependencyResolver = apply {
-    add(component.modules)
+    add(component.defaultModule)
   }
 
   fun getResolvedDependencies(): Set<Dependency> {
@@ -63,13 +63,13 @@ class DependencyResolver(
     }
   }
 
-  fun resolveAllDepepdencies() {
+  fun resolveAllDependencies() {
     requiredDependencies.clear()
   }
 
-  fun getUnresolvedDependenciesAndResolveAllDepepdencies(): Set<Dependency> {
+  fun getUnresolvedDependenciesAndResolveAllDependencies(): Set<Dependency> {
     return getUnresolvedDependencies().also {
-      resolveAllDepepdencies()
+      resolveAllDependencies()
     }
   }
 }

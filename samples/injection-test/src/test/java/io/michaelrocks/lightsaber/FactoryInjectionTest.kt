@@ -194,6 +194,17 @@ class FactoryInjectionTest {
     assertEquals("String4", target4.stringFromMethod)
   }
 
+  @Test
+  fun testFactoryWithReturnAnnotation() {
+    val lightsaber = Lightsaber.Builder().build()
+    val injector = lightsaber.createInjector(ParentFactoryComponent())
+    val factory = injector.getInstance<FactoryWithReturnAnnotation>()
+    val target = factory.createTarget("String")
+
+    assertEquals("String", target.string)
+    assertEquals("Default", target.injectedString)
+  }
+
   @Component
   private class ParentFactoryComponent {
 
@@ -630,4 +641,22 @@ class FactoryInjectionTest {
       stringFromMethodInjection = string
     }
   }
+
+  @Factory
+  @ProvidedBy(ParentFactoryModule::class)
+  interface FactoryWithReturnAnnotation {
+
+    @Factory.Return(TargetImpl::class)
+    fun createTarget(string: String): Target
+  }
+
+  interface Target {
+    val string: String
+    val injectedString: String
+  }
+
+  class TargetImpl @Factory.Inject private constructor(
+    @Factory.Parameter override val string: String,
+    override val injectedString: String
+  ) : Target
 }

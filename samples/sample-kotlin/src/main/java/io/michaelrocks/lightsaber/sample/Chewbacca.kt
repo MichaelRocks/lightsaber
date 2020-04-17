@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,13 @@
 
 package io.michaelrocks.lightsaber.sample
 
+import io.michaelrocks.lightsaber.ProvidedAs
 import javax.inject.Inject
 import javax.inject.Provider
 import javax.inject.Singleton
 
 @Singleton
+@ProvidedAs(Wookiee::class)
 internal class Chewbacca @Inject private constructor(
   planetProvider: Provider<Planet>
 ) : Wookiee {

@@ -140,7 +140,7 @@ class Validator(
 
   private fun validateDependenciesAreResolved(component: Component, resolver: DependencyResolver) {
     resolver.add(component)
-    val unresolvedDependencies = resolver.getUnresolvedDependenciesAndResolveAllDepepdencies()
+    val unresolvedDependencies = resolver.getUnresolvedDependenciesAndResolveAllDependencies()
     if (unresolvedDependencies.isNotEmpty()) {
       val componentName = component.type.className
       for (unresolvedDependency in unresolvedDependencies) {

@@ -58,6 +58,7 @@ class InjectorConfiguratorImplementor(
     return when (provisionPoint) {
       is ModuleProvisionPoint.Method -> loadModule(provisionPoint)
       is ModuleProvisionPoint.Field -> loadModule(provisionPoint)
+      is ModuleProvisionPoint.InverseImport -> loadModule(provisionPoint)
     }
   }
 
@@ -77,6 +78,12 @@ class InjectorConfiguratorImplementor(
     } else {
       getStatic(containerType, provisionPoint.field.toFieldDescriptor())
     }
+  }
+
+  private fun GeneratorAdapter.loadModule(provisionPoint: ModuleProvisionPoint.InverseImport) {
+    newInstance(provisionPoint.importeeType)
+    dup()
+    invokeConstructor(provisionPoint.importeeType, MethodDescriptor.forDefaultConstructor())
   }
 
   companion object {

@@ -20,23 +20,30 @@ import io.michaelrocks.grip.mirrors.Type
 
 data class Component(
   val type: Type.Object,
-  val providers: Collection<ModuleProvider>,
   val parent: Type.Object?,
+  val defaultModule: Module,
   val subcomponents: Collection<Type.Object>
 ) {
 
-  val modules: Collection<Module> = providers.map { it.module }
-
   fun getModulesWithDescendants(): Sequence<Module> = sequence {
-    yieldModulesWithDescendants(modules)
+    yieldModulesWithDescendants(listOf(defaultModule))
+  }
+
+  fun getModuleProvidersWithDescendants(): Sequence<ModuleProvider> = sequence {
+    yieldModuleProvidersWithDescendants(defaultModule.moduleProviders)
   }
 
   private suspend fun SequenceScope<Module>.yieldModulesWithDescendants(modules: Iterable<Module>) {
-    modules.forEach { yieldModulesWithDescendants(it) }
+    modules.forEach { module ->
+      yield(module)
+      yieldModulesWithDescendants(module.modules)
+    }
   }
 
-  private suspend fun SequenceScope<Module>.yieldModulesWithDescendants(module: Module) {
-    yield(module)
-    yieldModulesWithDescendants(module.modules)
+  private suspend fun SequenceScope<ModuleProvider>.yieldModuleProvidersWithDescendants(providers: Iterable<ModuleProvider>) {
+    providers.forEach { provider ->
+      yield(provider)
+      yieldModuleProvidersWithDescendants(provider.module.moduleProviders)
+    }
   }
 }

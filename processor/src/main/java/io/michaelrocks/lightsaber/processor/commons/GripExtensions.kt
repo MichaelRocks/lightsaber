@@ -16,24 +16,19 @@
 
 package io.michaelrocks.lightsaber.processor.commons
 
-import java.io.Closeable
+import io.michaelrocks.grip.ClassRegistry
+import io.michaelrocks.grip.Grip
+import io.michaelrocks.grip.mirrors.Type
 
-inline fun <T : Closeable, R> using(closeable: T, block: (T) -> R): R {
-  try {
-    return block(closeable)
-  } finally {
-    try {
-      closeable.close()
-    } catch (exception: Exception) {
-      // Ignore the exception.
-    }
-  }
+fun Grip.getAncestors(type: Type.Object): Sequence<Type.Object> = classRegistry.getAncestors(type)
+
+fun ClassRegistry.getAncestors(type: Type.Object): Sequence<Type.Object> = sequence {
+  yieldAncestors(type, this@getAncestors)
 }
 
-inline fun <reified T> Any.cast(): T =
-  this as T
-
-inline fun <T : Any> given(condition: Boolean, body: () -> T): T? =
-  if (condition) body() else null
-
-fun exhaustive(@Suppress("UNUSED_PARAMETER") ignored: Any?) = Unit
+private suspend fun SequenceScope<Type.Object>.yieldAncestors(type: Type.Object, classRegistry: ClassRegistry) {
+  yield(type)
+  val mirror = classRegistry.getClassMirror(type)
+  mirror.superType?.let { yieldAncestors(it, classRegistry) }
+  mirror.interfaces.forEach { yieldAncestors(it, classRegistry) }
+}
