@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Michael Rozumyanskiy
+ * Copyright 2020 Michael Rozumyanskiy
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,19 @@ class ProvidedByInjectionTest {
     assertEquals("ProvidedBy", parentInjector.getInstance<ParentInjectionTarget>().string)
     assertEquals("ProvidedBy", childInjector.getInstance<ParentInjectionTarget>().string)
     assertEquals("ProvidedBy", childInjector.getInstance<ChildInjectionTarget>().parent.string)
+  }
+
+  @Test
+  fun testMultipleProvidedByInjection() {
+    val lightsaber = Lightsaber.Builder().build()
+    val injector1 = lightsaber.createInjector(Component1())
+    val injector2 = lightsaber.createInjector(Component2())
+
+    val target1 = injector1.getInstance<MultipleTarget>()
+    val target2 = injector2.getInstance<MultipleTarget>()
+
+    assertEquals("Component1", target1.string)
+    assertEquals("Component2", target2.string)
   }
 
   @Component
@@ -62,4 +75,23 @@ class ProvidedByInjectionTest {
 
   @ProvidedBy(ChildComponent.ChildModule::class)
   private class ChildInjectionTarget @Inject private constructor(val parent: ParentInjectionTarget)
+
+  @Component
+  class Component1 {
+
+    @Provide
+    private val string: String = "Component1"
+  }
+
+  @Component
+  class Component2 {
+
+    @Provide
+    private val string: String = "Component2"
+  }
+
+  @ProvidedBy(Component1::class, Component2::class)
+  class MultipleTarget @Inject private constructor(
+    val string: String
+  )
 }
