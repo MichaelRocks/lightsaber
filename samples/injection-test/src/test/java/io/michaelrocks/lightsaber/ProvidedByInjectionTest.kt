@@ -44,6 +44,23 @@ class ProvidedByInjectionTest {
     assertEquals("Component2", target2.string)
   }
 
+  @Test
+  fun testMultipleProvidedByFactoryInjection() {
+    val lightsaber = Lightsaber.Builder().build()
+    val injector1 = lightsaber.createInjector(Component1())
+    val injector2 = lightsaber.createInjector(Component2())
+
+    val factory1 = injector1.getInstance<MultipleFactory>()
+    val factory2 = injector2.getInstance<MultipleFactory>()
+    val target1 = factory1.create("Factory1")
+    val target2 = factory2.create("Factory2")
+
+    assertEquals("Component1", target1.string)
+    assertEquals("Factory1", target1.assistedString)
+    assertEquals("Component2", target2.string)
+    assertEquals("Factory2", target2.assistedString)
+  }
+
   @Component
   private class ParentComponent {
 
@@ -94,4 +111,16 @@ class ProvidedByInjectionTest {
   class MultipleTarget @Inject private constructor(
     val string: String
   )
+
+  class MultipleFactoryTarget @Factory.Inject private constructor(
+    val string: String,
+    @Factory.Parameter val assistedString: String
+  )
+
+  @Factory
+  @ProvidedBy(Component1::class, Component2::class)
+  interface MultipleFactory {
+
+    fun create(assistedString: String): MultipleFactoryTarget
+  }
 }
