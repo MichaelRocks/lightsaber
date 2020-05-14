@@ -49,7 +49,12 @@ class DependencyResolver(
     modules.forEach { add(it) }
   }
 
-  fun add(component: Component): DependencyResolver = apply {
+  fun add(component: Component, includeAncestors: Boolean): DependencyResolver = apply {
+    if (includeAncestors && component.parent != null) {
+      val parentComponent = checkNotNull(context.findComponentByType(component.parent)) { "Component ${component.parent.className} not found" }
+      add(parentComponent, true)
+    }
+
     add(component.defaultModule)
   }
 
