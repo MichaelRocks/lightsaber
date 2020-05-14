@@ -53,7 +53,6 @@ class Validator(
     }
 
     context.components
-      .filter { it.parent == null }
       .forEach { component ->
         validateNoModuleDuplicates(component, emptyMap())
         validateNoDependencyDuplicates(component, emptyMap())
@@ -139,7 +138,7 @@ class Validator(
   }
 
   private fun validateDependenciesAreResolved(component: Component, resolver: DependencyResolver) {
-    resolver.add(component)
+    resolver.add(component, includeAncestors = true)
     val unresolvedDependencies = resolver.getUnresolvedDependenciesAndResolveAllDependencies()
     if (unresolvedDependencies.isNotEmpty()) {
       val componentName = component.type.className
@@ -163,7 +162,7 @@ class Validator(
   }
 
   private fun validateFactories(component: Component, resolver: DependencyResolver) {
-    resolver.add(component)
+    resolver.add(component, includeAncestors = true)
     component.getModulesWithDescendants()
       .flatMap { module -> module.factories.asSequence() }
       .distinctBy { factory -> factory.type }
@@ -206,7 +205,7 @@ class Validator(
     components: Iterable<Component>
   ) {
     val dependencyResolver = DependencyResolver(context)
-    components.forEach { dependencyResolver.add(it) }
+    components.forEach { dependencyResolver.add(it, includeAncestors = false) }
     val resolvedDependencies = dependencyResolver.getResolvedDependencies()
 
     injectionTargets.forEach { injectionTarget ->
